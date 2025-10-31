@@ -2030,8 +2030,20 @@ $csrfToken = generateCSRFToken();
                 <div class="form-group">
                     <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
                     <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
+                    ${widget.widget_id === 'podcast_player' ? '<small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>' : ''}
                 </div>
             `;
+            
+            // Add description field for podcast player (auto-populated)
+            if (widget.widget_id === 'podcast_player') {
+                fieldsContainer.innerHTML += `
+                    <div class="form-group">
+                        <label for="widget_config_description">Description</label>
+                        <textarea id="widget_config_description" name="description" rows="3" placeholder="Will be auto-populated from RSS feed"></textarea>
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">Description from RSS feed</small>
+                    </div>
+                `;
+            }
             
             // Add widget-specific fields
             if (widget.config_fields) {
@@ -2093,7 +2105,158 @@ $csrfToken = generateCSRFToken();
             
             // Open configuration modal
             openWidgetModal();
+            
+            // Set up RSS feed auto-population for podcast player
+            if (widget.widget_id === 'podcast_player') {
+                setupRSSAutoPopulate();
+            }
         };
+        
+        function setupRSSAutoPopulate() {
+            const rssInput = document.getElementById('widget_config_rss_feed_url');
+            const titleInput = document.getElementById('widget_config_title');
+            const descInput = document.getElementById('widget_config_description');
+            const thumbnailInput = document.getElementById('widget_config_thumbnail_image');
+            
+            if (!rssInput) return;
+            
+            let rssFetchTimeout = null;
+            
+            rssInput.addEventListener('input', function() {
+                const rssUrl = this.value.trim();
+                
+                // Clear existing timeout
+                if (rssFetchTimeout) {
+                    clearTimeout(rssFetchTimeout);
+                }
+                
+                // Only fetch if URL looks valid and has a protocol
+                if (!rssUrl || !rssUrl.startsWith('http://') && !rssUrl.startsWith('https://')) {
+                    return;
+                }
+                
+                // Debounce: wait 1 second after user stops typing
+                rssFetchTimeout = setTimeout(() => {
+                    fetchRSSFeedInfo(rssUrl, titleInput, descInput, thumbnailInput);
+                }, 1000);
+            });
+        }
+        
+        function fetchRSSFeedInfo(rssUrl, titleInput, descInput, thumbnailInput) {
+            if (!rssUrl) return;
+            
+            // Show loading state
+            const loadingIndicator = document.createElement('small');
+            loadingIndicator.id = 'rss-loading-indicator';
+            loadingIndicator.style.color = '#0066ff';
+            loadingIndicator.style.display = 'block';
+            loadingIndicator.style.marginTop = '0.25rem';
+            loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching RSS feed...';
+            
+            const rssInput = document.getElementById('widget_config_rss_feed_url');
+            if (rssInput && !rssInput.parentElement.querySelector('#rss-loading-indicator')) {
+                rssInput.parentElement.appendChild(loadingIndicator);
+            }
+            
+            // Fetch RSS feed via proxy/API
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl))
+                .then(response => response.json())
+                .then(data => {
+                    // Remove loading indicator
+                    const indicator = document.getElementById('rss-loading-indicator');
+                    if (indicator) {
+                        indicator.remove();
+                    }
+                    
+                    if (data.status === 'ok' && data.feed) {
+                        const feed = data.feed;
+                        
+                        // Populate title
+                        if (titleInput && feed.title) {
+                            titleInput.value = feed.title;
+                            titleInput.style.borderColor = '#28a745';
+                            setTimeout(() => {
+                                titleInput.style.borderColor = '';
+                            }, 2000);
+                        }
+                        
+                        // Populate description
+                        if (descInput && feed.description) {
+                            // Clean HTML from description
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = feed.description;
+                            descInput.value = tempDiv.textContent || tempDiv.innerText || feed.description;
+                            descInput.style.borderColor = '#28a745';
+                            setTimeout(() => {
+                                descInput.style.borderColor = '';
+                            }, 2000);
+                        }
+                        
+                        // Populate thumbnail/cover image
+                        if (thumbnailInput) {
+                            // Try multiple sources for cover image
+                            let coverImage = feed.image || '';
+                            
+                            // If no feed image, try first episode thumbnail
+                            if (!coverImage && data.items && data.items.length > 0) {
+                                coverImage = data.items[0].thumbnail || data.items[0].enclosure?.image || '';
+                            }
+                            
+                            if (coverImage) {
+                                thumbnailInput.value = coverImage;
+                                thumbnailInput.style.borderColor = '#28a745';
+                                setTimeout(() => {
+                                    thumbnailInput.style.borderColor = '';
+                                }, 2000);
+                                
+                                // Show preview if possible
+                                showThumbnailPreview(coverImage);
+                            }
+                        }
+                        
+                        showToast('RSS feed loaded successfully!', 'success');
+                    } else {
+                        showToast('Failed to load RSS feed. Please check the URL.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('RSS fetch error:', error);
+                    const indicator = document.getElementById('rss-loading-indicator');
+                    if (indicator) {
+                        indicator.remove();
+                    }
+                    showToast('Error loading RSS feed. Please try again.', 'error');
+                });
+        }
+        
+        function showThumbnailPreview(imageUrl) {
+            const thumbnailInput = document.getElementById('widget_config_thumbnail_image');
+            if (!thumbnailInput) return;
+            
+            // Remove existing preview if any
+            const existingPreview = thumbnailInput.parentElement.querySelector('.thumbnail-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            // Create preview
+            const preview = document.createElement('div');
+            preview.className = 'thumbnail-preview';
+            preview.style.marginTop = '0.5rem';
+            preview.style.padding = '0.5rem';
+            preview.style.background = '#f9f9f9';
+            preview.style.borderRadius = '8px';
+            preview.style.textAlign = 'center';
+            preview.innerHTML = `
+                <img src="${imageUrl}" 
+                     alt="Cover preview" 
+                     style="max-width: 100px; max-height: 100px; border-radius: 8px; object-fit: cover;"
+                     onerror="this.parentElement.innerHTML='<small style=\\'color: #666;\\'>Image preview unavailable</small>'">
+                <div style="margin-top: 0.25rem; font-size: 0.75rem; color: #666;">Cover image preview</div>
+            `;
+            
+            thumbnailInput.parentElement.appendChild(preview);
+        }
         
         window.deleteTempWidget = function(button) {
             const widgetItem = button.closest('.widget-item');

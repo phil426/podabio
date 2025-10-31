@@ -76,8 +76,10 @@ class WidgetRegistry {
                 'category' => 'podcast',
                 'requires_api' => false,
                 'config_fields' => [
-                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Your podcast RSS feed URL. The player will automatically load episodes from this feed.', 'placeholder' => 'https://example.com/podcast.rss']
-                ]
+                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Enter your RSS feed URL to auto-populate title, description, and cover image.', 'placeholder' => 'https://example.com/podcast.rss'],
+                    'thumbnail_image' => ['type' => 'url', 'label' => 'Cover Image (auto-filled from RSS)', 'required' => false, 'help' => 'Cover image from RSS feed']
+                ],
+                'auto_populate_from_rss' => true
             ],
             
             // Additional widgets will be added as they're implemented
