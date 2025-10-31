@@ -425,7 +425,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                         // All icons use Font Awesome for consistency
                         $platformIcons = [
                             // Podcast Platforms
-                            'apple_podcasts' => '<i class="fab fa-apple"></i>',
+                            'apple_podcasts' => '<i class="fas fa-podcast"></i>',
                             'spotify' => '<i class="fab fa-spotify"></i>',
                             'youtube_music' => '<i class="fab fa-youtube"></i>',
                             'iheart_radio' => '<i class="fas fa-heart"></i>',
