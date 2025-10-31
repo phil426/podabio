@@ -1554,6 +1554,12 @@ $csrfToken = generateCSRFToken();
                         <option value="">Select Platform</option>
                         <?php
                         $platforms = [
+                            // Podcast Platforms
+                            'apple_podcasts' => 'Apple Podcasts',
+                            'spotify' => 'Spotify',
+                            'youtube_music' => 'YouTube Music',
+                            'iheart_radio' => 'iHeart Radio',
+                            'amazon_music' => 'Amazon Music',
                             // Social Media Platforms
                             'facebook' => 'Facebook',
                             'twitter' => 'Twitter / X',
@@ -1569,13 +1575,7 @@ $csrfToken = generateCSRFToken();
                             'github' => 'GitHub',
                             'behance' => 'Behance',
                             'dribbble' => 'Dribbble',
-                            'medium' => 'Medium',
-                            // Podcast Platforms
-                            'apple_podcasts' => 'Apple Podcasts',
-                            'spotify' => 'Spotify',
-                            'youtube_music' => 'YouTube Music',
-                            'iheart_radio' => 'iHeart Radio',
-                            'amazon_music' => 'Amazon Music'
+                            'medium' => 'Medium'
                         ];
                         foreach ($platforms as $key => $name):
                         ?>
