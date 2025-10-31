@@ -129,7 +129,7 @@ $csrfToken = generateCSRFToken();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         * {
             margin: 0;
@@ -1570,7 +1570,10 @@ $csrfToken = generateCSRFToken();
                 
                 // Copy current form values to item-specific drawer
                 const mainForm = document.getElementById('link-form');
+                const mainDrawerTitle = document.getElementById('drawer-title');
                 const itemForm = itemDrawer.querySelector('#link-form');
+                const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
+                
                 if (mainForm && itemForm) {
                     itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
                     itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
@@ -1578,7 +1581,11 @@ $csrfToken = generateCSRFToken();
                     itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
                     itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
                     itemForm.querySelector('#link_disclosure').value = mainForm.querySelector('#link_disclosure').value;
-                    itemForm.querySelector('#drawer-title').textContent = document.getElementById('drawer-title').textContent;
+                    
+                    // Copy title text if both elements exist
+                    if (mainDrawerTitle && itemDrawerTitle) {
+                        itemDrawerTitle.textContent = mainDrawerTitle.textContent;
+                    }
                 }
                 
                 // Show overlay and drawer
