@@ -1010,7 +1010,7 @@ $csrfToken = generateCSRFToken();
             <h2>Manage Links & Blocks</h2>
             
             <div style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="showAddLinkForm()">Add New Link or Block</button>
+                <button class="btn btn-primary" onclick="showAddLinkForm()">Add</button>
             </div>
             
             <ul id="links-list" class="links-list">
