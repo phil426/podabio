@@ -2033,11 +2033,15 @@ $csrfToken = generateCSRFToken();
                 // Trigger animation after a small delay to ensure DOM is ready
                 requestAnimationFrame(() => {
                     setTimeout(() => {
-                        itemDrawer.classList.add('active');
-                        // Measure actual content height and set max-height for smooth animation
-                        const contentHeight = itemDrawer.scrollHeight;
-                        if (contentHeight > 0) {
-                            itemDrawer.style.maxHeight = contentHeight + 'px';
+                        if (itemDrawer) {
+                            // Measure actual content height before adding active class
+                            const contentHeight = itemDrawer.scrollHeight;
+                            // Set max-height dynamically based on content
+                            if (contentHeight > 0) {
+                                itemDrawer.style.maxHeight = (contentHeight + 30) + 'px';
+                            }
+                            // Add active class to trigger animation
+                            itemDrawer.classList.add('active');
                         }
                     }, 10);
                 });
