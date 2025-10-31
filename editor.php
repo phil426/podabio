@@ -1799,7 +1799,7 @@ $csrfToken = generateCSRFToken();
                     </button>
                 </div>
                 <div class="modal-content">
-                    <form id="widget-form">
+                    <form id="widget-form" onsubmit="event.preventDefault(); return false;">
                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                         <input type="hidden" name="action" id="widget-action" value="add">
                         <input type="hidden" name="widget_id" id="widget-id">
@@ -2140,8 +2140,8 @@ $csrfToken = generateCSRFToken();
         window.handleWidgetFormSubmit = function(form) {
             // Prevent double submission
             if (isSubmittingWidget) {
-                console.log('Widget submission already in progress');
-                return;
+                console.log('Widget submission already in progress - ignoring duplicate call');
+                return false;
             }
             
             const action = document.getElementById('widget-action').value;
@@ -2151,10 +2151,15 @@ $csrfToken = generateCSRFToken();
             
             if (!titleInput || !titleInput.value.trim()) {
                 showToast('Title is required', 'error');
-                return;
+                return false;
             }
             
-            // Set submitting flag
+            if (!widgetType) {
+                showToast('Widget type is required', 'error');
+                return false;
+            }
+            
+            // Set submitting flag IMMEDIATELY
             isSubmittingWidget = true;
             
             // Disable submit button to prevent double clicks
@@ -2162,7 +2167,14 @@ $csrfToken = generateCSRFToken();
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Saving...';
+                submitBtn.onclick = null; // Remove onclick handler to prevent double clicks
             }
+            
+            // Also disable all form inputs
+            const formInputs = document.querySelectorAll('#widget-form input, #widget-form textarea, #widget-form select');
+            formInputs.forEach(input => {
+                input.disabled = true;
+            });
             
             // Build the request
             const requestData = new FormData();
@@ -2212,11 +2224,20 @@ $csrfToken = generateCSRFToken();
                 }
                 
                 if (data.success) {
+                    // Prevent any further actions
+                    isSubmittingWidget = true; // Keep it true until reload
                     closeWidgetModal();
                     showToast('Widget saved successfully!', 'success');
                     refreshPreview();
-                    setTimeout(() => location.reload(), 1000);
+                    // Reload immediately to prevent duplicate submissions
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 800);
                 } else {
+                    // Re-enable on error
+                    formInputs.forEach(input => {
+                        input.disabled = false;
+                    });
                     showToast(data.error || 'Failed to save widget', 'error');
                 }
             })
@@ -2224,15 +2245,23 @@ $csrfToken = generateCSRFToken();
                 // Reset submitting flag on error
                 isSubmittingWidget = false;
                 
+                // Re-enable form inputs
+                formInputs.forEach(input => {
+                    input.disabled = false;
+                });
+                
                 // Re-enable submit button
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = action === 'update' ? 'Save Changes' : 'Add Widget';
+                    submitBtn.onclick = function() { handleWidgetFormSubmit(document.getElementById('widget-form')); };
                 }
                 
                 console.error('Error:', error);
                 showToast('An error occurred', 'error');
             });
+            
+            return false; // Prevent any default form behavior
         };
         
         
