@@ -67,21 +67,17 @@ class WidgetRegistry {
                 ]
             ],
             
-            // Phase 2: Podcast Widgets (to be implemented)
+            // Podcast Player Widget (Shikwasa-based)
             'podcast_player' => [
                 'widget_id' => 'podcast_player',
                 'name' => 'Podcast Player',
-                'description' => 'Embed a podcast episode player',
+                'description' => 'Embed a Shikwasa podcast player with RSS feed support',
                 'thumbnail' => '/assets/widget-thumbnails/podcast.png',
                 'category' => 'podcast',
                 'requires_api' => false,
                 'config_fields' => [
-                    'title' => ['type' => 'text', 'label' => 'Episode Title', 'required' => true],
-                    'rss_feed_url' => ['type' => 'url', 'label' => 'Podcast RSS Feed URL', 'required' => false],
-                    'episode_id' => ['type' => 'text', 'label' => 'Episode ID or GUID', 'required' => true],
-                    'platform' => ['type' => 'select', 'label' => 'Platform', 'options' => ['apple', 'spotify', 'youtube', 'custom'], 'required' => false]
-                ],
-                'coming_soon' => true
+                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Your podcast RSS feed URL. The player will automatically load episodes from this feed.', 'placeholder' => 'https://example.com/podcast.rss']
+                ]
             ],
             
             // Additional widgets will be added as they're implemented

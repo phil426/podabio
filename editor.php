@@ -1044,10 +1044,6 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-palette"></i>
                         <span>Appearance</span>
                     </a>
-                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('rss', this)">
-                        <i class="fas fa-rss"></i>
-                        <span>RSS Feed</span>
-                    </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('email', this)">
                         <i class="fas fa-envelope"></i>
                         <span>Email Subscription</span>
@@ -1611,22 +1607,6 @@ $csrfToken = generateCSRFToken();
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Save Appearance</button>
-            </form>
-        </div>
-        
-        <!-- RSS Feed Tab -->
-        <div id="tab-rss" class="tab-content">
-            <h2>RSS Feed</h2>
-            <form id="rss-form">
-                <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                
-                <div class="form-group">
-                    <label for="rss_feed_url">RSS Feed URL</label>
-                    <input type="url" id="rss_feed_url" name="rss_feed_url" value="<?php echo h($page['rss_feed_url'] ?? ''); ?>" placeholder="https://example.com/podcast.rss">
-                    <small>Enter your podcast RSS feed URL to auto-populate episodes and information.</small>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Save & Import RSS</button>
             </form>
         </div>
         
@@ -2981,37 +2961,6 @@ $csrfToken = generateCSRFToken();
                     refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to save email settings', 'error');
-                }
-            })
-            .catch(() => {
-                showMessage('An error occurred', 'error');
-            });
-            });
-        }
-        
-        // Handle RSS form
-        const rssForm = document.getElementById('rss-form');
-        if (rssForm) {
-            rssForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            formData.append('action', 'import_rss');
-            
-            showMessage('Importing RSS feed...', 'info');
-            
-            fetch('/api/page.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message || 'RSS feed imported successfully!', 'success');
-                    refreshPreview();
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showMessage(data.error || 'Failed to import RSS feed', 'error');
                 }
             })
             .catch(() => {

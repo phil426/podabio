@@ -42,7 +42,7 @@ $analytics->trackView($page['id']);
 require_once __DIR__ . '/classes/WidgetRenderer.php';
 $widgets = $pageClass->getWidgets($page['id']);
 $links = $pageClass->getLinks($page['id']); // Legacy support
-$episodes = $pageClass->getEpisodes($page['id'], 10);
+// Removed episodes - now handled via Podcast Player widget
 $socialIcons = $pageClass->getSocialIcons($page['id']);
 
 // Get theme
@@ -287,6 +287,24 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+        
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
         .episode-drawer {
             position: fixed;
             top: 0;
@@ -305,24 +323,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .episode-drawer.open {
             right: 0;
-        }
-        
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 999;
-        }
-        
-        .drawer-overlay.active {
-            opacity: 1;
-            pointer-events: all;
         }
         
         .drawer-header {
@@ -348,86 +348,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             justify-content: center;
         }
         
-        .episode-item {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            background: var(--secondary-color);
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-        }
-        
-        .episode-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-        }
-        
-        .episode-description {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-        }
-        
-        .episode-date {
-            font-size: 0.8rem;
-            opacity: 0.6;
-            color: var(--primary-color);
-        }
-        
-        /* Mini Player (always visible when playing) */
-        .mini-player {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--secondary-color);
-            border-top: 2px solid var(--primary-color);
-            padding: 1rem;
-            z-index: 1001;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-            display: none;
-        }
-        
-        .mini-player.active {
-            display: block;
-        }
-        
-        .mini-player-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .mini-player-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .mini-player-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--primary-color);
-        }
-        
-        .mini-player-artist {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--primary-color);
-        }
-        
-        .mini-player-controls {
-            flex-shrink: 0;
-        }
-        
         @media (max-width: 600px) {
             .page-container {
                 padding: 1rem;
@@ -438,10 +358,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                 height: 100px;
             }
             
-            .episode-drawer {
-                width: 100vw;
-                right: -100vw;
-            }
         }
     </style>
 </head>
@@ -534,14 +450,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                 <?php endforeach;
             endif; ?>
             
-            <?php if (!empty($episodes)): ?>
-                <button onclick="openEpisodeDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
-                    <div class="widget-content">
-                        <div class="widget-title">🎧 Recent Episodes (<?php echo count($episodes); ?>)</div>
-                    </div>
-                </button>
-            <?php endif; ?>
-            
             <!-- Email Subscribe Widget -->
             <?php if (!empty($page['email_service_provider'])): ?>
                 <button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
@@ -552,63 +460,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             <?php endif; ?>
         </div>
     </div>
-    
-    <!-- Mini Player (always visible when playing) -->
-    <div class="mini-player" id="mini-player">
-        <div class="mini-player-content">
-            <div class="mini-player-info">
-                <div class="mini-player-title" id="mini-player-title">Episode Title</div>
-                <div class="mini-player-artist" id="mini-player-artist"><?php echo h($page['podcast_name'] ?: $page['username']); ?></div>
-            </div>
-            <div class="mini-player-controls" id="mini-player-controls">
-                <!-- Shikwasa mini player will be inserted here -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Episode Drawer with Shikwasa Player -->
-    <?php if (!empty($episodes)): ?>
-        <div class="drawer-overlay" id="drawer-overlay" onclick="closeEpisodeDrawer()"></div>
-        <div class="episode-drawer" id="episodes-drawer">
-            <div class="drawer-header">
-                <h2 style="margin: 0; color: var(--primary-color);">Recent Episodes</h2>
-                <button class="drawer-close" onclick="closeEpisodeDrawer()" aria-label="Close">×</button>
-            </div>
-            
-            <!-- Shikwasa Player Container -->
-            <div id="shikwasa-player-container" style="margin-bottom: 1.5rem;"></div>
-            
-            <?php foreach ($episodes as $index => $episode): ?>
-                <div class="episode-item" data-episode-index="<?php echo $index; ?>" 
-                     data-audio-url="<?php echo h($episode['audio_url'] ?? ''); ?>"
-                     data-title="<?php echo h($episode['title']); ?>"
-                     style="cursor: pointer;"
-                     onclick="playEpisode(<?php echo $index; ?>)">
-                    <div class="episode-title"><?php echo h($episode['title']); ?></div>
-                    <?php if ($episode['description']): ?>
-                        <div class="episode-description"><?php echo h(truncate($episode['description'], 200)); ?></div>
-                    <?php endif; ?>
-                    <?php if ($episode['pub_date']): ?>
-                        <div class="episode-date"><?php echo h(formatDate($episode['pub_date'], 'F j, Y')); ?></div>
-                    <?php endif; ?>
-                    <?php if ($episode['duration']): ?>
-                        <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 0.25rem;">
-                            Duration: <?php 
-                            $hours = floor($episode['duration'] / 3600);
-                            $minutes = floor(($episode['duration'] % 3600) / 60);
-                            $seconds = $episode['duration'] % 60;
-                            if ($hours > 0) {
-                                echo h(sprintf('%d:%02d:%02d', $hours, $minutes, $seconds));
-                            } else {
-                                echo h(sprintf('%d:%02d', $minutes, $seconds));
-                            }
-                            ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
     
     <!-- Email Subscription Drawer -->
     <?php if (!empty($page['email_service_provider'])): ?>
@@ -641,143 +492,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         </div>
     <?php endif; ?>
     
-    <!-- Shikwasa.js Player Library -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.js"></script>
-    
     <script>
-        let shikwasaPlayer = null;
-        let shikwasaMiniPlayer = null;
-        const episodes = <?php echo json_encode(array_values($episodes)); ?>;
-        const podcastName = '<?php echo h($page['podcast_name'] ?: $page['username']); ?>';
-        const coverImage = '<?php echo h($page['cover_image_url'] ?: $page['profile_image'] ?: ''); ?>';
-        const themeColor = '<?php echo h($accentColor); ?>';
-        
-        function openEpisodeDrawer() {
-            const drawer = document.getElementById('episodes-drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            if (drawer && overlay) {
-                drawer.classList.add('open');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-        
-        function closeEpisodeDrawer() {
-            const drawer = document.getElementById('episodes-drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            if (drawer && overlay) {
-                drawer.classList.remove('open');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-            // Don't pause - let mini player continue
-        }
-        
-        function playEpisode(index) {
-            const episode = episodes[index];
-            if (!episode || !episode.audio_url) {
-                alert('Audio URL not available for this episode');
-                return;
-            }
-            
-            // Update mini player info
-            document.getElementById('mini-player-title').textContent = episode.title || 'Episode';
-            document.getElementById('mini-player-artist').textContent = podcastName;
-            
-            // Initialize player in drawer
-            const container = document.getElementById('shikwasa-player-container');
-            if (container) {
-                // Destroy existing drawer player if it exists
-                if (shikwasaPlayer) {
-                    try {
-                        shikwasaPlayer.destroy();
-                    } catch (e) {
-                        // Ignore destroy errors
-                    }
-                }
-                
-                // Create new player instance in drawer
-                try {
-                    shikwasaPlayer = new Shikwasa.Player({
-                        container: container,
-                        audio: {
-                            title: episode.title || 'Episode',
-                            artist: podcastName,
-                            cover: coverImage,
-                            src: episode.audio_url
-                        },
-                        themeColor: themeColor,
-                        theme: 'auto'
-                    });
-                } catch (error) {
-                    console.error('Failed to initialize drawer player:', error);
-                    container.innerHTML = `
-                        <audio controls style="width: 100%;">
-                            <source src="${episode.audio_url}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                    `;
-                }
-            }
-            
-            // Initialize or update mini player
-            const miniContainer = document.getElementById('mini-player-controls');
-            if (miniContainer) {
-                // Destroy existing mini player if it exists
-                if (shikwasaMiniPlayer) {
-                    try {
-                        shikwasaMiniPlayer.destroy();
-                    } catch (e) {
-                        // Ignore destroy errors
-                    }
-                }
-                
-                // Clear container
-                miniContainer.innerHTML = '';
-                
-                // Create mini player
-                try {
-                    shikwasaMiniPlayer = new Shikwasa.Player({
-                        container: miniContainer,
-                        audio: {
-                            title: episode.title || 'Episode',
-                            artist: podcastName,
-                            cover: coverImage,
-                            src: episode.audio_url
-                        },
-                        themeColor: themeColor,
-                        theme: 'auto',
-                        fixed: {
-                            type: 'bottom'
-                        }
-                    });
-                    
-                    // Show mini player
-                    document.getElementById('mini-player').classList.add('active');
-                    document.body.style.paddingBottom = '80px'; // Make room for mini player
-                } catch (error) {
-                    console.error('Failed to initialize mini player:', error);
-                    // Fallback to simple audio
-                    miniContainer.innerHTML = `
-                        <audio controls>
-                            <source src="${episode.audio_url}" type="audio/mpeg">
-                        </audio>
-                    `;
-                    document.getElementById('mini-player').classList.add('active');
-                    document.body.style.paddingBottom = '80px';
-                }
-            }
-        }
-        
-        // Sync players if one is paused/played
-        function syncPlayers() {
-            if (shikwasaPlayer && shikwasaMiniPlayer) {
-                // Both players will share the same audio source, so they should stay in sync
-                // Shikwasa handles this automatically
-            }
-        }
-        
         function openEmailDrawer() {
             const drawer = document.getElementById('email-drawer');
             const overlay = document.getElementById('email-overlay');
@@ -842,7 +557,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         // Close drawer on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeEpisodeDrawer();
                 closeEmailDrawer();
             }
         });

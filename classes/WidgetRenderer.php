@@ -181,12 +181,127 @@ class WidgetRenderer {
     }
     
     /**
-     * Render podcast player widget (placeholder)
+     * Render podcast player widget (Shikwasa-based)
      */
     private static function renderPodcastPlayer($widget, $configData) {
-        // To be implemented in Phase 2
-        $title = $widget['title'] ?? 'Podcast Episode';
-        return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note">Podcast player coming soon</div></div></div>';
+        $title = $widget['title'] ?? 'Podcast Player';
+        $rssFeedUrl = $configData['rss_feed_url'] ?? '';
+        $widgetId = $widget['id'] ?? 0;
+        
+        if (!$rssFeedUrl) {
+            return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
+        }
+        
+        $containerId = 'shikwasa-podcast-' . $widgetId;
+        
+        $html = '<div class="widget-item widget-podcast">';
+        $html .= '<div class="widget-content">';
+        if ($title) {
+            $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        }
+        $html .= '<div id="' . htmlspecialchars($containerId) . '" class="shikwasa-podcast-container" data-rss-url="' . htmlspecialchars($rssFeedUrl) . '"></div>';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        // Add Shikwasa initialization script
+        $html .= '<script>
+        (function() {
+            const container = document.getElementById("' . $containerId . '");
+            const rssUrl = container.getAttribute("data-rss-url");
+            
+            if (!window.Shikwasa) {
+                // Load Shikwasa library if not already loaded
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.css";
+                document.head.appendChild(link);
+                
+                const script = document.createElement("script");
+                script.src = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.js";
+                script.onload = function() {
+                    initializePlayer();
+                };
+                document.head.appendChild(script);
+            } else {
+                initializePlayer();
+            }
+            
+            function initializePlayer() {
+                // Fetch RSS feed and parse episodes
+                fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "ok" && data.items && data.items.length > 0) {
+                            // Parse episodes from RSS feed
+                            const episodes = data.items.map(item => {
+                                // Try multiple methods to get audio URL
+                                let audioUrl = null;
+                                
+                                // Method 1: Check enclosure (standard RSS)
+                                if (item.enclosure && item.enclosure.link) {
+                                    audioUrl = item.enclosure.link;
+                                } else if (item.enclosure && item.enclosure.url) {
+                                    audioUrl = item.enclosure.url;
+                                }
+                                
+                                // Method 2: Check media:content (iTunes RSS)
+                                if (!audioUrl && item.media && item.media.content) {
+                                    if (Array.isArray(item.media.content)) {
+                                        const audioContent = item.media.content.find(c => c.$.type && c.$.type.startsWith("audio/"));
+                                        if (audioContent && audioContent.$.url) {
+                                            audioUrl = audioContent.$.url;
+                                        }
+                                    } else if (item.media.content.$.url) {
+                                        audioUrl = item.media.content.$.url;
+                                    }
+                                }
+                                
+                                // Method 3: Check for links in description/content
+                                if (!audioUrl && item.description) {
+                                    const match = item.description.match(/href=["\']([^"\']+\.(mp3|m4a|ogg|wav))["\']/i);
+                                    if (match) {
+                                        audioUrl = match[1];
+                                    }
+                                }
+                                
+                                return {
+                                    title: item.title || "Untitled Episode",
+                                    audio: audioUrl,
+                                    cover: data.feed?.image || item.thumbnail || item.enclosure?.image || "",
+                                    description: item.description || item.content || ""
+                                };
+                            }).filter(ep => ep.audio);
+                            
+                            if (episodes.length > 0) {
+                                // Initialize Shikwasa player with playlist
+                                try {
+                                    new Shikwasa.Player({
+                                        container: container,
+                                        audio: episodes[0],
+                                        playlist: episodes.length > 1 ? episodes.slice(1) : [],
+                                        themeColor: getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || "#0066ff",
+                                        theme: "auto"
+                                    });
+                                } catch (error) {
+                                    console.error("Failed to initialize Shikwasa player:", error);
+                                    container.innerHTML = "<p style=\'color: #dc3545;\'>Failed to load podcast player. Please check your RSS feed URL.</p>";
+                                }
+                            } else {
+                                container.innerHTML = "<p style=\'color: #666;\'>No playable episodes found in RSS feed. Make sure your RSS feed includes audio file URLs.</p>";
+                            }
+                        } else {
+                            container.innerHTML = "<p style=\'color: #dc3545;\'>Failed to load RSS feed. Please check your feed URL.</p>";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("RSS fetch error:", error);
+                        container.innerHTML = "<p style=\'color: #dc3545;\'>Error loading podcast feed. Please try again later.</p>";
+                    });
+            }
+        })();
+        </script>';
+        
+        return $html;
     }
     
     /**
