@@ -1697,7 +1697,7 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function handleLinkFormSubmit(form, linkItem) {
+        function handleLinkFormSubmit(form) {
             const formData = new FormData(form);
             const action = formData.get('action');
             formData.append('action', action === 'update' ? 'update' : 'add');
@@ -1713,15 +1713,15 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     closeDrawer();
-                    showMessage('Link saved successfully!', 'success');
+                    showToast('Link saved successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage(data.error, 'error');
+                    showToast(data.error, 'error');
                 }
             })
             .catch(error => {
-                showMessage('An error occurred', 'error');
+                showToast('An error occurred', 'error');
             });
         }
         
@@ -2019,36 +2019,12 @@ $csrfToken = generateCSRFToken();
         
         // Handle link form submission
         // Handle main drawer form submission (fallback)
+        // Handle drawer form submission
         const linkForm = document.getElementById('link-form');
         if (linkForm) {
             linkForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
-                const formData = new FormData(this);
-                const action = formData.get('action');
-                formData.append('action', action === 'update' ? 'update' : 'add');
-                if (action === 'update') {
-                    formData.append('link_id', document.getElementById('link-id').value);
-                }
-                
-                fetch('/api/links.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeDrawer();
-                        showMessage('Link saved successfully!', 'success');
-                        refreshPreview();
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        showMessage(data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    showMessage('An error occurred', 'error');
-                });
+                handleLinkFormSubmit(this);
             });
         }
         
