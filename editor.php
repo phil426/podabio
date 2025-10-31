@@ -684,6 +684,12 @@ $csrfToken = generateCSRFToken();
         
         .link-item {
             position: relative;
+            overflow: visible;
+            z-index: 1;
+        }
+        
+        .link-item.has-drawer {
+            z-index: 10;
         }
         
         /* Link-item specific drawer - slides from bottom of item */
@@ -697,15 +703,19 @@ $csrfToken = generateCSRFToken();
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
             z-index: 2002;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
             max-height: 70vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
         }
         
         .link-item .drawer.active {
             transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .link-item .drawer .drawer-handle {
@@ -1752,10 +1762,16 @@ $csrfToken = generateCSRFToken();
         }
         
         window.closeDrawer = function() {
-            // Close all item-specific drawers
+            // Close all item-specific drawers with animation
             document.querySelectorAll('.link-item .drawer').forEach(drawer => {
                 drawer.classList.remove('active');
-                drawer.parentElement.classList.remove('has-drawer');
+                // Remove drawer after animation completes
+                setTimeout(() => {
+                    if (!drawer.classList.contains('active')) {
+                        drawer.remove();
+                        drawer.parentElement.classList.remove('has-drawer');
+                    }
+                }, 300);
             });
             
             // Close main drawer
@@ -1814,50 +1830,55 @@ $csrfToken = generateCSRFToken();
         };
         
         window.openDrawer = function(linkItem) {
-            // Remove any existing drawers from other items
-            document.querySelectorAll('.link-item .drawer').forEach(d => {
-                d.classList.remove('active');
-                d.parentElement.classList.remove('has-drawer');
-            });
+            // Close all existing drawers first
+            closeDrawer();
             
-            // Close main drawer if open
-            const mainDrawer = document.getElementById('link-drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            
-            if (mainDrawer) {
-                mainDrawer.classList.remove('active');
-                mainDrawer.style.display = 'none';
-            }
-            
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-            
-            if (!linkItem) {
-                // Fallback to main drawer at bottom of screen
-                if (mainDrawer && overlay) {
-                    mainDrawer.style.display = 'flex';
-                    overlay.classList.add('active');
-                    setTimeout(() => {
-                        mainDrawer.classList.add('active');
-                    }, 10);
+            // Small delay to ensure previous drawers are closed
+            setTimeout(() => {
+                // Close main drawer if open
+                const mainDrawer = document.getElementById('link-drawer');
+                const overlay = document.getElementById('drawer-overlay');
+                
+                if (mainDrawer) {
+                    mainDrawer.classList.remove('active');
+                    mainDrawer.style.display = 'none';
                 }
-                return;
-            }
-            
-            // Get or create drawer for this link-item
-            let itemDrawer = linkItem.querySelector('.drawer');
-            
-            if (!itemDrawer) {
-                // Clone main drawer structure (reuse mainDrawer variable)
+                
+                if (overlay) {
+                    overlay.classList.remove('active');
+                }
+                
+                if (!linkItem) {
+                    // Fallback to main drawer at bottom of screen
+                    if (mainDrawer && overlay) {
+                        mainDrawer.style.display = 'flex';
+                        overlay.classList.add('active');
+                        setTimeout(() => {
+                            mainDrawer.classList.add('active');
+                        }, 10);
+                    }
+                    return;
+                }
+                
+                // Remove any existing drawer from this item
+                const existingDrawer = linkItem.querySelector('.drawer');
+                if (existingDrawer) {
+                    existingDrawer.remove();
+                }
+                
+                // Clone main drawer structure
                 if (!mainDrawer) {
                     console.error('Main drawer not found');
                     return;
                 }
                 
-                itemDrawer = mainDrawer.cloneNode(true);
+                const itemDrawer = mainDrawer.cloneNode(true);
                 itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
                 itemDrawer.style.display = 'flex';
+                itemDrawer.style.position = 'absolute';
+                itemDrawer.style.bottom = '0';
+                itemDrawer.style.left = '0';
+                itemDrawer.style.right = '0';
                 
                 // Copy form event listener
                 const form = itemDrawer.querySelector('#link-form');
@@ -1868,43 +1889,56 @@ $csrfToken = generateCSRFToken();
                     });
                 }
                 
-                linkItem.appendChild(itemDrawer);
-            }
-            
-            linkItem.classList.add('has-drawer');
-            
-            // Copy form values from main drawer to item drawer
-            const mainForm = document.getElementById('link-form');
-            const mainDrawerTitle = document.getElementById('drawer-title');
-            const itemForm = itemDrawer.querySelector('#link-form');
-            const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
-            
-            if (mainForm && itemForm) {
-                itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
-                itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
-                itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
-                itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
-                itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
-                const mainDisclosure = mainForm.querySelector('#link_disclosure');
-                const itemDisclosure = itemForm.querySelector('#link_disclosure');
-                if (mainDisclosure && itemDisclosure) {
-                    itemDisclosure.value = mainDisclosure.value;
+                // Update close button to call closeDrawer
+                const closeBtn = itemDrawer.querySelector('.drawer-close');
+                if (closeBtn) {
+                    closeBtn.setAttribute('onclick', 'closeDrawer()');
                 }
                 
-                if (mainDrawerTitle && itemDrawerTitle) {
-                    itemDrawerTitle.textContent = mainDrawerTitle.textContent;
+                // Update cancel button
+                const cancelBtn = itemDrawer.querySelector('.btn-secondary');
+                if (cancelBtn && cancelBtn.textContent.trim() === 'Cancel') {
+                    cancelBtn.setAttribute('onclick', 'closeDrawer()');
                 }
-            }
-            
-            // Show overlay (reuse existing overlay variable)
-            if (overlay) {
-                overlay.classList.add('active');
-            }
-            
-            // Show drawer with animation
-            setTimeout(() => {
-                itemDrawer.classList.add('active');
-            }, 10);
+                
+                linkItem.appendChild(itemDrawer);
+                linkItem.classList.add('has-drawer');
+                
+                // Copy form values from main drawer to item drawer
+                const mainForm = document.getElementById('link-form');
+                const mainDrawerTitle = document.getElementById('drawer-title');
+                const itemForm = itemDrawer.querySelector('#link-form');
+                const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
+                
+                if (mainForm && itemForm) {
+                    itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
+                    itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
+                    itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
+                    itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
+                    itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
+                    const mainDisclosure = mainForm.querySelector('#link_disclosure');
+                    const itemDisclosure = itemForm.querySelector('#link_disclosure');
+                    if (mainDisclosure && itemDisclosure) {
+                        itemDisclosure.value = mainDisclosure.value;
+                    }
+                    
+                    if (mainDrawerTitle && itemDrawerTitle) {
+                        itemDrawerTitle.textContent = mainDrawerTitle.textContent;
+                    }
+                }
+                
+                // Show overlay
+                if (overlay) {
+                    overlay.classList.add('active');
+                }
+                
+                // Trigger animation after a small delay to ensure DOM is ready
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        itemDrawer.classList.add('active');
+                    }, 10);
+                });
+            }, 50);
         };
         
         window.editLink = function(linkId, buttonElement) {
