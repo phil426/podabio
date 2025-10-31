@@ -727,9 +727,9 @@ $csrfToken = generateCSRFToken();
         }
         
         .link-item .drawer .drawer-header {
-            padding: 0 12px 8px 12px;
+            padding: 12px 12px 8px 12px;
             border-bottom: 1px solid #f3f4f6;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -809,7 +809,7 @@ $csrfToken = generateCSRFToken();
         }
         
         .link-item .drawer .drawer-actions {
-            padding: 10px 12px 0 12px;
+            padding: 10px 12px 12px 12px;
             border-top: 1px solid #f3f4f6;
             margin-top: 10px;
             display: flex;
@@ -2038,24 +2038,29 @@ $csrfToken = generateCSRFToken();
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         if (itemDrawer) {
-                            // Temporarily make visible to measure
-                            const wasHidden = itemDrawer.style.maxHeight === '0px';
-                            if (wasHidden) {
-                                itemDrawer.style.maxHeight = 'none';
-                                itemDrawer.style.opacity = '0';
-                            }
+                            // Temporarily make visible to measure (without transition)
+                            itemDrawer.style.transition = 'none';
+                            itemDrawer.style.maxHeight = 'none';
+                            itemDrawer.style.opacity = '0';
+                            itemDrawer.style.visibility = 'hidden';
+                            
+                            // Force a reflow to ensure measurement is accurate
+                            void itemDrawer.offsetHeight;
                             
                             // Measure actual content height
                             const contentHeight = itemDrawer.scrollHeight;
                             
                             // Reset to start position
                             itemDrawer.style.maxHeight = '0';
+                            itemDrawer.style.opacity = '0';
+                            itemDrawer.style.visibility = 'visible';
+                            itemDrawer.style.transition = ''; // Restore transition
                             
                             // Now animate
                             setTimeout(() => {
                                 if (itemDrawer && contentHeight > 0) {
-                                    // Set max-height to allow content, add padding
-                                    itemDrawer.style.maxHeight = (contentHeight + 40) + 'px';
+                                    // Set max-height to actual content height
+                                    itemDrawer.style.maxHeight = contentHeight + 'px';
                                     // Add active class to trigger CSS transitions
                                     itemDrawer.classList.add('active');
                                 }
