@@ -1,0 +1,772 @@
+<?php
+/**
+ * Public Page Display
+ * Podn.Bio - Displays user's link-in-bio page
+ */
+
+require_once __DIR__ . '/config/constants.php';
+require_once __DIR__ . '/includes/session.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/classes/Page.php';
+require_once __DIR__ . '/classes/Analytics.php';
+
+// Check if request is for custom domain or username
+$domain = $_SERVER['HTTP_HOST'];
+$username = $_GET['username'] ?? '';
+
+$pageClass = new Page();
+$page = null;
+
+// First check if this is a custom domain (not our main domains)
+$mainDomains = ['getphily.com', 'www.getphily.com', 'podn.bio', 'www.podn.bio'];
+if (!in_array(strtolower($domain), $mainDomains)) {
+    // Try custom domain first
+    $page = $pageClass->getByCustomDomain(strtolower($domain));
+}
+
+// If no custom domain match, try username
+if (!$page && !empty($username)) {
+    $page = $pageClass->getByUsername($username);
+}
+
+if (!$page || !$page['is_active']) {
+    http_response_code(404);
+    die('Page not found');
+}
+
+// Track page view
+$analytics = new Analytics();
+$analytics->trackView($page['id']);
+
+// Get page data
+$links = $pageClass->getLinks($page['id']);
+$episodes = $pageClass->getEpisodes($page['id'], 10);
+$podcastDirectories = $pageClass->getPodcastDirectories($page['id']);
+
+// Get theme
+$theme = null;
+if ($page['theme_id']) {
+    $theme = $pageClass->getTheme($page['theme_id']);
+}
+
+// Parse theme colors/fonts
+$colors = $page['colors'] ? json_decode($page['colors'], true) : ($theme ? json_decode($theme['colors'], true) : []);
+$fonts = $page['fonts'] ? json_decode($page['fonts'], true) : ($theme ? json_decode($theme['fonts'], true) : []);
+
+// Default values
+$primaryColor = $colors['primary'] ?? '#000000';
+$secondaryColor = $colors['secondary'] ?? '#ffffff';
+$accentColor = $colors['accent'] ?? '#0066ff';
+$headingFont = $fonts['heading'] ?? 'Inter';
+$bodyFont = $fonts['body'] ?? 'Inter';
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo h($page['podcast_name'] ?: $page['username']); ?> - <?php echo h(APP_NAME); ?></title>
+    
+    <!-- Google Fonts -->
+    <?php
+    // Load fonts if custom fonts are set
+    $headingFont = $fonts['heading'] ?? 'Inter';
+    $bodyFont = $fonts['body'] ?? 'Inter';
+    
+    // Build Google Fonts URL
+    $headingFontUrl = str_replace(' ', '+', $headingFont);
+    $bodyFontUrl = str_replace(' ', '+', $bodyFont);
+    $fontUrl = "https://fonts.googleapis.com/css2?family={$headingFontUrl}:wght@400;600;700&family={$bodyFontUrl}:wght@400;500&display=swap";
+    ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
+    <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
+    <meta property="og:description" content="<?php echo h(truncate($page['podcast_description'] ?: '', 160)); ?>">
+    <meta property="og:image" content="<?php echo h($page['cover_image_url'] ?: ''); ?>">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <style>
+        :root {
+            --primary-color: <?php echo h($primaryColor); ?>;
+            --secondary-color: <?php echo h($secondaryColor); ?>;
+            --accent-color: <?php echo h($accentColor); ?>;
+        }
+        
+        body {
+            font-family: '<?php echo h($bodyFont); ?>', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: <?php echo h($secondaryColor); ?>;
+            color: <?php echo h($primaryColor); ?>;
+        }
+        
+        h1, h2, h3 {
+            font-family: '<?php echo h($headingFont); ?>', sans-serif;
+        }
+        
+        <?php if ($page['background_image']): ?>
+        body {
+            background-image: url('<?php echo h($page['background_image']); ?>');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        <?php endif; ?>
+        
+        .page-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 3px solid var(--primary-color);
+        }
+        
+        .cover-image {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            margin: 0.5rem 0;
+            color: var(--primary-color);
+        }
+        
+        .page-description {
+            color: var(--primary-color);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .link-item {
+            display: block;
+            padding: 1rem;
+            background: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .link-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .link-thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .link-content {
+            flex: 1;
+        }
+        
+        .link-title {
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .podcast-directories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+        
+        .directory-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .directory-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .episode-drawer {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            max-width: 90vw;
+            height: 100vh;
+            background: var(--secondary-color);
+            border-left: 2px solid var(--primary-color);
+            box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+        
+        .episode-drawer.open {
+            right: 0;
+        }
+        
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+        
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-color);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .episode-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+        }
+        
+        .episode-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .episode-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .episode-date {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            color: var(--primary-color);
+        }
+        
+        /* Mini Player (always visible when playing) */
+        .mini-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--secondary-color);
+            border-top: 2px solid var(--primary-color);
+            padding: 1rem;
+            z-index: 1001;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .mini-player.active {
+            display: block;
+        }
+        
+        .mini-player-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .mini-player-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .mini-player-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--primary-color);
+        }
+        
+        .mini-player-artist {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--primary-color);
+        }
+        
+        .mini-player-controls {
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 1rem;
+            }
+            
+            .profile-image {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .episode-drawer {
+                width: 100vw;
+                right: -100vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="profile-header">
+            <?php if ($page['profile_image']): ?>
+                <img src="<?php echo h($page['profile_image']); ?>" alt="Profile" class="profile-image">
+            <?php endif; ?>
+            
+            <?php if ($page['cover_image_url']): ?>
+                <img src="<?php echo h($page['cover_image_url']); ?>" alt="Cover" class="cover-image">
+            <?php endif; ?>
+            
+            <h1 class="page-title"><?php echo h($page['podcast_name'] ?: $page['username']); ?></h1>
+            
+            <?php if ($page['podcast_description']): ?>
+                <p class="page-description"><?php echo nl2br(h($page['podcast_description'])); ?></p>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Podcast Directory Links -->
+        <?php if (!empty($podcastDirectories)): ?>
+            <div class="podcast-directories">
+                <?php foreach ($podcastDirectories as $directory): ?>
+                    <a href="<?php echo h($directory['url']); ?>" 
+                       class="directory-icon" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       title="<?php echo h($directory['platform_name']); ?>">
+                        <?php
+                        // Simple icon initials for platforms
+                        $platformIcons = [
+                            'apple_podcasts' => '🍎',
+                            'spotify' => '🎵',
+                            'youtube_music' => '▶️',
+                            'amazon_music' => '🔶',
+                            'audible' => '📚',
+                            'tunein' => '📻',
+                            'castbox' => '📦',
+                            'good_pods' => '👍',
+                            'iheart_radio' => '❤️',
+                            'overcast' => '⛅',
+                            'pocket_casts' => '🎧'
+                        ];
+                        $icon = $platformIcons[strtolower($directory['platform_name'])] ?? '🔗';
+                        echo $icon;
+                        ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <div class="links-container">
+            <?php foreach ($links as $link): ?>
+                <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
+                   class="link-item" 
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    <?php if ($link['thumbnail_image']): ?>
+                        <img src="<?php echo h($link['thumbnail_image']); ?>" 
+                             alt="<?php echo h($link['title']); ?>" 
+                             class="link-thumbnail">
+                    <?php endif; ?>
+                    <div class="link-content">
+                        <div class="link-title"><?php echo h($link['title']); ?></div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            
+            <?php if (!empty($episodes)): ?>
+                <button onclick="openEpisodeDrawer()" class="link-item" style="cursor: pointer; text-align: left;">
+                    <div class="link-content">
+                        <div class="link-title">🎧 Recent Episodes (<?php echo count($episodes); ?>)</div>
+                    </div>
+                </button>
+            <?php endif; ?>
+            
+            <!-- Email Subscribe Link -->
+            <?php if (!empty($page['email_service_provider'])): ?>
+                <button onclick="openEmailDrawer()" class="link-item" style="cursor: pointer; text-align: left;">
+                    <div class="link-content">
+                        <div class="link-title">📧 Subscribe to Email List</div>
+                    </div>
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+    
+    <!-- Mini Player (always visible when playing) -->
+    <div class="mini-player" id="mini-player">
+        <div class="mini-player-content">
+            <div class="mini-player-info">
+                <div class="mini-player-title" id="mini-player-title">Episode Title</div>
+                <div class="mini-player-artist" id="mini-player-artist"><?php echo h($page['podcast_name'] ?: $page['username']); ?></div>
+            </div>
+            <div class="mini-player-controls" id="mini-player-controls">
+                <!-- Shikwasa mini player will be inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Episode Drawer with Shikwasa Player -->
+    <?php if (!empty($episodes)): ?>
+        <div class="drawer-overlay" id="drawer-overlay" onclick="closeEpisodeDrawer()"></div>
+        <div class="episode-drawer" id="episodes-drawer">
+            <div class="drawer-header">
+                <h2 style="margin: 0; color: var(--primary-color);">Recent Episodes</h2>
+                <button class="drawer-close" onclick="closeEpisodeDrawer()" aria-label="Close">×</button>
+            </div>
+            
+            <!-- Shikwasa Player Container -->
+            <div id="shikwasa-player-container" style="margin-bottom: 1.5rem;"></div>
+            
+            <?php foreach ($episodes as $index => $episode): ?>
+                <div class="episode-item" data-episode-index="<?php echo $index; ?>" 
+                     data-audio-url="<?php echo h($episode['audio_url'] ?? ''); ?>"
+                     data-title="<?php echo h($episode['title']); ?>"
+                     style="cursor: pointer;"
+                     onclick="playEpisode(<?php echo $index; ?>)">
+                    <div class="episode-title"><?php echo h($episode['title']); ?></div>
+                    <?php if ($episode['description']): ?>
+                        <div class="episode-description"><?php echo h(truncate($episode['description'], 200)); ?></div>
+                    <?php endif; ?>
+                    <?php if ($episode['pub_date']): ?>
+                        <div class="episode-date"><?php echo h(formatDate($episode['pub_date'], 'F j, Y')); ?></div>
+                    <?php endif; ?>
+                    <?php if ($episode['duration']): ?>
+                        <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 0.25rem;">
+                            Duration: <?php 
+                            $hours = floor($episode['duration'] / 3600);
+                            $minutes = floor(($episode['duration'] % 3600) / 60);
+                            $seconds = $episode['duration'] % 60;
+                            if ($hours > 0) {
+                                echo h(sprintf('%d:%02d:%02d', $hours, $minutes, $seconds));
+                            } else {
+                                echo h(sprintf('%d:%02d', $minutes, $seconds));
+                            }
+                            ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+    
+    <!-- Email Subscription Drawer -->
+    <?php if (!empty($page['email_service_provider'])): ?>
+        <div class="drawer-overlay" id="email-overlay" onclick="closeEmailDrawer()"></div>
+        <div class="episode-drawer" id="email-drawer">
+            <div class="drawer-header">
+                <h2 style="margin: 0; color: var(--primary-color);">Subscribe to Email List</h2>
+                <button class="drawer-close" onclick="closeEmailDrawer()" aria-label="Close">×</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p style="margin-bottom: 1rem; color: var(--primary-color);">Get notified about new episodes and updates.</p>
+                <form id="email-subscribe-form" onsubmit="subscribeEmail(event)">
+                    <div class="form-group">
+                        <label for="subscribe-email" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Address</label>
+                        <input type="email" 
+                               id="subscribe-email" 
+                               name="email" 
+                               required 
+                               placeholder="your@email.com"
+                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--primary-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                    <button type="submit" 
+                            class="link-item" 
+                            style="margin-top: 1rem; width: 100%; text-align: center; cursor: pointer;">
+                        Subscribe
+                    </button>
+                </form>
+                <div id="subscribe-message" style="margin-top: 1rem; display: none;"></div>
+            </div>
+        </div>
+    <?php endif; ?>
+    
+    <!-- Shikwasa.js Player Library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.js"></script>
+    
+    <script>
+        let shikwasaPlayer = null;
+        let shikwasaMiniPlayer = null;
+        const episodes = <?php echo json_encode(array_values($episodes)); ?>;
+        const podcastName = '<?php echo h($page['podcast_name'] ?: $page['username']); ?>';
+        const coverImage = '<?php echo h($page['cover_image_url'] ?: $page['profile_image'] ?: ''); ?>';
+        const themeColor = '<?php echo h($accentColor); ?>';
+        
+        function openEpisodeDrawer() {
+            const drawer = document.getElementById('episodes-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (drawer && overlay) {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeEpisodeDrawer() {
+            const drawer = document.getElementById('episodes-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (drawer && overlay) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            // Don't pause - let mini player continue
+        }
+        
+        function playEpisode(index) {
+            const episode = episodes[index];
+            if (!episode || !episode.audio_url) {
+                alert('Audio URL not available for this episode');
+                return;
+            }
+            
+            // Update mini player info
+            document.getElementById('mini-player-title').textContent = episode.title || 'Episode';
+            document.getElementById('mini-player-artist').textContent = podcastName;
+            
+            // Initialize player in drawer
+            const container = document.getElementById('shikwasa-player-container');
+            if (container) {
+                // Destroy existing drawer player if it exists
+                if (shikwasaPlayer) {
+                    try {
+                        shikwasaPlayer.destroy();
+                    } catch (e) {
+                        // Ignore destroy errors
+                    }
+                }
+                
+                // Create new player instance in drawer
+                try {
+                    shikwasaPlayer = new Shikwasa.Player({
+                        container: container,
+                        audio: {
+                            title: episode.title || 'Episode',
+                            artist: podcastName,
+                            cover: coverImage,
+                            src: episode.audio_url
+                        },
+                        themeColor: themeColor,
+                        theme: 'auto'
+                    });
+                } catch (error) {
+                    console.error('Failed to initialize drawer player:', error);
+                    container.innerHTML = `
+                        <audio controls style="width: 100%;">
+                            <source src="${episode.audio_url}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    `;
+                }
+            }
+            
+            // Initialize or update mini player
+            const miniContainer = document.getElementById('mini-player-controls');
+            if (miniContainer) {
+                // Destroy existing mini player if it exists
+                if (shikwasaMiniPlayer) {
+                    try {
+                        shikwasaMiniPlayer.destroy();
+                    } catch (e) {
+                        // Ignore destroy errors
+                    }
+                }
+                
+                // Clear container
+                miniContainer.innerHTML = '';
+                
+                // Create mini player
+                try {
+                    shikwasaMiniPlayer = new Shikwasa.Player({
+                        container: miniContainer,
+                        audio: {
+                            title: episode.title || 'Episode',
+                            artist: podcastName,
+                            cover: coverImage,
+                            src: episode.audio_url
+                        },
+                        themeColor: themeColor,
+                        theme: 'auto',
+                        fixed: {
+                            type: 'bottom'
+                        }
+                    });
+                    
+                    // Show mini player
+                    document.getElementById('mini-player').classList.add('active');
+                    document.body.style.paddingBottom = '80px'; // Make room for mini player
+                } catch (error) {
+                    console.error('Failed to initialize mini player:', error);
+                    // Fallback to simple audio
+                    miniContainer.innerHTML = `
+                        <audio controls>
+                            <source src="${episode.audio_url}" type="audio/mpeg">
+                        </audio>
+                    `;
+                    document.getElementById('mini-player').classList.add('active');
+                    document.body.style.paddingBottom = '80px';
+                }
+            }
+        }
+        
+        // Sync players if one is paused/played
+        function syncPlayers() {
+            if (shikwasaPlayer && shikwasaMiniPlayer) {
+                // Both players will share the same audio source, so they should stay in sync
+                // Shikwasa handles this automatically
+            }
+        }
+        
+        function openEmailDrawer() {
+            const drawer = document.getElementById('email-drawer');
+            const overlay = document.getElementById('email-overlay');
+            if (drawer && overlay) {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeEmailDrawer() {
+            const drawer = document.getElementById('email-drawer');
+            const overlay = document.getElementById('email-overlay');
+            if (drawer && overlay) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function subscribeEmail(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const email = form.querySelector('#subscribe-email').value;
+            const messageDiv = document.getElementById('subscribe-message');
+            
+            if (!email) {
+                messageDiv.textContent = 'Please enter an email address';
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = 'var(--primary-color)';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('page_id', <?php echo $page['id']; ?>);
+            formData.append('email', email);
+            
+            fetch('/api/subscribe.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageDiv.style.display = 'block';
+                if (data.success) {
+                    messageDiv.textContent = data.message || 'Successfully subscribed!';
+                    messageDiv.style.color = 'green';
+                    form.reset();
+                } else {
+                    messageDiv.textContent = data.error || 'Failed to subscribe';
+                    messageDiv.style.color = 'red';
+                }
+            })
+            .catch(() => {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.style.color = 'red';
+            });
+        }
+        
+        // Close drawer on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEpisodeDrawer();
+                closeEmailDrawer();
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,103 @@
+<?php
+/**
+ * Application Constants
+ * Podn.Bio
+ */
+
+// Application settings
+define('APP_NAME', 'Podn.Bio');
+define('APP_VERSION', '1.0.0');
+define('APP_URL', 'https://getphily.com'); // Change to podn.bio for production
+
+// Server configuration
+define('SERVER_IP', '156.67.73.201'); // Hostinger server IP
+
+// Paths
+define('ROOT_PATH', dirname(__DIR__));
+define('PUBLIC_PATH', ROOT_PATH . '/public');
+define('UPLOAD_PATH', ROOT_PATH . '/uploads');
+define('ASSETS_PATH', ROOT_PATH . '/assets');
+
+// Upload directories
+define('UPLOAD_PROFILES', UPLOAD_PATH . '/profiles');
+define('UPLOAD_BACKGROUNDS', UPLOAD_PATH . '/backgrounds');
+define('UPLOAD_THUMBNAILS', UPLOAD_PATH . '/thumbnails');
+define('UPLOAD_BLOG', UPLOAD_PATH . '/blog');
+
+// URL paths
+define('PUBLIC_URL', APP_URL);
+define('UPLOAD_URL', APP_URL . '/uploads');
+define('ASSETS_URL', APP_URL . '/assets');
+
+// Security
+define('SESSION_LIFETIME', 3600); // 1 hour
+define('CSRF_TOKEN_EXPIRY', 3600); // 1 hour
+define('VERIFICATION_TOKEN_EXPIRY', 86400); // 24 hours
+define('RESET_TOKEN_EXPIRY', 3600); // 1 hour
+
+// File upload settings
+define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
+define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+define('ALLOWED_IMAGE_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+
+// Image dimensions
+define('PROFILE_IMAGE_WIDTH', 400);
+define('PROFILE_IMAGE_HEIGHT', 400);
+define('THUMBNAIL_WIDTH', 400);
+define('THUMBNAIL_HEIGHT', 300);
+define('BACKGROUND_IMAGE_MAX_WIDTH', 1920);
+define('BACKGROUND_IMAGE_MAX_HEIGHT', 1080);
+
+// Pagination
+define('ITEMS_PER_PAGE', 20);
+define('EPISODES_PER_PAGE', 10);
+
+// Podcast directory platforms
+define('PODCAST_PLATFORMS', [
+    'amazon_music' => 'Amazon Music',
+    'apple_podcasts' => 'Apple Podcasts',
+    'spotify' => 'Spotify',
+    'castbox' => 'Castbox',
+    'good_pods' => 'Good Pods',
+    'iheart_radio' => 'I Heart Radio',
+    'overcast' => 'Overcast',
+    'pocket_casts' => 'Pocket Casts'
+]);
+
+// Social media platforms
+define('SOCIAL_PLATFORMS', [
+    'facebook' => 'Facebook',
+    'twitter' => 'Twitter/X',
+    'instagram' => 'Instagram',
+    'tiktok' => 'TikTok',
+    'youtube' => 'YouTube',
+    'linkedin' => 'LinkedIn',
+    'pinterest' => 'Pinterest',
+    'snapchat' => 'Snapchat',
+    'twitch' => 'Twitch',
+    'discord' => 'Discord'
+]);
+
+// Email service providers
+define('EMAIL_SERVICES', [
+    'mailchimp' => 'Mailchimp',
+    'constant_contact' => 'Constant Contact',
+    'convertkit' => 'ConvertKit',
+    'aweber' => 'AWeber',
+    'mailerlite' => 'MailerLite',
+    'sendinblue' => 'SendinBlue/Brevo'
+]);
+
+// Subscription plans
+define('PLAN_FREE', 'free');
+define('PLAN_PREMIUM', 'premium');
+define('PLAN_PRO', 'pro');
+
+// Timezone
+date_default_timezone_set('UTC');
+
+// PHP Configuration Notes
+// - Recommended PHP version: 8.3
+// - Minimum PHP version: 8.0
+// - See PHP_CONFIGURATION.md for detailed configuration recommendations
+
