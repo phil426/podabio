@@ -693,60 +693,65 @@ $csrfToken = generateCSRFToken();
             z-index: 10;
         }
         
-        /* Link-item specific drawer - dropdown style that pushes content down */
-        .link-item .drawer {
-            position: relative;
-            width: 100%;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            z-index: 1;
-            max-height: 0;
-            overflow: hidden;
-            display: block !important; /* Force block display, override flex from main drawer */
-            flex-direction: unset !important;
-            position: relative !important;
-            transform: none !important;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.3s ease-in-out;
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
             opacity: 0;
-            margin-top: 0;
-            padding: 0;
+            transition: opacity 0.3s ease;
         }
         
-        .link-item .drawer.active {
-            max-height: 600px;
+        .modal-overlay.active {
+            display: flex;
             opacity: 1;
         }
         
-        /* Compact drawer styles - remove handle, make header and content compact */
-        .link-item .drawer .drawer-handle {
-            display: none; /* Hide handle for dropdown style */
+        .modal {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            overflow: hidden;
         }
         
-        .link-item .drawer .drawer-header {
-            padding: 12px 12px 8px 12px;
-            border-bottom: 1px solid #f3f4f6;
-            margin-bottom: 0;
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
         
-        .link-item .drawer .drawer-header h2 {
-            font-size: 14px;
+        .modal-header h2 {
+            font-size: 1.25rem;
             font-weight: 600;
             margin: 0;
-            color: #374151;
+            color: #111827;
         }
         
-        .link-item .drawer .drawer-close {
-            width: 24px;
-            height: 24px;
+        .modal-close {
+            width: 32px;
+            height: 32px;
             padding: 0;
-            font-size: 14px;
             border: none;
             background: transparent;
             color: #6b7280;
@@ -754,73 +759,29 @@ $csrfToken = generateCSRFToken();
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: background 0.2s, color 0.2s;
+            font-size: 1.25rem;
         }
         
-        .link-item .drawer .drawer-close:hover {
+        .modal-close:hover {
             background: #f3f4f6;
             color: #374151;
         }
         
-        .link-item .drawer .drawer-content {
-            padding: 12px;
-            overflow-y: visible;
-            max-height: none;
-            -webkit-overflow-scrolling: touch;
+        .modal-content {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
         }
         
-        .link-item .drawer .form-group {
-            margin-bottom: 10px;
-        }
-        
-        .link-item .drawer .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 4px;
-        }
-        
-        .link-item .drawer .form-group input,
-        .link-item .drawer .form-group select,
-        .link-item .drawer .form-group textarea {
-            width: 100%;
-            padding: 6px 10px;
-            font-size: 13px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            box-sizing: border-box;
-        }
-        
-        .link-item .drawer .form-group input:focus,
-        .link-item .drawer .form-group select:focus,
-        .link-item .drawer .form-group textarea:focus {
-            outline: none;
-            border-color: #0066ff;
-            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-        }
-        
-        .link-item .drawer .form-group textarea {
-            min-height: 50px;
-            resize: vertical;
-            font-family: inherit;
-        }
-        
-        .link-item .drawer .drawer-actions {
-            padding: 10px 12px 12px 12px;
-            border-top: 1px solid #f3f4f6;
-            margin-top: 10px;
+        .modal-actions {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
             display: flex;
-            gap: 8px;
+            gap: 0.75rem;
             justify-content: flex-end;
-        }
-        
-        .link-item .drawer .drawer-actions .btn {
-            padding: 6px 14px;
-            font-size: 13px;
-            border-radius: 6px;
+            flex-shrink: 0;
         }
         
         .link-item.editing {
@@ -1625,55 +1586,55 @@ $csrfToken = generateCSRFToken();
         </div>
     </div>
     
-        <!-- Edit Link Drawer Slider (only shown on Content tab) -->
+        <!-- Edit Link Modal (only shown on Content tab) -->
         <?php if ($page): ?>
-        <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
-        <div id="link-drawer" class="drawer" style="display: none;">
-            <div class="drawer-handle"></div>
-            <div class="drawer-header">
-                <h2 id="drawer-title">Edit Link</h2>
-                <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div id="link-modal-overlay" class="modal-overlay" onclick="closeLinkModal()">
+            <div class="modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2 id="modal-title">Edit Link</h2>
+                    <button class="modal-close" onclick="closeLinkModal()" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <form id="link-form">
+                        <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
+                        <input type="hidden" name="action" id="link-action" value="update">
+                        <input type="hidden" name="link_id" id="link-id">
+                        
+                        <div class="form-group">
+                            <label for="link_type">Link Type</label>
+                            <select id="link_type" name="type" required>
+                                <option value="custom">Custom Link</option>
+                                <option value="social">Social Media</option>
+                                <option value="affiliate">Affiliate Link</option>
+                                <option value="amazon_affiliate">Amazon Affiliate</option>
+                                <option value="sponsor">Sponsor Link</option>
+                                <option value="email_subscribe">Email Subscribe</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="link_title">Title</label>
+                            <input type="text" id="link_title" name="title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="link_url">URL</label>
+                            <input type="url" id="link_url" name="url" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="link_disclosure">Disclosure Text (for affiliate/sponsor links)</label>
+                            <textarea id="link_disclosure" name="disclosure_text" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeLinkModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('link-form').dispatchEvent(new Event('submit'))">Save Changes</button>
+                </div>
             </div>
-            <div class="drawer-content">
-            <form id="link-form">
-                <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                <input type="hidden" name="action" id="link-action" value="update">
-                <input type="hidden" name="link_id" id="link-id">
-                
-                <div class="form-group">
-                    <label for="link_type">Link Type</label>
-                    <select id="link_type" name="type" required>
-                        <option value="custom">Custom Link</option>
-                        <option value="social">Social Media</option>
-                        <option value="affiliate">Affiliate Link</option>
-                        <option value="amazon_affiliate">Amazon Affiliate</option>
-                        <option value="sponsor">Sponsor Link</option>
-                        <option value="email_subscribe">Email Subscribe</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="link_title">Title</label>
-                    <input type="text" id="link_title" name="title" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="link_url">URL</label>
-                    <input type="url" id="link_url" name="url" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="link_disclosure">Disclosure Text (for affiliate/sponsor links)</label>
-                    <textarea id="link_disclosure" name="disclosure_text" rows="2"></textarea>
-                </div>
-                
-                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top: 1rem;">
-                    <button type="button" class="btn btn-secondary btn-small" onclick="closeDrawer()">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-small">Save Changes</button>
-                </div>
-            </form>
         </div>
         <?php endif; ?>
     
@@ -1790,7 +1751,7 @@ $csrfToken = generateCSRFToken();
             const disclosureInput = document.getElementById('link_disclosure');
             const actionInput = document.getElementById('link-action');
             const linkIdInput = document.getElementById('link-id');
-            const drawerTitle = document.getElementById('drawer-title');
+            const modalTitle = document.getElementById('modal-title');
             
             if (form && titleInput && urlInput) {
                 actionInput.value = 'add';
@@ -1803,15 +1764,13 @@ $csrfToken = generateCSRFToken();
                     disclosureInput.value = '';
                 }
                 
-                if (drawerTitle) {
-                    drawerTitle.textContent = 'Add New Link';
+                if (modalTitle) {
+                    modalTitle.textContent = 'Add New Link or Block';
                 }
             }
             
-            // Open drawer for new link item
-            setTimeout(() => {
-                openDrawer(newLinkItem);
-                }, 100);
+            // Open modal for new link item
+            openLinkModal();
         };
         
         window.deleteTempLink = function(button) {
@@ -1892,7 +1851,7 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    closeDrawer();
+                    closeLinkModal();
                     showToast('Link saved successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
@@ -1905,199 +1864,24 @@ $csrfToken = generateCSRFToken();
             });
         };
         
-        window.openDrawer = function(linkItem) {
-            // Close all existing drawers first (without overlay)
-            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
-                if (drawer) {
-                    drawer.classList.remove('active');
-                    setTimeout(() => {
-                        if (drawer && !drawer.classList.contains('active')) {
-                            drawer.remove();
-                            if (drawer.parentElement) {
-                                drawer.parentElement.classList.remove('has-drawer');
-                            }
-                        }
-                    }, 300);
-                }
-            });
-            
-            const overlay = document.getElementById('drawer-overlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-            
-            // Small delay to ensure previous drawers are closed
-            setTimeout(() => {
-                // Close main drawer if open
-                const mainDrawer = document.getElementById('link-drawer');
-                // Reuse overlay variable from outer scope
-                
-                if (mainDrawer) {
-                    mainDrawer.classList.remove('active');
-                    mainDrawer.style.display = 'none';
-                }
-                
-                if (overlay) {
-                    overlay.classList.remove('active');
-                }
-                
-                if (!linkItem) {
-                    // Fallback to main drawer at bottom of screen
-                    if (mainDrawer && overlay) {
-                        mainDrawer.style.display = 'flex';
-                        overlay.classList.add('active');
-                        setTimeout(() => {
-                            mainDrawer.classList.add('active');
-                        }, 10);
-                    }
-                    return;
-                }
-                
-                // Remove any existing drawer from this item
-                const existingDrawer = linkItem.querySelector('.drawer');
-                if (existingDrawer) {
-                    existingDrawer.remove();
-                }
-                
-                // Clone main drawer structure
-                if (!mainDrawer) {
-                    console.error('Main drawer not found');
-                    return;
-                }
-                
-                const itemDrawer = mainDrawer.cloneNode(true);
-                itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
-                // Force block display and reset all flex-related styles
-                itemDrawer.style.display = 'block';
-                itemDrawer.style.position = 'relative';
-                itemDrawer.style.width = '100%';
-                itemDrawer.style.maxHeight = '0';
-                itemDrawer.style.opacity = '0';
-                itemDrawer.style.marginTop = '0';
-                itemDrawer.style.padding = '0';
-                itemDrawer.style.transform = 'none';
-                itemDrawer.style.flexDirection = 'unset';
-                itemDrawer.style.bottom = 'auto';
-                itemDrawer.style.left = 'auto';
-                itemDrawer.style.right = 'auto';
-                
-                // Copy form event listener
-                const form = itemDrawer.querySelector('#link-form');
-                if (form) {
-                    form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        handleLinkFormSubmit(form);
-                    });
-                }
-                
-                // Update close button to call closeDrawer
-                const closeBtn = itemDrawer.querySelector('.drawer-close');
-                if (closeBtn) {
-                    closeBtn.setAttribute('onclick', 'closeDrawer()');
-                }
-                
-                // Update cancel button
-                const cancelBtn = itemDrawer.querySelector('.btn-secondary');
-                if (cancelBtn && cancelBtn.textContent.trim() === 'Cancel') {
-                    cancelBtn.setAttribute('onclick', 'closeDrawer()');
-                }
-                
-                if (linkItem && itemDrawer) {
-                    linkItem.appendChild(itemDrawer);
-                    linkItem.classList.add('has-drawer');
-                }
-                
-                // Copy form values from main drawer to item drawer
-                const mainForm = document.getElementById('link-form');
-                const mainDrawerTitle = document.getElementById('drawer-title');
-                const itemForm = itemDrawer.querySelector('#link-form');
-                const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
-                
-                if (mainForm && itemForm) {
-                    itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
-                    itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
-                    itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
-                    itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
-                    itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
-                    const mainDisclosure = mainForm.querySelector('#link_disclosure');
-                    const itemDisclosure = itemForm.querySelector('#link_disclosure');
-                    if (mainDisclosure && itemDisclosure) {
-                        itemDisclosure.value = mainDisclosure.value;
-                    }
-                    
-                    if (mainDrawerTitle && itemDrawerTitle) {
-                        itemDrawerTitle.textContent = mainDrawerTitle.textContent;
-                    }
-                }
-                
-                // Don't show overlay for link-item drawers - they push content down instead
-                // Overlay is only for the main drawer at bottom of screen
-                
-                // Trigger animation after DOM is ready
-                // First, ensure drawer content is visible for measurement
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (itemDrawer) {
-                            // Temporarily make visible to measure (without transition)
-                            itemDrawer.style.transition = 'none';
-                            itemDrawer.style.maxHeight = 'none';
-                            itemDrawer.style.opacity = '0';
-                            itemDrawer.style.visibility = 'hidden';
-                            
-                            // Force a reflow to ensure measurement is accurate
-                            void itemDrawer.offsetHeight;
-                            
-                            // Measure actual content height
-                            const contentHeight = itemDrawer.scrollHeight;
-                            
-                            // Reset to start position
-                            itemDrawer.style.maxHeight = '0';
-                            itemDrawer.style.opacity = '0';
-                            itemDrawer.style.visibility = 'visible';
-                            itemDrawer.style.transition = ''; // Restore transition
-                            
-                            // Now animate
-                            setTimeout(() => {
-                                if (itemDrawer && contentHeight > 0) {
-                                    // Set max-height to actual content height
-                                    itemDrawer.style.maxHeight = contentHeight + 'px';
-                                    // Add active class to trigger CSS transitions
-                                    itemDrawer.classList.add('active');
-                                }
-                            }, 10);
-                        }
-                    });
-                });
-            }, 50);
-        };
         
         window.editLink = function(linkId, buttonElement) {
             const linkItem = buttonElement ? buttonElement.closest('.link-item') : document.querySelector(`[data-link-id="${linkId}"]`);
             
             if (!linkItem) return;
             
-            // Mark the item as being edited
-            document.querySelectorAll('.link-item.editing').forEach(item => {
-                if (item) {
-                    item.classList.remove('editing');
-                }
-            });
-            if (linkItem) {
-                linkItem.classList.add('editing');
-            }
-            
             // Check if it's a new temporary link (negative ID)
             if (parseInt(linkId) < 0) {
                 // New link - populate with defaults
-                document.getElementById('drawer-title').textContent = 'Add Link or Block';
+                document.getElementById('modal-title').textContent = 'Add Link or Block';
                 document.getElementById('link-action').value = 'add';
-                document.getElementById('link-id').value = '';
+                document.getElementById('link-id').value = linkId;
                 document.getElementById('link_type').value = 'custom';
                 document.getElementById('link_title').value = 'New Link';
                 document.getElementById('link_url').value = 'https://';
                 document.getElementById('link_disclosure').value = '';
                 
-                openDrawer(linkItem);
+                openLinkModal();
                 return;
             }
             
@@ -2115,7 +1899,7 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success && data.link) {
                     const link = data.link;
-                    document.getElementById('drawer-title').textContent = 'Edit Link';
+                    document.getElementById('modal-title').textContent = 'Edit Link';
                     document.getElementById('link-action').value = 'update';
                     document.getElementById('link-id').value = link.id;
                     document.getElementById('link_type').value = link.type || 'custom';
@@ -2123,23 +1907,14 @@ $csrfToken = generateCSRFToken();
                     document.getElementById('link_url').value = link.url || '';
                     document.getElementById('link_disclosure').value = link.disclosure_text || '';
                     
-                    // Update main form (for fallback)
-                    document.getElementById('drawer-title').textContent = 'Edit Link';
-                    document.getElementById('link-action').value = 'update';
-                    document.getElementById('link-id').value = link.id;
-                    document.getElementById('link_type').value = link.type || 'custom';
-                    document.getElementById('link_title').value = link.title || '';
-                    document.getElementById('link_url').value = link.url || '';
-                    document.getElementById('link_disclosure').value = link.disclosure_text || '';
-                    
-                    openDrawer(linkItem);
+                    openLinkModal();
                 } else {
                     // Fallback: Get from page load
                     const titleEl = linkItem.querySelector('.link-title');
                     const urlEl = linkItem.querySelector('.link-url');
                     
                     if (titleEl && urlEl) {
-                        document.getElementById('drawer-title').textContent = 'Edit Link';
+                        document.getElementById('modal-title').textContent = 'Edit Link';
                         document.getElementById('link-action').value = 'update';
                         document.getElementById('link-id').value = linkId;
                         document.getElementById('link_type').value = 'custom';
@@ -2147,7 +1922,7 @@ $csrfToken = generateCSRFToken();
                         document.getElementById('link_url').value = urlEl.textContent.trim();
                         document.getElementById('link_disclosure').value = '';
                         
-                        openDrawer(linkItem);
+                        openLinkModal();
                     }
                 }
             })
@@ -2157,7 +1932,7 @@ $csrfToken = generateCSRFToken();
                 const urlEl = linkItem.querySelector('.link-url');
                 
                 if (titleEl && urlEl) {
-                    document.getElementById('drawer-title').textContent = 'Edit Link';
+                    document.getElementById('modal-title').textContent = 'Edit Link';
                     document.getElementById('link-action').value = 'update';
                     document.getElementById('link-id').value = linkId;
                     document.getElementById('link_type').value = 'custom';
@@ -2165,9 +1940,27 @@ $csrfToken = generateCSRFToken();
                     document.getElementById('link_url').value = urlEl.textContent.trim();
                     document.getElementById('link_disclosure').value = '';
                     
-                    openDrawer(linkItem);
+                    openLinkModal();
                 }
             });
+        }
+        
+        window.openLinkModal = function() {
+            const overlay = document.getElementById('link-modal-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        window.closeLinkModal = function() {
+            const overlay = document.getElementById('link-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
         }
         
         function deleteLink(linkId) {
