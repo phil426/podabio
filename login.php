@@ -12,7 +12,7 @@ require_once __DIR__ . '/config/oauth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    redirect('/dashboard.php');
+    redirect('/editor.php');
 }
 
 $error = '';
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $user->login($email, $password);
             
             if ($result['success']) {
-                redirect('/dashboard.php');
+                redirect('/editor.php');
             } else {
                 $error = $result['error'];
             }

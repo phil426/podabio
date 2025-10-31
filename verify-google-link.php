@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pageClass = new Page();
                     $userPage = $pageClass->getByUserId($userId);
                     $successMsg = 'Google account linked successfully!';
-                    $redirectTo = $userPage ? '/editor.php?tab=account&success=' . urlencode($successMsg) : '/dashboard.php?success=' . urlencode($successMsg);
+                    $redirectTo = '/editor.php?tab=account&success=' . urlencode($successMsg);
                     redirect($redirectTo);
                 } else {
                     $error = $linkResult['error'];
