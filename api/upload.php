@@ -64,9 +64,15 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
                 $error = 'No file was uploaded';
                 break;
             default:
-                $error = 'Upload error occurred';
+                $error = 'Upload error occurred (error code: ' . $_FILES['image']['error'] . ')';
         }
+    } else {
+        $error = 'No file data received. $_FILES keys: ' . implode(', ', array_keys($_FILES));
     }
+    
+    // Log for debugging
+    error_log('Upload failed: ' . $error . ' | POST keys: ' . implode(', ', array_keys($_POST)));
+    
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => $error]);
     exit;
@@ -86,6 +92,8 @@ $imageHandler = new ImageHandler();
 $result = $imageHandler->uploadImage($_FILES['image'], $imageType);
 
 if (!$result['success']) {
+    // Log error for debugging
+    error_log('ImageHandler upload failed: ' . ($result['error'] ?? 'Unknown error'));
     http_response_code(400);
     echo json_encode($result);
     exit;
@@ -108,6 +116,8 @@ if ($updateField) {
             $imageHandler->deleteImage($oldPath);
         }
         
+        error_log('Profile image updated successfully: ' . $result['url']);
+        
         echo json_encode([
             'success' => true,
             'url' => $result['url'],
@@ -117,6 +127,7 @@ if ($updateField) {
     } else {
         // Delete uploaded file if page update failed
         $imageHandler->deleteImage($result['path']);
+        error_log('Failed to update page with image. Page ID: ' . $pageId . ', Update field: ' . $updateField);
         echo json_encode(['success' => false, 'error' => 'Failed to update page with image']);
     }
 } else {

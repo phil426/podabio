@@ -2524,6 +2524,17 @@ $csrfToken = generateCSRFToken();
             formData.append('type', type);
             formData.append('csrf_token', csrfToken);
             
+            // Debug logging
+            console.log('Uploading image:', {
+                type: type,
+                context: context,
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                inputId: inputId,
+                previewId: previewId
+            });
+            
             showToast('Uploading image...', 'info');
             
             fetch('/api/upload.php', {
@@ -2531,9 +2542,12 @@ $csrfToken = generateCSRFToken();
                 body: formData
             })
             .then(response => {
+                console.log('Upload response status:', response.status, response.statusText);
+                
                 // Check if response is OK
                 if (!response.ok) {
                     return response.text().then(text => {
+                        console.error('Upload failed - response text:', text);
                         try {
                             const json = JSON.parse(text);
                             throw new Error(json.error || 'Upload failed');
@@ -2548,12 +2562,15 @@ $csrfToken = generateCSRFToken();
                 return response.json();
             })
             .then(data => {
+                console.log('Upload response data:', data);
+                
                 if (data.success) {
                     // Update preview
                     const preview = document.getElementById(previewId);
                     
                     if (!preview) {
                         console.error('Preview element not found:', previewId);
+                        console.error('Available preview elements:', document.querySelectorAll('[id*="preview"]'));
                         showToast('Image uploaded but preview could not be updated', 'error');
                         return;
                     }
@@ -2567,12 +2584,16 @@ $csrfToken = generateCSRFToken();
                         return;
                     }
                     
+                    console.log('Updating preview with URL:', imageUrl);
+                    
                     // Update or create preview image
                     if (preview && preview.tagName === 'IMG') {
                         // Update existing image - add timestamp to force reload
+                        console.log('Updating existing IMG element');
                         preview.src = imageUrl + '?t=' + Date.now();
                     } else if (preview && preview.parentNode) {
                         // Replace div with img
+                        console.log('Replacing DIV with IMG element');
                         const img = document.createElement('img');
                         img.id = previewId;
                         img.src = imageUrl;
@@ -2581,8 +2602,11 @@ $csrfToken = generateCSRFToken();
                             ? 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;'
                             : 'width: 200px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
                         preview.parentNode.replaceChild(img, preview);
+                        console.log('Preview image replaced successfully');
                     } else {
                         console.error('Preview element or parent not found');
+                        console.error('Preview:', preview);
+                        console.error('Preview parent:', preview ? preview.parentNode : 'null');
                     }
                     
                     // Show remove button if not visible
@@ -2626,6 +2650,7 @@ $csrfToken = generateCSRFToken();
             })
             .catch(error => {
                 console.error('Upload error:', error);
+                console.error('Error stack:', error.stack);
                 showToast(error.message || 'An error occurred while uploading', 'error');
             });
         }
