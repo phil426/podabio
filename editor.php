@@ -1939,10 +1939,8 @@ $csrfToken = generateCSRFToken();
                     }
                 }
                 
-                // Show overlay
-                if (overlay) {
-                    overlay.classList.add('active');
-                }
+                // Don't show overlay for link-item drawers - they push content down instead
+                // Overlay is only for the main drawer at bottom of screen
                 
                 // Trigger animation after a small delay to ensure DOM is ready
                 requestAnimationFrame(() => {
