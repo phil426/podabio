@@ -1697,9 +1697,35 @@ $csrfToken = generateCSRFToken();
             // Scroll to top and focus the new item
             newLinkItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             
-            // Auto-open the drawer for editing
+            // Populate form for new link
+            const form = document.getElementById('link-form');
+            const titleInput = document.getElementById('link_title');
+            const urlInput = document.getElementById('link_url');
+            const typeSelect = document.getElementById('link_type');
+            const disclosureInput = document.getElementById('link_disclosure');
+            const actionInput = document.getElementById('link-action');
+            const linkIdInput = document.getElementById('link-id');
+            const drawerTitle = document.getElementById('drawer-title');
+            
+            if (form && titleInput && urlInput) {
+                actionInput.value = 'add';
+                linkIdInput.value = tempId;
+                titleInput.value = 'New Link';
+                urlInput.value = 'https://';
+                typeSelect.value = 'custom';
+                
+                if (disclosureInput) {
+                    disclosureInput.value = '';
+                }
+                
+                if (drawerTitle) {
+                    drawerTitle.textContent = 'Add New Link';
+                }
+            }
+            
+            // Open drawer for new link item
             setTimeout(() => {
-                editLink(tempId, newLinkItem.querySelector('button'));
+                openDrawer(newLinkItem);
             }, 100);
         }
         
