@@ -1791,13 +1791,6 @@ $csrfToken = generateCSRFToken();
                 deleteLink(linkId);
             }
         }
-        
-            // Remove editing class from link items
-            document.querySelectorAll('.link-item.editing').forEach(item => {
-                item.classList.remove('editing');
-            });
-            
-            // Remove new class after animation
             document.querySelectorAll('.link-item.new').forEach(item => {
                 setTimeout(() => {
                     item.classList.remove('new');
