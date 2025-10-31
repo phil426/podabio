@@ -83,6 +83,9 @@ $bodyFont = $fonts['body'] ?? 'Inter';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
     <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
@@ -220,8 +223,11 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             color: var(--primary-color);
             text-decoration: none;
             transition: all 0.3s ease;
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .social-icon i {
+            display: block;
         }
         
         .social-icon:hover {
@@ -416,8 +422,15 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                        title="<?php echo h($icon['platform_name']); ?>">
                         <?php
                         // Icon mapping for platforms (social media + podcast platforms)
+                        // All icons use Font Awesome for consistency
                         $platformIcons = [
-                            // Social Media
+                            // Podcast Platforms
+                            'apple_podcasts' => '<i class="fab fa-apple"></i>',
+                            'spotify' => '<i class="fab fa-spotify"></i>',
+                            'youtube_music' => '<i class="fab fa-youtube"></i>',
+                            'iheart_radio' => '<i class="fas fa-heart"></i>',
+                            'amazon_music' => '<i class="fab fa-amazon"></i>',
+                            // Social Media Platforms
                             'facebook' => '<i class="fab fa-facebook"></i>',
                             'twitter' => '<i class="fab fa-twitter"></i>',
                             'instagram' => '<i class="fab fa-instagram"></i>',
@@ -432,13 +445,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                             'github' => '<i class="fab fa-github"></i>',
                             'behance' => '<i class="fab fa-behance"></i>',
                             'dribbble' => '<i class="fab fa-dribbble"></i>',
-                            'medium' => '<i class="fab fa-medium"></i>',
-                            // Podcast Platforms
-                            'apple_podcasts' => '🍎',
-                            'spotify' => '<i class="fab fa-spotify"></i>',
-                            'youtube_music' => '<i class="fab fa-youtube"></i>',
-                            'iheart_radio' => '❤️',
-                            'amazon_music' => '<i class="fab fa-amazon"></i>'
+                            'medium' => '<i class="fab fa-medium"></i>'
                         ];
                         $iconHtml = $platformIcons[strtolower($icon['platform_name'])] ?? '<i class="fas fa-link"></i>';
                         echo $iconHtml;
