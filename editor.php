@@ -1819,11 +1819,13 @@ $csrfToken = generateCSRFToken();
             
             // Close main drawer if open
             const mainDrawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
             if (mainDrawer) {
                 mainDrawer.classList.remove('active');
                 mainDrawer.style.display = 'none';
             }
-            const overlay = document.getElementById('drawer-overlay');
+            
             if (overlay) {
                 overlay.classList.remove('active');
             }
@@ -1844,8 +1846,7 @@ $csrfToken = generateCSRFToken();
             let itemDrawer = linkItem.querySelector('.drawer');
             
             if (!itemDrawer) {
-                // Clone main drawer structure
-                const mainDrawer = document.getElementById('link-drawer');
+                // Clone main drawer structure (reuse mainDrawer variable)
                 if (!mainDrawer) {
                     console.error('Main drawer not found');
                     return;
@@ -1892,8 +1893,7 @@ $csrfToken = generateCSRFToken();
                 }
             }
             
-            // Show overlay
-            const overlay = document.getElementById('drawer-overlay');
+            // Show overlay (reuse existing overlay variable)
             if (overlay) {
                 overlay.classList.add('active');
             }
