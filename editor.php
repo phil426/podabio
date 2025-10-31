@@ -1830,8 +1830,21 @@ $csrfToken = generateCSRFToken();
         };
         
         window.openDrawer = function(linkItem) {
-            // Close all existing drawers first
-            closeDrawer();
+            // Close all existing drawers first (without overlay)
+            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
+                drawer.classList.remove('active');
+                setTimeout(() => {
+                    if (!drawer.classList.contains('active')) {
+                        drawer.remove();
+                        drawer.parentElement.classList.remove('has-drawer');
+                    }
+                }, 300);
+            });
+            
+            const overlay = document.getElementById('drawer-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
             
             // Small delay to ensure previous drawers are closed
             setTimeout(() => {
