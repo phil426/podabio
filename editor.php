@@ -1784,6 +1784,8 @@ $csrfToken = generateCSRFToken();
                 }, 300);
             });
         };
+        
+        window.handleLinkFormSubmit = function(form) {
             const formData = new FormData(form);
             const action = formData.get('action');
             formData.append('action', action === 'update' ? 'update' : 'add');
@@ -1810,6 +1812,8 @@ $csrfToken = generateCSRFToken();
                 showToast('An error occurred', 'error');
             });
         };
+        
+        window.openDrawer = function(linkItem) {
             // Remove any existing drawers from other items
             document.querySelectorAll('.link-item .drawer').forEach(d => {
                 d.classList.remove('active');
