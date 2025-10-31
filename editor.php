@@ -1948,7 +1948,7 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showMessage(data.message || 'Success!', 'success');
+                    showMessage(data.message || 'Widget deleted successfully!', 'success');
                     refreshPreview();
                     // Reload after a short delay to show changes
                     setTimeout(() => location.reload(), 1000);

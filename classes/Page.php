@@ -147,13 +147,53 @@ class Page {
     }
     
     /**
-     * Get page links
+     * Get page links (legacy method - use getWidgets instead)
+     * @param int $pageId
+     * @return array
+     * @deprecated Use getWidgets() instead
+     */
+    public function getLinks($pageId) {
+        // For backward compatibility, return widgets converted to link format
+        $widgets = $this->getWidgets($pageId);
+        $links = [];
+        foreach ($widgets as $widget) {
+            $config = is_string($widget['config_data']) ? json_decode($widget['config_data'], true) : ($widget['config_data'] ?? []);
+            $links[] = [
+                'id' => $widget['id'],
+                'page_id' => $widget['page_id'],
+                'type' => $widget['widget_type'],
+                'title' => $widget['title'],
+                'url' => $config['url'] ?? '',
+                'thumbnail_image' => $config['thumbnail_image'] ?? null,
+                'icon' => $config['icon'] ?? null,
+                'display_order' => $widget['display_order'],
+                'disclosure_text' => $config['disclosure_text'] ?? null,
+                'is_active' => $widget['is_active']
+            ];
+        }
+        return $links;
+    }
+    
+    /**
+     * Get page widgets
      * @param int $pageId
      * @return array
      */
-    public function getLinks($pageId) {
+    public function getWidgets($pageId) {
         return fetchAll(
-            "SELECT * FROM links WHERE page_id = ? AND is_active = 1 ORDER BY display_order ASC",
+            "SELECT * FROM widgets WHERE page_id = ? AND is_active = 1 ORDER BY display_order ASC",
+            [$pageId]
+        );
+    }
+    
+    /**
+     * Get all widgets for a page (including inactive)
+     * @param int $pageId
+     * @return array
+     */
+    public function getAllWidgets($pageId) {
+        return fetchAll(
+            "SELECT * FROM widgets WHERE page_id = ? ORDER BY display_order ASC",
             [$pageId]
         );
     }
@@ -456,6 +496,162 @@ class Page {
      */
     public function deletePodcastDirectory($iconId, $pageId) {
         return $this->deleteSocialIcon($iconId, $pageId);
+    }
+    
+    /**
+     * Add widget to page
+     * @param int $pageId
+     * @param string $widgetType
+     * @param string $title
+     * @param array $configData
+     * @return array ['success' => bool, 'widget_id' => int|null, 'error' => string|null]
+     */
+    public function addWidget($pageId, $widgetType, $title, $configData = []) {
+        if (empty($title) || empty($widgetType)) {
+            return ['success' => false, 'widget_id' => null, 'error' => 'Title and widget type are required'];
+        }
+        
+        // Get max display order
+        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM widgets WHERE page_id = ?", [$pageId]);
+        $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
+        
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO widgets (page_id, widget_type, title, config_data, display_order, is_active)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $pageId,
+                $widgetType,
+                $title,
+                json_encode($configData),
+                $displayOrder,
+                1
+            ]);
+            
+            $widgetId = $this->pdo->lastInsertId();
+            return ['success' => true, 'widget_id' => $widgetId, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Widget creation failed: " . $e->getMessage());
+            return ['success' => false, 'widget_id' => null, 'error' => 'Failed to create widget'];
+        }
+    }
+    
+    /**
+     * Update widget
+     * @param int $widgetId
+     * @param int $pageId
+     * @param array $data
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function updateWidget($widgetId, $pageId, $data) {
+        $updates = [];
+        $params = [];
+        
+        if (isset($data['title'])) {
+            $updates[] = "title = ?";
+            $params[] = $data['title'];
+        }
+        
+        if (isset($data['widget_type'])) {
+            $updates[] = "widget_type = ?";
+            $params[] = $data['widget_type'];
+        }
+        
+        if (isset($data['config_data'])) {
+            $updates[] = "config_data = ?";
+            $params[] = is_array($data['config_data']) ? json_encode($data['config_data']) : $data['config_data'];
+        }
+        
+        if (isset($data['is_active'])) {
+            $updates[] = "is_active = ?";
+            $params[] = (int)$data['is_active'];
+        }
+        
+        if (empty($updates)) {
+            return ['success' => false, 'error' => 'No fields to update'];
+        }
+        
+        $params[] = $widgetId;
+        $params[] = $pageId;
+        
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE widgets SET " . implode(', ', $updates) . " 
+                WHERE id = ? AND page_id = ?
+            ");
+            $stmt->execute($params);
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Widget update failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to update widget'];
+        }
+    }
+    
+    /**
+     * Delete widget
+     * @param int $widgetId
+     * @param int $pageId
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function deleteWidget($widgetId, $pageId) {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM widgets WHERE id = ? AND page_id = ?");
+            $stmt->execute([$widgetId, $pageId]);
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Widget deletion failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to delete widget'];
+        }
+    }
+    
+    /**
+     * Get widget by ID
+     * @param int $widgetId
+     * @param int $pageId
+     * @return array|null
+     */
+    public function getWidget($widgetId, $pageId) {
+        return fetchOne(
+            "SELECT * FROM widgets WHERE id = ? AND page_id = ?",
+            [$widgetId, $pageId]
+        );
+    }
+    
+    /**
+     * Update widget display order
+     * @param int $pageId
+     * @param array $orders Array of ['widget_id' => int, 'display_order' => int]
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function updateWidgetOrder($pageId, $orders) {
+        try {
+            $this->pdo->beginTransaction();
+            
+            foreach ($orders as $order) {
+                if (!isset($order['widget_id']) || !isset($order['display_order'])) {
+                    continue;
+                }
+                
+                $stmt = $this->pdo->prepare("
+                    UPDATE widgets 
+                    SET display_order = ? 
+                    WHERE id = ? AND page_id = ?
+                ");
+                $stmt->execute([
+                    (int)$order['display_order'],
+                    (int)$order['widget_id'],
+                    $pageId
+                ]);
+            }
+            
+            $this->pdo->commit();
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            error_log("Widget order update failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to update widget order'];
+        }
     }
 }
 

@@ -39,7 +39,9 @@ $analytics = new Analytics();
 $analytics->trackView($page['id']);
 
 // Get page data
-$links = $pageClass->getLinks($page['id']);
+require_once __DIR__ . '/classes/WidgetRenderer.php';
+$widgets = $pageClass->getWidgets($page['id']);
+$links = $pageClass->getLinks($page['id']); // Legacy support
 $episodes = $pageClass->getEpisodes($page['id'], 10);
 $socialIcons = $pageClass->getSocialIcons($page['id']);
 
@@ -201,6 +203,56 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .widget-title {
             font-weight: 600;
             margin: 0 0 0.25rem 0;
+        }
+        
+        /* Video widget styles */
+        .widget-video {
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+        
+        .widget-video-embed {
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        
+        .widget-video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Text/HTML widget styles */
+        .widget-text {
+            text-align: left;
+        }
+        
+        .widget-text-content {
+            padding: 1rem;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        /* Image widget styles */
+        .widget-image {
+            padding: 0;
+            border: none;
+            background: transparent;
+            display: block;
+        }
+        
+        .widget-image-content {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
         }
         
         .social-icons {
@@ -456,21 +508,31 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         <?php endif; ?>
         
         <div class="widgets-container">
-            <?php foreach ($links as $link): ?>
-                <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
-                   class="widget-item" 
-                   target="_blank" 
-                   rel="noopener noreferrer">
-                    <?php if ($link['thumbnail_image']): ?>
-                        <img src="<?php echo h($link['thumbnail_image']); ?>" 
-                             alt="<?php echo h($link['title']); ?>" 
-                             class="widget-thumbnail">
-                    <?php endif; ?>
-                    <div class="widget-content">
-                        <div class="widget-title"><?php echo h($link['title']); ?></div>
-                    </div>
-                </a>
-            <?php endforeach; ?>
+            <?php 
+            // Render widgets using WidgetRenderer
+            if (!empty($widgets)):
+                foreach ($widgets as $widget): 
+                    $widget['page_id'] = $page['id']; // Ensure page_id is set for renderer
+                    echo WidgetRenderer::render($widget);
+                endforeach;
+            // Fallback to legacy links if no widgets exist
+            elseif (!empty($links)):
+                foreach ($links as $link): ?>
+                    <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
+                       class="widget-item" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                        <?php if ($link['thumbnail_image']): ?>
+                            <img src="<?php echo h($link['thumbnail_image']); ?>" 
+                                 alt="<?php echo h($link['title']); ?>" 
+                                 class="widget-thumbnail">
+                        <?php endif; ?>
+                        <div class="widget-content">
+                            <div class="widget-title"><?php echo h($link['title']); ?></div>
+                        </div>
+                    </a>
+                <?php endforeach;
+            endif; ?>
             
             <?php if (!empty($episodes)): ?>
                 <button onclick="openEpisodeDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
