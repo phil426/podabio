@@ -417,6 +417,96 @@ $csrfToken = generateCSRFToken();
             border: 1px solid #bee5eb;
         }
         
+        /* Drawer Slider */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 2001;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        
+        .drawer.active {
+            transform: translateY(0);
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .drawer-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        
+        .drawer-close:hover {
+            color: #111827;
+        }
+        
+        .link-item.editing {
+            border: 2px solid #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        
+        .link-item.new {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         /* Right Preview Panel */
         .preview-panel {
             width: 400px;
@@ -519,7 +609,7 @@ $csrfToken = generateCSRFToken();
                 <?php if ($page): ?>
                     <a href="javascript:void(0)" class="nav-item active" onclick="showSection('links', this)">
                         <i class="fas fa-link"></i>
-                        <span>Links</span>
+                        <span>Content</span>
                     </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('podcast-directories', this)">
                         <i class="fas fa-list"></i>
@@ -616,15 +706,15 @@ $csrfToken = generateCSRFToken();
                 <?php else: ?>
                     <!-- Links Tab -->
                     <div id="tab-links" class="tab-content active">
-            <h2>Manage Links</h2>
+            <h2>Manage Links & Blocks</h2>
             
             <div style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="showAddLinkForm()">Add New Link</button>
+                <button class="btn btn-primary" onclick="showAddLinkForm()">Add New Link or Block</button>
             </div>
             
             <ul id="links-list" class="links-list">
                 <?php if (empty($links)): ?>
-                    <li>No links yet. Click "Add New Link" to get started.</li>
+                    <li>No links or blocks yet. Click "Add New Link or Block" to get started.</li>
                 <?php else: ?>
                     <?php foreach ($links as $link): ?>
                         <li class="link-item" data-link-id="<?php echo $link['id']; ?>">
@@ -633,7 +723,7 @@ $csrfToken = generateCSRFToken();
                                 <div class="link-url"><?php echo h($link['url']); ?></div>
                             </div>
                             <div class="link-actions">
-                                <button class="btn btn-secondary btn-small" onclick="editLink(<?php echo $link['id']; ?>)">Edit</button>
+                                <button class="btn btn-secondary btn-small" onclick="editLink(<?php echo $link['id']; ?>, this)">Edit</button>
                                 <button class="btn btn-danger btn-small" onclick="deleteLink(<?php echo $link['id']; ?>)">Delete</button>
                             </div>
                         </li>
@@ -1179,13 +1269,18 @@ $csrfToken = generateCSRFToken();
         </div>
     </div>
     
-    <!-- Add/Edit Link Modal (simple form) -->
-    <div id="link-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:8px; max-width:500px; width:90%;">
-            <h2 id="modal-title">Add Link</h2>
+        <!-- Edit Link Drawer Slider -->
+        <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+        <div id="link-drawer" class="drawer">
+            <div class="drawer-header">
+                <h2 id="drawer-title">Edit Link</h2>
+                <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <form id="link-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                <input type="hidden" name="action" id="link-action" value="add">
+                <input type="hidden" name="action" id="link-action" value="update">
                 <input type="hidden" name="link_id" id="link-id">
                 
                 <div class="form-group">
@@ -1215,13 +1310,12 @@ $csrfToken = generateCSRFToken();
                     <textarea id="link_disclosure" name="disclosure_text" rows="2"></textarea>
                 </div>
                 
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeLinkModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDrawer()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
-    </div>
     
     <script>
         const csrfToken = '<?php echo h($csrfToken); ?>';
@@ -1291,19 +1385,120 @@ $csrfToken = generateCSRFToken();
         });
         
         function showAddLinkForm() {
-            document.getElementById('modal-title').textContent = 'Add Link';
-            document.getElementById('link-action').value = 'add';
-            document.getElementById('link-form').reset();
-            document.getElementById('link-id').value = '';
-            document.getElementById('link-modal').style.display = 'block';
+            // Add a blank new link item to the top of the list
+            const linksList = document.getElementById('links-list');
+            if (!linksList) return;
+            
+            // Remove "no links" message if present
+            const noLinksMsg = linksList.querySelector('li:not(.link-item)');
+            if (noLinksMsg && !noLinksMsg.classList.contains('link-item')) {
+                noLinksMsg.remove();
+            }
+            
+            // Generate a temporary ID (negative number to indicate it's new)
+            const tempId = -(Date.now());
+            
+            // Create new link item
+            const newLinkItem = document.createElement('li');
+            newLinkItem.className = 'link-item new';
+            newLinkItem.setAttribute('data-link-id', tempId);
+            newLinkItem.innerHTML = `
+                <div class="link-info">
+                    <div class="link-title">New Link</div>
+                    <div class="link-url">https://</div>
+                </div>
+                <div class="link-actions">
+                    <button class="btn btn-secondary btn-small" onclick="editLink(${tempId}, this)">Edit</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteTempLink(this)">Delete</button>
+                </div>
+            `;
+            
+            // Insert at the top
+            linksList.insertBefore(newLinkItem, linksList.firstChild);
+            
+            // Scroll to top and focus the new item
+            newLinkItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Auto-open the drawer for editing
+            setTimeout(() => {
+                editLink(tempId, newLinkItem.querySelector('button'));
+            }, 100);
         }
         
-        function closeLinkModal() {
-            document.getElementById('link-modal').style.display = 'none';
+        function deleteTempLink(button) {
+            const linkItem = button.closest('.link-item');
+            const linkId = linkItem.getAttribute('data-link-id');
+            
+            // If it's a temporary (negative) ID, just remove from DOM
+            if (linkId && parseInt(linkId) < 0) {
+                linkItem.remove();
+                
+                // Show "no links" message if list is empty
+                const linksList = document.getElementById('links-list');
+                if (linksList && linksList.children.length === 0) {
+                    linksList.innerHTML = '<li>No links or blocks yet. Click "Add New Link or Block" to get started.</li>';
+                }
+            } else {
+                // It's a real link, use the delete function
+                deleteLink(linkId);
+            }
         }
         
-        function editLink(linkId) {
-            // Fetch link data
+        function closeDrawer() {
+            const drawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+            
+            // Remove editing class from link items
+            document.querySelectorAll('.link-item.editing').forEach(item => {
+                item.classList.remove('editing');
+            });
+            
+            // Remove new class after animation
+            document.querySelectorAll('.link-item.new').forEach(item => {
+                setTimeout(() => {
+                    item.classList.remove('new');
+                }, 300);
+            });
+        }
+        
+        function openDrawer() {
+            const drawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+        }
+        
+        function editLink(linkId, buttonElement) {
+            const linkItem = buttonElement ? buttonElement.closest('.link-item') : document.querySelector(`[data-link-id="${linkId}"]`);
+            
+            if (!linkItem) return;
+            
+            // Mark the item as being edited
+            document.querySelectorAll('.link-item.editing').forEach(item => {
+                item.classList.remove('editing');
+            });
+            linkItem.classList.add('editing');
+            
+            // Check if it's a new temporary link (negative ID)
+            if (parseInt(linkId) < 0) {
+                // New link - populate with defaults
+                document.getElementById('drawer-title').textContent = 'Add Link or Block';
+                document.getElementById('link-action').value = 'add';
+                document.getElementById('link-id').value = '';
+                document.getElementById('link_type').value = 'custom';
+                document.getElementById('link_title').value = 'New Link';
+                document.getElementById('link_url').value = 'https://';
+                document.getElementById('link_disclosure').value = '';
+                
+                openDrawer();
+                return;
+            }
+            
+            // Existing link - fetch data
             const formData = new FormData();
             formData.append('action', 'get');
             formData.append('link_id', linkId);
@@ -1317,32 +1512,49 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success && data.link) {
                     const link = data.link;
-                    document.getElementById('modal-title').textContent = 'Edit Link';
+                    document.getElementById('drawer-title').textContent = 'Edit Link';
                     document.getElementById('link-action').value = 'update';
                     document.getElementById('link-id').value = link.id;
-                    document.getElementById('link_type').value = link.type;
-                    document.getElementById('link_title').value = link.title;
-                    document.getElementById('link_url').value = link.url;
+                    document.getElementById('link_type').value = link.type || 'custom';
+                    document.getElementById('link_title').value = link.title || '';
+                    document.getElementById('link_url').value = link.url || '';
                     document.getElementById('link_disclosure').value = link.disclosure_text || '';
-                    document.getElementById('link-modal').style.display = 'block';
+                    
+                    openDrawer();
                 } else {
                     // Fallback: Get from page load
-                    const linkElement = document.querySelector(`[data-link-id="${linkId}"]`);
-                    if (linkElement) {
-                        const title = linkElement.querySelector('.link-title').textContent;
-                        const url = linkElement.querySelector('.link-url').textContent;
-                        document.getElementById('modal-title').textContent = 'Edit Link';
+                    const titleEl = linkItem.querySelector('.link-title');
+                    const urlEl = linkItem.querySelector('.link-url');
+                    
+                    if (titleEl && urlEl) {
+                        document.getElementById('drawer-title').textContent = 'Edit Link';
                         document.getElementById('link-action').value = 'update';
                         document.getElementById('link-id').value = linkId;
-                        document.getElementById('link_title').value = title.trim();
-                        document.getElementById('link_url').value = url.trim();
-                        document.getElementById('link-modal').style.display = 'block';
+                        document.getElementById('link_type').value = 'custom';
+                        document.getElementById('link_title').value = titleEl.textContent.trim();
+                        document.getElementById('link_url').value = urlEl.textContent.trim();
+                        document.getElementById('link_disclosure').value = '';
+                        
+                        openDrawer();
                     }
                 }
             })
             .catch(() => {
                 // Fallback approach
-                alert('Could not load link data. Please try refreshing the page.');
+                const titleEl = linkItem.querySelector('.link-title');
+                const urlEl = linkItem.querySelector('.link-url');
+                
+                if (titleEl && urlEl) {
+                    document.getElementById('drawer-title').textContent = 'Edit Link';
+                    document.getElementById('link-action').value = 'update';
+                    document.getElementById('link-id').value = linkId;
+                    document.getElementById('link_type').value = 'custom';
+                    document.getElementById('link_title').value = titleEl.textContent.trim();
+                    document.getElementById('link_url').value = urlEl.textContent.trim();
+                    document.getElementById('link_disclosure').value = '';
+                    
+                    openDrawer();
+                }
             });
         }
         
@@ -1406,7 +1618,7 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    closeLinkModal();
+                    closeDrawer();
                     showMessage('Link saved successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
@@ -1420,15 +1632,15 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        // Close modal on outside click
-        const linkModal = document.getElementById('link-modal');
-        if (linkModal) {
-            linkModal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeLinkModal();
+        // Handle Escape key to close drawer
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const drawer = document.getElementById('link-drawer');
+                if (drawer && drawer.classList.contains('active')) {
+                    closeDrawer();
                 }
-            });
-        }
+            }
+        });
         
         // Drag and drop functionality
         let draggedElement = null;
