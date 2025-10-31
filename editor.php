@@ -2345,6 +2345,14 @@ $csrfToken = generateCSRFToken();
                 });
             }
             
+            // For podcast player, also include description if it exists
+            if (widgetType === 'podcast_player') {
+                const descField = document.getElementById('widget_config_description');
+                if (descField && descField.value) {
+                    configData['description'] = descField.value.trim();
+                }
+            }
+            
             requestData.append('config_data', JSON.stringify(configData));
             
             if (action === 'update' && widgetId) {
@@ -2459,8 +2467,21 @@ $csrfToken = generateCSRFToken();
                         <div class="form-group">
                             <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
                             <input type="text" id="widget_config_title" name="title" required value="${(widget.title || '').replace(/"/g, '&quot;')}">
+                            ${widget.widget_type === 'podcast_player' ? '<small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>' : ''}
                         </div>
                     `;
+                    
+                    // Add description field for podcast player (auto-populated)
+                    if (widget.widget_type === 'podcast_player') {
+                        const descValue = (configData['description'] || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_description">Description</label>
+                                <textarea id="widget_config_description" name="description" rows="3" placeholder="Will be auto-populated from RSS feed">${descValue}</textarea>
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Description from RSS feed</small>
+                            </div>
+                        `;
+                    }
                     
                     // Widget-specific fields
                     if (widgetDef && widgetDef.config_fields) {
@@ -2524,6 +2545,11 @@ $csrfToken = generateCSRFToken();
                     }
                     
                     openWidgetModal();
+                    
+                    // Set up RSS feed auto-population for podcast player
+                    if (widget.widget_type === 'podcast_player') {
+                        setupRSSAutoPopulate();
+                    }
                 } else {
                     showToast('Failed to load widget data', 'error');
                 }
