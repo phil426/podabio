@@ -682,9 +682,63 @@ $csrfToken = generateCSRFToken();
             background: #ffffff;
         }
         
-        /* Remove the link-item drawer positioning - use bottom drawer only */
         .link-item {
             position: relative;
+        }
+        
+        /* Link-item specific drawer - slides from bottom of item */
+        .link-item .drawer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+            z-index: 2002;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 70vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .link-item .drawer.active {
+            transform: translateY(0);
+        }
+        
+        .link-item .drawer .drawer-handle {
+            width: 40px;
+            height: 4px;
+            background: #d1d5db;
+            border-radius: 2px;
+            margin: 12px auto 0;
+            cursor: grab;
+        }
+        
+        .link-item .drawer .drawer-handle:active {
+            cursor: grabbing;
+        }
+        
+        .link-item .drawer .drawer-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 1.25rem 1.25rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .link-item .drawer .drawer-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f3f4f6;
+            flex-shrink: 0;
+        }
+        
+        .link-item .drawer .drawer-actions {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #f3f4f6;
+            flex-shrink: 0;
+            background: #ffffff;
         }
         
         .link-item.editing {
@@ -1669,17 +1723,22 @@ $csrfToken = generateCSRFToken();
         }
         
         function closeDrawer() {
-            const drawer = document.getElementById('link-drawer');
-            const overlay = document.getElementById('drawer-overlay');
+            // Close all item-specific drawers
+            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
+                drawer.classList.remove('active');
+                drawer.parentElement.classList.remove('has-drawer');
+            });
             
+            // Close main drawer
+            const drawer = document.getElementById('link-drawer');
             if (drawer) {
                 drawer.classList.remove('active');
-                // Hide drawer after animation completes
                 setTimeout(() => {
                     drawer.style.display = 'none';
                 }, 300);
             }
             
+            const overlay = document.getElementById('drawer-overlay');
             if (overlay) {
                 overlay.classList.remove('active');
             }
@@ -1726,23 +1785,96 @@ $csrfToken = generateCSRFToken();
         }
         
         function openDrawer(linkItem) {
-            const drawer = document.getElementById('link-drawer');
-            const overlay = document.getElementById('drawer-overlay');
+            // Remove any existing drawers from other items
+            document.querySelectorAll('.link-item .drawer').forEach(d => {
+                d.classList.remove('active');
+                d.parentElement.classList.remove('has-drawer');
+            });
             
-            if (!drawer || !overlay) {
-                console.error('Drawer elements not found');
+            // Close main drawer if open
+            const mainDrawer = document.getElementById('link-drawer');
+            if (mainDrawer) {
+                mainDrawer.classList.remove('active');
+                mainDrawer.style.display = 'none';
+            }
+            const overlay = document.getElementById('drawer-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            
+            if (!linkItem) {
+                // Fallback to main drawer at bottom of screen
+                if (mainDrawer && overlay) {
+                    mainDrawer.style.display = 'flex';
+                    overlay.classList.add('active');
+                    setTimeout(() => {
+                        mainDrawer.classList.add('active');
+                    }, 10);
+                }
                 return;
             }
             
-            // Show drawer
-            drawer.style.display = 'flex';
+            // Get or create drawer for this link-item
+            let itemDrawer = linkItem.querySelector('.drawer');
             
-            // Show overlay first
-            overlay.classList.add('active');
+            if (!itemDrawer) {
+                // Clone main drawer structure
+                const mainDrawer = document.getElementById('link-drawer');
+                if (!mainDrawer) {
+                    console.error('Main drawer not found');
+                    return;
+                }
+                
+                itemDrawer = mainDrawer.cloneNode(true);
+                itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
+                itemDrawer.style.display = 'flex';
+                
+                // Copy form event listener
+                const form = itemDrawer.querySelector('#link-form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        handleLinkFormSubmit(form);
+                    });
+                }
+                
+                linkItem.appendChild(itemDrawer);
+            }
             
-            // Then show drawer with animation
+            linkItem.classList.add('has-drawer');
+            
+            // Copy form values from main drawer to item drawer
+            const mainForm = document.getElementById('link-form');
+            const mainDrawerTitle = document.getElementById('drawer-title');
+            const itemForm = itemDrawer.querySelector('#link-form');
+            const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
+            
+            if (mainForm && itemForm) {
+                itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
+                itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
+                itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
+                itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
+                itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
+                const mainDisclosure = mainForm.querySelector('#link_disclosure');
+                const itemDisclosure = itemForm.querySelector('#link_disclosure');
+                if (mainDisclosure && itemDisclosure) {
+                    itemDisclosure.value = mainDisclosure.value;
+                }
+                
+                if (mainDrawerTitle && itemDrawerTitle) {
+                    itemDrawerTitle.textContent = mainDrawerTitle.textContent;
+                }
+            }
+            
+            // Show overlay
+            const overlay = document.getElementById('drawer-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
+            
+            // Show drawer with animation
             setTimeout(() => {
-                drawer.classList.add('active');
+                itemDrawer.classList.add('active');
             }, 10);
         }
         
