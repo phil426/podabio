@@ -52,30 +52,32 @@ define('BACKGROUND_IMAGE_MAX_HEIGHT', 1080);
 define('ITEMS_PER_PAGE', 20);
 define('EPISODES_PER_PAGE', 10);
 
-// Podcast directory platforms
-define('PODCAST_PLATFORMS', [
-    'amazon_music' => 'Amazon Music',
-    'apple_podcasts' => 'Apple Podcasts',
-    'spotify' => 'Spotify',
-    'castbox' => 'Castbox',
-    'good_pods' => 'Good Pods',
-    'iheart_radio' => 'I Heart Radio',
-    'overcast' => 'Overcast',
-    'pocket_casts' => 'Pocket Casts'
-]);
-
 // Social media platforms
 define('SOCIAL_PLATFORMS', [
     'facebook' => 'Facebook',
-    'twitter' => 'Twitter/X',
+    'twitter' => 'Twitter / X',
     'instagram' => 'Instagram',
-    'tiktok' => 'TikTok',
-    'youtube' => 'YouTube',
     'linkedin' => 'LinkedIn',
-    'pinterest' => 'Pinterest',
+    'youtube' => 'YouTube',
+    'tiktok' => 'TikTok',
     'snapchat' => 'Snapchat',
+    'pinterest' => 'Pinterest',
+    'reddit' => 'Reddit',
+    'discord' => 'Discord',
     'twitch' => 'Twitch',
-    'discord' => 'Discord'
+    'github' => 'GitHub',
+    'behance' => 'Behance',
+    'dribbble' => 'Dribbble',
+    'medium' => 'Medium'
+]);
+
+// Podcast platforms (for social icons)
+define('PODCAST_PLATFORMS', [
+    'apple_podcasts' => 'Apple Podcasts',
+    'spotify' => 'Spotify',
+    'youtube_music' => 'YouTube Music',
+    'iheart_radio' => 'iHeart Radio',
+    'amazon_music' => 'Amazon Music'
 ]);
 
 // Email service providers

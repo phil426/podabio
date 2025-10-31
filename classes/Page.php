@@ -365,24 +365,24 @@ class Page {
     }
     
     /**
-     * Add podcast directory link
+     * Add social icon link
      * @param int $pageId
      * @param string $platformName
      * @param string $url
-     * @return array ['success' => bool, 'directory_id' => int|null, 'error' => string|null]
+     * @return array ['success' => bool, 'icon_id' => int|null, 'error' => string|null]
      */
-    public function addPodcastDirectory($pageId, $platformName, $url) {
+    public function addSocialIcon($pageId, $platformName, $url) {
         if (empty($platformName) || empty($url)) {
-            return ['success' => false, 'directory_id' => null, 'error' => 'Platform name and URL are required'];
+            return ['success' => false, 'icon_id' => null, 'error' => 'Platform name and URL are required'];
         }
         
         // Get max display order
-        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM podcast_directories WHERE page_id = ?", [$pageId]);
+        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM social_icons WHERE page_id = ?", [$pageId]);
         $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
         
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO podcast_directories (page_id, platform_name, url, icon, display_order)
+                INSERT INTO social_icons (page_id, platform_name, url, icon, display_order)
                 VALUES (?, ?, ?, ?, ?)
             ");
             $stmt->execute([
@@ -393,45 +393,69 @@ class Page {
                 $displayOrder
             ]);
             
-            $directoryId = $this->pdo->lastInsertId();
-            return ['success' => true, 'directory_id' => $directoryId, 'error' => null];
+            $iconId = $this->pdo->lastInsertId();
+            return ['success' => true, 'icon_id' => $iconId, 'error' => null];
         } catch (PDOException $e) {
-            error_log("Podcast directory creation failed: " . $e->getMessage());
-            return ['success' => false, 'directory_id' => null, 'error' => 'Failed to create podcast directory link'];
+            error_log("Social icon creation failed: " . $e->getMessage());
+            return ['success' => false, 'icon_id' => null, 'error' => 'Failed to create social icon link'];
         }
     }
     
     /**
-     * Get podcast directories for page
+     * Get social icons for page
      * @param int $pageId
      * @return array
      */
-    public function getPodcastDirectories($pageId) {
+    public function getSocialIcons($pageId) {
         return fetchAll(
-            "SELECT * FROM podcast_directories WHERE page_id = ? ORDER BY display_order ASC",
+            "SELECT * FROM social_icons WHERE page_id = ? ORDER BY display_order ASC",
             [$pageId]
         );
     }
     
     /**
-     * Delete podcast directory
-     * @param int $directoryId
+     * Delete social icon
+     * @param int $iconId
      * @param int $pageId
      * @return array ['success' => bool, 'error' => string|null]
      */
-    public function deletePodcastDirectory($directoryId, $pageId) {
-        $directory = fetchOne("SELECT id FROM podcast_directories WHERE id = ? AND page_id = ?", [$directoryId, $pageId]);
-        if (!$directory) {
-            return ['success' => false, 'error' => 'Directory not found'];
+    public function deleteSocialIcon($iconId, $pageId) {
+        $icon = fetchOne("SELECT id FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
+        if (!$icon) {
+            return ['success' => false, 'error' => 'Social icon not found'];
         }
         
         try {
-            executeQuery("DELETE FROM podcast_directories WHERE id = ? AND page_id = ?", [$directoryId, $pageId]);
+            executeQuery("DELETE FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
             return ['success' => true, 'error' => null];
         } catch (PDOException $e) {
-            error_log("Podcast directory deletion failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to delete directory'];
+            error_log("Social icon deletion failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to delete social icon'];
         }
+    }
+    
+    /**
+     * Legacy method: Add podcast directory link (for backwards compatibility)
+     * @deprecated Use addSocialIcon() instead
+     */
+    public function addPodcastDirectory($pageId, $platformName, $url) {
+        return $this->addSocialIcon($pageId, $platformName, $url);
+    }
+    
+    /**
+     * Legacy method: Get podcast directories (for backwards compatibility)
+     * @deprecated Use getSocialIcons() instead
+     */
+    public function getPodcastDirectories($pageId) {
+        return $this->getSocialIcons($pageId);
+    }
+    
+    /**
+     * Legacy method: Delete podcast directory (for backwards compatibility)
+     * @deprecated Use deleteSocialIcon() instead
+     */
+    public function deletePodcastDirectory($iconId, $pageId) {
+        return $this->deleteSocialIcon($iconId, $pageId);
     }
 }
 

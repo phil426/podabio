@@ -106,12 +106,12 @@ $page = $pageClass->getByUserId($userId);
 // If no page exists, we'll show the page creation form instead of redirecting
 $pageId = null;
 $links = [];
-$podcastDirectories = [];
+$socialIcons = [];
 
 if ($page) {
     $pageId = $page['id'];
     $links = $pageClass->getAllLinks($pageId);
-    $podcastDirectories = $pageClass->getPodcastDirectories($pageId);
+    $socialIcons = $pageClass->getSocialIcons($pageId);
 }
 
 // Get themes
@@ -908,9 +908,9 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-link"></i>
                         <span>Content</span>
                     </a>
-                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('podcast-directories', this)">
-                        <i class="fas fa-list"></i>
-                        <span>Podcast Directories</span>
+                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('social-icons', this)">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Social Icons</span>
                     </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('settings', this)">
                         <i class="fas fa-cog"></i>
@@ -1033,27 +1033,27 @@ $csrfToken = generateCSRFToken();
             </ul>
         </div>
         
-        <!-- Podcast Directories Tab -->
-        <div id="tab-podcast-directories" class="tab-content">
-            <h2>Podcast Directory Links</h2>
-            <p style="margin-bottom: 20px; color: #666;">Add links to your podcast on popular directories like Apple Podcasts, Spotify, and more.</p>
+        <!-- Social Icons Tab -->
+        <div id="tab-social-icons" class="tab-content">
+            <h2>Social Icons</h2>
+            <p style="margin-bottom: 20px; color: #666;">Add links to your social media profiles and platforms.</p>
             
             <div style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="showAddDirectoryForm()">Add Directory Link</button>
+                <button class="btn btn-primary" onclick="showAddDirectoryForm()">Add Social Icon</button>
             </div>
             
             <ul id="directories-list" class="links-list">
-                <?php if (empty($podcastDirectories)): ?>
-                    <li>No podcast directory links yet. Click "Add Directory Link" to get started.</li>
+                <?php if (empty($socialIcons)): ?>
+                    <li>No social icons yet. Click "Add Social Icon" to get started.</li>
                 <?php else: ?>
-                    <?php foreach ($podcastDirectories as $directory): ?>
-                        <li class="link-item" data-directory-id="<?php echo $directory['id']; ?>">
+                    <?php foreach ($socialIcons as $icon): ?>
+                        <li class="link-item" data-directory-id="<?php echo $icon['id']; ?>">
                             <div class="link-info">
-                                <div class="link-title"><?php echo h($directory['platform_name']); ?></div>
-                                <div class="link-url"><?php echo h($directory['url']); ?></div>
+                                <div class="link-title"><?php echo h($icon['platform_name']); ?></div>
+                                <div class="link-url"><?php echo h($icon['url']); ?></div>
                             </div>
                             <div class="link-actions">
-                                <button class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $directory['id']; ?>)">Delete</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
                             </div>
                         </li>
                     <?php endforeach; ?>
@@ -1544,7 +1544,7 @@ $csrfToken = generateCSRFToken();
     <!-- Add Directory Modal -->
     <div id="directory-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:8px; max-width:500px; width:90%;">
-            <h2>Add Podcast Directory Link</h2>
+            <h2>Add Social Icon</h2>
             <form id="directory-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 
@@ -1554,17 +1554,28 @@ $csrfToken = generateCSRFToken();
                         <option value="">Select Platform</option>
                         <?php
                         $platforms = [
+                            // Social Media Platforms
+                            'facebook' => 'Facebook',
+                            'twitter' => 'Twitter / X',
+                            'instagram' => 'Instagram',
+                            'linkedin' => 'LinkedIn',
+                            'youtube' => 'YouTube',
+                            'tiktok' => 'TikTok',
+                            'snapchat' => 'Snapchat',
+                            'pinterest' => 'Pinterest',
+                            'reddit' => 'Reddit',
+                            'discord' => 'Discord',
+                            'twitch' => 'Twitch',
+                            'github' => 'GitHub',
+                            'behance' => 'Behance',
+                            'dribbble' => 'Dribbble',
+                            'medium' => 'Medium',
+                            // Podcast Platforms
                             'apple_podcasts' => 'Apple Podcasts',
                             'spotify' => 'Spotify',
                             'youtube_music' => 'YouTube Music',
-                            'amazon_music' => 'Amazon Music',
-                            'audible' => 'Audible',
-                            'tunein' => 'TuneIn Radio',
-                            'castbox' => 'Castbox',
-                            'good_pods' => 'Good Pods',
-                            'iheart_radio' => 'I Heart Radio',
-                            'overcast' => 'Overcast',
-                            'pocket_casts' => 'Pocket Casts'
+                            'iheart_radio' => 'iHeart Radio',
+                            'amazon_music' => 'Amazon Music'
                         ];
                         foreach ($platforms as $key => $name):
                         ?>
@@ -1580,7 +1591,7 @@ $csrfToken = generateCSRFToken();
                 
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="closeDirectoryModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Directory</button>
+                    <button type="submit" class="btn btn-primary">Add Social Icon</button>
                 </div>
             </form>
         </div>
@@ -2763,7 +2774,7 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        // Podcast Directory Management
+        // Social Icons Management
         function showAddDirectoryForm() {
             document.getElementById('directory-form').reset();
             document.getElementById('directory-modal').style.display = 'block';
@@ -2774,7 +2785,7 @@ $csrfToken = generateCSRFToken();
         }
         
         function deleteDirectory(directoryId) {
-            if (!confirm('Are you sure you want to delete this directory link?')) {
+            if (!confirm('Are you sure you want to delete this social icon?')) {
                 return;
             }
             
@@ -2790,11 +2801,11 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showMessage('Directory deleted successfully!', 'success');
+                    showMessage('Social icon deleted successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage(data.error || 'Failed to delete directory', 'error');
+                    showMessage(data.error || 'Failed to delete social icon', 'error');
                 }
             })
             .catch(() => {
@@ -2819,11 +2830,11 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     closeDirectoryModal();
-                    showMessage('Directory added successfully!', 'success');
+                    showMessage('Social icon added successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage(data.error || 'Failed to add directory', 'error');
+                    showMessage(data.error || 'Failed to add social icon', 'error');
                 }
             })
             .catch(() => {

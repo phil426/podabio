@@ -41,7 +41,7 @@ $analytics->trackView($page['id']);
 // Get page data
 $links = $pageClass->getLinks($page['id']);
 $episodes = $pageClass->getEpisodes($page['id'], 10);
-$podcastDirectories = $pageClass->getPodcastDirectories($page['id']);
+$socialIcons = $pageClass->getSocialIcons($page['id']);
 
 // Get theme
 $theme = null;
@@ -200,7 +200,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             margin: 0 0 0.25rem 0;
         }
         
-        .podcast-directories {
+        .social-icons {
             display: flex;
             flex-wrap: wrap;
             gap: 0.75rem;
@@ -208,7 +208,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             margin: 1.5rem 0;
         }
         
-        .directory-icon {
+        .social-icon {
             width: 48px;
             height: 48px;
             border-radius: 8px;
@@ -224,7 +224,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             font-weight: bold;
         }
         
-        .directory-icon:hover {
+        .social-icon:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
@@ -405,32 +405,43 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             <?php endif; ?>
         </div>
         
-        <!-- Podcast Directory Links -->
-        <?php if (!empty($podcastDirectories)): ?>
-            <div class="podcast-directories">
-                <?php foreach ($podcastDirectories as $directory): ?>
-                    <a href="<?php echo h($directory['url']); ?>" 
-                       class="directory-icon" 
+        <!-- Social Icons -->
+        <?php if (!empty($socialIcons)): ?>
+            <div class="social-icons">
+                <?php foreach ($socialIcons as $icon): ?>
+                    <a href="<?php echo h($icon['url']); ?>" 
+                       class="social-icon" 
                        target="_blank" 
                        rel="noopener noreferrer"
-                       title="<?php echo h($directory['platform_name']); ?>">
+                       title="<?php echo h($icon['platform_name']); ?>">
                         <?php
-                        // Simple icon initials for platforms
+                        // Icon mapping for platforms (social media + podcast platforms)
                         $platformIcons = [
+                            // Social Media
+                            'facebook' => '<i class="fab fa-facebook"></i>',
+                            'twitter' => '<i class="fab fa-twitter"></i>',
+                            'instagram' => '<i class="fab fa-instagram"></i>',
+                            'linkedin' => '<i class="fab fa-linkedin"></i>',
+                            'youtube' => '<i class="fab fa-youtube"></i>',
+                            'tiktok' => '<i class="fab fa-tiktok"></i>',
+                            'snapchat' => '<i class="fab fa-snapchat"></i>',
+                            'pinterest' => '<i class="fab fa-pinterest"></i>',
+                            'reddit' => '<i class="fab fa-reddit"></i>',
+                            'discord' => '<i class="fab fa-discord"></i>',
+                            'twitch' => '<i class="fab fa-twitch"></i>',
+                            'github' => '<i class="fab fa-github"></i>',
+                            'behance' => '<i class="fab fa-behance"></i>',
+                            'dribbble' => '<i class="fab fa-dribbble"></i>',
+                            'medium' => '<i class="fab fa-medium"></i>',
+                            // Podcast Platforms
                             'apple_podcasts' => '🍎',
-                            'spotify' => '🎵',
-                            'youtube_music' => '▶️',
-                            'amazon_music' => '🔶',
-                            'audible' => '📚',
-                            'tunein' => '📻',
-                            'castbox' => '📦',
-                            'good_pods' => '👍',
+                            'spotify' => '<i class="fab fa-spotify"></i>',
+                            'youtube_music' => '<i class="fab fa-youtube"></i>',
                             'iheart_radio' => '❤️',
-                            'overcast' => '⛅',
-                            'pocket_casts' => '🎧'
+                            'amazon_music' => '<i class="fab fa-amazon"></i>'
                         ];
-                        $icon = $platformIcons[strtolower($directory['platform_name'])] ?? '🔗';
-                        echo $icon;
+                        $iconHtml = $platformIcons[strtolower($icon['platform_name'])] ?? '<i class="fas fa-link"></i>';
+                        echo $iconHtml;
                         ?>
                     </a>
                 <?php endforeach; ?>

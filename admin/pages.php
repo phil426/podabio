@@ -94,7 +94,7 @@ if ($pageId) {
     if ($pageDetails) {
         $pageLinks = fetchAll("SELECT * FROM links WHERE page_id = ? ORDER BY display_order ASC", [$pageId]);
         $pageEpisodes = fetchAll("SELECT * FROM episodes WHERE page_id = ? ORDER BY pub_date DESC LIMIT 10", [$pageId]);
-        $pageDirectories = fetchAll("SELECT * FROM podcast_directories WHERE page_id = ?", [$pageId]);
+        $pageDirectories = fetchAll("SELECT * FROM social_icons WHERE page_id = ?", [$pageId]);
     }
 }
 

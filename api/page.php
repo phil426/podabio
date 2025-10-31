@@ -201,19 +201,19 @@ switch ($action) {
             exit;
         }
         
-        $result = $page->addPodcastDirectory($pageId, $platformName, $url);
+        $result = $page->addSocialIcon($pageId, $platformName, $url);
         echo json_encode($result);
         break;
         
     case 'delete_directory':
-        $directoryId = (int)($_POST['directory_id'] ?? 0);
-        if (!$directoryId) {
+        $iconId = (int)($_POST['directory_id'] ?? 0);
+        if (!$iconId) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Directory ID required']);
+            echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
             exit;
         }
         
-        $result = $page->deletePodcastDirectory($directoryId, $pageId);
+        $result = $page->deleteSocialIcon($iconId, $pageId);
         echo json_encode($result);
         break;
         
