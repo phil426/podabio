@@ -437,7 +437,7 @@ $csrfToken = generateCSRFToken();
         }
         
         .drawer {
-            position: fixed;
+            position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
@@ -447,9 +447,38 @@ $csrfToken = generateCSRFToken();
             z-index: 2001;
             transform: translateY(100%);
             transition: transform 0.3s ease-out;
-            max-height: 90vh;
+            max-height: 50vh;
             overflow-y: auto;
             padding: 2rem;
+            min-height: 300px;
+        }
+        
+        .link-item {
+            position: relative;
+        }
+        
+        .link-item .drawer {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 2002;
+            transform: translateY(-10px) scaleY(0);
+            transform-origin: top;
+            transition: transform 0.3s ease-out, opacity 0.3s;
+            opacity: 0;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 2rem;
+            min-height: 300px;
+        }
+        
+        .link-item .drawer.active {
+            transform: translateY(0) scaleY(1);
+            opacity: 1;
         }
         
         .drawer.active {
@@ -1445,11 +1474,26 @@ $csrfToken = generateCSRFToken();
         }
         
         function closeDrawer() {
-            const drawer = document.getElementById('link-drawer');
-            const overlay = document.getElementById('drawer-overlay');
+            // Close all item-specific drawers
+            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
+                drawer.classList.remove('active');
+            });
             
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
+            // Close main drawer
+            const drawer = document.getElementById('link-drawer');
+            if (drawer) {
+                drawer.classList.remove('active');
+            }
+            
+            const overlay = document.getElementById('drawer-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            
+            // Remove has-drawer class from items
+            document.querySelectorAll('.link-item.has-drawer').forEach(item => {
+                item.classList.remove('has-drawer');
+            });
             
             // Remove editing class from link items
             document.querySelectorAll('.link-item.editing').forEach(item => {
@@ -1464,12 +1508,95 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function openDrawer() {
-            const drawer = document.getElementById('link-drawer');
-            const overlay = document.getElementById('drawer-overlay');
+        function handleLinkFormSubmit(form, linkItem) {
+            const formData = new FormData(form);
+            const action = formData.get('action');
+            formData.append('action', action === 'update' ? 'update' : 'add');
+            if (action === 'update') {
+                formData.append('link_id', form.querySelector('#link-id').value);
+            }
             
-            drawer.classList.add('active');
-            overlay.classList.add('active');
+            fetch('/api/links.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeDrawer();
+                    showMessage('Link saved successfully!', 'success');
+                    refreshPreview();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('An error occurred', 'error');
+            });
+        }
+        
+        function openDrawer(linkItem) {
+            // Remove any existing drawers from other items
+            document.querySelectorAll('.link-item .drawer').forEach(d => {
+                d.classList.remove('active');
+                d.parentElement.classList.remove('has-drawer');
+            });
+            
+            // If linkItem is provided, create drawer relative to it
+            if (linkItem) {
+                let itemDrawer = linkItem.querySelector('.drawer');
+                
+                // Create drawer inside the link-item if it doesn't exist
+                if (!itemDrawer) {
+                    const mainDrawer = document.getElementById('link-drawer');
+                    itemDrawer = mainDrawer.cloneNode(true);
+                    itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
+                    itemDrawer.classList.remove('drawer');
+                    itemDrawer.classList.add('drawer');
+                    linkItem.appendChild(itemDrawer);
+                    
+                    // Copy form values from main drawer
+                    const form = itemDrawer.querySelector('#link-form');
+                    if (form) {
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            handleLinkFormSubmit(form, linkItem);
+                        });
+                    }
+                }
+                
+                linkItem.classList.add('has-drawer');
+                
+                // Copy current form values to item-specific drawer
+                const mainForm = document.getElementById('link-form');
+                const itemForm = itemDrawer.querySelector('#link-form');
+                if (mainForm && itemForm) {
+                    itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
+                    itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
+                    itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
+                    itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
+                    itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
+                    itemForm.querySelector('#link_disclosure').value = mainForm.querySelector('#link_disclosure').value;
+                    itemForm.querySelector('#drawer-title').textContent = document.getElementById('drawer-title').textContent;
+                }
+                
+                // Show overlay and drawer
+                const overlay = document.getElementById('drawer-overlay');
+                overlay.classList.add('active');
+                
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    itemDrawer.classList.add('active');
+                }, 10);
+            } else {
+                // Fallback to main drawer at bottom of screen
+                const drawer = document.getElementById('link-drawer');
+                const overlay = document.getElementById('drawer-overlay');
+                
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            }
         }
         
         function editLink(linkId, buttonElement) {
@@ -1494,7 +1621,7 @@ $csrfToken = generateCSRFToken();
                 document.getElementById('link_url').value = 'https://';
                 document.getElementById('link_disclosure').value = '';
                 
-                openDrawer();
+                openDrawer(linkItem);
                 return;
             }
             
@@ -1520,7 +1647,16 @@ $csrfToken = generateCSRFToken();
                     document.getElementById('link_url').value = link.url || '';
                     document.getElementById('link_disclosure').value = link.disclosure_text || '';
                     
-                    openDrawer();
+                    // Update main form (for fallback)
+                    document.getElementById('drawer-title').textContent = 'Edit Link';
+                    document.getElementById('link-action').value = 'update';
+                    document.getElementById('link-id').value = link.id;
+                    document.getElementById('link_type').value = link.type || 'custom';
+                    document.getElementById('link_title').value = link.title || '';
+                    document.getElementById('link_url').value = link.url || '';
+                    document.getElementById('link_disclosure').value = link.disclosure_text || '';
+                    
+                    openDrawer(linkItem);
                 } else {
                     // Fallback: Get from page load
                     const titleEl = linkItem.querySelector('.link-title');
@@ -1535,7 +1671,7 @@ $csrfToken = generateCSRFToken();
                         document.getElementById('link_url').value = urlEl.textContent.trim();
                         document.getElementById('link_disclosure').value = '';
                         
-                        openDrawer();
+                        openDrawer(linkItem);
                     }
                 }
             })
@@ -1553,7 +1689,7 @@ $csrfToken = generateCSRFToken();
                     document.getElementById('link_url').value = urlEl.textContent.trim();
                     document.getElementById('link_disclosure').value = '';
                     
-                    openDrawer();
+                    openDrawer(linkItem);
                 }
             });
         }
@@ -1599,36 +1735,37 @@ $csrfToken = generateCSRFToken();
         }
         
         // Handle link form submission
+        // Handle main drawer form submission (fallback)
         const linkForm = document.getElementById('link-form');
         if (linkForm) {
             linkForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const action = formData.get('action');
-            formData.append('action', action === 'update' ? 'update' : 'add');
-            if (action === 'update') {
-                formData.append('link_id', document.getElementById('link-id').value);
-            }
-            
-            fetch('/api/links.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeDrawer();
-                    showMessage('Link saved successfully!', 'success');
-                    refreshPreview();
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showMessage(data.error, 'error');
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const action = formData.get('action');
+                formData.append('action', action === 'update' ? 'update' : 'add');
+                if (action === 'update') {
+                    formData.append('link_id', document.getElementById('link-id').value);
                 }
-            })
-            .catch(error => {
-                showMessage('An error occurred', 'error');
-            });
+                
+                fetch('/api/links.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeDrawer();
+                        showMessage('Link saved successfully!', 'success');
+                        refreshPreview();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showMessage(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('An error occurred', 'error');
+                });
             });
         }
         
