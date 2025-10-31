@@ -534,12 +534,12 @@ $csrfToken = generateCSRFToken();
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 2000;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
-            backdrop-filter: blur(2px);
+            /* Removed backdrop-filter to prevent blur */
         }
         
         .drawer-overlay.active {
@@ -684,38 +684,37 @@ $csrfToken = generateCSRFToken();
         
         .link-item {
             position: relative;
-            overflow: visible;
+            overflow: hidden;
             z-index: 1;
+            transition: margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .link-item.has-drawer {
             z-index: 10;
+            margin-bottom: 0;
         }
         
-        /* Link-item specific drawer - slides from bottom of item */
+        /* Link-item specific drawer - slides from bottom of item and pushes content down */
         .link-item .drawer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            position: relative;
+            width: 100%;
             background: #ffffff;
-            border-radius: 16px 16px 0 0;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
-            z-index: 2002;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-            max-height: 70vh;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            z-index: 1;
+            max-height: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s, margin-top 0.3s;
             opacity: 0;
-            pointer-events: none;
+            margin-top: 0;
         }
         
         .link-item .drawer.active {
-            transform: translateY(0);
+            max-height: 600px;
             opacity: 1;
-            pointer-events: auto;
+            margin-top: 10px;
         }
         
         .link-item .drawer .drawer-handle {
@@ -1949,6 +1948,11 @@ $csrfToken = generateCSRFToken();
                 requestAnimationFrame(() => {
                     setTimeout(() => {
                         itemDrawer.classList.add('active');
+                        // Measure actual content height and set max-height for smooth animation
+                        const contentHeight = itemDrawer.scrollHeight;
+                        if (contentHeight > 0) {
+                            itemDrawer.style.maxHeight = contentHeight + 'px';
+                        }
                     }, 10);
                 });
             }, 50);
