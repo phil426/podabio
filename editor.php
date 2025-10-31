@@ -1799,7 +1799,7 @@ $csrfToken = generateCSRFToken();
                     </button>
                 </div>
                 <div class="modal-content">
-                    <form id="widget-form" onsubmit="event.preventDefault(); handleWidgetFormSubmit(this);">
+                    <form id="widget-form">
                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                         <input type="hidden" name="action" id="widget-action" value="add">
                         <input type="hidden" name="widget_id" id="widget-id">
@@ -1812,7 +1812,7 @@ $csrfToken = generateCSRFToken();
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeWidgetModal()">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('widget-form').dispatchEvent(new Event('submit'))">Add Widget</button>
+                    <button type="button" class="btn btn-primary" onclick="handleWidgetFormSubmit(document.getElementById('widget-form'))">Add Widget</button>
                 </div>
             </div>
         </div>
@@ -2134,7 +2134,16 @@ $csrfToken = generateCSRFToken();
             }
         };
         
+        // Prevent double submission
+        let isSubmittingWidget = false;
+        
         window.handleWidgetFormSubmit = function(form) {
+            // Prevent double submission
+            if (isSubmittingWidget) {
+                console.log('Widget submission already in progress');
+                return;
+            }
+            
             const action = document.getElementById('widget-action').value;
             const widgetType = document.getElementById('widget-type-hidden').value;
             const widgetId = document.getElementById('widget-id').value;
@@ -2143,6 +2152,16 @@ $csrfToken = generateCSRFToken();
             if (!titleInput || !titleInput.value.trim()) {
                 showToast('Title is required', 'error');
                 return;
+            }
+            
+            // Set submitting flag
+            isSubmittingWidget = true;
+            
+            // Disable submit button to prevent double clicks
+            const submitBtn = document.querySelector('#widget-modal-overlay .btn-primary');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
             }
             
             // Build the request
@@ -2183,6 +2202,15 @@ $csrfToken = generateCSRFToken();
             })
             .then(response => response.json())
             .then(data => {
+                // Reset submitting flag
+                isSubmittingWidget = false;
+                
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = action === 'update' ? 'Save Changes' : 'Add Widget';
+                }
+                
                 if (data.success) {
                     closeWidgetModal();
                     showToast('Widget saved successfully!', 'success');
@@ -2193,6 +2221,15 @@ $csrfToken = generateCSRFToken();
                 }
             })
             .catch(error => {
+                // Reset submitting flag on error
+                isSubmittingWidget = false;
+                
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = action === 'update' ? 'Save Changes' : 'Add Widget';
+                }
+                
                 console.error('Error:', error);
                 showToast('An error occurred', 'error');
             });
