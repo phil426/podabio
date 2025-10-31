@@ -21,10 +21,9 @@ class WidgetRegistry {
                 'category' => 'links',
                 'requires_api' => false,
                 'config_fields' => [
-                    'title' => ['type' => 'text', 'label' => 'Link Title', 'required' => true],
                     'url' => ['type' => 'url', 'label' => 'URL', 'required' => true],
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Thumbnail Image URL', 'required' => false],
-                    'icon' => ['type' => 'text', 'label' => 'Icon (Font Awesome class)', 'required' => false],
+                    'icon' => ['type' => 'text', 'label' => 'Icon (Font Awesome class)', 'required' => false, 'help' => 'e.g., fas fa-link'],
                     'disclosure_text' => ['type' => 'textarea', 'label' => 'Disclosure Text (for affiliate links)', 'required' => false]
                 ]
             ],
@@ -37,9 +36,8 @@ class WidgetRegistry {
                 'category' => 'videos',
                 'requires_api' => false,
                 'config_fields' => [
-                    'title' => ['type' => 'text', 'label' => 'Video Title', 'required' => true],
-                    'video_id' => ['type' => 'text', 'label' => 'YouTube Video ID', 'required' => true, 'help' => 'The video ID from the YouTube URL (e.g., "dQw4w9WgXcQ" from youtube.com/watch?v=dQw4w9WgXcQ)'],
-                    'thumbnail_url' => ['type' => 'url', 'label' => 'Custom Thumbnail URL', 'required' => false]
+                    'video_id' => ['type' => 'text', 'label' => 'YouTube Video ID', 'required' => true, 'help' => 'The video ID from the YouTube URL (e.g., "dQw4w9WgXcQ" from youtube.com/watch?v=dQw4w9WgXcQ)', 'placeholder' => 'dQw4w9WgXcQ'],
+                    'autoplay' => ['type' => 'checkbox', 'label' => 'Autoplay', 'required' => false]
                 ]
             ],
             
@@ -51,8 +49,7 @@ class WidgetRegistry {
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
-                    'title' => ['type' => 'text', 'label' => 'Block Title', 'required' => false],
-                    'content' => ['type' => 'textarea', 'label' => 'HTML Content', 'required' => true, 'help' => 'You can use HTML tags for formatting']
+                    'content' => ['type' => 'textarea', 'label' => 'HTML Content', 'required' => true, 'help' => 'You can use HTML tags for formatting', 'rows' => 6]
                 ]
             ],
             
@@ -64,8 +61,8 @@ class WidgetRegistry {
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
-                    'title' => ['type' => 'text', 'label' => 'Image Title/Alt Text', 'required' => true],
                     'image_url' => ['type' => 'url', 'label' => 'Image URL', 'required' => true],
+                    'alt_text' => ['type' => 'text', 'label' => 'Alt Text', 'required' => false, 'help' => 'Description for screen readers'],
                     'link_url' => ['type' => 'url', 'label' => 'Link URL (optional)', 'required' => false]
                 ]
             ],

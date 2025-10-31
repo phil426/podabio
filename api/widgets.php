@@ -204,7 +204,7 @@ switch ($action) {
         // Return list of available widgets from registry
         $includeComingSoon = isset($_POST['include_coming_soon']) && $_POST['include_coming_soon'] == '1';
         $widgets = WidgetRegistry::getAvailableWidgets($includeComingSoon);
-        echo json_encode(['success' => true, 'widgets' => $widgets]);
+        echo json_encode(['success' => true, 'available_widgets' => $widgets, 'widgets' => $widgets]); // Both for compatibility
         break;
         
     default:

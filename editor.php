@@ -732,6 +732,126 @@ $csrfToken = generateCSRFToken();
             transform: scale(1);
         }
         
+        /* Widget Gallery Styles */
+        .widget-gallery-modal {
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .widget-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 0.5rem 0;
+        }
+        
+        .widget-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .widget-card:hover {
+            border-color: #0066ff;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 102, 255, 0.15);
+        }
+        
+        .widget-card.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .widget-card.coming-soon:hover {
+            transform: none;
+            border-color: #e0e0e0;
+        }
+        
+        .widget-card-thumbnail {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #0066ff;
+        }
+        
+        .widget-card-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .widget-card-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .widget-card-description {
+            font-size: 0.875rem;
+            color: #666;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+        
+        .widget-card-badge {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            color: #666;
+        }
+        
+        .category-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            background: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .category-btn:hover {
+            border-color: #0066ff;
+            color: #0066ff;
+        }
+        
+        .category-btn.active {
+            background: #0066ff;
+            border-color: #0066ff;
+            color: #fff;
+        }
+        
+        .gallery-controls {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 1rem 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+            margin: -1rem -1.5rem 1.5rem -1.5rem;
+            padding: 1rem 1.5rem;
+        }
+        
         .modal-header {
             padding: 1.25rem 1.5rem;
             border-bottom: 1px solid #e5e7eb;
@@ -1015,18 +1135,52 @@ $csrfToken = generateCSRFToken();
             </div>
             
             <ul id="widgets-list" class="widgets-list">
-                <?php if (empty($links)): ?>
+                <?php 
+                // Get widgets (try new method first, fallback to links for compatibility)
+                $widgets = [];
+                if ($page && method_exists($pageClass, 'getWidgets')) {
+                    $widgets = $pageClass->getWidgets($page['id']);
+                } elseif (!empty($links)) {
+                    // Fallback: convert links to widget format
+                    $widgets = array_map(function($link) {
+                        $config = [
+                            'url' => $link['url'] ?? '',
+                            'thumbnail_image' => $link['thumbnail_image'] ?? null,
+                            'icon' => $link['icon'] ?? null,
+                            'disclosure_text' => $link['disclosure_text'] ?? null
+                        ];
+                        return [
+                            'id' => $link['id'],
+                            'widget_type' => $link['type'] ?? 'custom_link',
+                            'title' => $link['title'],
+                            'config_data' => $config
+                        ];
+                    }, $links);
+                }
+                ?>
+                <?php if (empty($widgets)): ?>
                     <li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>
                 <?php else: ?>
-                    <?php foreach ($links as $link): ?>
-                        <li class="widget-item" data-widget-id="<?php echo $link['id']; ?>">
+                    <?php foreach ($widgets as $widget): 
+                        $configData = is_string($widget['config_data'] ?? '') 
+                            ? json_decode($widget['config_data'], true) 
+                            : ($widget['config_data'] ?? []);
+                        $widgetType = $widget['widget_type'] ?? 'custom_link';
+                        $displayInfo = $configData['url'] ?? $widgetType;
+                    ?>
+                        <li class="widget-item" data-widget-id="<?php echo $widget['id']; ?>">
                             <div class="widget-info">
-                                <div class="widget-title"><?php echo h($link['title']); ?></div>
-                                <div class="widget-url"><?php echo h($link['url']); ?></div>
+                                <div class="widget-title">
+                                    <?php echo h($widget['title']); ?>
+                                    <span style="font-size: 0.75rem; color: #999; font-weight: normal; margin-left: 0.5rem;">
+                                        (<?php echo h($widgetType); ?>)
+                                    </span>
+                                </div>
+                                <div class="widget-url"><?php echo h($displayInfo); ?></div>
                             </div>
                             <div class="widget-actions">
-                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $link['id']; ?>, this)">Edit</button>
-                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $link['id']; ?>)">Delete</button>
+                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $widget['id']; ?>, this)">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $widget['id']; ?>)">Delete</button>
                             </div>
                         </li>
                     <?php endforeach; ?>
@@ -1598,12 +1752,48 @@ $csrfToken = generateCSRFToken();
         </div>
     </div>
     
-        <!-- Edit Widget Modal (only shown on Widgets tab) -->
+        <!-- Widget Gallery Modal -->
         <?php if ($page): ?>
+        <div id="widget-gallery-overlay" class="modal-overlay" onclick="closeWidgetGallery()">
+            <div class="modal widget-gallery-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>Widget Gallery</h2>
+                    <button class="modal-close" onclick="closeWidgetGallery()" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <!-- Search and Filter -->
+                    <div class="gallery-controls" style="margin-bottom: 1.5rem;">
+                        <div class="search-box" style="margin-bottom: 1rem;">
+                            <input type="text" id="gallery-search" placeholder="Search widgets..." style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                        </div>
+                        <div class="category-filters" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="category-btn active" data-category="all" onclick="filterWidgetsByCategory('all')">All</button>
+                            <button class="category-btn" data-category="links" onclick="filterWidgetsByCategory('links')">Links</button>
+                            <button class="category-btn" data-category="videos" onclick="filterWidgetsByCategory('videos')">Videos</button>
+                            <button class="category-btn" data-category="content" onclick="filterWidgetsByCategory('content')">Content</button>
+                            <button class="category-btn" data-category="podcast" onclick="filterWidgetsByCategory('podcast')">Podcast</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Widget Grid -->
+                    <div id="widget-gallery-grid" class="widget-gallery-grid">
+                        <!-- Widgets will be loaded here via JavaScript -->
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>Loading widgets...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Widget Configuration Modal -->
         <div id="widget-modal-overlay" class="modal-overlay" onclick="closeWidgetModal()">
             <div class="modal" onclick="event.stopPropagation()">
                 <div class="modal-header">
-                    <h2 id="modal-title">Edit Widget</h2>
+                    <h2 id="modal-title">Configure Widget</h2>
                     <button class="modal-close" onclick="closeWidgetModal()" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
@@ -1611,40 +1801,18 @@ $csrfToken = generateCSRFToken();
                 <div class="modal-content">
                     <form id="widget-form" onsubmit="event.preventDefault(); handleWidgetFormSubmit(this);">
                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                        <input type="hidden" name="action" id="widget-action" value="update">
-                        <input type="hidden" name="link_id" id="widget-id">
+                        <input type="hidden" name="action" id="widget-action" value="add">
+                        <input type="hidden" name="widget_id" id="widget-id">
+                        <input type="hidden" name="widget_type" id="widget-type-hidden">
                         
-                        <div class="form-group">
-                            <label for="widget_type">Widget Type</label>
-                            <select id="widget_type" name="type" required>
-                                <option value="custom">Custom Link</option>
-                                <option value="social">Social Media</option>
-                                <option value="affiliate">Affiliate Link</option>
-                                <option value="amazon_affiliate">Amazon Affiliate</option>
-                                <option value="sponsor">Sponsor Link</option>
-                                <option value="email_subscribe">Email Subscribe</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="widget_title">Title</label>
-                            <input type="text" id="widget_title" name="title" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="widget_url">URL</label>
-                            <input type="url" id="widget_url" name="url" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="widget_disclosure">Disclosure Text (for affiliate/sponsor links)</label>
-                            <textarea id="widget_disclosure" name="disclosure_text" rows="3"></textarea>
+                        <div id="widget-config-fields">
+                            <!-- Dynamic fields will be inserted here -->
                         </div>
                     </form>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeWidgetModal()">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('widget-form').dispatchEvent(new Event('submit'))">Save Changes</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('widget-form').dispatchEvent(new Event('submit'))">Add Widget</button>
                 </div>
             </div>
         </div>
@@ -1719,47 +1887,233 @@ $csrfToken = generateCSRFToken();
             }
         });
         
-        // Make functions globally accessible
+        // Widget Gallery Functions
+        let allWidgets = [];
+        let filteredWidgets = [];
+        let currentCategory = 'all';
+        let currentSearch = '';
+        
         window.showAddWidgetForm = function() {
-            // Add a blank new widget item to the top of the list
-            const widgetsList = document.getElementById('widgets-list');
-            if (!widgetsList) return;
+            openWidgetGallery();
+        };
+        
+        window.openWidgetGallery = function() {
+            const overlay = document.getElementById('widget-gallery-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                loadWidgetGallery();
+            }
+        };
+        
+        window.closeWidgetGallery = function() {
+            const overlay = document.getElementById('widget-gallery-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        };
+        
+        function loadWidgetGallery() {
+            const grid = document.getElementById('widget-gallery-grid');
+            if (!grid) return;
             
-            // Remove "no widgets" message if present
-            const noWidgetsMsg = widgetsList.querySelector('li:not(.widget-item)');
-            if (noWidgetsMsg && !noWidgetsMsg.classList.contains('widget-item')) {
-                noWidgetsMsg.remove();
+            grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i><p>Loading widgets...</p></div>';
+            
+            // Load available widgets from API
+            const formData = new FormData();
+            formData.append('action', 'get_available');
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && (data.available_widgets || data.widgets)) {
+                    const widgets = data.available_widgets || data.widgets;
+                    allWidgets = Object.values(widgets);
+                    filteredWidgets = allWidgets;
+                    renderWidgetGallery();
+                } else {
+                    grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc3545;"><p>Failed to load widgets. Please try again.</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading widgets:', error);
+                grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc3545;"><p>Error loading widgets. Please refresh the page.</p></div>';
+            });
+        }
+        
+        function renderWidgetGallery() {
+            const grid = document.getElementById('widget-gallery-grid');
+            if (!grid) return;
+            
+            if (filteredWidgets.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><p>No widgets found matching your search.</p></div>';
+                return;
             }
             
-            // Generate a temporary ID (negative number to indicate it's new)
-            const tempId = -(Date.now());
+            grid.innerHTML = filteredWidgets.map(widget => {
+                const isComingSoon = widget.coming_soon || false;
+                const thumbnail = widget.thumbnail || '/assets/widget-thumbnails/default.png';
+                
+                return `
+                    <div class="widget-card ${isComingSoon ? 'coming-soon' : ''}" 
+                         onclick="${isComingSoon ? '' : `openWidgetConfig('${widget.widget_id}')`}"
+                         data-category="${widget.category}"
+                         data-name="${widget.name.toLowerCase()}"
+                         data-description="${(widget.description || '').toLowerCase()}">
+                        <div class="widget-card-thumbnail">
+                            ${thumbnail.startsWith('/') || thumbnail.startsWith('http') 
+                                ? `<img src="${thumbnail}" alt="${widget.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-puzzle-piece\\'></i>'">` 
+                                : `<i class="fas fa-puzzle-piece"></i>`}
+                        </div>
+                        <div class="widget-card-name">${widget.name}</div>
+                        <div class="widget-card-description">${widget.description || ''}</div>
+                        ${isComingSoon ? '<div class="widget-card-badge">Coming Soon</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        window.filterWidgetsByCategory = function(category) {
+            currentCategory = category;
             
-            // Create new widget item
-            const newWidgetItem = document.createElement('li');
-            newWidgetItem.className = 'widget-item new';
-            newWidgetItem.setAttribute('data-widget-id', tempId);
-            newWidgetItem.innerHTML = `
-                <div class="widget-info">
-                    <div class="widget-title">New Widget</div>
-                    <div class="widget-url">https://</div>
-                </div>
-                <div class="widget-actions">
-                    <button class="btn btn-secondary btn-small" onclick="editWidget(${tempId}, this)">Edit</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteTempWidget(this)">Delete</button>
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            applyFilters();
+        };
+        
+        function applyFilters() {
+            filteredWidgets = allWidgets.filter(widget => {
+                // Category filter
+                if (currentCategory !== 'all' && widget.category !== currentCategory) {
+                    return false;
+                }
+                
+                // Search filter
+                if (currentSearch) {
+                    const searchLower = currentSearch.toLowerCase();
+                    const nameMatch = (widget.name || '').toLowerCase().includes(searchLower);
+                    const descMatch = (widget.description || '').toLowerCase().includes(searchLower);
+                    return nameMatch || descMatch;
+                }
+                
+                return true;
+            });
+            
+            renderWidgetGallery();
+        }
+        
+        // Search input handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('gallery-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    currentSearch = e.target.value;
+                    applyFilters();
+                });
+            }
+        });
+        
+        window.openWidgetConfig = function(widgetId) {
+            // Find widget definition
+            const widget = allWidgets.find(w => w.widget_id === widgetId);
+            if (!widget) {
+                showToast('Widget not found', 'error');
+                return;
+            }
+            
+            // Close gallery
+            closeWidgetGallery();
+            
+            // Set widget type
+            document.getElementById('widget-type-hidden').value = widgetId;
+            document.getElementById('modal-title').textContent = `Add ${widget.name}`;
+            document.getElementById('widget-action').value = 'add';
+            document.getElementById('widget-id').value = '';
+            
+            // Generate form fields based on widget definition
+            const fieldsContainer = document.getElementById('widget-config-fields');
+            fieldsContainer.innerHTML = '';
+            
+            // Add title field (always required)
+            fieldsContainer.innerHTML += `
+                <div class="form-group">
+                    <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                    <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
                 </div>
             `;
             
-            // Insert at the top
-            widgetsList.insertBefore(newWidgetItem, widgetsList.firstChild);
+            // Add widget-specific fields
+            if (widget.config_fields) {
+                Object.entries(widget.config_fields).forEach(([fieldName, fieldDef]) => {
+                    const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                    const helpText = fieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${fieldDef.help}</small>` : '';
+                    
+                    if (fieldDef.type === 'textarea') {
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                <textarea id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''} rows="4" placeholder="${fieldDef.placeholder || ''}">${fieldDef.default || ''}</textarea>
+                                ${helpText}
+                            </div>
+                        `;
+                    } else if (fieldDef.type === 'select') {
+                        const options = (fieldDef.options || []).map(opt => {
+                            const value = typeof opt === 'string' ? opt : opt.value;
+                            const label = typeof opt === 'string' ? opt : opt.label;
+                            return `<option value="${value}">${label}</option>`;
+                        }).join('');
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                    ${options}
+                                </select>
+                                ${helpText}
+                            </div>
+                        `;
+                    } else if (fieldDef.type === 'checkbox') {
+                        const checked = fieldDef.default === true ? ' checked' : '';
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="widget_config_${fieldName}" name="${fieldName}" value="1"${checked}>
+                                    <span>${fieldDef.label}</span>
+                                </label>
+                                ${helpText}
+                            </div>
+                        `;
+                    } else {
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                <input type="${fieldDef.type || 'text'}" id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''} placeholder="${fieldDef.placeholder || ''}" value="${fieldDef.default || ''}">
+                                ${helpText}
+                            </div>
+                        `;
+                    }
+                });
+            }
             
-            // Scroll to top and focus the new item
-            newWidgetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Update submit button text
+            const submitBtn = document.querySelector('#widget-modal-overlay .btn-primary');
+            if (submitBtn) {
+                submitBtn.textContent = 'Add Widget';
+            }
             
-            // Populate form for new widget
-            const form = document.getElementById('widget-form');
-            const titleInput = document.getElementById('widget_title');
-            const urlInput = document.getElementById('widget_url');
-            const typeSelect = document.getElementById('widget_type');
+            // Open configuration modal
+            openWidgetModal();
+        };
             const disclosureInput = document.getElementById('widget_disclosure');
             const actionInput = document.getElementById('widget-action');
             const widgetIdInput = document.getElementById('widget-id');
@@ -1805,16 +2159,51 @@ $csrfToken = generateCSRFToken();
         };
         
         window.handleWidgetFormSubmit = function(form) {
-            const formData = new FormData(form);
-            const action = formData.get('action');
-            formData.append('action', action === 'update' ? 'update' : 'add');
-            if (action === 'update') {
-                formData.append('link_id', form.querySelector('#widget-id').value);
+            const action = document.getElementById('widget-action').value;
+            const widgetType = document.getElementById('widget-type-hidden').value;
+            const widgetId = document.getElementById('widget-id').value;
+            const titleInput = document.getElementById('widget_config_title');
+            
+            if (!titleInput || !titleInput.value.trim()) {
+                showToast('Title is required', 'error');
+                return;
             }
             
-            fetch('/api/links.php', {
+            // Build the request
+            const requestData = new FormData();
+            requestData.append('action', action === 'update' ? 'update' : 'add');
+            requestData.append('csrf_token', csrfToken);
+            requestData.append('title', titleInput.value.trim());
+            requestData.append('widget_type', widgetType);
+            
+            // Get all config fields from the form
+            const configData = {};
+            const widget = allWidgets.find(w => w.widget_id === widgetType);
+            if (widget && widget.config_fields) {
+                Object.keys(widget.config_fields).forEach(fieldName => {
+                    const field = document.getElementById(`widget_config_${fieldName}`);
+                    if (field) {
+                        // Handle different field types
+                        if (field.type === 'checkbox') {
+                            configData[fieldName] = field.checked ? '1' : '0';
+                        } else if (field.tagName === 'SELECT' && field.multiple) {
+                            configData[fieldName] = Array.from(field.selectedOptions).map(opt => opt.value);
+                        } else {
+                            configData[fieldName] = field.value;
+                        }
+                    }
+                });
+            }
+            
+            requestData.append('config_data', JSON.stringify(configData));
+            
+            if (action === 'update' && widgetId) {
+                requestData.append('widget_id', widgetId);
+            }
+            
+            fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: requestData
             })
             .then(response => response.json())
             .then(data => {
@@ -1824,10 +2213,11 @@ $csrfToken = generateCSRFToken();
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showToast(data.error, 'error');
+                    showToast(data.error || 'Failed to save widget', 'error');
                 }
             })
             .catch(error => {
+                console.error('Error:', error);
                 showToast('An error occurred', 'error');
             });
         };
@@ -1838,78 +2228,114 @@ $csrfToken = generateCSRFToken();
             
             if (!widgetItem) return;
             
-            // Check if it's a new temporary widget (negative ID)
-            if (parseInt(widgetId) < 0) {
-                // New widget - populate with defaults
-                document.getElementById('modal-title').textContent = 'Add New Widget';
-                document.getElementById('widget-action').value = 'add';
-                document.getElementById('widget-id').value = widgetId;
-                document.getElementById('widget_type').value = 'custom';
-                document.getElementById('widget_title').value = 'New Widget';
-                document.getElementById('widget_url').value = 'https://';
-                document.getElementById('widget_disclosure').value = '';
-                
-                openWidgetModal();
-                return;
-            }
-            
-            // Existing widget - fetch data
+            // Fetch widget data from API
             const formData = new FormData();
             formData.append('action', 'get');
-            formData.append('link_id', widgetId);
+            formData.append('widget_id', widgetId);
             formData.append('csrf_token', csrfToken);
             
-            fetch('/api/links.php', {
+            fetch('/api/widgets.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success && data.link) {
-                    const link = data.link;
-                    document.getElementById('modal-title').textContent = 'Edit Widget';
+                if (data.success && data.widget) {
+                    const widget = data.widget;
+                    const configData = typeof widget.config_data === 'string' 
+                        ? JSON.parse(widget.config_data) 
+                        : (widget.config_data || {});
+                    
+                    // Find widget definition
+                    const widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
+                    
+                    // Set up form
+                    document.getElementById('modal-title').textContent = `Edit ${widgetDef ? widgetDef.name : 'Widget'}`;
                     document.getElementById('widget-action').value = 'update';
-                    document.getElementById('widget-id').value = link.id;
-                    document.getElementById('widget_type').value = link.type || 'custom';
-                    document.getElementById('widget_title').value = link.title || '';
-                    document.getElementById('widget_url').value = link.url || '';
-                    document.getElementById('widget_disclosure').value = link.disclosure_text || '';
+                    document.getElementById('widget-id').value = widget.id;
+                    document.getElementById('widget-type-hidden').value = widget.widget_type;
+                    
+                    // Generate form fields
+                    const fieldsContainer = document.getElementById('widget-config-fields');
+                    fieldsContainer.innerHTML = '';
+                    
+                    // Title field
+                    fieldsContainer.innerHTML += `
+                        <div class="form-group">
+                            <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                            <input type="text" id="widget_config_title" name="title" required value="${(widget.title || '').replace(/"/g, '&quot;')}">
+                        </div>
+                    `;
+                    
+                    // Widget-specific fields
+                    if (widgetDef && widgetDef.config_fields) {
+                        Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
+                            const value = configData[fieldName] || '';
+                            const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                            const helpText = fieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${fieldDef.help}</small>` : '';
+                            
+                            if (fieldDef.type === 'textarea') {
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                        <textarea id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''} rows="4" placeholder="${fieldDef.placeholder || ''}">${safeValue}</textarea>
+                                        ${helpText}
+                                    </div>
+                                `;
+                            } else if (fieldDef.type === 'select') {
+                                const options = (fieldDef.options || []).map(opt => {
+                                    const optValue = typeof opt === 'string' ? opt : opt.value;
+                                    const optLabel = typeof opt === 'string' ? opt : opt.label;
+                                    const selected = optValue === value ? ' selected' : '';
+                                    return `<option value="${optValue}"${selected}>${optLabel}</option>`;
+                                }).join('');
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                        <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                            ${options}
+                                        </select>
+                                        ${helpText}
+                                    </div>
+                                `;
+                            } else if (fieldDef.type === 'checkbox') {
+                                const checked = value === '1' || value === true || value === 'true' ? ' checked' : '';
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <input type="checkbox" id="widget_config_${fieldName}" name="${fieldName}" value="1"${checked}>
+                                            <span>${fieldDef.label}</span>
+                                        </label>
+                                        ${helpText}
+                                    </div>
+                                `;
+                            } else {
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                        <input type="${fieldDef.type || 'text'}" id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''} placeholder="${fieldDef.placeholder || ''}" value="${safeValue}">
+                                        ${helpText}
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    // Update submit button
+                    const submitBtn = document.querySelector('#widget-modal-overlay .btn-primary');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Save Changes';
+                    }
                     
                     openWidgetModal();
                 } else {
-                    // Fallback: Get from page load
-                    const titleEl = widgetItem.querySelector('.widget-title');
-                    const urlEl = widgetItem.querySelector('.widget-url');
-                    
-                    if (titleEl && urlEl) {
-                        document.getElementById('modal-title').textContent = 'Edit Widget';
-                        document.getElementById('widget-action').value = 'update';
-                        document.getElementById('widget-id').value = widgetId;
-                        document.getElementById('widget_type').value = 'custom';
-                        document.getElementById('widget_title').value = titleEl.textContent.trim();
-                        document.getElementById('widget_url').value = urlEl.textContent.trim();
-                        document.getElementById('widget_disclosure').value = '';
-                        
-                        openWidgetModal();
-                    }
+                    showToast('Failed to load widget data', 'error');
                 }
             })
-            .catch(() => {
-                // Fallback approach
-                const titleEl = widgetItem.querySelector('.widget-title');
-                const urlEl = widgetItem.querySelector('.widget-url');
-                
-                if (titleEl && urlEl) {
-                    document.getElementById('modal-title').textContent = 'Edit Widget';
-                    document.getElementById('widget-action').value = 'update';
-                    document.getElementById('widget-id').value = widgetId;
-                    document.getElementById('widget_type').value = 'custom';
-                    document.getElementById('widget_title').value = titleEl.textContent.trim();
-                    document.getElementById('widget_url').value = urlEl.textContent.trim();
-                    document.getElementById('widget_disclosure').value = '';
-                    
-                    openWidgetModal();
-                }
+            .catch(error => {
+                console.error('Error loading widget:', error);
+                showToast('Error loading widget', 'error');
             });
         }
         
@@ -1938,10 +2364,10 @@ $csrfToken = generateCSRFToken();
             
             const formData = new FormData();
             formData.append('action', 'delete');
-            formData.append('link_id', widgetId);
+            formData.append('widget_id', widgetId);
             formData.append('csrf_token', csrfToken);
             
-            fetch('/api/links.php', {
+            fetch('/api/widgets.php', {
                 method: 'POST',
                 body: formData
             })
@@ -2207,17 +2633,17 @@ $csrfToken = generateCSRFToken();
         
         function saveWidgetOrder() {
             const items = Array.from(widgetsList.querySelectorAll('.widget-item'));
-            const linkOrders = items.map((item, index) => ({
-                link_id: parseInt(item.getAttribute('data-widget-id')),
+            const widgetOrders = items.map((item, index) => ({
+                widget_id: parseInt(item.getAttribute('data-widget-id')),
                 display_order: index + 1
             }));
             
             const formData = new FormData();
             formData.append('action', 'reorder');
-            formData.append('link_orders', JSON.stringify(linkOrders));
+            formData.append('widget_orders', JSON.stringify(widgetOrders));
             formData.append('csrf_token', csrfToken);
             
-            fetch('/api/links.php', {
+            fetch('/api/widgets.php', {
                 method: 'POST',
                 body: formData
             })
