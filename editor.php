@@ -1763,14 +1763,18 @@ $csrfToken = generateCSRFToken();
         window.closeDrawer = function() {
             // Close all item-specific drawers with animation
             document.querySelectorAll('.link-item .drawer').forEach(drawer => {
-                drawer.classList.remove('active');
-                // Remove drawer after animation completes
-                setTimeout(() => {
-                    if (!drawer.classList.contains('active')) {
-                        drawer.remove();
-                        drawer.parentElement.classList.remove('has-drawer');
-                    }
-                }, 300);
+                if (drawer) {
+                    drawer.classList.remove('active');
+                    // Remove drawer after animation completes
+                    setTimeout(() => {
+                        if (drawer && !drawer.classList.contains('active')) {
+                            drawer.remove();
+                            if (drawer.parentElement) {
+                                drawer.parentElement.classList.remove('has-drawer');
+                            }
+                        }
+                    }, 300);
+                }
             });
             
             // Close main drawer
@@ -1831,13 +1835,17 @@ $csrfToken = generateCSRFToken();
         window.openDrawer = function(linkItem) {
             // Close all existing drawers first (without overlay)
             document.querySelectorAll('.link-item .drawer').forEach(drawer => {
-                drawer.classList.remove('active');
-                setTimeout(() => {
-                    if (!drawer.classList.contains('active')) {
-                        drawer.remove();
-                        drawer.parentElement.classList.remove('has-drawer');
-                    }
-                }, 300);
+                if (drawer) {
+                    drawer.classList.remove('active');
+                    setTimeout(() => {
+                        if (drawer && !drawer.classList.contains('active')) {
+                            drawer.remove();
+                            if (drawer.parentElement) {
+                                drawer.parentElement.classList.remove('has-drawer');
+                            }
+                        }
+                    }, 300);
+                }
             });
             
             const overlay = document.getElementById('drawer-overlay');
@@ -1964,9 +1972,13 @@ $csrfToken = generateCSRFToken();
             
             // Mark the item as being edited
             document.querySelectorAll('.link-item.editing').forEach(item => {
-                item.classList.remove('editing');
+                if (item) {
+                    item.classList.remove('editing');
+                }
             });
-            linkItem.classList.add('editing');
+            if (linkItem) {
+                linkItem.classList.add('editing');
+            }
             
             // Check if it's a new temporary link (negative ID)
             if (parseInt(linkId) < 0) {
