@@ -2114,30 +2114,6 @@ $csrfToken = generateCSRFToken();
             // Open configuration modal
             openWidgetModal();
         };
-            const disclosureInput = document.getElementById('widget_disclosure');
-            const actionInput = document.getElementById('widget-action');
-            const widgetIdInput = document.getElementById('widget-id');
-            const modalTitle = document.getElementById('modal-title');
-            
-            if (form && titleInput && urlInput) {
-                actionInput.value = 'add';
-                widgetIdInput.value = tempId;
-                titleInput.value = 'New Widget';
-                urlInput.value = 'https://';
-                typeSelect.value = 'custom';
-                
-                if (disclosureInput) {
-                    disclosureInput.value = '';
-                }
-                
-                if (modalTitle) {
-                    modalTitle.textContent = 'Add New Widget';
-                }
-            }
-            
-            // Open modal for new widget item
-            openWidgetModal();
-        };
         
         window.deleteTempWidget = function(button) {
             const widgetItem = button.closest('.widget-item');
