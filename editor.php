@@ -2549,13 +2549,8 @@ $csrfToken = generateCSRFToken();
         // Handle widget form submission
         // Handle main drawer form submission (fallback)
         // Handle drawer form submission
-        const widgetForm = document.getElementById('widget-form');
-        if (widgetForm) {
-            widgetForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleWidgetFormSubmit(this);
-            });
-        }
+        // Widget form submission is handled directly by button onclick
+        // No duplicate event listener needed
         
         // Handle Escape key to close drawer
         document.addEventListener('keydown', function(e) {
