@@ -2492,23 +2492,30 @@ $csrfToken = generateCSRFToken();
                 ? (context === 'settings' ? 'profile-preview-settings' : 'profile-preview')
                 : 'background-preview';
             const input = document.getElementById(inputId);
+            
+            if (!input) {
+                console.error('Input element not found:', inputId);
+                showToast('File input element not found', 'error');
+                return;
+            }
+            
             const file = input.files[0];
             
             if (!file) {
-                showMessage('Please select an image file', 'error');
+                showToast('Please select an image file', 'error');
                 return;
             }
             
             // Validate file size (5MB max)
             if (file.size > 5 * 1024 * 1024) {
-                showMessage('File size must be less than 5MB', 'error');
+                showToast('File size must be less than 5MB', 'error');
                 return;
             }
             
             // Validate file type
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             if (!allowedTypes.includes(file.type)) {
-                showMessage('Invalid file type. Please use JPEG, PNG, GIF, or WebP', 'error');
+                showToast('Invalid file type. Please use JPEG, PNG, GIF, or WebP', 'error');
                 return;
             }
             
@@ -2517,13 +2524,29 @@ $csrfToken = generateCSRFToken();
             formData.append('type', type);
             formData.append('csrf_token', csrfToken);
             
-            showMessage('Uploading image...', 'info');
+            showToast('Uploading image...', 'info');
             
             fetch('/api/upload.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is OK
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const json = JSON.parse(text);
+                            throw new Error(json.error || 'Upload failed');
+                        } catch (e) {
+                            if (e instanceof Error && e.message !== 'Upload failed') {
+                                throw e;
+                            }
+                            throw new Error(text || 'Upload failed with status ' + response.status);
+                        }
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // Update preview
@@ -2531,7 +2554,7 @@ $csrfToken = generateCSRFToken();
                     
                     if (!preview) {
                         console.error('Preview element not found:', previewId);
-                        showMessage('Image uploaded but preview could not be updated', 'error');
+                        showToast('Image uploaded but preview could not be updated', 'error');
                         return;
                     }
                     
@@ -2540,12 +2563,16 @@ $csrfToken = generateCSRFToken();
                     
                     if (!imageUrl) {
                         console.error('No image URL in response:', data);
-                        showMessage('Image uploaded but no URL returned', 'error');
+                        showToast('Image uploaded but no URL returned', 'error');
                         return;
                     }
                     
                     if (preview.tagName === 'IMG') {
                         preview.src = imageUrl;
+                        // Force reload if same URL
+                        if (preview.src === imageUrl) {
+                            preview.src = imageUrl + '?t=' + Date.now();
+                        }
                     } else {
                         // Replace div with img
                         const img = document.createElement('img');
@@ -2559,22 +2586,31 @@ $csrfToken = generateCSRFToken();
                     }
                     
                     // Show remove button if not visible
-                    const uploadBtnContainer = context === 'settings' 
-                        ? input.closest('div').querySelector('.btn-secondary')
-                        : input.nextElementSibling;
-                    const uploadBtn = uploadBtnContainer || input.nextElementSibling;
-                    
-                    if (uploadBtn && (!uploadBtn.nextElementSibling || uploadBtn.nextElementSibling.textContent !== 'Remove')) {
-                        const removeBtn = document.createElement('button');
-                        removeBtn.type = 'button';
-                        removeBtn.className = 'btn btn-danger btn-small';
-                        removeBtn.textContent = 'Remove';
-                        removeBtn.onclick = () => removeImage(type, context);
+                    let uploadBtnContainer;
+                    if (context === 'settings') {
+                        // In settings context, find the button container
+                        const buttonContainer = input.closest('div').querySelector('div[style*="display: flex"]');
+                        uploadBtnContainer = buttonContainer;
+                        const uploadBtn = buttonContainer ? buttonContainer.querySelector('.btn-secondary') : null;
                         
-                        if (context === 'settings') {
-                            // Insert after the upload button in the flex container
+                        if (uploadBtn && !uploadBtn.nextElementSibling || (uploadBtn.nextElementSibling && !uploadBtn.nextElementSibling.classList.contains('btn-danger'))) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.className = 'btn btn-danger btn-small';
+                            removeBtn.textContent = 'Remove';
+                            removeBtn.onclick = () => removeImage(type, context);
+                            
+                            // Insert after the upload button
                             uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
-                        } else {
+                        }
+                    } else {
+                        const uploadBtn = input.nextElementSibling;
+                        if (uploadBtn && (!uploadBtn.nextElementSibling || !uploadBtn.nextElementSibling.classList.contains('btn-danger'))) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.className = 'btn btn-danger btn-small';
+                            removeBtn.textContent = 'Remove';
+                            removeBtn.onclick = () => removeImage(type, context);
                             uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
                         }
                     }
@@ -2582,14 +2618,15 @@ $csrfToken = generateCSRFToken();
                     // Clear input
                     input.value = '';
                     
-                    showMessage(data.message || 'Image uploaded successfully!', 'success');
+                    showToast(data.message || 'Image uploaded successfully!', 'success');
                     refreshPreview();
                 } else {
-                    showMessage(data.error || 'Failed to upload image', 'error');
+                    showToast(data.error || 'Failed to upload image', 'error');
                 }
             })
-            .catch(() => {
-                showMessage('An error occurred while uploading', 'error');
+            .catch(error => {
+                console.error('Upload error:', error);
+                showToast(error.message || 'An error occurred while uploading', 'error');
             });
         }
         
