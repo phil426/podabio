@@ -1643,7 +1643,7 @@ $csrfToken = generateCSRFToken();
         window.csrfToken = '<?php echo h($csrfToken); ?>';
         const csrfToken = window.csrfToken;
         
-        function showSection(sectionName, navElement) {
+        window.showSection = function(sectionName, navElement) {
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -1676,13 +1676,13 @@ $csrfToken = generateCSRFToken();
             const url = new URL(window.location);
             url.searchParams.set('tab', sectionName);
             window.history.pushState({}, '', url);
-        }
+        };
         
         // Alias for backward compatibility
-        function showTab(tabName, evt) {
+        window.showTab = function(tabName, evt) {
             const navElement = evt ? evt.currentTarget : null;
             showSection(tabName, navElement);
-        }
+        };
         
         // Refresh preview iframe
         function refreshPreview() {
@@ -1790,12 +1790,6 @@ $csrfToken = generateCSRFToken();
                 // It's a real link, use the delete function
                 deleteLink(linkId);
             }
-        }
-            document.querySelectorAll('.link-item.new').forEach(item => {
-                setTimeout(() => {
-                    item.classList.remove('new');
-                }, 300);
-            });
         };
         
         window.handleLinkFormSubmit = function(form) {
