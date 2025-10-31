@@ -24,7 +24,7 @@ All code files use **relative paths** and do NOT contain hardcoded server paths:
 Documentation files correctly reference the server path for **deployment instructions**:
 
 1. **README.md**
-   - SSH commands reference correct path: `/home/u810635266/domains/getphily.com/public_html/podnbio/` ✅
+   - SSH commands reference correct path: `/home/u810635266/domains/getphily.com/public_html/` ✅
    - Used only for deployment instructions ✅
 
 2. **HOSTING_INFO.md**
@@ -53,17 +53,17 @@ This means:
 
 **SSH Path (for deployment only):**
 ```
-/home/u810635266/domains/getphily.com/public_html/podnbio/
+/home/u810635266/domains/getphily.com/public_html/
 ```
 
 **URL Path:**
 ```
-https://getphily.com/podnbio/
+https://getphily.com/
 ```
 
 **Upload URL:**
 ```
-https://getphily.com/podnbio/uploads/
+https://getphily.com/uploads/
 ```
 
 ## Verification Summary

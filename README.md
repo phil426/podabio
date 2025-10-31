@@ -38,8 +38,8 @@ A comprehensive link-in-bio platform designed for all content creators, with spe
 # Password: [Set/Change via Hostinger Control Panel - SSH Access section]
 ssh -p 65002 u810635266@82.198.236.40
 
-# Navigate to project directory
-cd /home/u810635266/domains/getphily.com/public_html/podnbio/
+# Navigate to project directory (root is /public_html/, no podnbio subdirectory)
+cd /home/u810635266/domains/getphily.com/public_html/
 
 # Connect to MySQL
 mysql -h srv556.hstgr.io -u u810635266_podnbio -p u810635266_site_podnbio
@@ -78,8 +78,8 @@ mysql -h srv556.hstgr.io -u u810635266_podnbio -p u810635266_site_podnbio < data
 # Password: [Set/Change via Hostinger Control Panel - SSH Access section]
 ssh -p 65002 u810635266@82.198.236.40
 
-# Navigate to project directory
-cd /home/u810635266/domains/getphily.com/public_html/podnbio/
+# Navigate to project directory (root is /public_html/, no podnbio subdirectory)
+cd /home/u810635266/domains/getphily.com/public_html/
 
 # Set permissions
 chmod 755 uploads/

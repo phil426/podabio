@@ -13,8 +13,8 @@
 # Connect to server
 ssh -p 65002 u810635266@82.198.236.40
 
-# Navigate to project directory
-cd /home/u810635266/domains/getphily.com/public_html/podnbio/
+# Navigate to project directory (root is /public_html/, no podnbio subdirectory)
+cd /home/u810635266/domains/getphily.com/public_html/
 
 # Run deployment script
 bash deploy.sh
@@ -32,7 +32,7 @@ git pull origin main
 **Step 2: Run Database Migration**
 
 **Option A: Via Web Browser (Easiest)**
-1. Open: `https://getphily.com/podnbio/database/migrate.php`
+1. Open: `https://getphily.com/database/migrate.php`
 2. Click "Run Migration"
 3. Verify success message
 4. **Delete the migrate.php file after migration**
@@ -53,7 +53,7 @@ EOF
 ## ✅ Verification Steps
 
 1. **Check Editor**
-   - Go to: `https://getphily.com/podnbio/editor.php`
+   - Go to: `https://getphily.com/editor.php`
    - Verify sidebar shows "Social Icons" (with share icon) instead of "Podcast Directories"
 
 2. **Test Adding Icon**
