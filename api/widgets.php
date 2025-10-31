@@ -65,6 +65,20 @@ switch ($action) {
         $widgetDef = WidgetRegistry::getWidget($widgetType);
         $configData = [];
         
+        // First, try to get config_data from JSON (if sent from frontend)
+        if (isset($_POST['config_data'])) {
+            $jsonConfig = $_POST['config_data'];
+            if (is_string($jsonConfig)) {
+                $decoded = json_decode($jsonConfig, true);
+                if (is_array($decoded)) {
+                    $configData = $decoded;
+                }
+            } elseif (is_array($jsonConfig)) {
+                $configData = $jsonConfig;
+            }
+        }
+        
+        // Then, override/add any fields sent individually in POST
         foreach ($widgetDef['config_fields'] as $fieldName => $fieldDef) {
             if (isset($_POST[$fieldName])) {
                 if ($fieldDef['type'] === 'url') {
