@@ -1322,9 +1322,10 @@ $csrfToken = generateCSRFToken();
         </div>
     </div>
     
-        <!-- Edit Link Drawer Slider -->
+        <!-- Edit Link Drawer Slider (only shown on Content tab) -->
+        <?php if ($page): ?>
         <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
-        <div id="link-drawer" class="drawer">
+        <div id="link-drawer" class="drawer" style="display: none;">
             <div class="drawer-header">
                 <h2 id="drawer-title">Edit Link</h2>
                 <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
@@ -1369,6 +1370,7 @@ $csrfToken = generateCSRFToken();
                 </div>
             </form>
         </div>
+        <?php endif; ?>
     
     <script>
         const csrfToken = '<?php echo h($csrfToken); ?>';
@@ -1507,6 +1509,10 @@ $csrfToken = generateCSRFToken();
             const drawer = document.getElementById('link-drawer');
             if (drawer) {
                 drawer.classList.remove('active');
+                // Hide drawer when not active
+                if (!drawer.classList.contains('active')) {
+                    drawer.style.display = 'none';
+                }
             }
             
             const overlay = document.getElementById('drawer-overlay');
@@ -1561,6 +1567,12 @@ $csrfToken = generateCSRFToken();
         }
         
         function openDrawer(linkItem) {
+            // Ensure main drawer is visible (for fallback)
+            const mainDrawer = document.getElementById('link-drawer');
+            if (mainDrawer) {
+                mainDrawer.style.display = 'block';
+            }
+            
             // Remove any existing drawers from other items
             document.querySelectorAll('.link-item .drawer').forEach(d => {
                 d.classList.remove('active');
@@ -1625,8 +1637,11 @@ $csrfToken = generateCSRFToken();
                 const drawer = document.getElementById('link-drawer');
                 const overlay = document.getElementById('drawer-overlay');
                 
-                drawer.classList.add('active');
-                overlay.classList.add('active');
+                if (drawer && overlay) {
+                    drawer.style.display = 'block';
+                    drawer.classList.add('active');
+                    overlay.classList.add('active');
+                }
             }
         }
         
@@ -1807,6 +1822,19 @@ $csrfToken = generateCSRFToken();
                 if (drawer && drawer.classList.contains('active')) {
                     closeDrawer();
                 }
+            }
+        });
+        
+        // Ensure drawer is hidden on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const drawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            if (drawer) {
+                drawer.style.display = 'none';
+                drawer.classList.remove('active');
+            }
+            if (overlay) {
+                overlay.classList.remove('active');
             }
         });
         
@@ -2262,13 +2290,28 @@ $csrfToken = generateCSRFToken();
                     // Update preview
                     const preview = document.getElementById(previewId);
                     
+                    if (!preview) {
+                        console.error('Preview element not found:', previewId);
+                        showMessage('Image uploaded but preview could not be updated', 'error');
+                        return;
+                    }
+                    
+                    // Use the URL from the response
+                    const imageUrl = data.url || data.path;
+                    
+                    if (!imageUrl) {
+                        console.error('No image URL in response:', data);
+                        showMessage('Image uploaded but no URL returned', 'error');
+                        return;
+                    }
+                    
                     if (preview.tagName === 'IMG') {
-                        preview.src = data.url;
+                        preview.src = imageUrl;
                     } else {
                         // Replace div with img
                         const img = document.createElement('img');
                         img.id = previewId;
-                        img.src = data.url;
+                        img.src = imageUrl;
                         img.alt = type === 'profile' ? 'Profile' : 'Background';
                         img.style.cssText = type === 'profile' 
                             ? 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;'
