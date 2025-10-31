@@ -684,70 +684,147 @@ $csrfToken = generateCSRFToken();
         
         .link-item {
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             z-index: 1;
-            transition: margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 10px;
         }
         
         .link-item.has-drawer {
             z-index: 10;
-            margin-bottom: 0;
         }
         
-        /* Link-item specific drawer - slides from bottom of item and pushes content down */
+        /* Link-item specific drawer - dropdown style that pushes content down */
         .link-item .drawer {
             position: relative;
             width: 100%;
             background: #ffffff;
-            border-radius: 0 0 16px 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             z-index: 1;
             max-height: 0;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s, margin-top 0.3s;
+            display: block;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                        padding-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        padding-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.3s,
+                        border-width 0.3s;
             opacity: 0;
-            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
         }
         
         .link-item .drawer.active {
-            max-height: 600px;
+            max-height: 500px;
             opacity: 1;
-            margin-top: 10px;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            border-width: 1px;
         }
         
+        /* Compact drawer styles - remove handle, make header and content compact */
         .link-item .drawer .drawer-handle {
-            width: 40px;
-            height: 4px;
-            background: #d1d5db;
-            border-radius: 2px;
-            margin: 12px auto 0;
-            cursor: grab;
-        }
-        
-        .link-item .drawer .drawer-handle:active {
-            cursor: grabbing;
-        }
-        
-        .link-item .drawer .drawer-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 1.25rem 1.25rem;
-            -webkit-overflow-scrolling: touch;
+            display: none; /* Hide handle for dropdown style */
         }
         
         .link-item .drawer .drawer-header {
-            padding: 1rem 1.25rem;
+            padding: 0 12px 8px 12px;
             border-bottom: 1px solid #f3f4f6;
-            flex-shrink: 0;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .link-item .drawer .drawer-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+            color: #374151;
+        }
+        
+        .link-item .drawer .drawer-close {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            font-size: 14px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+        
+        .link-item .drawer .drawer-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .link-item .drawer .drawer-content {
+            padding: 0 12px;
+            overflow-y: auto;
+            max-height: 400px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .link-item .drawer .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .link-item .drawer .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .link-item .drawer .form-group input,
+        .link-item .drawer .form-group select,
+        .link-item .drawer .form-group textarea {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        
+        .link-item .drawer .form-group input:focus,
+        .link-item .drawer .form-group select:focus,
+        .link-item .drawer .form-group textarea:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        
+        .link-item .drawer .form-group textarea {
+            min-height: 50px;
+            resize: vertical;
+            font-family: inherit;
         }
         
         .link-item .drawer .drawer-actions {
-            padding: 1rem 1.25rem;
+            padding: 10px 12px 0 12px;
             border-top: 1px solid #f3f4f6;
-            flex-shrink: 0;
-            background: #ffffff;
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .link-item .drawer .drawer-actions .btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 6px;
         }
         
         .link-item.editing {
