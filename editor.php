@@ -1664,7 +1664,8 @@ $csrfToken = generateCSRFToken();
             }
         });
         
-        function showAddLinkForm() {
+        // Make functions globally accessible
+        window.showAddLinkForm = function() {
             // Add a blank new link item to the top of the list
             const linksList = document.getElementById('links-list');
             if (!linksList) return;
@@ -1728,10 +1729,10 @@ $csrfToken = generateCSRFToken();
             // Open drawer for new link item
             setTimeout(() => {
                 openDrawer(newLinkItem);
-            }, 100);
-        }
+                }, 100);
+        };
         
-        function deleteTempLink(button) {
+        window.deleteTempLink = function(button) {
             const linkItem = button.closest('.link-item');
             const linkId = linkItem.getAttribute('data-link-id');
             
@@ -1750,7 +1751,7 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        function closeDrawer() {
+        window.closeDrawer = function() {
             // Close all item-specific drawers
             document.querySelectorAll('.link-item .drawer').forEach(drawer => {
                 drawer.classList.remove('active');
@@ -1812,7 +1813,7 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function openDrawer(linkItem) {
+        window.openDrawer = function(linkItem) {
             // Remove any existing drawers from other items
             document.querySelectorAll('.link-item .drawer').forEach(d => {
                 d.classList.remove('active');
@@ -1904,9 +1905,9 @@ $csrfToken = generateCSRFToken();
             setTimeout(() => {
                 itemDrawer.classList.add('active');
             }, 10);
-        }
+        };
         
-        function editLink(linkId, buttonElement) {
+        window.editLink = function(linkId, buttonElement) {
             const linkItem = buttonElement ? buttonElement.closest('.link-item') : document.querySelector(`[data-link-id="${linkId}"]`);
             
             if (!linkItem) return;
