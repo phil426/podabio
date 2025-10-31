@@ -802,13 +802,37 @@ $csrfToken = generateCSRFToken();
                 </div>
                 
                 <div class="form-group">
-                    <label for="podcast_name">Podcast Name</label>
+                    <label for="podcast_name">Page Name</label>
                     <input type="text" id="podcast_name" name="podcast_name" value="<?php echo h($page['podcast_name'] ?? ''); ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="podcast_description">Description</label>
                     <textarea id="podcast_description" name="podcast_description" rows="4"><?php echo h($page['podcast_description'] ?? ''); ?></textarea>
+                </div>
+                
+                <!-- Profile Image Upload -->
+                <div class="form-group">
+                    <label>Profile Image</label>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <div style="flex-shrink: 0;">
+                            <?php if ($page['profile_image']): ?>
+                                <img id="profile-preview-settings" src="<?php echo h($page['profile_image']); ?>" alt="Profile" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                            <?php else: ?>
+                                <div id="profile-preview-settings" style="width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>
+                            <?php endif; ?>
+                        </div>
+                        <div style="flex: 1;">
+                            <input type="file" id="profile-image-input-settings" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%;">
+                            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                <button type="button" class="btn btn-secondary btn-small" onclick="uploadImage('profile', 'settings')">Upload Profile Image</button>
+                                <?php if ($page['profile_image']): ?>
+                                    <button type="button" class="btn btn-danger btn-small" onclick="removeImage('profile', 'settings')">Remove</button>
+                                <?php endif; ?>
+                            </div>
+                            <small style="display: block; color: #666;">Recommended: 400x400px, square image. Max 5MB</small>
+                        </div>
+                    </div>
                 </div>
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
@@ -2193,8 +2217,13 @@ $csrfToken = generateCSRFToken();
         }
         
         // Image upload functionality
-        function uploadImage(type) {
-            const inputId = type === 'profile' ? 'profile-image-input' : 'background-image-input';
+        function uploadImage(type, context = 'appearance') {
+            const inputId = type === 'profile' 
+                ? (context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input')
+                : 'background-image-input';
+            const previewId = type === 'profile' 
+                ? (context === 'settings' ? 'profile-preview-settings' : 'profile-preview')
+                : 'background-preview';
             const input = document.getElementById(inputId);
             const file = input.files[0];
             
@@ -2231,7 +2260,6 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     // Update preview
-                    const previewId = type === 'profile' ? 'profile-preview' : 'background-preview';
                     const preview = document.getElementById(previewId);
                     
                     if (preview.tagName === 'IMG') {
@@ -2249,20 +2277,31 @@ $csrfToken = generateCSRFToken();
                     }
                     
                     // Show remove button if not visible
-                    const uploadBtn = input.nextElementSibling;
-                    if (uploadBtn && !uploadBtn.nextElementSibling || uploadBtn.nextElementSibling.textContent !== 'Remove') {
+                    const uploadBtnContainer = context === 'settings' 
+                        ? input.closest('div').querySelector('.btn-secondary')
+                        : input.nextElementSibling;
+                    const uploadBtn = uploadBtnContainer || input.nextElementSibling;
+                    
+                    if (uploadBtn && (!uploadBtn.nextElementSibling || uploadBtn.nextElementSibling.textContent !== 'Remove')) {
                         const removeBtn = document.createElement('button');
                         removeBtn.type = 'button';
                         removeBtn.className = 'btn btn-danger btn-small';
                         removeBtn.textContent = 'Remove';
-                        removeBtn.onclick = () => removeImage(type);
-                        uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
+                        removeBtn.onclick = () => removeImage(type, context);
+                        
+                        if (context === 'settings') {
+                            // Insert after the upload button in the flex container
+                            uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
+                        } else {
+                            uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
+                        }
                     }
                     
                     // Clear input
                     input.value = '';
                     
                     showMessage(data.message || 'Image uploaded successfully!', 'success');
+                    refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to upload image', 'error');
                 }
@@ -2272,7 +2311,7 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function removeImage(type) {
+        function removeImage(type, context = 'appearance') {
             if (!confirm(`Are you sure you want to remove the ${type} image?`)) {
                 return;
             }
@@ -2289,26 +2328,36 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const previewId = type === 'profile' ? 'profile-preview' : 'background-preview';
+                    const previewId = type === 'profile' 
+                        ? (context === 'settings' ? 'profile-preview-settings' : 'profile-preview')
+                        : 'background-preview';
                     const preview = document.getElementById(previewId);
                     
-                    // Replace img with placeholder div
-                    const placeholder = document.createElement('div');
-                    placeholder.id = previewId;
-                    placeholder.style.cssText = type === 'profile'
-                        ? 'width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;'
-                        : 'width: 200px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;';
-                    placeholder.textContent = 'No image';
-                    preview.parentNode.replaceChild(placeholder, preview);
+                    if (preview) {
+                        // Replace img with placeholder div
+                        const placeholder = document.createElement('div');
+                        placeholder.id = previewId;
+                        placeholder.style.cssText = type === 'profile'
+                            ? 'width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;'
+                            : 'width: 200px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;';
+                        placeholder.textContent = 'No image';
+                        preview.parentNode.replaceChild(placeholder, preview);
+                    }
                     
                     // Remove remove button
-                    const inputId = type === 'profile' ? 'profile-image-input' : 'background-image-input';
-                    const uploadBtn = document.getElementById(inputId).nextElementSibling;
-                    if (uploadBtn && uploadBtn.nextElementSibling && uploadBtn.nextElementSibling.textContent === 'Remove') {
-                        uploadBtn.nextElementSibling.remove();
+                    const inputId = type === 'profile' 
+                        ? (context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input')
+                        : 'background-image-input';
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        const uploadBtn = input.nextElementSibling;
+                        if (uploadBtn && uploadBtn.nextElementSibling && uploadBtn.nextElementSibling.textContent === 'Remove') {
+                            uploadBtn.nextElementSibling.remove();
+                        }
                     }
                     
                     showMessage(`${type} image removed successfully`, 'success');
+                    refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to remove image', 'error');
                 }
