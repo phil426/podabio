@@ -1596,7 +1596,9 @@ $csrfToken = generateCSRFToken();
         <?php endif; ?>
     
     <script>
-        const csrfToken = '<?php echo h($csrfToken); ?>';
+        // Ensure functions are in global scope
+        window.csrfToken = '<?php echo h($csrfToken); ?>';
+        const csrfToken = window.csrfToken;
         
         function showSection(sectionName, navElement) {
             // Hide all tab contents
