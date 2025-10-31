@@ -527,18 +527,19 @@ $csrfToken = generateCSRFToken();
             border: 1px solid #bee5eb;
         }
         
-        /* Drawer Slider */
+        /* Professional Bottom Drawer Slider */
         .drawer-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 2000;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
+            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
+            backdrop-filter: blur(2px);
         }
         
         .drawer-overlay.active {
@@ -547,104 +548,143 @@ $csrfToken = generateCSRFToken();
         }
         
         .drawer {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: #ffffff;
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
             z-index: 2001;
             transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-            max-height: 50vh;
-            overflow-y: auto;
-            padding: 2rem;
-            min-height: 300px;
-        }
-        
-        .link-item {
-            position: relative;
-        }
-        
-        .link-item .drawer {
-            position: absolute;
-            top: calc(100% + 10px);
-            left: 0;
-            right: 0;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            z-index: 2002;
-            transform: translateY(-10px) scaleY(0);
-            transform-origin: top;
-            transition: transform 0.3s ease-out, opacity 0.3s;
-            opacity: 0;
-            max-height: 45vh;
-            overflow-y: auto;
-            padding: 1rem;
-            min-height: auto;
-        }
-        
-        .link-item .drawer.active {
-            transform: translateY(0) scaleY(1);
-            opacity: 1;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .drawer.active {
             transform: translateY(0);
         }
         
+        /* Drawer drag handle */
+        .drawer-handle {
+            width: 40px;
+            height: 4px;
+            background: #d1d5db;
+            border-radius: 2px;
+            margin: 12px auto 0;
+            cursor: grab;
+        }
+        
+        .drawer-handle:active {
+            cursor: grabbing;
+        }
+        
+        .drawer-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 1.25rem 1.25rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         .drawer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f3f4f6;
+            flex-shrink: 0;
         }
         
         .drawer-header h2 {
             margin: 0;
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #111827;
+            letter-spacing: -0.01em;
         }
         
         .drawer-close {
             background: none;
             border: none;
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             color: #6b7280;
             cursor: pointer;
             padding: 0.25rem;
             line-height: 1;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
         }
         
         .drawer-close:hover {
             color: #111827;
+            background: #f3f4f6;
         }
         
         /* Compact form groups in drawer */
         .drawer .form-group {
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .drawer .form-group:last-child {
+            margin-bottom: 0;
         }
         
         .drawer .form-group label {
-            font-size: 0.875rem;
-            margin-bottom: 0.35rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            display: block;
         }
         
         .drawer .form-group input,
         .drawer .form-group select,
         .drawer .form-group textarea {
             font-size: 0.875rem;
-            padding: 0.5rem;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #ffffff;
+        }
+        
+        .drawer .form-group input:focus,
+        .drawer .form-group select:focus,
+        .drawer .form-group textarea:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
         }
         
         .drawer .form-group textarea {
-            min-height: 60px;
+            min-height: 70px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .drawer-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #f3f4f6;
+            flex-shrink: 0;
+            background: #ffffff;
+        }
+        
+        /* Remove the link-item drawer positioning - use bottom drawer only */
+        .link-item {
+            position: relative;
         }
         
         .link-item.editing {
@@ -1453,12 +1493,14 @@ $csrfToken = generateCSRFToken();
         <?php if ($page): ?>
         <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
         <div id="link-drawer" class="drawer" style="display: none;">
+            <div class="drawer-handle"></div>
             <div class="drawer-header">
                 <h2 id="drawer-title">Edit Link</h2>
                 <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+            <div class="drawer-content">
             <form id="link-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 <input type="hidden" name="action" id="link-action" value="update">
@@ -1627,30 +1669,20 @@ $csrfToken = generateCSRFToken();
         }
         
         function closeDrawer() {
-            // Close all item-specific drawers
-            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
-                drawer.classList.remove('active');
-            });
-            
-            // Close main drawer
             const drawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
             if (drawer) {
                 drawer.classList.remove('active');
-                // Hide drawer when not active
-                if (!drawer.classList.contains('active')) {
+                // Hide drawer after animation completes
+                setTimeout(() => {
                     drawer.style.display = 'none';
-                }
+                }, 300);
             }
             
-            const overlay = document.getElementById('drawer-overlay');
             if (overlay) {
                 overlay.classList.remove('active');
             }
-            
-            // Remove has-drawer class from items
-            document.querySelectorAll('.link-item.has-drawer').forEach(item => {
-                item.classList.remove('has-drawer');
-            });
             
             // Remove editing class from link items
             document.querySelectorAll('.link-item.editing').forEach(item => {
@@ -1694,82 +1726,24 @@ $csrfToken = generateCSRFToken();
         }
         
         function openDrawer(linkItem) {
-            // Ensure main drawer is visible (for fallback)
-            const mainDrawer = document.getElementById('link-drawer');
-            if (mainDrawer) {
-                mainDrawer.style.display = 'block';
+            const drawer = document.getElementById('link-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            if (!drawer || !overlay) {
+                console.error('Drawer elements not found');
+                return;
             }
             
-            // Remove any existing drawers from other items
-            document.querySelectorAll('.link-item .drawer').forEach(d => {
-                d.classList.remove('active');
-                d.parentElement.classList.remove('has-drawer');
-            });
+            // Show drawer
+            drawer.style.display = 'flex';
             
-            // If linkItem is provided, create drawer relative to it
-            if (linkItem) {
-                let itemDrawer = linkItem.querySelector('.drawer');
-                
-                // Create drawer inside the link-item if it doesn't exist
-                if (!itemDrawer) {
-                    const mainDrawer = document.getElementById('link-drawer');
-                    itemDrawer = mainDrawer.cloneNode(true);
-                    itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
-                    itemDrawer.classList.remove('drawer');
-                    itemDrawer.classList.add('drawer');
-                    linkItem.appendChild(itemDrawer);
-                    
-                    // Copy form values from main drawer
-                    const form = itemDrawer.querySelector('#link-form');
-                    if (form) {
-                        form.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            handleLinkFormSubmit(form, linkItem);
-                        });
-                    }
-                }
-                
-                linkItem.classList.add('has-drawer');
-                
-                // Copy current form values to item-specific drawer
-                const mainForm = document.getElementById('link-form');
-                const mainDrawerTitle = document.getElementById('drawer-title');
-                const itemForm = itemDrawer.querySelector('#link-form');
-                const itemDrawerTitle = itemDrawer.querySelector('#drawer-title');
-                
-                if (mainForm && itemForm) {
-                    itemForm.querySelector('#link-action').value = mainForm.querySelector('#link-action').value;
-                    itemForm.querySelector('#link-id').value = mainForm.querySelector('#link-id').value;
-                    itemForm.querySelector('#link_type').value = mainForm.querySelector('#link_type').value;
-                    itemForm.querySelector('#link_title').value = mainForm.querySelector('#link_title').value;
-                    itemForm.querySelector('#link_url').value = mainForm.querySelector('#link_url').value;
-                    itemForm.querySelector('#link_disclosure').value = mainForm.querySelector('#link_disclosure').value;
-                    
-                    // Copy title text if both elements exist
-                    if (mainDrawerTitle && itemDrawerTitle) {
-                        itemDrawerTitle.textContent = mainDrawerTitle.textContent;
-                    }
-                }
-                
-                // Show overlay and drawer
-                const overlay = document.getElementById('drawer-overlay');
-                overlay.classList.add('active');
-                
-                // Small delay to ensure DOM is ready
-                setTimeout(() => {
-                    itemDrawer.classList.add('active');
-                }, 10);
-            } else {
-                // Fallback to main drawer at bottom of screen
-                const drawer = document.getElementById('link-drawer');
-                const overlay = document.getElementById('drawer-overlay');
-                
-                if (drawer && overlay) {
-                    drawer.style.display = 'block';
-                    drawer.classList.add('active');
-                    overlay.classList.add('active');
-                }
-            }
+            // Show overlay first
+            overlay.classList.add('active');
+            
+            // Then show drawer with animation
+            setTimeout(() => {
+                drawer.classList.add('active');
+            }, 10);
         }
         
         function editLink(linkId, buttonElement) {
