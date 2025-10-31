@@ -1850,7 +1850,7 @@ $csrfToken = generateCSRFToken();
             setTimeout(() => {
                 // Close main drawer if open
                 const mainDrawer = document.getElementById('link-drawer');
-                const overlay = document.getElementById('drawer-overlay');
+                // Reuse overlay variable from outer scope
                 
                 if (mainDrawer) {
                     mainDrawer.classList.remove('active');
