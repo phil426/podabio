@@ -273,15 +273,27 @@ class WidgetRenderer {
                             }).filter(ep => ep.audio);
                             
                             if (episodes.length > 0) {
+                                // Get theme color from CSS variable
+                                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--primary-color") || getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || "#0066ff";
+                                
                                 // Initialize Shikwasa player with playlist
                                 try {
-                                    new Shikwasa.Player({
+                                    const player = new Shikwasa.Player({
                                         container: container,
                                         audio: episodes[0],
                                         playlist: episodes.length > 1 ? episodes.slice(1) : [],
-                                        themeColor: getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || "#0066ff",
+                                        themeColor: primaryColor.trim(),
                                         theme: "auto"
                                     });
+                                    
+                                    // Apply additional styling after initialization
+                                    setTimeout(() => {
+                                        const playerEl = container.querySelector(".shk-player");
+                                        if (playerEl) {
+                                            playerEl.style.fontFamily = "inherit";
+                                            playerEl.style.color = getComputedStyle(document.documentElement).getPropertyValue("--text-color") || "inherit";
+                                        }
+                                    }, 100);
                                 } catch (error) {
                                     console.error("Failed to initialize Shikwasa player:", error);
                                     container.innerHTML = "<p style=\'color: #dc3545;\'>Failed to load podcast player. Please check your RSS feed URL.</p>";

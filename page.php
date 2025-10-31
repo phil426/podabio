@@ -257,14 +257,45 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         /* Podcast Player widget styles */
         .widget-podcast {
-            padding: 0;
-            border: none;
-            background: transparent;
+            /* Inherits standard widget styling from .widget-item */
+            /* No overrides - uses same padding, border, colors, and font as other widgets */
+        }
+        
+        .widget-podcast .widget-content {
+            width: 100%;
         }
         
         .shikwasa-podcast-container {
             margin-top: 0.5rem;
             width: 100%;
+        }
+        
+        /* Style Shikwasa player to match widget theme */
+        .shikwasa-podcast-container .shk-player {
+            font-family: inherit;
+            color: var(--text-color);
+            background: transparent;
+            border: none;
+        }
+        
+        .shikwasa-podcast-container .shk-player__title,
+        .shikwasa-podcast-container .shk-player__episode-title {
+            color: var(--text-color);
+            font-weight: 600;
+            font-family: inherit;
+        }
+        
+        .shikwasa-podcast-container .shk-player__controls {
+            background: transparent;
+        }
+        
+        .shikwasa-podcast-container .shk-player__progress {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .shikwasa-podcast-container .shk-player__time {
+            color: var(--text-color);
+            font-family: inherit;
         }
         
         .social-icons {
