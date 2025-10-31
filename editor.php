@@ -1887,10 +1887,11 @@ $csrfToken = generateCSRFToken();
                 const itemDrawer = mainDrawer.cloneNode(true);
                 itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
                 itemDrawer.style.display = 'flex';
-                itemDrawer.style.position = 'absolute';
-                itemDrawer.style.bottom = '0';
-                itemDrawer.style.left = '0';
-                itemDrawer.style.right = '0';
+                itemDrawer.style.position = 'relative';
+                itemDrawer.style.width = '100%';
+                itemDrawer.style.maxHeight = '0';
+                itemDrawer.style.opacity = '0';
+                itemDrawer.style.marginTop = '0';
                 
                 // Copy form event listener
                 const form = itemDrawer.querySelector('#link-form');
