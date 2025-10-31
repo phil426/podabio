@@ -2228,11 +2228,21 @@ $csrfToken = generateCSRFToken();
                     isSubmittingWidget = true; // Keep it true until reload
                     closeWidgetModal();
                     showToast('Widget saved successfully!', 'success');
-                    refreshPreview();
-                    // Reload immediately to prevent duplicate submissions
+                    
+                    // Force hard refresh of preview iframe (add cache buster)
+                    const previewIframe = document.getElementById('preview-iframe');
+                    if (previewIframe) {
+                        const currentSrc = previewIframe.src;
+                        const separator = currentSrc.includes('?') ? '&' : '?';
+                        previewIframe.src = currentSrc + separator + '_t=' + Date.now();
+                    }
+                    
+                    // Reload page to show new widget in list
+                    // Use a slightly longer delay to ensure database commit
                     setTimeout(() => {
-                        window.location.reload();
-                    }, 800);
+                        // Force hard reload to bypass cache
+                        window.location.reload(true);
+                    }, 1200);
                 } else {
                     // Re-enable on error
                     formInputs.forEach(input => {
