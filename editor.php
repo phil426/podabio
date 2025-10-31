@@ -94,6 +94,7 @@ if (isset($_GET['error'])) {
     $error = $_GET['error'];
 }
 // Handle linked parameter for backward compatibility
+// Only set if success is not already set to prevent duplicates
 if (isset($_GET['linked']) && $_GET['linked'] == '1' && empty($success)) {
     $success = 'Google account linked successfully!';
 }
@@ -396,6 +397,112 @@ $csrfToken = generateCSRFToken();
             color: #666;
             font-size: 12px;
         }
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        
+        .toast {
+            min-width: 320px;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            pointer-events: auto;
+            transform: translateX(calc(100% + 40px));
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+        
+        .toast.error {
+            border-left: 4px solid #ef4444;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+        }
+        
+        .toast.info {
+            border-left: 4px solid #3b82f6;
+            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+        }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+        
+        .toast.success .toast-icon {
+            background: #10b981;
+            color: #ffffff;
+        }
+        
+        .toast.error .toast-icon {
+            background: #ef4444;
+            color: #ffffff;
+        }
+        
+        .toast.info .toast-icon {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+        
+        .toast-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .toast-message {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .toast-close {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            font-size: 18px;
+            transition: color 0.2s;
+            opacity: 0.7;
+        }
+        
+        .toast-close:hover {
+            color: #374151;
+            opacity: 1;
+        }
+        
+        /* Legacy alert styles (for backward compatibility) */
         .alert {
             padding: 12px;
             border-radius: 4px;
@@ -698,12 +805,16 @@ $csrfToken = generateCSRFToken();
                     </div>
                 </div>
         
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container"></div>
+        
+        <!-- Legacy alerts (will be converted to toasts via JavaScript) -->
         <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo h($success); ?></div>
+            <div class="alert alert-success" data-toast="true" data-type="success" style="display: none;"><?php echo h($success); ?></div>
         <?php endif; ?>
         
         <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo h($error); ?></div>
+            <div class="alert alert-error" data-toast="true" data-type="error" style="display: none;"><?php echo h($error); ?></div>
         <?php endif; ?>
         
         <div id="message" style="display:none;"></div>
@@ -900,14 +1011,6 @@ $csrfToken = generateCSRFToken();
         <!-- Account Tab -->
         <div id="tab-account" class="tab-content">
             <h2>Account Settings</h2>
-            
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?php echo h($success); ?></div>
-            <?php endif; ?>
-            
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?php echo h($error); ?></div>
-            <?php endif; ?>
             
             <div class="form-group" style="margin-bottom: 2rem;">
                 <h3 style="margin-bottom: 1rem;">Account Information</h3>
@@ -1770,15 +1873,151 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = message;
-            messageDiv.className = 'alert alert-' + (type === 'error' ? 'error' : 'success');
-            messageDiv.style.display = 'block';
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) {
+                // Fallback if container doesn't exist
+                console.warn('Toast container not found');
+                return;
+            }
+            
+            // Remove any existing toasts with the same message to prevent duplicates
+            const existingToasts = container.querySelectorAll('.toast');
+            existingToasts.forEach(toast => {
+                const toastMsg = toast.querySelector('.toast-message');
+                if (toastMsg && toastMsg.textContent.trim() === message.trim()) {
+                    toast.remove();
+                }
+            });
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            // Choose icon based on type
+            let icon = 'fa-check-circle';
+            if (type === 'error') {
+                icon = 'fa-exclamation-circle';
+            } else if (type === 'info') {
+                icon = 'fa-info-circle';
+            } else {
+                icon = 'fa-check-circle';
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="toast-content">
+                    <p class="toast-message">${message}</p>
+                </div>
+                <button class="toast-close" onclick="this.closest('.toast').remove()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
             setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
+                toast.classList.add('show');
+            }, 10);
+            
+            // Auto-dismiss after 6 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 400); // Wait for animation to complete
+            }, 6000);
         }
+        
+        function showMessage(message, type) {
+            // Use new toast system
+            showToast(message, type);
+        }
+        
+        // Convert legacy alerts to toasts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle URL parameters first (to prevent duplicates from both URL and inline alerts)
+            const urlParams = new URLSearchParams(window.location.search);
+            const successParam = urlParams.get('success');
+            const errorParam = urlParams.get('error');
+            const linkedParam = urlParams.get('linked');
+            
+            let toastShown = false;
+            
+            // Process success parameter from URL
+            if (successParam) {
+                toastShown = true;
+                setTimeout(() => {
+                    showToast(decodeURIComponent(successParam), 'success');
+                    // Clean URL - remove both success and linked params if linked=1 exists
+                    const paramsToRemove = ['success'];
+                    if (linkedParam === '1') {
+                        paramsToRemove.push('linked');
+                    }
+                    const newUrl = window.location.pathname + '?' + Array.from(urlParams.entries())
+                        .filter(([key]) => !paramsToRemove.includes(key))
+                        .map(([key, val]) => `${key}=${val}`)
+                        .join('&');
+                    if (newUrl.endsWith('?')) {
+                        window.history.replaceState({}, '', window.location.pathname + (urlParams.has('tab') ? '?tab=' + urlParams.get('tab') : ''));
+                    } else {
+                        window.history.replaceState({}, '', newUrl);
+                    }
+                }, 300);
+            } else if (linkedParam === '1' && !toastShown) {
+                // Handle linked parameter separately (only if success wasn't already set)
+                toastShown = true;
+                setTimeout(() => {
+                    showToast('Google account linked successfully!', 'success');
+                    // Clean URL
+                    const newUrl = window.location.pathname + '?' + Array.from(urlParams.entries())
+                        .filter(([key]) => key !== 'linked')
+                        .map(([key, val]) => `${key}=${val}`)
+                        .join('&');
+                    if (newUrl.endsWith('?')) {
+                        window.history.replaceState({}, '', window.location.pathname + (urlParams.has('tab') ? '?tab=' + urlParams.get('tab') : ''));
+                    } else {
+                        window.history.replaceState({}, '', newUrl);
+                    }
+                }, 300);
+            }
+            
+            // Process error parameter
+            if (errorParam) {
+                setTimeout(() => {
+                    showToast(decodeURIComponent(errorParam), 'error');
+                    // Clean URL
+                    const newUrl = window.location.pathname + '?' + Array.from(urlParams.entries())
+                        .filter(([key]) => key !== 'error')
+                        .map(([key, val]) => `${key}=${val}`)
+                        .join('&');
+                    if (newUrl.endsWith('?')) {
+                        window.history.replaceState({}, '', window.location.pathname + (urlParams.has('tab') ? '?tab=' + urlParams.get('tab') : ''));
+                    } else {
+                        window.history.replaceState({}, '', newUrl);
+                    }
+                }, 300);
+            }
+            
+            // Convert legacy inline alerts to toasts (only if no URL param toast was shown)
+            if (!toastShown) {
+                const alerts = document.querySelectorAll('[data-toast="true"]');
+                alerts.forEach(alert => {
+                    const message = alert.textContent.trim();
+                    const type = alert.getAttribute('data-type') || 'success';
+                    if (message) {
+                        // Small delay to ensure smooth animation
+                        setTimeout(() => {
+                            showToast(message, type);
+                        }, 300);
+                    }
+                });
+            }
+        });
         
         // Handle link form submission
         // Handle main drawer form submission (fallback)
