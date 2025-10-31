@@ -1597,7 +1597,7 @@ $csrfToken = generateCSRFToken();
                     </button>
                 </div>
                 <div class="modal-content">
-                    <form id="link-form">
+                    <form id="link-form" onsubmit="event.preventDefault(); handleLinkFormSubmit(this);">
                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                         <input type="hidden" name="action" id="link-action" value="update">
                         <input type="hidden" name="link_id" id="link-id">
@@ -2153,9 +2153,9 @@ $csrfToken = generateCSRFToken();
         // Handle Escape key to close drawer
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                const drawer = document.getElementById('link-drawer');
-                if (drawer && drawer.classList.contains('active')) {
-                    closeDrawer();
+                const overlay = document.getElementById('link-modal-overlay');
+                if (overlay && overlay.classList.contains('active')) {
+                    closeLinkModal();
                 }
             }
         });
