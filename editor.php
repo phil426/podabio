@@ -2025,17 +2025,32 @@ $csrfToken = generateCSRFToken();
             const fieldsContainer = document.getElementById('widget-config-fields');
             fieldsContainer.innerHTML = '';
             
-            // Add title field (always required)
-            fieldsContainer.innerHTML += `
-                <div class="form-group">
-                    <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
-                    <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
-                    ${widget.widget_id === 'podcast_player' ? '<small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>' : ''}
-                </div>
-            `;
-            
-            // Add description field for podcast player (auto-populated)
+            // For podcast player, add RSS Feed URL first, then Title, Description, and Cover Image
             if (widget.widget_id === 'podcast_player') {
+                // RSS Feed URL (first field)
+                const rssFieldDef = widget.config_fields.rss_feed_url;
+                if (rssFieldDef) {
+                    const required = rssFieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                    const helpText = rssFieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${rssFieldDef.help}</small>` : '';
+                    fieldsContainer.innerHTML += `
+                        <div class="form-group">
+                            <label for="widget_config_rss_feed_url">${rssFieldDef.label}${required}</label>
+                            <input type="${rssFieldDef.type || 'url'}" id="widget_config_rss_feed_url" name="rss_feed_url" ${rssFieldDef.required ? 'required' : ''} placeholder="${rssFieldDef.placeholder || ''}" value="${rssFieldDef.default || ''}">
+                            ${helpText}
+                        </div>
+                    `;
+                }
+                
+                // Title field (second)
+                fieldsContainer.innerHTML += `
+                    <div class="form-group">
+                        <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                        <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>
+                    </div>
+                `;
+                
+                // Description field (third)
                 fieldsContainer.innerHTML += `
                     <div class="form-group">
                         <label for="widget_config_description">Description</label>
@@ -2043,11 +2058,36 @@ $csrfToken = generateCSRFToken();
                         <small style="color: #666; display: block; margin-top: 0.25rem;">Description from RSS feed</small>
                     </div>
                 `;
+                
+                // Cover Image field (fourth)
+                const thumbnailFieldDef = widget.config_fields.thumbnail_image;
+                if (thumbnailFieldDef) {
+                    const helpText = thumbnailFieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${thumbnailFieldDef.help}</small>` : '';
+                    fieldsContainer.innerHTML += `
+                        <div class="form-group">
+                            <label for="widget_config_thumbnail_image">${thumbnailFieldDef.label}</label>
+                            <input type="${thumbnailFieldDef.type || 'url'}" id="widget_config_thumbnail_image" name="thumbnail_image" placeholder="${thumbnailFieldDef.placeholder || ''}" value="${thumbnailFieldDef.default || ''}">
+                            ${helpText}
+                        </div>
+                    `;
+                }
+            } else {
+                // For non-podcast widgets, add title field first
+                fieldsContainer.innerHTML += `
+                    <div class="form-group">
+                        <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                        <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
+                    </div>
+                `;
             }
             
-            // Add widget-specific fields
+            // Add widget-specific fields (skip RSS feed URL and thumbnail_image for podcast player as they're already added)
             if (widget.config_fields) {
                 Object.entries(widget.config_fields).forEach(([fieldName, fieldDef]) => {
+                    // Skip RSS feed URL and thumbnail_image for podcast player (already rendered)
+                    if (widget.widget_id === 'podcast_player' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
+                        return;
+                    }
                     const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
                     const helpText = fieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${fieldDef.help}</small>` : '';
                     
@@ -2462,17 +2502,33 @@ $csrfToken = generateCSRFToken();
                     const fieldsContainer = document.getElementById('widget-config-fields');
                     fieldsContainer.innerHTML = '';
                     
-                    // Title field
-                    fieldsContainer.innerHTML += `
-                        <div class="form-group">
-                            <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
-                            <input type="text" id="widget_config_title" name="title" required value="${(widget.title || '').replace(/"/g, '&quot;')}">
-                            ${widget.widget_type === 'podcast_player' ? '<small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>' : ''}
-                        </div>
-                    `;
-                    
-                    // Add description field for podcast player (auto-populated)
-                    if (widget.widget_type === 'podcast_player') {
+                    // For podcast player, add RSS Feed URL first, then Title, Description, and Cover Image
+                    if (widget.widget_type === 'podcast_player' && widgetDef) {
+                        // RSS Feed URL (first field)
+                        const rssFieldDef = widgetDef.config_fields.rss_feed_url;
+                        if (rssFieldDef) {
+                            const rssValue = (configData['rss_feed_url'] || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            const required = rssFieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                            const helpText = rssFieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${rssFieldDef.help}</small>` : '';
+                            fieldsContainer.innerHTML += `
+                                <div class="form-group">
+                                    <label for="widget_config_rss_feed_url">${rssFieldDef.label}${required}</label>
+                                    <input type="${rssFieldDef.type || 'url'}" id="widget_config_rss_feed_url" name="rss_feed_url" ${rssFieldDef.required ? 'required' : ''} placeholder="${rssFieldDef.placeholder || ''}" value="${rssValue}">
+                                    ${helpText}
+                                </div>
+                            `;
+                        }
+                        
+                        // Title field (second)
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                                <input type="text" id="widget_config_title" name="title" required value="${(widget.title || '').replace(/"/g, '&quot;')}">
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>
+                            </div>
+                        `;
+                        
+                        // Description field (third)
                         const descValue = (configData['description'] || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                         fieldsContainer.innerHTML += `
                             <div class="form-group">
@@ -2481,11 +2537,37 @@ $csrfToken = generateCSRFToken();
                                 <small style="color: #666; display: block; margin-top: 0.25rem;">Description from RSS feed</small>
                             </div>
                         `;
+                        
+                        // Cover Image field (fourth)
+                        const thumbnailFieldDef = widgetDef.config_fields.thumbnail_image;
+                        if (thumbnailFieldDef) {
+                            const thumbnailValue = (configData['thumbnail_image'] || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                            const helpText = thumbnailFieldDef.help ? `<small style="color: #666; display: block; margin-top: 0.25rem;">${thumbnailFieldDef.help}</small>` : '';
+                            fieldsContainer.innerHTML += `
+                                <div class="form-group">
+                                    <label for="widget_config_thumbnail_image">${thumbnailFieldDef.label}</label>
+                                    <input type="${thumbnailFieldDef.type || 'url'}" id="widget_config_thumbnail_image" name="thumbnail_image" placeholder="${thumbnailFieldDef.placeholder || ''}" value="${thumbnailValue}">
+                                    ${helpText}
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // For non-podcast widgets, add title field first
+                        fieldsContainer.innerHTML += `
+                            <div class="form-group">
+                                <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
+                                <input type="text" id="widget_config_title" name="title" required value="${(widget.title || '').replace(/"/g, '&quot;')}">
+                            </div>
+                        `;
                     }
                     
-                    // Widget-specific fields
+                    // Widget-specific fields (skip RSS feed URL and thumbnail_image for podcast player as they're already added)
                     if (widgetDef && widgetDef.config_fields) {
                         Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
+                            // Skip RSS feed URL and thumbnail_image for podcast player (already rendered)
+                            if (widget.widget_type === 'podcast_player' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
+                                return;
+                            }
                             const value = configData[fieldName] || '';
                             const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                             const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
