@@ -1792,37 +1792,6 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        window.closeDrawer = function() {
-            // Close all item-specific drawers with animation
-            document.querySelectorAll('.link-item .drawer').forEach(drawer => {
-                if (drawer) {
-                    drawer.classList.remove('active');
-                    // Remove drawer after animation completes
-                    setTimeout(() => {
-                        if (drawer && !drawer.classList.contains('active')) {
-                            drawer.remove();
-                            if (drawer.parentElement) {
-                                drawer.parentElement.classList.remove('has-drawer');
-                            }
-                        }
-                    }, 300);
-                }
-            });
-            
-            // Close main drawer
-            const drawer = document.getElementById('link-drawer');
-            if (drawer) {
-                drawer.classList.remove('active');
-                setTimeout(() => {
-                    drawer.style.display = 'none';
-                }, 300);
-            }
-            
-            const overlay = document.getElementById('drawer-overlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-            
             // Remove editing class from link items
             document.querySelectorAll('.link-item.editing').forEach(item => {
                 item.classList.remove('editing');
