@@ -2567,13 +2567,11 @@ $csrfToken = generateCSRFToken();
                         return;
                     }
                     
-                    if (preview.tagName === 'IMG') {
-                        preview.src = imageUrl;
-                        // Force reload if same URL
-                        if (preview.src === imageUrl) {
-                            preview.src = imageUrl + '?t=' + Date.now();
-                        }
-                    } else {
+                    // Update or create preview image
+                    if (preview && preview.tagName === 'IMG') {
+                        // Update existing image - add timestamp to force reload
+                        preview.src = imageUrl + '?t=' + Date.now();
+                    } else if (preview && preview.parentNode) {
                         // Replace div with img
                         const img = document.createElement('img');
                         img.id = previewId;
@@ -2583,6 +2581,8 @@ $csrfToken = generateCSRFToken();
                             ? 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;'
                             : 'width: 200px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
                         preview.parentNode.replaceChild(img, preview);
+                    } else {
+                        console.error('Preview element or parent not found');
                     }
                     
                     // Show remove button if not visible
