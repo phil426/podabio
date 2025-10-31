@@ -141,18 +141,29 @@ function validateFileUpload($file, $allowedTypes = null, $maxSize = null) {
     
     // Check file extension
     $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $allowedExtensions = array_map(function($mime) {
-        $map = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/webp' => 'webp'
-        ];
-        return $map[$mime] ?? null;
-    }, $allowedTypes);
+    
+    // Build allowed extensions list - JPEG files can have both .jpg and .jpeg extensions
+    $allowedExtensions = [];
+    foreach ($allowedTypes as $mime) {
+        switch ($mime) {
+            case 'image/jpeg':
+                $allowedExtensions[] = 'jpg';
+                $allowedExtensions[] = 'jpeg'; // Allow both .jpg and .jpeg
+                break;
+            case 'image/png':
+                $allowedExtensions[] = 'png';
+                break;
+            case 'image/gif':
+                $allowedExtensions[] = 'gif';
+                break;
+            case 'image/webp':
+                $allowedExtensions[] = 'webp';
+                break;
+        }
+    }
     
     if (!in_array($extension, $allowedExtensions)) {
-        return ['valid' => false, 'error' => 'Invalid file extension'];
+        return ['valid' => false, 'error' => 'Invalid file extension. Allowed: ' . implode(', ', array_unique($allowedExtensions))];
     }
     
     return ['valid' => true, 'error' => null, 'mime_type' => $mimeType, 'extension' => $extension];
