@@ -255,6 +255,18 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             display: block;
         }
         
+        /* Podcast Player widget styles */
+        .widget-podcast {
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+        
+        .shikwasa-podcast-container {
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        
         .social-icons {
             display: flex;
             flex-wrap: wrap;
