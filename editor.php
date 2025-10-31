@@ -152,7 +152,7 @@ $csrfToken = generateCSRFToken();
         
         /* Left Sidebar Navigation */
         .sidebar {
-            width: 250px;
+            width: 200px;
             background: #ffffff;
             border-right: 1px solid #e5e7eb;
             display: flex;
@@ -166,34 +166,35 @@ $csrfToken = generateCSRFToken();
         }
         
         .sidebar-header {
-            padding: 1.5rem;
+            padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
         }
         
         .sidebar-logo {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #0066ff;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
         
         .sidebar-nav {
             flex: 1;
-            padding: 1rem 0;
+            padding: 0.5rem 0;
         }
         
         .nav-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             color: #374151;
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
             border-left: 3px solid transparent;
+            font-size: 0.875rem;
         }
         
         .nav-item:hover {
@@ -209,22 +210,22 @@ $csrfToken = generateCSRFToken();
         }
         
         .nav-item i {
-            width: 20px;
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
+            width: 18px;
+            margin-right: 0.6rem;
+            font-size: 1rem;
         }
         
         .sidebar-footer {
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             border-top: 1px solid #e5e7eb;
         }
         
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem;
-            border-radius: 8px;
+            gap: 0.5rem;
+            padding: 0.4rem;
+            border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s;
         }
@@ -234,8 +235,8 @@ $csrfToken = generateCSRFToken();
         }
         
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: #0066ff;
             display: flex;
@@ -243,27 +244,29 @@ $csrfToken = generateCSRFToken();
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 0.75rem;
         }
         
         .user-info {
             flex: 1;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
         }
         
         .user-name {
             font-weight: 600;
             color: #111827;
+            font-size: 0.75rem;
         }
         
         .user-email {
             color: #6b7280;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
         
         /* Center Editor Area */
         .editor-main {
             flex: 1;
-            margin-left: 250px;
+            margin-left: 200px;
             margin-right: 400px;
             background: #ffffff;
             overflow-y: auto;
@@ -577,10 +580,10 @@ $csrfToken = generateCSRFToken();
             transform-origin: top;
             transition: transform 0.3s ease-out, opacity 0.3s;
             opacity: 0;
-            max-height: 60vh;
+            max-height: 45vh;
             overflow-y: auto;
-            padding: 2rem;
-            min-height: 300px;
+            padding: 1rem;
+            min-height: auto;
         }
         
         .link-item .drawer.active {
@@ -596,31 +599,52 @@ $csrfToken = generateCSRFToken();
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid #e5e7eb;
         }
         
         .drawer-header h2 {
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.125rem;
+            font-weight: 600;
             color: #111827;
         }
         
         .drawer-close {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.125rem;
             color: #6b7280;
             cursor: pointer;
-            padding: 0.5rem;
+            padding: 0.25rem;
             line-height: 1;
             transition: color 0.2s;
         }
         
         .drawer-close:hover {
             color: #111827;
+        }
+        
+        /* Compact form groups in drawer */
+        .drawer .form-group {
+            margin-bottom: 0.75rem;
+        }
+        
+        .drawer .form-group label {
+            font-size: 0.875rem;
+            margin-bottom: 0.35rem;
+        }
+        
+        .drawer .form-group input,
+        .drawer .form-group select,
+        .drawer .form-group textarea {
+            font-size: 0.875rem;
+            padding: 0.5rem;
+        }
+        
+        .drawer .form-group textarea {
+            min-height: 60px;
         }
         
         .link-item.editing {
@@ -1467,9 +1491,9 @@ $csrfToken = generateCSRFToken();
                     <textarea id="link_disclosure" name="disclosure_text" rows="2"></textarea>
                 </div>
                 
-                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeDrawer()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top: 1rem;">
+                    <button type="button" class="btn btn-secondary btn-small" onclick="closeDrawer()">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-small">Save Changes</button>
                 </div>
             </form>
         </div>
