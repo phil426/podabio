@@ -1922,8 +1922,10 @@ $csrfToken = generateCSRFToken();
                     cancelBtn.setAttribute('onclick', 'closeDrawer()');
                 }
                 
-                linkItem.appendChild(itemDrawer);
-                linkItem.classList.add('has-drawer');
+                if (linkItem && itemDrawer) {
+                    linkItem.appendChild(itemDrawer);
+                    linkItem.classList.add('has-drawer');
+                }
                 
                 // Copy form values from main drawer to item drawer
                 const mainForm = document.getElementById('link-form');
