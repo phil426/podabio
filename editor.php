@@ -705,24 +705,20 @@ $csrfToken = generateCSRFToken();
             z-index: 1;
             max-height: 0;
             overflow: hidden;
-            display: block;
-            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-                        padding-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                        padding-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                        opacity 0.3s,
-                        border-width 0.3s;
+            display: block !important; /* Force block display, override flex from main drawer */
+            flex-direction: unset !important;
+            position: relative !important;
+            transform: none !important;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.3s ease-in-out;
             opacity: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            border-width: 0;
+            margin-top: 0;
+            padding: 0;
         }
         
         .link-item .drawer.active {
-            max-height: 500px;
+            max-height: 600px;
             opacity: 1;
-            padding-top: 12px;
-            padding-bottom: 12px;
-            border-width: 1px;
         }
         
         /* Compact drawer styles - remove handle, make header and content compact */
@@ -768,9 +764,9 @@ $csrfToken = generateCSRFToken();
         }
         
         .link-item .drawer .drawer-content {
-            padding: 0 12px;
-            overflow-y: auto;
-            max-height: 400px;
+            padding: 12px;
+            overflow-y: visible;
+            max-height: none;
             -webkit-overflow-scrolling: touch;
         }
         
@@ -1971,12 +1967,19 @@ $csrfToken = generateCSRFToken();
                 
                 const itemDrawer = mainDrawer.cloneNode(true);
                 itemDrawer.id = 'link-drawer-' + linkItem.getAttribute('data-link-id');
-                itemDrawer.style.display = 'flex';
+                // Force block display and reset all flex-related styles
+                itemDrawer.style.display = 'block';
                 itemDrawer.style.position = 'relative';
                 itemDrawer.style.width = '100%';
                 itemDrawer.style.maxHeight = '0';
                 itemDrawer.style.opacity = '0';
                 itemDrawer.style.marginTop = '0';
+                itemDrawer.style.padding = '0';
+                itemDrawer.style.transform = 'none';
+                itemDrawer.style.flexDirection = 'unset';
+                itemDrawer.style.bottom = 'auto';
+                itemDrawer.style.left = 'auto';
+                itemDrawer.style.right = 'auto';
                 
                 // Copy form event listener
                 const form = itemDrawer.querySelector('#link-form');
@@ -2030,20 +2033,35 @@ $csrfToken = generateCSRFToken();
                 // Don't show overlay for link-item drawers - they push content down instead
                 // Overlay is only for the main drawer at bottom of screen
                 
-                // Trigger animation after a small delay to ensure DOM is ready
+                // Trigger animation after DOM is ready
+                // First, ensure drawer content is visible for measurement
                 requestAnimationFrame(() => {
-                    setTimeout(() => {
+                    requestAnimationFrame(() => {
                         if (itemDrawer) {
-                            // Measure actual content height before adding active class
-                            const contentHeight = itemDrawer.scrollHeight;
-                            // Set max-height dynamically based on content
-                            if (contentHeight > 0) {
-                                itemDrawer.style.maxHeight = (contentHeight + 30) + 'px';
+                            // Temporarily make visible to measure
+                            const wasHidden = itemDrawer.style.maxHeight === '0px';
+                            if (wasHidden) {
+                                itemDrawer.style.maxHeight = 'none';
+                                itemDrawer.style.opacity = '0';
                             }
-                            // Add active class to trigger animation
-                            itemDrawer.classList.add('active');
+                            
+                            // Measure actual content height
+                            const contentHeight = itemDrawer.scrollHeight;
+                            
+                            // Reset to start position
+                            itemDrawer.style.maxHeight = '0';
+                            
+                            // Now animate
+                            setTimeout(() => {
+                                if (itemDrawer && contentHeight > 0) {
+                                    // Set max-height to allow content, add padding
+                                    itemDrawer.style.maxHeight = (contentHeight + 40) + 'px';
+                                    // Add active class to trigger CSS transitions
+                                    itemDrawer.classList.add('active');
+                                }
+                            }, 10);
                         }
-                    }, 10);
+                    });
                 });
             }, 50);
         };
