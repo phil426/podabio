@@ -1785,7 +1785,7 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function handleLinkFormSubmit(form) {
+        window.handleLinkFormSubmit = function(form) {
             const formData = new FormData(form);
             const action = formData.get('action');
             formData.append('action', action === 'update' ? 'update' : 'add');
