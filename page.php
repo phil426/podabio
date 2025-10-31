@@ -161,13 +161,13 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             margin-bottom: 2rem;
         }
         
-        .links-container {
+        .widgets-container {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
         
-        .link-item {
+        .widget-item {
             display: block;
             padding: 1rem;
             background: var(--secondary-color);
@@ -181,12 +181,12 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             gap: 1rem;
         }
         
-        .link-item:hover {
+        .widget-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        .link-thumbnail {
+        .widget-thumbnail {
             width: 60px;
             height: 60px;
             border-radius: 8px;
@@ -194,11 +194,11 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             flex-shrink: 0;
         }
         
-        .link-content {
+        .widget-content {
             flex: 1;
         }
         
-        .link-title {
+        .widget-title {
             font-weight: 600;
             margin: 0 0 0.25rem 0;
         }
@@ -455,36 +455,36 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             </div>
         <?php endif; ?>
         
-        <div class="links-container">
+        <div class="widgets-container">
             <?php foreach ($links as $link): ?>
                 <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
-                   class="link-item" 
+                   class="widget-item" 
                    target="_blank" 
                    rel="noopener noreferrer">
                     <?php if ($link['thumbnail_image']): ?>
                         <img src="<?php echo h($link['thumbnail_image']); ?>" 
                              alt="<?php echo h($link['title']); ?>" 
-                             class="link-thumbnail">
+                             class="widget-thumbnail">
                     <?php endif; ?>
-                    <div class="link-content">
-                        <div class="link-title"><?php echo h($link['title']); ?></div>
+                    <div class="widget-content">
+                        <div class="widget-title"><?php echo h($link['title']); ?></div>
                     </div>
                 </a>
             <?php endforeach; ?>
             
             <?php if (!empty($episodes)): ?>
-                <button onclick="openEpisodeDrawer()" class="link-item" style="cursor: pointer; text-align: left;">
-                    <div class="link-content">
-                        <div class="link-title">🎧 Recent Episodes (<?php echo count($episodes); ?>)</div>
+                <button onclick="openEpisodeDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
+                    <div class="widget-content">
+                        <div class="widget-title">🎧 Recent Episodes (<?php echo count($episodes); ?>)</div>
                     </div>
                 </button>
             <?php endif; ?>
             
-            <!-- Email Subscribe Link -->
+            <!-- Email Subscribe Widget -->
             <?php if (!empty($page['email_service_provider'])): ?>
-                <button onclick="openEmailDrawer()" class="link-item" style="cursor: pointer; text-align: left;">
-                    <div class="link-content">
-                        <div class="link-title">📧 Subscribe to Email List</div>
+                <button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
+                    <div class="widget-content">
+                        <div class="widget-title">📧 Subscribe to Email List</div>
                     </div>
                 </button>
             <?php endif; ?>
@@ -569,7 +569,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                                style="width: 100%; padding: 0.75rem; border: 2px solid var(--primary-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
                     </div>
                     <button type="submit" 
-                            class="link-item" 
+                            class="widget-item" 
                             style="margin-top: 1rem; width: 100%; text-align: center; cursor: pointer;">
                         Subscribe
                     </button>

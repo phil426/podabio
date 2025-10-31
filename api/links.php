@@ -1,7 +1,8 @@
 <?php
 /**
- * Links API Endpoint
- * Handles CRUD operations for page links
+ * Widgets API Endpoint
+ * Handles CRUD operations for page widgets
+ * Note: Backend uses "links" table for compatibility, but frontend uses "widgets" terminology
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -68,7 +69,7 @@ switch ($action) {
         $linkId = (int)($_POST['link_id'] ?? 0);
         if (!$linkId) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Link ID required']);
+            echo json_encode(['success' => false, 'error' => 'Widget ID required']);
             exit;
         }
         
@@ -95,7 +96,7 @@ switch ($action) {
         $linkId = (int)($_POST['link_id'] ?? 0);
         if (!$linkId) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Link ID required']);
+            echo json_encode(['success' => false, 'error' => 'Widget ID required']);
             exit;
         }
         
@@ -108,7 +109,7 @@ switch ($action) {
         
         if (!is_array($linkOrders)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Invalid link orders format']);
+            echo json_encode(['success' => false, 'error' => 'Invalid widget orders format']);
             exit;
         }
         
@@ -138,7 +139,7 @@ switch ($action) {
                 echo json_encode(['success' => true, 'link' => $link]);
             } else {
                 http_response_code(404);
-                echo json_encode(['success' => false, 'error' => 'Link not found']);
+                echo json_encode(['success' => false, 'error' => 'Widget not found']);
             }
         }
         break;

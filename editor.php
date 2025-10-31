@@ -1,7 +1,7 @@
 <?php
 /**
  * Page Editor
- * Podn.Bio - Edit page content, links, and settings
+ * Podn.Bio - Edit page content, widgets, and settings
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -299,11 +299,11 @@ $csrfToken = generateCSRFToken();
         .tab-content.active {
             display: block;
         }
-        .links-list {
+        .widgets-list {
             list-style: none;
             padding: 0;
         }
-        .link-item {
+        .widget-item {
             background: #f9f9f9;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -316,36 +316,36 @@ $csrfToken = generateCSRFToken();
             transition: all 0.2s;
             position: relative;
         }
-        .link-item:hover {
+        .widget-item:hover {
             background: #f0f0f0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .link-item.dragging {
+        .widget-item.dragging {
             opacity: 0.5;
             transform: scale(0.98);
         }
-        .link-item.drag-over {
+        .widget-item.drag-over {
             border-top: 3px solid #0066ff;
         }
-        .link-item::before {
+        .widget-item::before {
             content: '☰';
             margin-right: 10px;
             color: #999;
             font-size: 18px;
         }
-        .link-info {
+        .widget-info {
             flex: 1;
         }
-        .link-title {
+        .widget-title {
             font-weight: bold;
             margin-bottom: 5px;
         }
-        .link-url {
+        .widget-url {
             color: #666;
             font-size: 14px;
             word-break: break-all;
         }
-        .link-actions {
+        .widget-actions {
             display: flex;
             gap: 10px;
         }
@@ -682,14 +682,14 @@ $csrfToken = generateCSRFToken();
             background: #ffffff;
         }
         
-        .link-item {
+        .widget-item {
             position: relative;
             overflow: visible;
             z-index: 1;
             margin-bottom: 10px;
         }
         
-        .link-item.has-drawer {
+        .widget-item.has-drawer {
             z-index: 10;
         }
         
@@ -784,12 +784,12 @@ $csrfToken = generateCSRFToken();
             flex-shrink: 0;
         }
         
-        .link-item.editing {
+        .widget-item.editing {
             border: 2px solid #0066ff;
             box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
         }
         
-        .link-item.new {
+        .widget-item.new {
             animation: slideIn 0.3s ease-out;
         }
         
@@ -904,9 +904,9 @@ $csrfToken = generateCSRFToken();
             
             <nav class="sidebar-nav">
                 <?php if ($page): ?>
-                    <a href="javascript:void(0)" class="nav-item active" onclick="showSection('links', this)">
-                        <i class="fas fa-link"></i>
-                        <span>Content</span>
+                    <a href="javascript:void(0)" class="nav-item active" onclick="showSection('widgets', this)">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span>Widgets</span>
                     </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('social-icons', this)">
                         <i class="fas fa-share-alt"></i>
@@ -1005,27 +1005,28 @@ $csrfToken = generateCSRFToken();
                         </form>
                     </div>
                 <?php else: ?>
-                    <!-- Links Tab -->
-                    <div id="tab-links" class="tab-content active">
-            <h2>Manage Links & Blocks</h2>
+                    <!-- Widgets Tab -->
+                    <div id="tab-widgets" class="tab-content active">
+            <h2>Manage Widgets</h2>
+            <p style="margin-bottom: 20px; color: #666;">Add widgets to your page from the widget gallery. Widgets can display links, podcast players, social feeds, videos, and more.</p>
             
             <div style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="showAddLinkForm()">Add Block</button>
+                <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
             </div>
             
-            <ul id="links-list" class="links-list">
+            <ul id="widgets-list" class="widgets-list">
                 <?php if (empty($links)): ?>
-                    <li>No links or blocks yet. Click "Add New Link or Block" to get started.</li>
+                    <li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>
                 <?php else: ?>
                     <?php foreach ($links as $link): ?>
-                        <li class="link-item" data-link-id="<?php echo $link['id']; ?>">
-                            <div class="link-info">
-                                <div class="link-title"><?php echo h($link['title']); ?></div>
-                                <div class="link-url"><?php echo h($link['url']); ?></div>
+                        <li class="widget-item" data-widget-id="<?php echo $link['id']; ?>">
+                            <div class="widget-info">
+                                <div class="widget-title"><?php echo h($link['title']); ?></div>
+                                <div class="widget-url"><?php echo h($link['url']); ?></div>
                             </div>
-                            <div class="link-actions">
-                                <button class="btn btn-secondary btn-small" onclick="editLink(<?php echo $link['id']; ?>, this)">Edit</button>
-                                <button class="btn btn-danger btn-small" onclick="deleteLink(<?php echo $link['id']; ?>)">Delete</button>
+                            <div class="widget-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $link['id']; ?>, this)">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $link['id']; ?>)">Delete</button>
                             </div>
                         </li>
                     <?php endforeach; ?>
@@ -1042,17 +1043,17 @@ $csrfToken = generateCSRFToken();
                 <button class="btn btn-primary" onclick="showAddDirectoryForm()">Add Social Icon</button>
             </div>
             
-            <ul id="directories-list" class="links-list">
+            <ul id="directories-list" class="widgets-list">
                 <?php if (empty($socialIcons)): ?>
                     <li>No social icons yet. Click "Add Social Icon" to get started.</li>
                 <?php else: ?>
                     <?php foreach ($socialIcons as $icon): ?>
-                        <li class="link-item" data-directory-id="<?php echo $icon['id']; ?>">
-                            <div class="link-info">
-                                <div class="link-title"><?php echo h($icon['platform_name']); ?></div>
-                                <div class="link-url"><?php echo h($icon['url']); ?></div>
+                        <li class="widget-item" data-directory-id="<?php echo $icon['id']; ?>">
+                            <div class="widget-info">
+                                <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
+                                <div class="widget-url"><?php echo h($icon['url']); ?></div>
                             </div>
-                            <div class="link-actions">
+                            <div class="widget-actions">
                                 <button class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
                             </div>
                         </li>
@@ -1597,25 +1598,25 @@ $csrfToken = generateCSRFToken();
         </div>
     </div>
     
-        <!-- Edit Link Modal (only shown on Content tab) -->
+        <!-- Edit Widget Modal (only shown on Widgets tab) -->
         <?php if ($page): ?>
-        <div id="link-modal-overlay" class="modal-overlay" onclick="closeLinkModal()">
+        <div id="widget-modal-overlay" class="modal-overlay" onclick="closeWidgetModal()">
             <div class="modal" onclick="event.stopPropagation()">
                 <div class="modal-header">
-                    <h2 id="modal-title">Edit Link</h2>
-                    <button class="modal-close" onclick="closeLinkModal()" aria-label="Close">
+                    <h2 id="modal-title">Edit Widget</h2>
+                    <button class="modal-close" onclick="closeWidgetModal()" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-content">
-                    <form id="link-form" onsubmit="event.preventDefault(); handleLinkFormSubmit(this);">
+                    <form id="widget-form" onsubmit="event.preventDefault(); handleWidgetFormSubmit(this);">
                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                        <input type="hidden" name="action" id="link-action" value="update">
-                        <input type="hidden" name="link_id" id="link-id">
+                        <input type="hidden" name="action" id="widget-action" value="update">
+                        <input type="hidden" name="link_id" id="widget-id">
                         
                         <div class="form-group">
-                            <label for="link_type">Link Type</label>
-                            <select id="link_type" name="type" required>
+                            <label for="widget_type">Widget Type</label>
+                            <select id="widget_type" name="type" required>
                                 <option value="custom">Custom Link</option>
                                 <option value="social">Social Media</option>
                                 <option value="affiliate">Affiliate Link</option>
@@ -1626,24 +1627,24 @@ $csrfToken = generateCSRFToken();
                         </div>
                         
                         <div class="form-group">
-                            <label for="link_title">Title</label>
-                            <input type="text" id="link_title" name="title" required>
+                            <label for="widget_title">Title</label>
+                            <input type="text" id="widget_title" name="title" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="link_url">URL</label>
-                            <input type="url" id="link_url" name="url" required>
+                            <label for="widget_url">URL</label>
+                            <input type="url" id="widget_url" name="url" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="link_disclosure">Disclosure Text (for affiliate/sponsor links)</label>
-                            <textarea id="link_disclosure" name="disclosure_text" rows="3"></textarea>
+                            <label for="widget_disclosure">Disclosure Text (for affiliate/sponsor links)</label>
+                            <textarea id="widget_disclosure" name="disclosure_text" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeLinkModal()">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('link-form').dispatchEvent(new Event('submit'))">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeWidgetModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('widget-form').dispatchEvent(new Event('submit'))">Save Changes</button>
                 </div>
             </div>
         </div>
@@ -1719,55 +1720,55 @@ $csrfToken = generateCSRFToken();
         });
         
         // Make functions globally accessible
-        window.showAddLinkForm = function() {
-            // Add a blank new link item to the top of the list
-            const linksList = document.getElementById('links-list');
-            if (!linksList) return;
+        window.showAddWidgetForm = function() {
+            // Add a blank new widget item to the top of the list
+            const widgetsList = document.getElementById('widgets-list');
+            if (!widgetsList) return;
             
-            // Remove "no links" message if present
-            const noLinksMsg = linksList.querySelector('li:not(.link-item)');
-            if (noLinksMsg && !noLinksMsg.classList.contains('link-item')) {
-                noLinksMsg.remove();
+            // Remove "no widgets" message if present
+            const noWidgetsMsg = widgetsList.querySelector('li:not(.widget-item)');
+            if (noWidgetsMsg && !noWidgetsMsg.classList.contains('widget-item')) {
+                noWidgetsMsg.remove();
             }
             
             // Generate a temporary ID (negative number to indicate it's new)
             const tempId = -(Date.now());
             
-            // Create new link item
-            const newLinkItem = document.createElement('li');
-            newLinkItem.className = 'link-item new';
-            newLinkItem.setAttribute('data-link-id', tempId);
-            newLinkItem.innerHTML = `
-                <div class="link-info">
-                    <div class="link-title">New Link</div>
-                    <div class="link-url">https://</div>
+            // Create new widget item
+            const newWidgetItem = document.createElement('li');
+            newWidgetItem.className = 'widget-item new';
+            newWidgetItem.setAttribute('data-widget-id', tempId);
+            newWidgetItem.innerHTML = `
+                <div class="widget-info">
+                    <div class="widget-title">New Widget</div>
+                    <div class="widget-url">https://</div>
                 </div>
-                <div class="link-actions">
-                    <button class="btn btn-secondary btn-small" onclick="editLink(${tempId}, this)">Edit</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteTempLink(this)">Delete</button>
+                <div class="widget-actions">
+                    <button class="btn btn-secondary btn-small" onclick="editWidget(${tempId}, this)">Edit</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteTempWidget(this)">Delete</button>
                 </div>
             `;
             
             // Insert at the top
-            linksList.insertBefore(newLinkItem, linksList.firstChild);
+            widgetsList.insertBefore(newWidgetItem, widgetsList.firstChild);
             
             // Scroll to top and focus the new item
-            newLinkItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            newWidgetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             
-            // Populate form for new link
-            const form = document.getElementById('link-form');
-            const titleInput = document.getElementById('link_title');
-            const urlInput = document.getElementById('link_url');
-            const typeSelect = document.getElementById('link_type');
-            const disclosureInput = document.getElementById('link_disclosure');
-            const actionInput = document.getElementById('link-action');
-            const linkIdInput = document.getElementById('link-id');
+            // Populate form for new widget
+            const form = document.getElementById('widget-form');
+            const titleInput = document.getElementById('widget_title');
+            const urlInput = document.getElementById('widget_url');
+            const typeSelect = document.getElementById('widget_type');
+            const disclosureInput = document.getElementById('widget_disclosure');
+            const actionInput = document.getElementById('widget-action');
+            const widgetIdInput = document.getElementById('widget-id');
             const modalTitle = document.getElementById('modal-title');
             
             if (form && titleInput && urlInput) {
                 actionInput.value = 'add';
-                linkIdInput.value = tempId;
-                titleInput.value = 'New Link';
+                widgetIdInput.value = tempId;
+                titleInput.value = 'New Widget';
                 urlInput.value = 'https://';
                 typeSelect.value = 'custom';
                 
@@ -1776,39 +1777,39 @@ $csrfToken = generateCSRFToken();
                 }
                 
                 if (modalTitle) {
-                    modalTitle.textContent = 'Add New Link or Block';
+                    modalTitle.textContent = 'Add New Widget';
                 }
             }
             
-            // Open modal for new link item
-            openLinkModal();
+            // Open modal for new widget item
+            openWidgetModal();
         };
         
-        window.deleteTempLink = function(button) {
-            const linkItem = button.closest('.link-item');
-            const linkId = linkItem.getAttribute('data-link-id');
+        window.deleteTempWidget = function(button) {
+            const widgetItem = button.closest('.widget-item');
+            const widgetId = widgetItem.getAttribute('data-widget-id');
             
             // If it's a temporary (negative) ID, just remove from DOM
-            if (linkId && parseInt(linkId) < 0) {
-                linkItem.remove();
+            if (widgetId && parseInt(widgetId) < 0) {
+                widgetItem.remove();
                 
-                // Show "no links" message if list is empty
-                const linksList = document.getElementById('links-list');
-                if (linksList && linksList.children.length === 0) {
-                    linksList.innerHTML = '<li>No links or blocks yet. Click "Add New Link or Block" to get started.</li>';
+                // Show "no widgets" message if list is empty
+                const widgetsList = document.getElementById('widgets-list');
+                if (widgetsList && widgetsList.children.length === 0) {
+                    widgetsList.innerHTML = '<li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>';
                 }
             } else {
-                // It's a real link, use the delete function
-                deleteLink(linkId);
+                // It's a real widget, use the delete function
+                deleteWidget(widgetId);
             }
         };
         
-        window.handleLinkFormSubmit = function(form) {
+        window.handleWidgetFormSubmit = function(form) {
             const formData = new FormData(form);
             const action = formData.get('action');
             formData.append('action', action === 'update' ? 'update' : 'add');
             if (action === 'update') {
-                formData.append('link_id', form.querySelector('#link-id').value);
+                formData.append('link_id', form.querySelector('#widget-id').value);
             }
             
             fetch('/api/links.php', {
@@ -1818,8 +1819,8 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    closeLinkModal();
-                    showToast('Link saved successfully!', 'success');
+                    closeWidgetModal();
+                    showToast('Widget saved successfully!', 'success');
                     refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
@@ -1832,30 +1833,30 @@ $csrfToken = generateCSRFToken();
         };
         
         
-        window.editLink = function(linkId, buttonElement) {
-            const linkItem = buttonElement ? buttonElement.closest('.link-item') : document.querySelector(`[data-link-id="${linkId}"]`);
+        window.editWidget = function(widgetId, buttonElement) {
+            const widgetItem = buttonElement ? buttonElement.closest('.widget-item') : document.querySelector(`[data-widget-id="${widgetId}"]`);
             
-            if (!linkItem) return;
+            if (!widgetItem) return;
             
-            // Check if it's a new temporary link (negative ID)
-            if (parseInt(linkId) < 0) {
-                // New link - populate with defaults
-                document.getElementById('modal-title').textContent = 'Add Link or Block';
-                document.getElementById('link-action').value = 'add';
-                document.getElementById('link-id').value = linkId;
-                document.getElementById('link_type').value = 'custom';
-                document.getElementById('link_title').value = 'New Link';
-                document.getElementById('link_url').value = 'https://';
-                document.getElementById('link_disclosure').value = '';
+            // Check if it's a new temporary widget (negative ID)
+            if (parseInt(widgetId) < 0) {
+                // New widget - populate with defaults
+                document.getElementById('modal-title').textContent = 'Add New Widget';
+                document.getElementById('widget-action').value = 'add';
+                document.getElementById('widget-id').value = widgetId;
+                document.getElementById('widget_type').value = 'custom';
+                document.getElementById('widget_title').value = 'New Widget';
+                document.getElementById('widget_url').value = 'https://';
+                document.getElementById('widget_disclosure').value = '';
                 
-                openLinkModal();
+                openWidgetModal();
                 return;
             }
             
-            // Existing link - fetch data
+            // Existing widget - fetch data
             const formData = new FormData();
             formData.append('action', 'get');
-            formData.append('link_id', linkId);
+            formData.append('link_id', widgetId);
             formData.append('csrf_token', csrfToken);
             
             fetch('/api/links.php', {
@@ -1866,54 +1867,54 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success && data.link) {
                     const link = data.link;
-                    document.getElementById('modal-title').textContent = 'Edit Link';
-                    document.getElementById('link-action').value = 'update';
-                    document.getElementById('link-id').value = link.id;
-                    document.getElementById('link_type').value = link.type || 'custom';
-                    document.getElementById('link_title').value = link.title || '';
-                    document.getElementById('link_url').value = link.url || '';
-                    document.getElementById('link_disclosure').value = link.disclosure_text || '';
+                    document.getElementById('modal-title').textContent = 'Edit Widget';
+                    document.getElementById('widget-action').value = 'update';
+                    document.getElementById('widget-id').value = link.id;
+                    document.getElementById('widget_type').value = link.type || 'custom';
+                    document.getElementById('widget_title').value = link.title || '';
+                    document.getElementById('widget_url').value = link.url || '';
+                    document.getElementById('widget_disclosure').value = link.disclosure_text || '';
                     
-                    openLinkModal();
+                    openWidgetModal();
                 } else {
                     // Fallback: Get from page load
-                    const titleEl = linkItem.querySelector('.link-title');
-                    const urlEl = linkItem.querySelector('.link-url');
+                    const titleEl = widgetItem.querySelector('.widget-title');
+                    const urlEl = widgetItem.querySelector('.widget-url');
                     
                     if (titleEl && urlEl) {
-                        document.getElementById('modal-title').textContent = 'Edit Link';
-                        document.getElementById('link-action').value = 'update';
-                        document.getElementById('link-id').value = linkId;
-                        document.getElementById('link_type').value = 'custom';
-                        document.getElementById('link_title').value = titleEl.textContent.trim();
-                        document.getElementById('link_url').value = urlEl.textContent.trim();
-                        document.getElementById('link_disclosure').value = '';
+                        document.getElementById('modal-title').textContent = 'Edit Widget';
+                        document.getElementById('widget-action').value = 'update';
+                        document.getElementById('widget-id').value = widgetId;
+                        document.getElementById('widget_type').value = 'custom';
+                        document.getElementById('widget_title').value = titleEl.textContent.trim();
+                        document.getElementById('widget_url').value = urlEl.textContent.trim();
+                        document.getElementById('widget_disclosure').value = '';
                         
-                        openLinkModal();
+                        openWidgetModal();
                     }
                 }
             })
             .catch(() => {
                 // Fallback approach
-                const titleEl = linkItem.querySelector('.link-title');
-                const urlEl = linkItem.querySelector('.link-url');
+                const titleEl = widgetItem.querySelector('.widget-title');
+                const urlEl = widgetItem.querySelector('.widget-url');
                 
                 if (titleEl && urlEl) {
-                    document.getElementById('modal-title').textContent = 'Edit Link';
-                    document.getElementById('link-action').value = 'update';
-                    document.getElementById('link-id').value = linkId;
-                    document.getElementById('link_type').value = 'custom';
-                    document.getElementById('link_title').value = titleEl.textContent.trim();
-                    document.getElementById('link_url').value = urlEl.textContent.trim();
-                    document.getElementById('link_disclosure').value = '';
+                    document.getElementById('modal-title').textContent = 'Edit Widget';
+                    document.getElementById('widget-action').value = 'update';
+                    document.getElementById('widget-id').value = widgetId;
+                    document.getElementById('widget_type').value = 'custom';
+                    document.getElementById('widget_title').value = titleEl.textContent.trim();
+                    document.getElementById('widget_url').value = urlEl.textContent.trim();
+                    document.getElementById('widget_disclosure').value = '';
                     
-                    openLinkModal();
+                    openWidgetModal();
                 }
             });
         }
         
-        window.openLinkModal = function() {
-            const overlay = document.getElementById('link-modal-overlay');
+        window.openWidgetModal = function() {
+            const overlay = document.getElementById('widget-modal-overlay');
             if (overlay) {
                 overlay.classList.add('active');
                 // Prevent body scroll when modal is open
@@ -1921,8 +1922,8 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        window.closeLinkModal = function() {
-            const overlay = document.getElementById('link-modal-overlay');
+        window.closeWidgetModal = function() {
+            const overlay = document.getElementById('widget-modal-overlay');
             if (overlay) {
                 overlay.classList.remove('active');
                 // Restore body scroll
@@ -1930,14 +1931,14 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        function deleteLink(linkId) {
-            if (!confirm('Are you sure you want to delete this link?')) {
+        function deleteWidget(widgetId) {
+            if (!confirm('Are you sure you want to delete this widget?')) {
                 return;
             }
             
             const formData = new FormData();
             formData.append('action', 'delete');
-            formData.append('link_id', linkId);
+            formData.append('link_id', widgetId);
             formData.append('csrf_token', csrfToken);
             
             fetch('/api/links.php', {
@@ -2106,23 +2107,23 @@ $csrfToken = generateCSRFToken();
             }
         });
         
-        // Handle link form submission
+        // Handle widget form submission
         // Handle main drawer form submission (fallback)
         // Handle drawer form submission
-        const linkForm = document.getElementById('link-form');
-        if (linkForm) {
-            linkForm.addEventListener('submit', function(e) {
+        const widgetForm = document.getElementById('widget-form');
+        if (widgetForm) {
+            widgetForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                handleLinkFormSubmit(this);
+                handleWidgetFormSubmit(this);
             });
         }
         
         // Handle Escape key to close drawer
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                const overlay = document.getElementById('link-modal-overlay');
+                const overlay = document.getElementById('widget-modal-overlay');
                 if (overlay && overlay.classList.contains('active')) {
-                    closeLinkModal();
+                    closeWidgetModal();
                 }
             }
         });
@@ -2142,12 +2143,12 @@ $csrfToken = generateCSRFToken();
         
         // Drag and drop functionality
         let draggedElement = null;
-        const linksList = document.getElementById('links-list');
+        const widgetsList = document.getElementById('widgets-list');
         
-        if (linksList) {
-            // Make links sortable
-            Array.from(linksList.children).forEach(item => {
-                if (item.classList.contains('link-item')) {
+        if (widgetsList) {
+            // Make widgets sortable
+            Array.from(widgetsList.children).forEach(item => {
+                if (item.classList.contains('widget-item')) {
                     item.setAttribute('draggable', 'true');
                     
                     item.addEventListener('dragstart', function(e) {
@@ -2158,7 +2159,7 @@ $csrfToken = generateCSRFToken();
                     
                     item.addEventListener('dragend', function() {
                         this.classList.remove('dragging');
-                        document.querySelectorAll('.link-item').forEach(el => {
+                        document.querySelectorAll('.widget-item').forEach(el => {
                             el.classList.remove('drag-over');
                         });
                     });
@@ -2184,18 +2185,18 @@ $csrfToken = generateCSRFToken();
                         }
                         
                         if (draggedElement !== this) {
-                            const allItems = Array.from(linksList.querySelectorAll('.link-item'));
+                            const allItems = Array.from(widgetsList.querySelectorAll('.widget-item'));
                             const draggedIndex = allItems.indexOf(draggedElement);
                             const targetIndex = allItems.indexOf(this);
                             
                             if (draggedIndex < targetIndex) {
-                                linksList.insertBefore(draggedElement, this.nextSibling);
+                                widgetsList.insertBefore(draggedElement, this.nextSibling);
                             } else {
-                                linksList.insertBefore(draggedElement, this);
+                                widgetsList.insertBefore(draggedElement, this);
                             }
                             
                             // Save new order
-                            saveLinkOrder();
+                            saveWidgetOrder();
                         }
                         
                         return false;
@@ -2204,10 +2205,10 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        function saveLinkOrder() {
-            const items = Array.from(linksList.querySelectorAll('.link-item'));
+        function saveWidgetOrder() {
+            const items = Array.from(widgetsList.querySelectorAll('.widget-item'));
             const linkOrders = items.map((item, index) => ({
-                link_id: parseInt(item.getAttribute('data-link-id')),
+                link_id: parseInt(item.getAttribute('data-widget-id')),
                 display_order: index + 1
             }));
             
@@ -2223,7 +2224,7 @@ $csrfToken = generateCSRFToken();
             .then(response => response.json())
             .then(data => {
                 if (!data.success) {
-                    showMessage('Failed to save link order', 'error');
+                    showMessage('Failed to save widget order', 'error');
                     setTimeout(() => location.reload(), 500);
                 } else {
                     refreshPreview();

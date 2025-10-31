@@ -1,7 +1,8 @@
 <?php
 /**
- * Link Click Tracker
- * Podn.Bio - Tracks clicks and redirects
+ * Widget Click Tracker
+ * Podn.Bio - Tracks clicks on widgets and redirects
+ * Note: Uses "links" table for backend compatibility, but tracks widget clicks
  */
 
 require_once __DIR__ . '/config/constants.php';
