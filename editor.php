@@ -3798,8 +3798,21 @@ $csrfToken = generateCSRFToken();
                     .then(response => response.json())
                     .then(data => {
                         if (data.success && data.theme) {
-                            const colors = JSON.parse(data.theme.colors);
-                            const fonts = JSON.parse(data.theme.fonts);
+                            // Validate JSON fields before parsing
+                            let colors = {};
+                            let fonts = {};
+                            
+                            try {
+                                colors = data.theme.colors ? JSON.parse(data.theme.colors) : {};
+                            } catch (e) {
+                                console.error('Failed to parse theme colors:', e);
+                            }
+                            
+                            try {
+                                fonts = data.theme.fonts ? JSON.parse(data.theme.fonts) : {};
+                            } catch (e) {
+                                console.error('Failed to parse theme fonts:', e);
+                            }
                             
                             // Apply theme colors
                             if (colors.primary) {
@@ -4009,8 +4022,9 @@ $csrfToken = generateCSRFToken();
                             saveAppearanceForm();
                         }
                     })
-                    .catch(() => {
-                        console.error('Failed to load theme');
+                    .catch((error) => {
+                        console.error('Failed to load theme:', error);
+                        console.error('Theme ID:', themeId);
                     });
             }
         }
@@ -4612,6 +4626,13 @@ $csrfToken = generateCSRFToken();
         
         function updatePageBackgroundFromHex() {
             const hexInput = document.getElementById('page_background_color_hex');
+            
+            // Add null check
+            if (!hexInput) {
+                console.error('page_background_color_hex element not found');
+                return;
+            }
+            
             let hex = hexInput.value.trim();
             
             if (!hex.startsWith('#')) {
@@ -4821,6 +4842,13 @@ $csrfToken = generateCSRFToken();
         
         function updateWidgetBackgroundFromHex() {
             const hexInput = document.getElementById('widget_background_color_hex');
+            
+            // Add null check
+            if (!hexInput) {
+                console.error('widget_background_color_hex element not found');
+                return;
+            }
+            
             let hex = hexInput.value.trim();
             
             if (!hex.startsWith('#')) {
@@ -4906,6 +4934,13 @@ $csrfToken = generateCSRFToken();
         
         function updateWidgetBorderColorFromHex() {
             const hexInput = document.getElementById('widget_border_color_hex');
+            
+            // Add null check
+            if (!hexInput) {
+                console.error('widget_border_color_hex element not found');
+                return;
+            }
+            
             let hex = hexInput.value.trim();
             
             if (!hex.startsWith('#')) {
