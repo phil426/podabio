@@ -794,6 +794,10 @@ class WidgetRenderer {
         audio = document.getElementById(playerId);
         if (!audio) return;
         
+        // Ensure audio volume is set immediately (default might be 0 or muted)
+        audio.volume = 1.0;
+        audio.muted = false;
+        
         // Initialize Web Audio API for waveform (only once per audio element)
         if (audioInitialized) return;
         
@@ -834,12 +838,6 @@ class WidgetRenderer {
                     }
                 }
                 audioInitialized = true;
-            }
-            
-            // Ensure audio volume is set (default might be 0 or muted)
-            if (audio) {
-                audio.volume = 1.0;
-                audio.muted = false;
             }
             
             // Initialize waveform canvas
@@ -1103,6 +1101,8 @@ class WidgetRenderer {
         audio.pause();
         stopWaveformAnimation();
         audio.src = episode.audio;
+        audio.volume = 1.0;
+        audio.muted = false;
         audio.load();
         
         // Reset waveform
