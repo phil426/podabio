@@ -311,13 +311,16 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         /* PodNBio Player - Custom Compact Widget Styles */
         .widget-podcast-custom {
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            isolation: isolate;
+            z-index: 1;
         }
         
         .widget-podcast-custom .widget-content {
             position: relative;
             overflow: visible;
+            z-index: 1;
         }
         
         .podcast-compact-player {
@@ -584,6 +587,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             will-change: height;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            z-index: 1;
         }
         
         .podcast-bottom-sheet:not(.hidden) {
