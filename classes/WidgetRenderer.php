@@ -578,18 +578,26 @@ class WidgetRenderer {
                 const playlistEl = document.getElementById(playlistId);
                 if (!playlistEl || episodes.length === 0) return;
                 
-                // Sanitize HTML to prevent XSS
-                const sanitize = (str) => {
+                // Escape HTML for titles and URLs to prevent XSS
+                const escapeHtml = (str) => {
                     const div = document.createElement("div");
                     div.textContent = str;
                     return div.innerHTML;
                 };
                 
+                // Strip HTML tags from descriptions for episode list preview
+                const stripHtml = (html) => {
+                    if (!html) return "";
+                    const temp = document.createElement("div");
+                    temp.innerHTML = html;
+                    return temp.textContent || temp.innerText || "";
+                };
+                
                 playlistEl.innerHTML = "<h4 class=\\"playlist-title-full\\">Episodes</h4><ul class=\\"episode-list-full\\">" +
                     episodes.map((ep, index) => {
-                        const title = sanitize(ep.title);
-                        const description = ep.description ? sanitize(ep.description.substring(0, 150) + "...") : "";
-                        const cover = ep.cover ? sanitize(ep.cover) : "";
+                        const title = escapeHtml(ep.title);
+                        const description = ep.description ? escapeHtml(stripHtml(ep.description).substring(0, 150) + "...") : "";
+                        const cover = ep.cover ? escapeHtml(ep.cover) : "";
                         const activeClass = index === currentEpisodeIndex ? "active" : "";
                         return "<li class=\\"episode-item-full " + activeClass + "\\" data-index=\\"" + index + "\\">" +
                             (cover ? "<img src=\\"" + cover + "\\" alt=\\"" + title + "\\" class=\\"episode-thumbnail-full\\">" : "") +
@@ -897,17 +905,55 @@ class WidgetRenderer {
     function updateShowNotes(episode) {
         const panel = document.getElementById("shownotes-panel-" + widgetId);
         if (!panel) return;
-        const sanitize = (html) => {
-            const div = document.createElement("div");
-            div.textContent = html;
-            return div.innerHTML;
-        };
+        
+        // Sanitize HTML - allow safe tags only (similar to PHP sanitizeHtml)
+        function sanitizeHtml(html) {
+            if (!html) return "";
+            const temp = document.createElement("div");
+            temp.innerHTML = html;
+            
+            // List of allowed safe HTML tags
+            const allowedTags = ["p", "br", "strong", "em", "u", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "code", "pre"];
+            
+            // Remove all tags except allowed ones
+            const walker = document.createTreeWalker(
+                temp,
+                NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            const nodesToRemove = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = node.tagName.toLowerCase();
+                    if (!allowedTags.includes(tagName)) {
+                        nodesToRemove.push(node);
+                    } else if (tagName === "a") {
+                        // Sanitize links - remove javascript: and data: URLs
+                        const href = node.getAttribute("href");
+                        if (href && (href.toLowerCase().startsWith("javascript:") || href.toLowerCase().startsWith("data:"))) {
+                            node.setAttribute("href", "#");
+                        }
+                    }
+                }
+            }
+            
+            nodesToRemove.forEach(n => {
+                const parent = n.parentNode;
+                while (n.firstChild) {
+                    parent.insertBefore(n.firstChild, n);
+                }
+                parent.removeChild(n);
+            });
+            
+            return temp.innerHTML;
+        }
+        
         let html = "";
         if (episode.description) {
-            const temp = document.createElement("div");
-            temp.innerHTML = episode.description;
-            const textContent = temp.textContent || temp.innerText || "";
-            html = "<div class=\"show-notes-content\">" + sanitize(textContent) + "</div>";
+            html = "<div class=\"show-notes-content\">" + sanitizeHtml(episode.description) + "</div>";
         } else {
             html = "<div class=\"show-notes-content\">No show notes available.</div>";
         }
@@ -960,8 +1006,12 @@ class WidgetRenderer {
             html += "<div class=\"episode-info\">";
             html += "<div class=\"episode-name\">" + escapeHtml(episode.title) + "</div>";
             if (episode.description) {
-                const desc = escapeHtml(episode.description).substring(0, 100);
-                html += "<div class=\"episode-desc\">" + desc + "...</div>";
+                // Strip HTML tags for episode list description preview
+                const temp = document.createElement("div");
+                temp.innerHTML = episode.description;
+                const textContent = temp.textContent || temp.innerText || "";
+                const desc = textContent.substring(0, 100);
+                html += "<div class=\"episode-desc\">" + escapeHtml(desc) + "...</div>";
             }
             html += "</div>";
             html += "</li>";
