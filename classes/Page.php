@@ -122,11 +122,12 @@ class Page {
         $params = [];
         
         foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
+            // Use array_key_exists to allow null values (for deleting images, etc.)
+            if (array_key_exists($field, $data)) {
                 if ($field === 'colors' || $field === 'fonts') {
-                    // JSON encode arrays
+                    // JSON encode arrays (allow null for clearing)
                     $updates[] = "$field = ?";
-                    $params[] = is_array($data[$field]) ? json_encode($data[$field]) : $data[$field];
+                    $params[] = ($data[$field] === null || $data[$field] === '') ? null : (is_array($data[$field]) ? json_encode($data[$field]) : $data[$field]);
                 } else {
                     $updates[] = "$field = ?";
                     $params[] = $data[$field];

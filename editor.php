@@ -402,6 +402,82 @@ $csrfToken = generateCSRFToken();
             color: #666;
             font-size: 12px;
         }
+        
+        /* Theme Cards */
+        .theme-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .theme-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        
+        .theme-card:hover {
+            border-color: #9ca3af;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .theme-card.theme-selected {
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        
+        .theme-card-swatch {
+            width: 100%;
+            height: 100px;
+            position: relative;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .theme-card-footer {
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+        }
+        
+        .theme-card-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #111827;
+            flex: 1;
+        }
+        
+        .theme-card input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+            accent-color: #0066ff;
+        }
+        
+        .theme-card input[type="radio"]:checked {
+            accent-color: #0066ff;
+        }
+        
+        @media (max-width: 768px) {
+            .theme-cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 0.75rem;
+            }
+            
+            .theme-card-swatch {
+                height: 80px;
+            }
+        }
+        
         /* Toast Notification System */
         .toast-container {
             position: fixed;
@@ -1250,12 +1326,11 @@ $csrfToken = generateCSRFToken();
                         <div style="flex: 1;">
                             <input type="file" id="profile-image-input-settings" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%;">
                             <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                                <button type="button" class="btn btn-secondary btn-small" onclick="uploadImage('profile', 'settings')">Upload Profile Image</button>
                                 <?php if ($page['profile_image']): ?>
                                     <button type="button" class="btn btn-danger btn-small" onclick="removeImage('profile', 'settings')">Remove</button>
                                 <?php endif; ?>
                             </div>
-                            <small style="display: block; color: #666;">Recommended: 400x400px, square image. Max 5MB</small>
+                            <small style="display: block; color: #666;">Select an image to automatically upload. Recommended: 400x400px, square image. Max 5MB</small>
                         </div>
                     </div>
                 </div>
@@ -1441,16 +1516,27 @@ $csrfToken = generateCSRFToken();
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 
                 <div class="form-group">
-                    <label for="theme_id">Theme</label>
-                    <select id="theme_id" name="theme_id" onchange="handleThemeChange()">
-                        <option value="">No Theme (Custom)</option>
-                        <?php foreach ($themes as $theme): ?>
-                            <option value="<?php echo $theme['id']; ?>" <?php echo ($page['theme_id'] == $theme['id']) ? 'selected' : ''; ?>>
-                                <?php echo h($theme['name']); ?>
-                            </option>
+                    <label style="display: block; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600;">Theme</label>
+                    <div class="theme-cards-container">
+                        <!-- Theme Cards -->
+                        <?php foreach ($themes as $theme): 
+                            $themeColors = parseThemeJson($theme['colors'], []);
+                            $primaryColor = $themeColors['primary'] ?? '#000000';
+                            $secondaryColor = $themeColors['secondary'] ?? '#ffffff';
+                            $accentColor = $themeColors['accent'] ?? '#0066ff';
+                            $isSelected = ($page['theme_id'] == $theme['id']);
+                        ?>
+                        <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>" onclick="selectTheme(<?php echo $theme['id']; ?>)">
+                            <div class="theme-card-swatch" style="background: linear-gradient(135deg, <?php echo h($primaryColor); ?> 0%, <?php echo h($accentColor); ?> 100%);">
+                            </div>
+                            <div class="theme-card-footer">
+                                <span class="theme-card-name"><?php echo h($theme['name']); ?></span>
+                                <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange()" onclick="event.stopPropagation();">
+                            </div>
+                        </div>
                         <?php endforeach; ?>
-                    </select>
-                    <small>Select a theme to automatically apply colors and fonts, or choose "Custom" to set your own.</small>
+                    </div>
+                    <small style="display: block; margin-top: 1rem; color: #666;">Select a theme to automatically apply colors and fonts. You can modify individual elements after selection.</small>
                 </div>
                 
                 <div class="form-group">
@@ -1463,8 +1549,8 @@ $csrfToken = generateCSRFToken();
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <h3 style="margin-top: 0;">Custom Colors</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors if no theme is selected or to override theme colors.</small>
+                <h3 style="margin-top: 0;">Colors</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors to override theme colors or create your own color scheme.</small>
                 
                 <?php
                 // Get theme colors with fallbacks using Theme class
@@ -1506,7 +1592,7 @@ $csrfToken = generateCSRFToken();
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <h3 style="margin-top: 0;">Custom Fonts</h3>
+                <h3 style="margin-top: 0;">Fonts</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for headings and body text. Popular Google Fonts are included.</small>
                 
                 <?php
@@ -1548,50 +1634,6 @@ $csrfToken = generateCSRFToken();
                     <h4 style="margin-top: 0;">Font Preview</h4>
                     <h3 id="font-preview-heading" style="font-family: '<?php echo h($customHeadingFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Heading Text</h3>
                     <p id="font-preview-body" style="font-family: '<?php echo h($customBodyFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your body text will look with the selected font.</p>
-                </div>
-                
-                <!-- Profile Image Upload -->
-                <div class="form-group">
-                    <label>Profile Image</label>
-                    <div style="display: flex; gap: 15px; align-items: flex-start;">
-                        <div style="flex-shrink: 0;">
-                            <?php if ($page['profile_image']): ?>
-                                <img id="profile-preview" src="<?php echo h($page['profile_image']); ?>" alt="Profile" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
-                            <?php else: ?>
-                                <div id="profile-preview" style="width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;">No image</div>
-                            <?php endif; ?>
-                        </div>
-                        <div style="flex: 1;">
-                            <input type="file" id="profile-image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px;">
-                            <button type="button" class="btn btn-secondary btn-small" onclick="uploadImage('profile')">Upload Profile Image</button>
-                            <?php if ($page['profile_image']): ?>
-                                <button type="button" class="btn btn-danger btn-small" onclick="removeImage('profile')">Remove</button>
-                            <?php endif; ?>
-                            <small style="display: block; margin-top: 5px;">Recommended: 400x400px, square image</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Background Image Upload -->
-                <div class="form-group">
-                    <label>Background Image</label>
-                    <div style="display: flex; gap: 15px; align-items: flex-start;">
-                        <div style="flex-shrink: 0;">
-                            <?php if ($page['background_image']): ?>
-                                <img id="background-preview" src="<?php echo h($page['background_image']); ?>" alt="Background" style="width: 200px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
-                            <?php else: ?>
-                                <div id="background-preview" style="width: 200px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;">No image</div>
-                            <?php endif; ?>
-                        </div>
-                        <div style="flex: 1;">
-                            <input type="file" id="background-image-input" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px;">
-                            <button type="button" class="btn btn-secondary btn-small" onclick="uploadImage('background')">Upload Background Image</button>
-                            <?php if ($page['background_image']): ?>
-                                <button type="button" class="btn btn-danger btn-small" onclick="removeImage('background')">Remove</button>
-                            <?php endif; ?>
-                            <small style="display: block; margin-top: 5px;">Recommended: 1920x1080px or similar wide format</small>
-                        </div>
-                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Save Appearance</button>
@@ -3048,14 +3090,125 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        // Handle page settings form
+        // Auto-upload profile images when file is selected (Settings tab only)
+        const profileImageInputSettings = document.getElementById('profile-image-input-settings');
+        
+        if (profileImageInputSettings) {
+            profileImageInputSettings.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    uploadImage('profile', 'settings');
+                }
+            });
+        }
+        
+        // Auto-save functionality with debouncing
+        let saveTimeouts = {};
+        let savingIndicators = {};
+        
+        function showSavingIndicator(formId, message = 'Saving...') {
+            let indicator = savingIndicators[formId];
+            if (!indicator) {
+                // Create saving indicator element
+                indicator = document.createElement('span');
+                indicator.className = 'auto-save-indicator';
+                indicator.style.cssText = 'margin-left: 10px; font-size: 0.875rem; color: #666; font-style: italic;';
+                savingIndicators[formId] = indicator;
+                
+                // Find save button and append indicator
+                const form = document.getElementById(formId);
+                if (form) {
+                    const saveBtn = form.querySelector('button[type="submit"]');
+                    if (saveBtn) {
+                        saveBtn.parentNode.appendChild(indicator);
+                    }
+                }
+            }
+            indicator.textContent = message;
+            indicator.style.display = 'inline';
+            return indicator;
+        }
+        
+        function hideSavingIndicator(formId) {
+            const indicator = savingIndicators[formId];
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+        
+        function autoSaveForm(formId, action, getFormData) {
+            // Clear existing timeout
+            if (saveTimeouts[formId]) {
+                clearTimeout(saveTimeouts[formId]);
+            }
+            
+            // Show saving indicator
+            showSavingIndicator(formId, 'Saving...');
+            
+            // Set new timeout (debounce for 1 second)
+            saveTimeouts[formId] = setTimeout(() => {
+                const formData = getFormData();
+                formData.append('action', action);
+                formData.append('csrf_token', csrfToken);
+                
+                fetch('/api/page.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSavingIndicator(formId, 'Saved');
+                        setTimeout(() => hideSavingIndicator(formId), 2000);
+                        refreshPreview();
+                    } else {
+                        showSavingIndicator(formId, 'Error saving');
+                        setTimeout(() => hideSavingIndicator(formId), 3000);
+                        console.error('Auto-save error:', data.error);
+                    }
+                })
+                .catch(error => {
+                    showSavingIndicator(formId, 'Error saving');
+                    setTimeout(() => hideSavingIndicator(formId), 3000);
+                    console.error('Auto-save error:', error);
+                });
+            }, 1000);
+        }
+        
+        // Handle page settings form with auto-save
         const pageSettingsForm = document.getElementById('page-settings-form');
         if (pageSettingsForm) {
+            // Auto-save on input changes
+            const settingsFields = ['username', 'podcast_name', 'podcast_description', 'custom_domain'];
+            settingsFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', function() {
+                        autoSaveForm('page-settings-form', 'update_settings', () => {
+                            const formData = new FormData();
+                            const username = document.getElementById('username').value;
+                            const podcastName = document.getElementById('podcast_name').value;
+                            const podcastDesc = document.getElementById('podcast_description').value;
+                            const customDomain = document.getElementById('custom_domain').value;
+                            
+                            if (username) formData.append('username', username);
+                            if (podcastName) formData.append('podcast_name', podcastName);
+                            if (podcastDesc) formData.append('podcast_description', podcastDesc);
+                            if (customDomain) formData.append('custom_domain', customDomain);
+                            
+                            return formData;
+                        });
+                    });
+                }
+            });
+            
+            // Manual form submission (keep for explicit saves)
             pageSettingsForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             formData.append('action', 'update_settings');
+            
+            showSavingIndicator('page-settings-form', 'Saving...');
             
             fetch('/api/page.php', {
                 method: 'POST',
@@ -3071,13 +3224,16 @@ $csrfToken = generateCSRFToken();
                     if (statusDiv) {
                         statusDiv.style.display = 'none';
                     }
+                    hideSavingIndicator('page-settings-form');
                     refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to save settings', 'error');
+                    hideSavingIndicator('page-settings-form');
                 }
             })
             .catch(() => {
                 showMessage('An error occurred', 'error');
+                hideSavingIndicator('page-settings-form');
             });
             });
         }
@@ -3134,9 +3290,32 @@ $csrfToken = generateCSRFToken();
             previewBody.style.fontFamily = `'${bodyFont}', sans-serif`;
         }
         
+        // Select theme from card click
+        function selectTheme(themeId) {
+            const radio = document.getElementById('theme-' + themeId);
+            if (radio) {
+                radio.checked = true;
+                handleThemeChange();
+            }
+        }
+        
         // Handle theme change
         function handleThemeChange() {
-            const themeId = document.getElementById('theme_id').value;
+            // Get selected radio button
+            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
+            const themeId = selectedRadio ? selectedRadio.value : '';
+            
+            // Update visual selection
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('theme-selected');
+            });
+            if (selectedRadio) {
+                const card = selectedRadio.closest('.theme-card');
+                if (card) {
+                    card.classList.add('theme-selected');
+                }
+            }
+            
             if (themeId) {
                 // Load theme data via AJAX
                 fetch('/api/themes.php?id=' + themeId)
@@ -3172,6 +3351,19 @@ $csrfToken = generateCSRFToken();
                                 document.getElementById('custom_body_font').value = fonts.body;
                                 updateFontPreview();
                             }
+                            
+                            // Trigger auto-save
+                            autoSaveForm('appearance-form', 'update_appearance', () => {
+                                const formData = new FormData();
+                                formData.append('theme_id', themeId);
+                                formData.append('layout_option', document.getElementById('layout_option').value);
+                                formData.append('custom_primary_color', document.getElementById('custom_primary_color').value);
+                                formData.append('custom_secondary_color', document.getElementById('custom_secondary_color').value);
+                                formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
+                                formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
+                                formData.append('custom_body_font', document.getElementById('custom_body_font').value);
+                                return formData;
+                            });
                         }
                     })
                     .catch(() => {
@@ -3187,9 +3379,73 @@ $csrfToken = generateCSRFToken();
         // Load fonts on page load
         updateFontPreview();
         
-        // Handle appearance form
+        // Handle appearance form with auto-save
         const appearanceForm = document.getElementById('appearance-form');
         if (appearanceForm) {
+            // Auto-save on changes
+            // Note: theme_id is handled separately via handleThemeChange() for radio buttons
+            const appearanceFields = ['layout_option', 'custom_primary_color', 'custom_secondary_color', 
+                                      'custom_accent_color', 'custom_heading_font', 'custom_body_font'];
+            appearanceFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('change', function() {
+                        autoSaveForm('appearance-form', 'update_appearance', () => {
+                            const formData = new FormData();
+                            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
+                            const themeId = selectedRadio ? selectedRadio.value : '';
+                            const layout = document.getElementById('layout_option').value;
+                            const primaryColor = document.getElementById('custom_primary_color').value;
+                            const secondaryColor = document.getElementById('custom_secondary_color').value;
+                            const accentColor = document.getElementById('custom_accent_color').value;
+                            const headingFont = document.getElementById('custom_heading_font').value;
+                            const bodyFont = document.getElementById('custom_body_font').value;
+                            
+                            formData.append('theme_id', themeId);
+                            formData.append('layout_option', layout);
+                            formData.append('custom_primary_color', primaryColor);
+                            formData.append('custom_secondary_color', secondaryColor);
+                            formData.append('custom_accent_color', accentColor);
+                            formData.append('custom_heading_font', headingFont);
+                            formData.append('custom_body_font', bodyFont);
+                            
+                            return formData;
+                        });
+                    });
+                }
+            });
+            
+            // Also watch hex color inputs
+            ['custom_primary_color_hex', 'custom_secondary_color_hex', 'custom_accent_color_hex'].forEach(hexFieldId => {
+                const hexField = document.getElementById(hexFieldId);
+                if (hexField) {
+                    hexField.addEventListener('input', function() {
+                        autoSaveForm('appearance-form', 'update_appearance', () => {
+                            const formData = new FormData();
+                            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
+                            const themeId = selectedRadio ? selectedRadio.value : '';
+                            const layout = document.getElementById('layout_option').value;
+                            const primaryColor = document.getElementById('custom_primary_color').value;
+                            const secondaryColor = document.getElementById('custom_secondary_color').value;
+                            const accentColor = document.getElementById('custom_accent_color').value;
+                            const headingFont = document.getElementById('custom_heading_font').value;
+                            const bodyFont = document.getElementById('custom_body_font').value;
+                            
+                            formData.append('theme_id', themeId);
+                            formData.append('layout_option', layout);
+                            formData.append('custom_primary_color', primaryColor);
+                            formData.append('custom_secondary_color', secondaryColor);
+                            formData.append('custom_accent_color', accentColor);
+                            formData.append('custom_heading_font', headingFont);
+                            formData.append('custom_body_font', bodyFont);
+                            
+                            return formData;
+                        });
+                    });
+                }
+            });
+            
+            // Manual form submission (keep for explicit saves)
             appearanceForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -3203,6 +3459,8 @@ $csrfToken = generateCSRFToken();
             formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
             formData.append('custom_body_font', document.getElementById('custom_body_font').value);
             
+            showSavingIndicator('appearance-form', 'Saving...');
+            
             fetch('/api/page.php', {
                 method: 'POST',
                 body: formData
@@ -3211,25 +3469,48 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     showMessage('Appearance updated successfully!', 'success');
+                    hideSavingIndicator('appearance-form');
                     refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to update appearance', 'error');
+                    hideSavingIndicator('appearance-form');
                 }
             })
             .catch(() => {
                 showMessage('An error occurred', 'error');
+                hideSavingIndicator('appearance-form');
             });
             });
         }
         
-        // Handle email settings form
+        // Handle email settings form with auto-save
         const emailForm = document.getElementById('email-form');
         if (emailForm) {
+            // Auto-save on input changes
+            const emailFields = emailForm.querySelectorAll('input, select, textarea');
+            emailFields.forEach(field => {
+                if (field.type !== 'file' && field.type !== 'submit' && field.type !== 'button') {
+                    field.addEventListener('input', function() {
+                        autoSaveForm('email-form', 'update_email_settings', () => {
+                            return new FormData(emailForm);
+                        });
+                    });
+                    field.addEventListener('change', function() {
+                        autoSaveForm('email-form', 'update_email_settings', () => {
+                            return new FormData(emailForm);
+                        });
+                    });
+                }
+            });
+            
+            // Manual form submission (keep for explicit saves)
             emailForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             formData.append('action', 'update_email_settings');
+            
+            showSavingIndicator('email-form', 'Saving...');
             
             fetch('/api/page.php', {
                 method: 'POST',
@@ -3239,25 +3520,31 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     showMessage('Email settings saved successfully!', 'success');
+                    hideSavingIndicator('email-form');
                     refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to save email settings', 'error');
+                    hideSavingIndicator('email-form');
                 }
             })
             .catch(() => {
                 showMessage('An error occurred', 'error');
+                hideSavingIndicator('email-form');
             });
             });
         }
         
         // Image upload functionality
         function uploadImage(type, context = 'appearance') {
-            const inputId = type === 'profile' 
-                ? (context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input')
-                : 'background-image-input';
-            const previewId = type === 'profile' 
-                ? (context === 'settings' ? 'profile-preview-settings' : 'profile-preview')
-                : 'background-preview';
+            // Only handle profile images
+            if (type !== 'profile') {
+                console.error('Invalid image type:', type);
+                showToast('Invalid image type', 'error');
+                return;
+            }
+            
+            const inputId = context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input';
+            const previewId = context === 'settings' ? 'profile-preview-settings' : 'profile-preview';
             const input = document.getElementById(inputId);
             
             if (!input) {
@@ -3364,10 +3651,8 @@ $csrfToken = generateCSRFToken();
                         const img = document.createElement('img');
                         img.id = previewId;
                         img.src = imageUrl;
-                        img.alt = type === 'profile' ? 'Profile' : 'Background';
-                        img.style.cssText = type === 'profile' 
-                            ? 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;'
-                            : 'width: 200px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
+                        img.alt = 'Profile';
+                        img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
                         preview.parentNode.replaceChild(img, preview);
                         console.log('Preview image replaced successfully');
                     } else {
@@ -3377,32 +3662,25 @@ $csrfToken = generateCSRFToken();
                     }
                     
                     // Show remove button if not visible
-                    let uploadBtnContainer;
+                    let buttonContainer;
                     if (context === 'settings') {
-                        // In settings context, find the button container
-                        const buttonContainer = input.closest('div').querySelector('div[style*="display: flex"]');
-                        uploadBtnContainer = buttonContainer;
-                        const uploadBtn = buttonContainer ? buttonContainer.querySelector('.btn-secondary') : null;
-                        
-                        if (uploadBtn && !uploadBtn.nextElementSibling || (uploadBtn.nextElementSibling && !uploadBtn.nextElementSibling.classList.contains('btn-danger'))) {
-                            const removeBtn = document.createElement('button');
-                            removeBtn.type = 'button';
-                            removeBtn.className = 'btn btn-danger btn-small';
-                            removeBtn.textContent = 'Remove';
-                            removeBtn.onclick = () => removeImage(type, context);
-                            
-                            // Insert after the upload button
-                            uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
-                        }
+                        // In settings context, find the button container div
+                        buttonContainer = input.closest('div').querySelector('div[style*="display: flex"]');
                     } else {
-                        const uploadBtn = input.nextElementSibling;
-                        if (uploadBtn && (!uploadBtn.nextElementSibling || !uploadBtn.nextElementSibling.classList.contains('btn-danger'))) {
+                        // In appearance context, find the button container div
+                        buttonContainer = input.nextElementSibling;
+                    }
+                    
+                    if (buttonContainer) {
+                        // Check if remove button already exists
+                        const existingRemoveBtn = buttonContainer.querySelector('.btn-danger');
+                        if (!existingRemoveBtn) {
                             const removeBtn = document.createElement('button');
                             removeBtn.type = 'button';
                             removeBtn.className = 'btn btn-danger btn-small';
                             removeBtn.textContent = 'Remove';
                             removeBtn.onclick = () => removeImage(type, context);
-                            uploadBtn.parentNode.insertBefore(removeBtn, uploadBtn.nextSibling);
+                            buttonContainer.appendChild(removeBtn);
                         }
                     }
                     
@@ -3423,58 +3701,88 @@ $csrfToken = generateCSRFToken();
         }
         
         function removeImage(type, context = 'appearance') {
-            if (!confirm(`Are you sure you want to remove the ${type} image?`)) {
+            // Only handle profile images
+            if (type !== 'profile') {
+                console.error('Invalid image type:', type);
+                showToast('Invalid image type', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to remove the profile image?')) {
                 return;
             }
             
             const formData = new FormData();
             formData.append('action', 'remove_image');
-            formData.append('type', type);
+            formData.append('type', 'profile');
             formData.append('csrf_token', csrfToken);
+            
+            showToast('Removing image...', 'info');
             
             fetch('/api/page.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Remove image failed - response:', text);
+                        throw new Error(text || 'Failed to remove image');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Remove image response:', data);
+                console.log('Response success:', data.success);
+                console.log('Response error:', data.error);
+                
                 if (data.success) {
-                    const previewId = type === 'profile' 
-                        ? (context === 'settings' ? 'profile-preview-settings' : 'profile-preview')
-                        : 'background-preview';
+                    const previewId = context === 'settings' ? 'profile-preview-settings' : 'profile-preview';
                     const preview = document.getElementById(previewId);
                     
                     if (preview) {
                         // Replace img with placeholder div
                         const placeholder = document.createElement('div');
                         placeholder.id = previewId;
-                        placeholder.style.cssText = type === 'profile'
-                            ? 'width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;'
-                            : 'width: 200px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999;';
+                        placeholder.style.cssText = 'width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;';
                         placeholder.textContent = 'No image';
                         preview.parentNode.replaceChild(placeholder, preview);
+                    } else {
+                        console.error('Preview element not found:', previewId);
                     }
                     
                     // Remove remove button
-                    const inputId = type === 'profile' 
-                        ? (context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input')
-                        : 'background-image-input';
+                    const inputId = context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input';
                     const input = document.getElementById(inputId);
+                    
                     if (input) {
-                        const uploadBtn = input.nextElementSibling;
-                        if (uploadBtn && uploadBtn.nextElementSibling && uploadBtn.nextElementSibling.textContent === 'Remove') {
-                            uploadBtn.nextElementSibling.remove();
+                        const buttonContainer = input.nextElementSibling;
+                        if (buttonContainer) {
+                            const removeBtn = buttonContainer.querySelector('.btn-danger');
+                            if (removeBtn) {
+                                removeBtn.remove();
+                                console.log('Remove button removed successfully');
+                            } else {
+                                console.warn('Remove button not found in container');
+                            }
+                        } else {
+                            console.warn('Button container not found');
                         }
+                    } else {
+                        console.error('Input element not found:', inputId);
                     }
                     
-                    showMessage(`${type} image removed successfully`, 'success');
+                    showToast('Profile image removed successfully', 'success');
                     refreshPreview();
                 } else {
-                    showMessage(data.error || 'Failed to remove image', 'error');
+                    showToast(data.error || 'Failed to remove image', 'error');
+                    console.error('Remove image failed:', data.error);
                 }
             })
-            .catch(() => {
-                showMessage('An error occurred', 'error');
+            .catch(error => {
+                console.error('Remove image error:', error);
+                showToast(error.message || 'An error occurred while removing image', 'error');
             });
         }
         
