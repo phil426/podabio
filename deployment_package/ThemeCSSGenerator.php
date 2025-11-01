@@ -14,11 +14,7 @@ class ThemeCSSGenerator {
     private $themeObj;
     private $colors;
     private $fonts;
-    private $pageFonts;
-    private $widgetFonts;
     private $pageBackground;
-    private $widgetBackground;
-    private $widgetBorderColor;
     private $widgetStyles;
     private $spatialEffect;
     
@@ -29,12 +25,8 @@ class ThemeCSSGenerator {
         
         // Load all theme data
         $this->colors = $this->themeObj->getThemeColors($page, $theme);
-        $this->fonts = $this->themeObj->getThemeFonts($page, $theme); // Legacy support
-        $this->pageFonts = $this->themeObj->getPageFonts($page, $theme);
-        $this->widgetFonts = $this->themeObj->getWidgetFonts($page, $theme);
+        $this->fonts = $this->themeObj->getThemeFonts($page, $theme);
         $this->pageBackground = $this->themeObj->getPageBackground($page, $theme);
-        $this->widgetBackground = $this->themeObj->getWidgetBackground($page, $theme);
-        $this->widgetBorderColor = $this->themeObj->getWidgetBorderColor($page, $theme);
         $this->widgetStyles = $this->themeObj->getWidgetStyles($page, $theme);
         $this->spatialEffect = $this->themeObj->getSpatialEffect($page, $theme);
     }
@@ -45,6 +37,8 @@ class ThemeCSSGenerator {
      */
     public function generateCSSVariables() {
         $borderWidth = convertEnumToCSS($this->widgetStyles['border_width'] ?? 'medium', 'border_width');
+        $borderColor = $this->widgetStyles['border_color'] ?? 'var(--primary-color)';
+        $backgroundColor = $this->widgetStyles['background_color'] ?? 'var(--secondary-color)';
         $spacing = convertEnumToCSS($this->widgetStyles['spacing'] ?? 'comfortable', 'spacing');
         $borderRadius = convertEnumToCSS($this->widgetStyles['shape'] ?? 'rounded', 'shape');
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
@@ -53,23 +47,12 @@ class ThemeCSSGenerator {
         $css .= "    --primary-color: " . h($this->colors['primary']) . ";\n";
         $css .= "    --secondary-color: " . h($this->colors['secondary']) . ";\n";
         $css .= "    --accent-color: " . h($this->colors['accent']) . ";\n";
-        
-        // Legacy font variables for backward compatibility
-        $css .= "    --heading-font: '" . h($this->pageFonts['page_primary_font']) . "';\n";
-        $css .= "    --body-font: '" . h($this->pageFonts['page_secondary_font']) . "';\n";
-        
-        // New page font variables
-        $css .= "    --page-primary-font: '" . h($this->pageFonts['page_primary_font']) . "';\n";
-        $css .= "    --page-secondary-font: '" . h($this->pageFonts['page_secondary_font']) . "';\n";
-        
-        // Widget font variables (default to page fonts if not set)
-        $css .= "    --widget-primary-font: '" . h($this->widgetFonts['widget_primary_font']) . "';\n";
-        $css .= "    --widget-secondary-font: '" . h($this->widgetFonts['widget_secondary_font']) . "';\n";
-        
+        $css .= "    --heading-font: '" . h($this->fonts['heading']) . "';\n";
+        $css .= "    --body-font: '" . h($this->fonts['body']) . "';\n";
         $css .= "    --page-background: " . h($this->pageBackground) . ";\n";
-        $css .= "    --widget-background: " . h($this->widgetBackground) . ";\n";
         $css .= "    --widget-border-width: {$borderWidth};\n";
-        $css .= "    --widget-border-color: " . h($this->widgetBorderColor) . ";\n";
+        $css .= "    --widget-border-color: " . h($borderColor) . ";\n";
+        $css .= "    --widget-background-color: " . h($backgroundColor) . ";\n";
         $css .= "    --widget-spacing: {$spacing};\n";
         $css .= "    --widget-border-radius: {$borderRadius};\n";
         $css .= "    --text-color: var(--primary-color);\n";
@@ -102,7 +85,7 @@ class ThemeCSSGenerator {
         
         if ($this->spatialEffect === 'glass') {
             $css .= "body.spatial-glass {\n";
-            $css .= "    background: var(--page-background);\n";
+            $css .= "    background: rgba(255, 255, 255, 0.7);\n";
             $css .= "    backdrop-filter: blur(20px) saturate(180%);\n";
             $css .= "    -webkit-backdrop-filter: blur(20px) saturate(180%);\n";
             $css .= "}\n\n";
@@ -199,32 +182,18 @@ class ThemeCSSGenerator {
         $css .= $this->generateCSSVariables();
         $css .= "\n";
         
-        // Check if background is a gradient
-        $isGradient = strpos($this->pageBackground, 'gradient') !== false || strpos($this->pageBackground, 'linear-gradient') !== false || strpos($this->pageBackground, 'radial-gradient') !== false;
-        
         // Base body styles
         $css .= "body {\n";
-        $css .= "    font-family: var(--page-secondary-font), var(--body-font), sans-serif;\n";
+        $css .= "    font-family: var(--body-font), sans-serif;\n";
         $css .= "    background: var(--page-background);\n";
-        if (!$isGradient) {
-            // For solid colors, use fixed attachment for full coverage
-            $css .= "    background-attachment: fixed;\n";
-        }
-        $css .= "    min-height: 100vh;\n";
         $css .= "    color: var(--text-color);\n";
         $css .= "    margin: 0;\n";
         $css .= "    padding: 0;\n";
         $css .= "}\n\n";
         
-        // Ensure html element also has background for full coverage
-        $css .= "html {\n";
-        $css .= "    background: var(--page-background);\n";
-        $css .= "    min-height: 100%;\n";
-        $css .= "}\n\n";
-        
-        // Typography - page fonts
-        $css .= "h1, h2, h3, .page-title {\n";
-        $css .= "    font-family: var(--page-primary-font), var(--heading-font), sans-serif;\n";
+        // Typography
+        $css .= "h1, h2, h3 {\n";
+        $css .= "    font-family: var(--heading-font), sans-serif;\n";
         $css .= "}\n\n";
         
         // Widget container
@@ -234,7 +203,7 @@ class ThemeCSSGenerator {
         
         // Widget items - base styling
         $css .= ".widget-item {\n";
-        $css .= "    background: var(--widget-background);\n";
+        $css .= "    background: var(--widget-background-color);\n";
         $css .= "    border: var(--widget-border-width) solid var(--widget-border-color);\n";
         $css .= "    border-radius: var(--widget-border-radius);\n";
         $css .= "    position: relative;\n";
@@ -244,15 +213,6 @@ class ThemeCSSGenerator {
             $css .= "    box-shadow: var(--widget-box-shadow);\n";
         }
         
-        $css .= "}\n\n";
-        
-        // Widget typography
-        $css .= ".widget-item h1, .widget-item h2, .widget-item h3, .widget-title {\n";
-        $css .= "    font-family: var(--widget-primary-font), var(--widget-secondary-font), var(--page-primary-font), sans-serif;\n";
-        $css .= "}\n\n";
-        
-        $css .= ".widget-item p, .widget-item span, .widget-content {\n";
-        $css .= "    font-family: var(--widget-secondary-font), var(--widget-primary-font), var(--page-secondary-font), sans-serif;\n";
         $css .= "}\n\n";
         
         // Widget hover states
@@ -269,9 +229,24 @@ class ThemeCSSGenerator {
         // Add spatial effect CSS
         $css .= $this->generateSpatialEffectCSS();
         
+        // Additional widget content styling
+        $css .= ".widget-title {\n";
+        $css .= "    font-family: var(--heading-font), sans-serif;\n";
+        $css .= "    color: var(--text-color);\n";
+        $css .= "}\n\n";
+        
+        $css .= ".widget-content {\n";
+        $css .= "    color: var(--text-color);\n";
+        $css .= "}\n\n";
+        
         // Profile elements
         $css .= ".profile-image {\n";
         $css .= "    border: 3px solid var(--primary-color);\n";
+        $css .= "}\n\n";
+        
+        $css .= ".page-title {\n";
+        $css .= "    font-family: var(--heading-font), sans-serif;\n";
+        $css .= "    color: var(--primary-color);\n";
         $css .= "}\n\n";
         
         $css .= ".page-description {\n";

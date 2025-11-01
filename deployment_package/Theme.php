@@ -131,23 +131,15 @@ class Theme {
     
     /**
      * Extract fonts from page with theme fallback
-     * Returns array with page_primary_font and page_secondary_font
+     * Returns array with heading and body fonts
      * @param array $page Page data array
      * @param array|null $theme Theme data array (optional, will be fetched if page has theme_id)
      * @return array
      */
     public function getThemeFonts($page, $theme = null) {
-        // First, try page-specific page fonts (new columns)
-        if (!empty($page['page_primary_font']) || !empty($page['page_secondary_font'])) {
-            $defaults = $this->getDefaultFonts();
-            return [
-                'page_primary_font' => $page['page_primary_font'] ?? $defaults['page_primary_font'],
-                'page_secondary_font' => $page['page_secondary_font'] ?? $defaults['page_secondary_font']
-            ];
-        }
-        
-        // Try legacy fonts JSON for backward compatibility
         $fonts = [];
+        
+        // First, try page-specific fonts
         if (!empty($page['fonts'])) {
             $pageFonts = parseThemeJson($page['fonts'], []);
             if (!empty($pageFonts)) {
@@ -157,16 +149,6 @@ class Theme {
         
         // If no page fonts and theme is provided, use theme fonts
         if (empty($fonts) && $theme) {
-            // Try new theme columns first
-            if (!empty($theme['page_primary_font']) || !empty($theme['page_secondary_font'])) {
-                $defaults = $this->getDefaultFonts();
-                return [
-                    'page_primary_font' => $theme['page_primary_font'] ?? $defaults['page_primary_font'],
-                    'page_secondary_font' => $theme['page_secondary_font'] ?? $defaults['page_secondary_font']
-                ];
-            }
-            
-            // Fallback to legacy fonts JSON
             if (!empty($theme['fonts'])) {
                 $themeFonts = parseThemeJson($theme['fonts'], []);
                 if (!empty($themeFonts)) {
@@ -178,32 +160,19 @@ class Theme {
         // If no theme provided but page has theme_id, fetch it
         if (empty($fonts) && empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getTheme($page['theme_id']);
-            if ($theme) {
-                // Try new theme columns first
-                if (!empty($theme['page_primary_font']) || !empty($theme['page_secondary_font'])) {
-                    $defaults = $this->getDefaultFonts();
-                    return [
-                        'page_primary_font' => $theme['page_primary_font'] ?? $defaults['page_primary_font'],
-                        'page_secondary_font' => $theme['page_secondary_font'] ?? $defaults['page_secondary_font']
-                    ];
-                }
-                
-                // Fallback to legacy fonts JSON
-                if (!empty($theme['fonts'])) {
-                    $themeFonts = parseThemeJson($theme['fonts'], []);
-                    if (!empty($themeFonts)) {
-                        $fonts = $themeFonts;
-                    }
+            if ($theme && !empty($theme['fonts'])) {
+                $themeFonts = parseThemeJson($theme['fonts'], []);
+                if (!empty($themeFonts)) {
+                    $fonts = $themeFonts;
                 }
             }
         }
         
         // Apply defaults for any missing fonts
         $defaults = $this->getDefaultFonts();
-        // Map legacy 'heading'/'body' to new structure
         return [
-            'page_primary_font' => $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'],
-            'page_secondary_font' => $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font']
+            'heading' => $fonts['heading'] ?? $defaults['heading'],
+            'body' => $fonts['body'] ?? $defaults['body']
         ];
     }
     
@@ -226,12 +195,8 @@ class Theme {
     public function getDefaultFonts() {
         $defaultFont = defined('THEME_DEFAULT_FONT') ? THEME_DEFAULT_FONT : 'Inter';
         return [
-            'heading' => $defaultFont, // Legacy support
-            'body' => $defaultFont, // Legacy support
-            'page_primary_font' => $defaultFont,
-            'page_secondary_font' => $defaultFont,
-            'widget_primary_font' => $defaultFont,
-            'widget_secondary_font' => $defaultFont
+            'heading' => $defaultFont,
+            'body' => $defaultFont
         ];
     }
     
@@ -306,8 +271,7 @@ class Theme {
     
     /**
      * Build Google Fonts URL from font array
-     * Supports both legacy ('heading'/'body') and new ('page_primary_font'/'page_secondary_font'/'widget_primary_font'/'widget_secondary_font') keys
-     * @param array $fonts Font array
+     * @param array $fonts Array with 'heading' and/or 'body' keys
      * @return string Google Fonts URL
      */
     public function buildGoogleFontsUrl($fonts) {
@@ -315,24 +279,14 @@ class Theme {
             $fonts = $this->getDefaultFonts();
         }
         
-        // Collect unique fonts (page and widget)
-        $defaults = $this->getDefaultFonts();
-        $pagePrimary = $fonts['page_primary_font'] ?? $fonts['heading'] ?? $defaults['page_primary_font'];
-        $pageSecondary = $fonts['page_secondary_font'] ?? $fonts['body'] ?? $defaults['page_secondary_font'];
-        $widgetPrimary = $fonts['widget_primary_font'] ?? $defaults['widget_primary_font'];
-        $widgetSecondary = $fonts['widget_secondary_font'] ?? $defaults['widget_secondary_font'];
-        
-        // Get unique fonts
-        $uniqueFonts = array_unique([$pagePrimary, $pageSecondary, $widgetPrimary, $widgetSecondary]);
+        $headingFont = $fonts['heading'] ?? $this->getDefaultFonts()['heading'];
+        $bodyFont = $fonts['body'] ?? $this->getDefaultFonts()['body'];
         
         // Build Google Fonts URL
-        $fontParams = [];
-        foreach ($uniqueFonts as $font) {
-            $fontUrl = str_replace(' ', '+', $font);
-            $fontParams[] = "family={$fontUrl}:wght@400;600;700";
-        }
+        $headingFontUrl = str_replace(' ', '+', $headingFont);
+        $bodyFontUrl = str_replace(' ', '+', $bodyFont);
         
-        return "https://fonts.googleapis.com/css2?" . implode('&', $fontParams) . "&display=swap";
+        return "https://fonts.googleapis.com/css2?family={$headingFontUrl}:wght@400;600;700&family={$bodyFontUrl}:wght@400;500&display=swap";
     }
     
     /**
@@ -353,170 +307,29 @@ class Theme {
             }
         }
         
-        // Add widget background and border color from new columns
-        if (!empty($page['widget_background'])) {
-            $styles['widget_background'] = $page['widget_background'];
-        }
-        if (!empty($page['widget_border_color'])) {
-            $styles['widget_border_color'] = $page['widget_border_color'];
-        }
-        
         // If no page styles and theme is provided, use theme styles
-        if (empty($styles['widget_background']) && $theme && !empty($theme['widget_background'])) {
-            $styles['widget_background'] = $theme['widget_background'];
-        }
-        if (empty($styles['widget_border_color']) && $theme && !empty($theme['widget_border_color'])) {
-            $styles['widget_border_color'] = $theme['widget_border_color'];
-        }
-        
-        if ($theme && !empty($theme['widget_styles'])) {
-            $themeStyles = parseThemeJson($theme['widget_styles'], []);
-            if (!empty($themeStyles)) {
-                $styles = array_merge($themeStyles, $styles);
+        if (empty($styles) && $theme) {
+            if (!empty($theme['widget_styles'])) {
+                $themeStyles = parseThemeJson($theme['widget_styles'], []);
+                if (!empty($themeStyles)) {
+                    $styles = $themeStyles;
+                }
             }
         }
         
         // If no theme provided but page has theme_id, fetch it
-        if ((empty($styles['widget_background']) || empty($styles['widget_border_color'])) && empty($theme) && !empty($page['theme_id'])) {
+        if (empty($styles) && empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme) {
-                if (empty($styles['widget_background']) && !empty($theme['widget_background'])) {
-                    $styles['widget_background'] = $theme['widget_background'];
-                }
-                if (empty($styles['widget_border_color']) && !empty($theme['widget_border_color'])) {
-                    $styles['widget_border_color'] = $theme['widget_border_color'];
-                }
-                if (!empty($theme['widget_styles'])) {
-                    $themeStyles = parseThemeJson($theme['widget_styles'], []);
-                    if (!empty($themeStyles)) {
-                        $styles = array_merge($themeStyles, $styles);
-                    }
+            if ($theme && !empty($theme['widget_styles'])) {
+                $themeStyles = parseThemeJson($theme['widget_styles'], []);
+                if (!empty($themeStyles)) {
+                    $styles = $themeStyles;
                 }
             }
         }
         
         // Merge with defaults
         return WidgetStyleManager::mergeWithDefaults($styles);
-    }
-    
-    /**
-     * Get widget background for a page with theme fallback
-     * @param array $page Page data array
-     * @param array|null $theme Optional theme data array
-     * @return string Widget background (color or gradient)
-     */
-    public function getWidgetBackground($page, $theme = null) {
-        // First, try page-specific widget background
-        if (!empty($page['widget_background'])) {
-            return $page['widget_background'];
-        }
-        
-        // If no page background and theme is provided, use theme background
-        if ($theme && !empty($theme['widget_background'])) {
-            return $theme['widget_background'];
-        }
-        
-        // If no theme provided but page has theme_id, fetch it
-        if (empty($theme) && !empty($page['theme_id'])) {
-            $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && !empty($theme['widget_background'])) {
-                return $theme['widget_background'];
-            }
-        }
-        
-        // Fallback to secondary color
-        $colors = $this->getThemeColors($page, $theme);
-        return $colors['secondary'];
-    }
-    
-    /**
-     * Get widget border color for a page with theme fallback
-     * @param array $page Page data array
-     * @param array|null $theme Optional theme data array
-     * @return string Widget border color (color or gradient)
-     */
-    public function getWidgetBorderColor($page, $theme = null) {
-        // First, try page-specific widget border color
-        if (!empty($page['widget_border_color'])) {
-            return $page['widget_border_color'];
-        }
-        
-        // If no page border color and theme is provided, use theme border color
-        if ($theme && !empty($theme['widget_border_color'])) {
-            return $theme['widget_border_color'];
-        }
-        
-        // If no theme provided but page has theme_id, fetch it
-        if (empty($theme) && !empty($page['theme_id'])) {
-            $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && !empty($theme['widget_border_color'])) {
-                return $theme['widget_border_color'];
-            }
-        }
-        
-        // Fallback to primary color
-        $colors = $this->getThemeColors($page, $theme);
-        return $colors['primary'];
-    }
-    
-    /**
-     * Get widget fonts for a page with theme fallback
-     * Returns array with widget_primary_font and widget_secondary_font
-     * Widget fonts default to page fonts if not set
-     * @param array $page Page data array
-     * @param array|null $theme Optional theme data array
-     * @return array
-     */
-    public function getWidgetFonts($page, $theme = null) {
-        // First, try page-specific widget fonts (new columns)
-        if (!empty($page['widget_primary_font']) || !empty($page['widget_secondary_font'])) {
-            $pageFonts = $this->getPageFonts($page, $theme);
-            return [
-                'widget_primary_font' => $page['widget_primary_font'] ?? $pageFonts['page_primary_font'],
-                'widget_secondary_font' => $page['widget_secondary_font'] ?? $pageFonts['page_secondary_font']
-            ];
-        }
-        
-        // If no page widget fonts and theme is provided, use theme widget fonts
-        if ($theme && (!empty($theme['widget_primary_font']) || !empty($theme['widget_secondary_font']))) {
-            $pageFonts = $this->getPageFonts($page, $theme);
-            return [
-                'widget_primary_font' => $theme['widget_primary_font'] ?? $pageFonts['page_primary_font'],
-                'widget_secondary_font' => $theme['widget_secondary_font'] ?? $pageFonts['page_secondary_font']
-            ];
-        }
-        
-        // If no theme provided but page has theme_id, fetch it
-        if (empty($theme) && !empty($page['theme_id'])) {
-            $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && (!empty($theme['widget_primary_font']) || !empty($theme['widget_secondary_font']))) {
-                $pageFonts = $this->getPageFonts($page, $theme);
-                return [
-                    'widget_primary_font' => $theme['widget_primary_font'] ?? $pageFonts['page_primary_font'],
-                    'widget_secondary_font' => $theme['widget_secondary_font'] ?? $pageFonts['page_secondary_font']
-                ];
-            }
-        }
-        
-        // Default to page fonts
-        $pageFonts = $this->getPageFonts($page, $theme);
-        $defaults = $this->getDefaultFonts();
-        return [
-            'widget_primary_font' => $pageFonts['page_primary_font'] ?? $defaults['widget_primary_font'],
-            'widget_secondary_font' => $pageFonts['page_secondary_font'] ?? $defaults['widget_secondary_font']
-        ];
-    }
-    
-    /**
-     * Get page fonts for a page with theme fallback
-     * Returns array with page_primary_font and page_secondary_font
-     * @param array $page Page data array
-     * @param array|null $theme Optional theme data array
-     * @return array
-     */
-    public function getPageFonts($page, $theme = null) {
-        // This is essentially the same as getThemeFonts, but more explicitly named
-        return $this->getThemeFonts($page, $theme);
     }
     
     /**
@@ -597,11 +410,7 @@ class Theme {
         return [
             'colors' => $this->getThemeColors($page, $theme),
             'fonts' => $this->getThemeFonts($page, $theme),
-            'page_fonts' => $this->getPageFonts($page, $theme),
-            'widget_fonts' => $this->getWidgetFonts($page, $theme),
             'page_background' => $this->getPageBackground($page, $theme),
-            'widget_background' => $this->getWidgetBackground($page, $theme),
-            'widget_border_color' => $this->getWidgetBorderColor($page, $theme),
             'widget_styles' => $this->getWidgetStyles($page, $theme),
             'spatial_effect' => $this->getSpatialEffect($page, $theme)
         ];
@@ -663,10 +472,8 @@ class Theme {
         
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO themes (user_id, name, colors, fonts, page_background, widget_styles, spatial_effect, 
-                    widget_background, widget_border_color, widget_primary_font, widget_secondary_font, 
-                    page_primary_font, page_secondary_font, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                INSERT INTO themes (user_id, name, colors, fonts, page_background, widget_styles, spatial_effect, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
             ");
             
             $colors = isset($themeData['colors']) ? (is_array($themeData['colors']) ? json_encode($themeData['colors']) : $themeData['colors']) : null;
@@ -674,12 +481,6 @@ class Theme {
             $pageBackground = $themeData['page_background'] ?? null;
             $widgetStyles = isset($themeData['widget_styles']) ? (is_array($themeData['widget_styles']) ? json_encode($themeData['widget_styles']) : $themeData['widget_styles']) : null;
             $spatialEffect = $themeData['spatial_effect'] ?? 'none';
-            $widgetBackground = $themeData['widget_background'] ?? null;
-            $widgetBorderColor = $themeData['widget_border_color'] ?? null;
-            $widgetPrimaryFont = $themeData['widget_primary_font'] ?? null;
-            $widgetSecondaryFont = $themeData['widget_secondary_font'] ?? null;
-            $pagePrimaryFont = $themeData['page_primary_font'] ?? null;
-            $pageSecondaryFont = $themeData['page_secondary_font'] ?? null;
             
             $stmt->execute([
                 $userId,
@@ -688,13 +489,7 @@ class Theme {
                 $fonts,
                 $pageBackground,
                 $widgetStyles,
-                $spatialEffect,
-                $widgetBackground,
-                $widgetBorderColor,
-                $widgetPrimaryFont,
-                $widgetSecondaryFont,
-                $pagePrimaryFont,
-                $pageSecondaryFont
+                $spatialEffect
             ]);
             
             $themeId = $this->pdo->lastInsertId();

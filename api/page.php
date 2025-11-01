@@ -155,21 +155,55 @@ switch ($action) {
             $updateData['colors'] = $colors;
         }
         
-        // Handle custom fonts
+        // Handle page fonts (new separate columns)
+        if (isset($_POST['page_primary_font'])) {
+            $updateData['page_primary_font'] = sanitizeInput($_POST['page_primary_font']);
+        }
+        if (isset($_POST['page_secondary_font'])) {
+            $updateData['page_secondary_font'] = sanitizeInput($_POST['page_secondary_font']);
+        }
+        
+        // Handle legacy custom fonts (for backward compatibility)
         $fonts = [];
         if (isset($_POST['custom_heading_font'])) {
             $fonts['heading'] = sanitizeInput($_POST['custom_heading_font']);
+            // Also update page_primary_font if not already set
+            if (!isset($updateData['page_primary_font'])) {
+                $updateData['page_primary_font'] = $fonts['heading'];
+            }
         }
         if (isset($_POST['custom_body_font'])) {
             $fonts['body'] = sanitizeInput($_POST['custom_body_font']);
+            // Also update page_secondary_font if not already set
+            if (!isset($updateData['page_secondary_font'])) {
+                $updateData['page_secondary_font'] = $fonts['body'];
+            }
         }
         if (!empty($fonts)) {
-            $updateData['fonts'] = $fonts;
+            $updateData['fonts'] = $fonts; // Keep for backward compatibility
+        }
+        
+        // Handle widget fonts
+        if (isset($_POST['widget_primary_font'])) {
+            $updateData['widget_primary_font'] = sanitizeInput($_POST['widget_primary_font']);
+        }
+        if (isset($_POST['widget_secondary_font'])) {
+            $updateData['widget_secondary_font'] = sanitizeInput($_POST['widget_secondary_font']);
         }
         
         // Handle page background
         if (isset($_POST['page_background'])) {
             $updateData['page_background'] = sanitizeInput($_POST['page_background']);
+        }
+        
+        // Handle widget background
+        if (isset($_POST['widget_background'])) {
+            $updateData['widget_background'] = sanitizeInput($_POST['widget_background']);
+        }
+        
+        // Handle widget border color
+        if (isset($_POST['widget_border_color'])) {
+            $updateData['widget_border_color'] = sanitizeInput($_POST['widget_border_color']);
         }
         
         // Handle widget styles
@@ -353,7 +387,7 @@ switch ($action) {
             $themeData['colors']['accent'] = sanitizeInput($_POST['custom_accent_color']);
         }
         
-        // Get current fonts
+        // Get current fonts (legacy support)
         if (isset($_POST['custom_heading_font'])) {
             $themeData['fonts']['heading'] = sanitizeInput($_POST['custom_heading_font']);
         }
@@ -361,9 +395,35 @@ switch ($action) {
             $themeData['fonts']['body'] = sanitizeInput($_POST['custom_body_font']);
         }
         
+        // Get page fonts (new separate columns)
+        if (isset($_POST['page_primary_font'])) {
+            $themeData['page_primary_font'] = sanitizeInput($_POST['page_primary_font']);
+        }
+        if (isset($_POST['page_secondary_font'])) {
+            $themeData['page_secondary_font'] = sanitizeInput($_POST['page_secondary_font']);
+        }
+        
+        // Get widget fonts
+        if (isset($_POST['widget_primary_font'])) {
+            $themeData['widget_primary_font'] = sanitizeInput($_POST['widget_primary_font']);
+        }
+        if (isset($_POST['widget_secondary_font'])) {
+            $themeData['widget_secondary_font'] = sanitizeInput($_POST['widget_secondary_font']);
+        }
+        
         // Get page background
         if (isset($_POST['page_background'])) {
             $themeData['page_background'] = sanitizeInput($_POST['page_background']);
+        }
+        
+        // Get widget background
+        if (isset($_POST['widget_background'])) {
+            $themeData['widget_background'] = sanitizeInput($_POST['widget_background']);
+        }
+        
+        // Get widget border color
+        if (isset($_POST['widget_border_color'])) {
+            $themeData['widget_border_color'] = sanitizeInput($_POST['widget_border_color']);
         }
         
         // Get widget styles

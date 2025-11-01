@@ -116,7 +116,9 @@ class Page {
             'podcast_description', 'cover_image_url', 'theme_id', 'colors', 
             'fonts', 'layout_option', 'background_image', 'profile_image',
             'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin',
-            'page_background', 'widget_styles', 'spatial_effect'
+            'page_background', 'widget_styles', 'spatial_effect',
+            'widget_background', 'widget_border_color', 'widget_primary_font', 'widget_secondary_font',
+            'page_primary_font', 'page_secondary_font'
         ];
         
         $updates = [];

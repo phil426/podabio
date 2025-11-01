@@ -128,21 +128,6 @@ $widgetStyles = $page ? getWidgetStyles($page, $page['theme_id'] ? $themeClass->
 $pageBackground = $page ? getPageBackground($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : '#ffffff';
 $spatialEffect = $page ? getSpatialEffect($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : 'none';
 
-// Get page and widget fonts separately
-$pageFonts = $page ? getPageFonts($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : ['page_primary_font' => 'Inter', 'page_secondary_font' => 'Inter'];
-$widgetFonts = $page ? getWidgetFonts($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : ['widget_primary_font' => 'Inter', 'widget_secondary_font' => 'Inter'];
-
-// Get widget background and border color
-$widgetBackground = $page ? getWidgetBackground($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : '#ffffff';
-$widgetBorderColor = $page ? getWidgetBorderColor($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : '#000000';
-
-// Legacy font support - map to new structure if needed
-$legacyFonts = $page ? getThemeFonts($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : ['page_primary_font' => 'Inter', 'page_secondary_font' => 'Inter'];
-if (!isset($pageFonts['page_primary_font'])) {
-    $pageFonts['page_primary_font'] = $legacyFonts['heading'] ?? $legacyFonts['page_primary_font'] ?? 'Inter';
-    $pageFonts['page_secondary_font'] = $legacyFonts['body'] ?? $legacyFonts['page_secondary_font'] ?? 'Inter';
-}
-
 $csrfToken = generateCSRFToken();
 
 ?>
@@ -464,38 +449,19 @@ $csrfToken = generateCSRFToken();
             border-radius: 10px 10px 0 0;
         }
         
-        .theme-card-body {
+        .theme-card-footer {
             padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             background: #ffffff;
-            cursor: pointer;
         }
         
         .theme-card-name {
             font-size: 0.875rem;
             font-weight: 500;
             color: #111827;
-            margin-bottom: 0.5rem;
-        }
-        
-        .theme-card-font-preview {
-            font-size: 0.75rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        
-        .theme-card-footer {
-            padding: 0.5rem 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f9f9f9;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .theme-widget-settings-btn:hover {
-            background: #0066ff;
-            border-color: #0066ff;
-            color: white;
+            flex: 1;
         }
         
         .theme-card input[type="radio"] {
@@ -1105,8 +1071,7 @@ $csrfToken = generateCSRFToken();
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(0.75);
-            transform-origin: center center;
+            transform: scale(1);
         }
         
         /* Responsive */
@@ -1569,30 +1534,13 @@ $csrfToken = generateCSRFToken();
                             $secondaryColor = $themeColors['secondary'] ?? '#ffffff';
                             $accentColor = $themeColors['accent'] ?? '#0066ff';
                             $isSelected = ($page['theme_id'] == $theme['id']);
-                            
-                            // Get theme fonts for preview
-                            $themeFonts = parseThemeJson($theme['fonts'] ?? '{}', []);
-                            $themePagePrimaryFont = $theme['page_primary_font'] ?? $themeFonts['heading'] ?? 'Inter';
-                            $themePageSecondaryFont = $theme['page_secondary_font'] ?? $themeFonts['body'] ?? 'Inter';
-                            $themeWidgetPrimaryFont = $theme['widget_primary_font'] ?? $themePagePrimaryFont;
-                            $themeWidgetSecondaryFont = $theme['widget_secondary_font'] ?? $themePageSecondaryFont;
                         ?>
-                        <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>">
-                            <div class="theme-card-swatch" style="background: linear-gradient(135deg, <?php echo h($primaryColor); ?> 0%, <?php echo h($accentColor); ?> 100%);" onclick="selectTheme(<?php echo $theme['id']; ?>)">
-                            </div>
-                            <div class="theme-card-body" onclick="selectTheme(<?php echo $theme['id']; ?>)">
-                                <div class="theme-card-name"><?php echo h($theme['name']); ?></div>
-                                <!-- Font Preview -->
-                                <div class="theme-card-font-preview">
-                                    <div style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">Page: Sample</div>
-                                    <div style="font-family: '<?php echo h($themeWidgetPrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; color: #666;">Widget: Sample</div>
-                                </div>
+                        <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>" onclick="selectTheme(<?php echo $theme['id']; ?>)">
+                            <div class="theme-card-swatch" style="background: linear-gradient(135deg, <?php echo h($primaryColor); ?> 0%, <?php echo h($accentColor); ?> 100%);">
                             </div>
                             <div class="theme-card-footer">
+                                <span class="theme-card-name"><?php echo h($theme['name']); ?></span>
                                 <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange()" onclick="event.stopPropagation();">
-                                <button type="button" class="theme-widget-settings-btn" onclick="event.stopPropagation(); showWidgetSettingsDrawer(<?php echo $theme['id']; ?>)" title="View Widget Settings" style="background: none; border: 1px solid #ddd; border-radius: 6px; padding: 0.375rem 0.5rem; cursor: pointer; color: #666; font-size: 0.75rem; transition: all 0.2s;">
-                                    <i class="fas fa-cog"></i>
-                                </button>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -1610,85 +1558,7 @@ $csrfToken = generateCSRFToken();
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <!-- ========== PAGE STYLING SECTION ========== -->
-                <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700;">Page Styling</h2>
-                <small style="display: block; margin-bottom: 1.5rem; color: #666;">Customize the overall page appearance including background, colors, and typography.</small>
-                
-                <!-- Page Background -->
-                <h3 style="margin-top: 0;">Page Background</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for your page.</small>
-                
-                <div class="form-group">
-                    <label>Background Type</label>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button type="button" class="bg-type-btn <?php echo !isGradient($pageBackground) ? 'active' : ''; ?>" data-type="solid" onclick="switchBackgroundType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
-                        <button type="button" class="bg-type-btn <?php echo isGradient($pageBackground) ? 'active' : ''; ?>" data-type="gradient" onclick="switchBackgroundType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
-                    </div>
-                    
-                    <!-- Solid Color Option -->
-                    <div id="bg-solid-option" class="bg-option" style="<?php echo isGradient($pageBackground) ? 'display: none;' : ''; ?>">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0;" id="page-bg-swatch"></div>
-                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updatePageBackground()">
-                            <input type="text" id="page_background_color_hex" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updatePageBackgroundFromHex()">
-                        </div>
-                        <input type="hidden" id="page_background" name="page_background" value="<?php echo h($pageBackground); ?>">
-                    </div>
-                    
-                    <!-- Gradient Option -->
-                    <div id="bg-gradient-option" class="bg-option" style="<?php echo !isGradient($pageBackground) ? 'display: none;' : ''; ?>">
-                        <div id="gradient-builder" style="padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
-                            <?php
-                            // Parse gradient if it exists
-                            $gradientParsed = parseGradientOrColor($pageBackground);
-                            $gradStart = '#0066ff';
-                            $gradEnd = '#ff00ff';
-                            $gradDir = '135deg';
-                            if ($gradientParsed && $gradientParsed['type'] === 'gradient') {
-                                // Extract colors and direction from gradient
-                                preg_match('/(\d+)deg/', $gradientParsed['params'], $dirMatch);
-                                preg_match('/#[0-9a-fA-F]{6}/', $gradientParsed['params'], $startMatch);
-                                preg_match('/#[0-9a-fA-F]{6}(?=\s|,|\))/', $gradientParsed['params'], $endMatch);
-                                if ($dirMatch) $gradDir = $dirMatch[1] . 'deg';
-                                if ($startMatch) $gradStart = $startMatch[0];
-                                if ($endMatch) $gradEnd = $endMatch[0];
-                            }
-                            ?>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradStart); ?>; flex-shrink: 0;" id="gradient-start-swatch"></div>
-                                        <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradEnd); ?>; flex-shrink: 0;" id="gradient-end-swatch"></div>
-                                        <input type="color" id="gradient_end_color" value="<?php echo h($gradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 1rem;">
-                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Direction</label>
-                                <select id="gradient_direction" onchange="updateGradient()" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
-                                    <option value="135deg" <?php echo $gradDir === '135deg' ? 'selected' : ''; ?>>Diagonal (135°)</option>
-                                    <option value="90deg" <?php echo $gradDir === '90deg' ? 'selected' : ''; ?>>Vertical (90°)</option>
-                                    <option value="0deg" <?php echo $gradDir === '0deg' ? 'selected' : ''; ?>>Horizontal (0°)</option>
-                                    <option value="45deg" <?php echo $gradDir === '45deg' ? 'selected' : ''; ?>>Diagonal (45°)</option>
-                                    <option value="180deg" <?php echo $gradDir === '180deg' ? 'selected' : ''; ?>>Vertical Reverse (180°)</option>
-                                </select>
-                            </div>
-                            <div style="height: 60px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($pageBackground); ?>;" id="gradient-preview"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- Page Colors -->
-                <h3 style="margin-top: 0;">Page Colors</h3>
+                <h3 style="margin-top: 0;">Colors</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors to override theme colors or create your own color scheme.</small>
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -1760,246 +1630,127 @@ $csrfToken = generateCSRFToken();
                     </div>
                 </div>
                 
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <!-- Page Fonts -->
-                <h3 style="margin-top: 0;">Page Fonts</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for page headings and body text. Popular Google Fonts are included.</small>
+                <h3 style="margin-top: 0;">Fonts</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for headings and body text. Popular Google Fonts are included.</small>
                 
                 <?php
+                // Get theme fonts with fallbacks using Theme class
+                $fonts = getThemeFonts($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null);
+                $customHeadingFont = $fonts['heading'];
+                $customBodyFont = $fonts['body'];
+                
                 // Get Google Fonts list from helper function
                 $googleFonts = getGoogleFontsList();
-                $pagePrimaryFont = $pageFonts['page_primary_font'] ?? 'Inter';
-                $pageSecondaryFont = $pageFonts['page_secondary_font'] ?? 'Inter';
                 ?>
                 
                 <div class="form-group">
-                    <label for="page_primary_font">Page Primary Font</label>
-                    <select id="page_primary_font" name="page_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <label for="custom_heading_font">Heading Font</label>
+                    <select id="custom_heading_font" name="custom_heading_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($pagePrimaryFont == $fontValue) ? 'selected' : ''; ?>>
+                            <option value="<?php echo h($fontValue); ?>" <?php echo ($customHeadingFont == $fontValue) ? 'selected' : ''; ?>>
                                 <?php echo h($fontName); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for page titles and headings</small>
+                    <small style="display: block; margin-top: 0.5rem;">Used for titles and headings</small>
                 </div>
                 
                 <div class="form-group">
-                    <label for="page_secondary_font">Page Secondary Font</label>
-                    <select id="page_secondary_font" name="page_secondary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <label for="custom_body_font">Body Font</label>
+                    <select id="custom_body_font" name="custom_body_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($pageSecondaryFont == $fontValue) ? 'selected' : ''; ?>>
+                            <option value="<?php echo h($fontValue); ?>" <?php echo ($customBodyFont == $fontValue) ? 'selected' : ''; ?>>
                                 <?php echo h($fontName); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for page body text and descriptions</small>
+                    <small style="display: block; margin-top: 0.5rem;">Used for body text and descriptions</small>
                 </div>
                 
-                <!-- Page Font Preview -->
+                <!-- Font Preview -->
                 <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
-                    <h4 style="margin-top: 0;">Page Font Preview</h4>
-                    <h3 id="page-font-preview-heading" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Page Heading Text</h3>
-                    <p id="page-font-preview-body" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your page body text will look with the selected font.</p>
+                    <h4 style="margin-top: 0;">Font Preview</h4>
+                    <h3 id="font-preview-heading" style="font-family: '<?php echo h($customHeadingFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Heading Text</h3>
+                    <p id="font-preview-body" style="font-family: '<?php echo h($customBodyFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your body text will look with the selected font.</p>
                 </div>
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <!-- ========== WIDGET STYLING SECTION ========== -->
-                <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700;">Widget Styling</h2>
-                <small style="display: block; margin-bottom: 1.5rem; color: #666;">Customize the appearance of widgets (links, podcast player, etc.) independently from page styling.</small>
-                
-                <!-- Widget Background -->
-                <h3 style="margin-top: 0;">Widget Background</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for widgets.</small>
+                <h3 style="margin-top: 0;">Page Background</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for your page.</small>
                 
                 <div class="form-group">
                     <label>Background Type</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button type="button" class="widget-bg-type-btn <?php echo !isGradient($widgetBackground) ? 'active' : ''; ?>" data-type="solid" onclick="switchWidgetBackgroundType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($widgetBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($widgetBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($widgetBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
-                        <button type="button" class="widget-bg-type-btn <?php echo isGradient($widgetBackground) ? 'active' : ''; ?>" data-type="gradient" onclick="switchWidgetBackgroundType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($widgetBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($widgetBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($widgetBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
+                        <button type="button" class="bg-type-btn <?php echo !isGradient($pageBackground) ? 'active' : ''; ?>" data-type="solid" onclick="switchBackgroundType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
+                        <button type="button" class="bg-type-btn <?php echo isGradient($pageBackground) ? 'active' : ''; ?>" data-type="gradient" onclick="switchBackgroundType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
                     </div>
                     
                     <!-- Solid Color Option -->
-                    <div id="widget-bg-solid-option" class="widget-bg-option" style="<?php echo isGradient($widgetBackground) ? 'display: none;' : ''; ?>">
+                    <div id="bg-solid-option" class="bg-option" style="<?php echo isGradient($pageBackground) ? 'display: none;' : ''; ?>">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>; flex-shrink: 0;" id="widget-bg-swatch"></div>
-                            <input type="color" id="widget_background_color" value="<?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBackground()">
-                            <input type="text" id="widget_background_color_hex" value="<?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateWidgetBackgroundFromHex()">
+                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0;" id="page-bg-swatch"></div>
+                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updatePageBackground()">
+                            <input type="text" id="page_background_color_hex" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updatePageBackgroundFromHex()">
                         </div>
-                        <input type="hidden" id="widget_background" name="widget_background" value="<?php echo h($widgetBackground); ?>">
+                        <input type="hidden" id="page_background" name="page_background" value="<?php echo h($pageBackground); ?>">
                     </div>
                     
                     <!-- Gradient Option -->
-                    <div id="widget-bg-gradient-option" class="widget-bg-option" style="<?php echo !isGradient($widgetBackground) ? 'display: none;' : ''; ?>">
-                        <div id="widget-gradient-builder" style="padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
+                    <div id="bg-gradient-option" class="bg-option" style="<?php echo !isGradient($pageBackground) ? 'display: none;' : ''; ?>">
+                        <div id="gradient-builder" style="padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
                             <?php
                             // Parse gradient if it exists
-                            $widgetGradientParsed = parseGradientOrColor($widgetBackground);
-                            $widgetGradStart = '#ffffff';
-                            $widgetGradEnd = '#f0f0f0';
-                            $widgetGradDir = '135deg';
-                            if ($widgetGradientParsed && $widgetGradientParsed['type'] === 'gradient') {
-                                preg_match('/(\d+)deg/', $widgetGradientParsed['params'], $dirMatch);
-                                preg_match('/#[0-9a-fA-F]{6}/', $widgetGradientParsed['params'], $startMatch);
-                                preg_match('/#[0-9a-fA-F]{6}(?=\s|,|\))/', $widgetGradientParsed['params'], $endMatch);
-                                if ($dirMatch) $widgetGradDir = $dirMatch[1] . 'deg';
-                                if ($startMatch) $widgetGradStart = $startMatch[0];
-                                if ($endMatch) $widgetGradEnd = $endMatch[0];
+                            $gradientParsed = parseGradientOrColor($pageBackground);
+                            $gradStart = '#0066ff';
+                            $gradEnd = '#ff00ff';
+                            $gradDir = '135deg';
+                            if ($gradientParsed && $gradientParsed['type'] === 'gradient') {
+                                // Extract colors and direction from gradient
+                                preg_match('/(\d+)deg/', $gradientParsed['params'], $dirMatch);
+                                preg_match('/#[0-9a-fA-F]{6}/', $gradientParsed['params'], $startMatch);
+                                preg_match('/#[0-9a-fA-F]{6}(?=\s|,|\))/', $gradientParsed['params'], $endMatch);
+                                if ($dirMatch) $gradDir = $dirMatch[1] . 'deg';
+                                if ($startMatch) $gradStart = $startMatch[0];
+                                if ($endMatch) $gradEnd = $endMatch[0];
                             }
                             ?>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
                                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetGradStart); ?>; flex-shrink: 0;" id="widget-gradient-start-swatch"></div>
-                                        <input type="color" id="widget_gradient_start_color" value="<?php echo h($widgetGradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
+                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradStart); ?>; flex-shrink: 0;" id="gradient-start-swatch"></div>
+                                        <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
                                     </div>
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
                                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetGradEnd); ?>; flex-shrink: 0;" id="widget-gradient-end-swatch"></div>
-                                        <input type="color" id="widget_gradient_end_color" value="<?php echo h($widgetGradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
+                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradEnd); ?>; flex-shrink: 0;" id="gradient-end-swatch"></div>
+                                        <input type="color" id="gradient_end_color" value="<?php echo h($gradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
                                     </div>
                                 </div>
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Direction</label>
-                                <select id="widget_gradient_direction" onchange="updateWidgetGradient()" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
-                                    <option value="135deg" <?php echo $widgetGradDir === '135deg' ? 'selected' : ''; ?>>Diagonal (135°)</option>
-                                    <option value="90deg" <?php echo $widgetGradDir === '90deg' ? 'selected' : ''; ?>>Vertical (90°)</option>
-                                    <option value="0deg" <?php echo $widgetGradDir === '0deg' ? 'selected' : ''; ?>>Horizontal (0°)</option>
-                                    <option value="45deg" <?php echo $widgetGradDir === '45deg' ? 'selected' : ''; ?>>Diagonal (45°)</option>
-                                    <option value="180deg" <?php echo $widgetGradDir === '180deg' ? 'selected' : ''; ?>>Vertical Reverse (180°)</option>
+                                <select id="gradient_direction" onchange="updateGradient()" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                                    <option value="135deg" <?php echo $gradDir === '135deg' ? 'selected' : ''; ?>>Diagonal (135°)</option>
+                                    <option value="90deg" <?php echo $gradDir === '90deg' ? 'selected' : ''; ?>>Vertical (90°)</option>
+                                    <option value="0deg" <?php echo $gradDir === '0deg' ? 'selected' : ''; ?>>Horizontal (0°)</option>
+                                    <option value="45deg" <?php echo $gradDir === '45deg' ? 'selected' : ''; ?>>Diagonal (45°)</option>
+                                    <option value="180deg" <?php echo $gradDir === '180deg' ? 'selected' : ''; ?>>Vertical Reverse (180°)</option>
                                 </select>
                             </div>
-                            <div style="height: 60px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBackground); ?>;" id="widget-gradient-preview"></div>
+                            <div style="height: 60px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($pageBackground); ?>;" id="gradient-preview"></div>
                         </div>
                     </div>
                 </div>
                 
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
-                <!-- Widget Border Color -->
-                <h3 style="margin-top: 0;">Widget Border Color</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient for widget borders.</small>
-                
-                <div class="form-group">
-                    <label>Border Color Type</label>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button type="button" class="widget-border-type-btn <?php echo !isGradient($widgetBorderColor) ? 'active' : ''; ?>" data-type="solid" onclick="switchWidgetBorderType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($widgetBorderColor) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($widgetBorderColor) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($widgetBorderColor) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
-                        <button type="button" class="widget-border-type-btn <?php echo isGradient($widgetBorderColor) ? 'active' : ''; ?>" data-type="gradient" onclick="switchWidgetBorderType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($widgetBorderColor) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($widgetBorderColor) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($widgetBorderColor) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
-                    </div>
-                    
-                    <!-- Solid Color Option -->
-                    <div id="widget-border-solid-option" class="widget-border-option" style="<?php echo isGradient($widgetBorderColor) ? 'display: none;' : ''; ?>">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>; flex-shrink: 0;" id="widget-border-swatch"></div>
-                            <input type="color" id="widget_border_color_picker" value="<?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderColor()">
-                            <input type="text" id="widget_border_color_hex" value="<?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>" placeholder="#000000" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateWidgetBorderColorFromHex()">
-                        </div>
-                        <input type="hidden" id="widget_border_color" name="widget_border_color" value="<?php echo h($widgetBorderColor); ?>">
-                    </div>
-                    
-                    <!-- Gradient Option -->
-                    <div id="widget-border-gradient-option" class="widget-border-option" style="<?php echo !isGradient($widgetBorderColor) ? 'display: none;' : ''; ?>">
-                        <div id="widget-border-gradient-builder" style="padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
-                            <?php
-                            // Parse border gradient if it exists
-                            $widgetBorderGradientParsed = parseGradientOrColor($widgetBorderColor);
-                            $widgetBorderGradStart = '#000000';
-                            $widgetBorderGradEnd = '#333333';
-                            $widgetBorderGradDir = '135deg';
-                            if ($widgetBorderGradientParsed && $widgetBorderGradientParsed['type'] === 'gradient') {
-                                preg_match('/(\d+)deg/', $widgetBorderGradientParsed['params'], $dirMatch);
-                                preg_match('/#[0-9a-fA-F]{6}/', $widgetBorderGradientParsed['params'], $startMatch);
-                                preg_match('/#[0-9a-fA-F]{6}(?=\s|,|\))/', $widgetBorderGradientParsed['params'], $endMatch);
-                                if ($dirMatch) $widgetBorderGradDir = $dirMatch[1] . 'deg';
-                                if ($startMatch) $widgetBorderGradStart = $startMatch[0];
-                                if ($endMatch) $widgetBorderGradEnd = $endMatch[0];
-                            }
-                            ?>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBorderGradStart); ?>; flex-shrink: 0;" id="widget-border-gradient-start-swatch"></div>
-                                        <input type="color" id="widget_border_gradient_start_color" value="<?php echo h($widgetBorderGradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBorderGradEnd); ?>; flex-shrink: 0;" id="widget-border-gradient-end-swatch"></div>
-                                        <input type="color" id="widget_border_gradient_end_color" value="<?php echo h($widgetBorderGradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 1rem;">
-                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Direction</label>
-                                <select id="widget_border_gradient_direction" onchange="updateWidgetBorderGradient()" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
-                                    <option value="135deg" <?php echo $widgetBorderGradDir === '135deg' ? 'selected' : ''; ?>>Diagonal (135°)</option>
-                                    <option value="90deg" <?php echo $widgetBorderGradDir === '90deg' ? 'selected' : ''; ?>>Vertical (90°)</option>
-                                    <option value="0deg" <?php echo $widgetBorderGradDir === '0deg' ? 'selected' : ''; ?>>Horizontal (0°)</option>
-                                    <option value="45deg" <?php echo $widgetBorderGradDir === '45deg' ? 'selected' : ''; ?>>Diagonal (45°)</option>
-                                    <option value="180deg" <?php echo $widgetBorderGradDir === '180deg' ? 'selected' : ''; ?>>Vertical Reverse (180°)</option>
-                                </select>
-                            </div>
-                            <div style="height: 60px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBorderColor); ?>;" id="widget-border-gradient-preview"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- Widget Fonts -->
-                <h3 style="margin-top: 0;">Widget Fonts</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for widget titles and content. Defaults to page fonts if not specified.</small>
-                
-                <?php
-                $widgetPrimaryFont = $widgetFonts['widget_primary_font'] ?? $pagePrimaryFont;
-                $widgetSecondaryFont = $widgetFonts['widget_secondary_font'] ?? $pageSecondaryFont;
-                ?>
-                
-                <div class="form-group">
-                    <label for="widget_primary_font">Widget Primary Font</label>
-                    <select id="widget_primary_font" name="widget_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <option value="" <?php echo empty($widgetPrimaryFont) || $widgetPrimaryFont === $pagePrimaryFont ? 'selected' : ''; ?>>Default (Page Primary Font)</option>
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetPrimaryFont == $fontValue && !empty($widgetPrimaryFont)) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for widget titles and headings</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="widget_secondary_font">Widget Secondary Font</label>
-                    <select id="widget_secondary_font" name="widget_secondary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <option value="" <?php echo empty($widgetSecondaryFont) || $widgetSecondaryFont === $pageSecondaryFont ? 'selected' : ''; ?>>Default (Page Secondary Font)</option>
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetSecondaryFont == $fontValue && !empty($widgetSecondaryFont)) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for widget body text and descriptions</small>
-                </div>
-                
-                <!-- Widget Font Preview -->
-                <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
-                    <h4 style="margin-top: 0;">Widget Font Preview</h4>
-                    <h3 id="widget-font-preview-heading" style="font-family: '<?php echo h($widgetPrimaryFont ?: $pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Widget Heading Text</h3>
-                    <p id="widget-font-preview-body" style="font-family: '<?php echo h($widgetSecondaryFont ?: $pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your widget content will look with the selected font.</p>
-                </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- Widget Structure -->
-                <h3 style="margin-top: 0;">Widget Structure</h3>
+                <h3 style="margin-top: 0;">Widget Styling</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Customize the appearance of widgets (links, podcast player, etc.)</small>
                 
                 <div class="form-group">
@@ -2162,26 +1913,6 @@ $csrfToken = generateCSRFToken();
                 
                 <button type="submit" class="btn btn-primary">Save Appearance</button>
             </form>
-        </div>
-        
-        <!-- Widget Settings Drawer -->
-        <div id="widget-settings-drawer-overlay" class="drawer-overlay" onclick="closeWidgetSettingsDrawer()"></div>
-        <div id="widget-settings-drawer" class="drawer">
-            <div class="drawer-handle"></div>
-            <div class="drawer-content">
-                <div class="drawer-header">
-                    <h2>Widget Settings Preview</h2>
-                    <button class="drawer-close" onclick="closeWidgetSettingsDrawer()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div id="widget-settings-drawer-body" style="padding: 1.5rem;">
-                    <div style="text-align: center; color: #666; padding: 2rem;">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                        <p>Loading widget settings...</p>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- Email Subscription Tab -->
@@ -3830,85 +3561,8 @@ $csrfToken = generateCSRFToken();
             const previewHeading = document.getElementById('font-preview-heading');
             const previewBody = document.getElementById('font-preview-body');
             
-            if (previewHeading) {
-                previewHeading.style.fontFamily = `'${headingFont}', sans-serif`;
-            }
-            if (previewBody) {
-                previewBody.style.fontFamily = `'${bodyFont}', sans-serif`;
-            }
-        }
-        
-        // Page Font Preview
-        function updatePageFontPreview() {
-            const pagePrimaryFont = document.getElementById('page_primary_font')?.value || '';
-            const pageSecondaryFont = document.getElementById('page_secondary_font')?.value || '';
-            
-            if (!pagePrimaryFont && !pageSecondaryFont) return;
-            
-            // Load Google Fonts
-            const primaryFontUrl = pagePrimaryFont.replace(/\s+/g, '+');
-            const secondaryFontUrl = pageSecondaryFont.replace(/\s+/g, '+');
-            
-            // Add font link
-            if (pagePrimaryFont || pageSecondaryFont) {
-                const fontLink = document.createElement('link');
-                fontLink.rel = 'stylesheet';
-                fontLink.dataset.editorFonts = 'true';
-                fontLink.href = `https://fonts.googleapis.com/css2?family=${primaryFontUrl}:wght@400;600;700&family=${secondaryFontUrl}:wght@400;500&display=swap`;
-                document.head.appendChild(fontLink);
-            }
-            
-            // Update preview
-            const previewHeading = document.getElementById('page-font-preview-heading');
-            const previewBody = document.getElementById('page-font-preview-body');
-            
-            if (previewHeading && pagePrimaryFont) {
-                previewHeading.style.fontFamily = `'${pagePrimaryFont}', sans-serif`;
-            }
-            if (previewBody && pageSecondaryFont) {
-                previewBody.style.fontFamily = `'${pageSecondaryFont}', sans-serif`;
-            }
-            
-            saveAppearanceForm();
-        }
-        
-        // Widget Font Preview
-        function updateWidgetFontPreview() {
-            const widgetPrimaryFont = document.getElementById('widget_primary_font')?.value || '';
-            const widgetSecondaryFont = document.getElementById('widget_secondary_font')?.value || '';
-            const pagePrimaryFont = document.getElementById('page_primary_font')?.value || '';
-            const pageSecondaryFont = document.getElementById('page_secondary_font')?.value || '';
-            
-            // Use page fonts as fallback if widget fonts are empty
-            const finalPrimaryFont = widgetPrimaryFont || pagePrimaryFont;
-            const finalSecondaryFont = widgetSecondaryFont || pageSecondaryFont;
-            
-            if (!finalPrimaryFont && !finalSecondaryFont) return;
-            
-            // Load Google Fonts (only if widget fonts are specified)
-            if (widgetPrimaryFont || widgetSecondaryFont) {
-                const primaryFontUrl = finalPrimaryFont.replace(/\s+/g, '+');
-                const secondaryFontUrl = finalSecondaryFont.replace(/\s+/g, '+');
-                
-                const fontLink = document.createElement('link');
-                fontLink.rel = 'stylesheet';
-                fontLink.dataset.editorFonts = 'true';
-                fontLink.href = `https://fonts.googleapis.com/css2?family=${primaryFontUrl}:wght@400;600;700&family=${secondaryFontUrl}:wght@400;500&display=swap`;
-                document.head.appendChild(fontLink);
-            }
-            
-            // Update preview
-            const previewHeading = document.getElementById('widget-font-preview-heading');
-            const previewBody = document.getElementById('widget-font-preview-body');
-            
-            if (previewHeading && finalPrimaryFont) {
-                previewHeading.style.fontFamily = `'${finalPrimaryFont}', sans-serif`;
-            }
-            if (previewBody && finalSecondaryFont) {
-                previewBody.style.fontFamily = `'${finalSecondaryFont}', sans-serif`;
-            }
-            
-            saveAppearanceForm();
+            previewHeading.style.fontFamily = `'${headingFont}', sans-serif`;
+            previewBody.style.fontFamily = `'${bodyFont}', sans-serif`;
         }
         
         // Select theme from card click
@@ -3963,111 +3617,28 @@ $csrfToken = generateCSRFToken();
                                 document.getElementById('custom_accent_color_hex').value = colors.accent;
                             }
                             
-                            // Apply theme fonts (legacy support)
+                            // Apply theme fonts
                             if (fonts.heading) {
-                                const customHeadingFont = document.getElementById('custom_heading_font');
-                                if (customHeadingFont) {
-                                    customHeadingFont.value = fonts.heading;
-                                }
-                                const pagePrimaryFont = document.getElementById('page_primary_font');
-                                if (pagePrimaryFont) {
-                                    pagePrimaryFont.value = fonts.heading;
-                                }
+                                document.getElementById('custom_heading_font').value = fonts.heading;
                                 updateFontPreview();
-                                updatePageFontPreview();
                             }
                             if (fonts.body) {
-                                const customBodyFont = document.getElementById('custom_body_font');
-                                if (customBodyFont) {
-                                    customBodyFont.value = fonts.body;
-                                }
-                                const pageSecondaryFont = document.getElementById('page_secondary_font');
-                                if (pageSecondaryFont) {
-                                    pageSecondaryFont.value = fonts.body;
-                                }
+                                document.getElementById('custom_body_font').value = fonts.body;
                                 updateFontPreview();
-                                updatePageFontPreview();
-                            }
-                            
-                            // Apply page fonts from theme (if available)
-                            if (data.theme.page_primary_font) {
-                                const pagePrimaryFont = document.getElementById('page_primary_font');
-                                if (pagePrimaryFont) {
-                                    pagePrimaryFont.value = data.theme.page_primary_font;
-                                    updatePageFontPreview();
-                                }
-                            }
-                            if (data.theme.page_secondary_font) {
-                                const pageSecondaryFont = document.getElementById('page_secondary_font');
-                                if (pageSecondaryFont) {
-                                    pageSecondaryFont.value = data.theme.page_secondary_font;
-                                    updatePageFontPreview();
-                                }
-                            }
-                            
-                            // Apply widget fonts from theme (if available)
-                            if (data.theme.widget_primary_font) {
-                                const widgetPrimaryFont = document.getElementById('widget_primary_font');
-                                if (widgetPrimaryFont) {
-                                    widgetPrimaryFont.value = data.theme.widget_primary_font;
-                                    updateWidgetFontPreview();
-                                }
-                            }
-                            if (data.theme.widget_secondary_font) {
-                                const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-                                if (widgetSecondaryFont) {
-                                    widgetSecondaryFont.value = data.theme.widget_secondary_font;
-                                    updateWidgetFontPreview();
-                                }
-                            }
-                            
-                            // Apply page background from theme
-                            if (data.theme.page_background) {
-                                const pageBackground = document.getElementById('page_background');
-                                if (pageBackground) {
-                                    pageBackground.value = data.theme.page_background;
-                                    const isGradient = data.theme.page_background.includes('gradient');
-                                    switchBackgroundType(isGradient ? 'gradient' : 'solid');
-                                    if (isGradient) {
-                                        updateGradient();
-                                    } else {
-                                        updatePageBackground();
-                                    }
-                                }
-                            }
-                            
-                            // Apply widget background from theme
-                            if (data.theme.widget_background) {
-                                const widgetBackground = document.getElementById('widget_background');
-                                if (widgetBackground) {
-                                    widgetBackground.value = data.theme.widget_background;
-                                    const isGradient = data.theme.widget_background.includes('gradient');
-                                    switchWidgetBackgroundType(isGradient ? 'gradient' : 'solid');
-                                    if (isGradient) {
-                                        updateWidgetGradient();
-                                    } else {
-                                        updateWidgetBackground();
-                                    }
-                                }
-                            }
-                            
-                            // Apply widget border color from theme
-                            if (data.theme.widget_border_color) {
-                                const widgetBorderColor = document.getElementById('widget_border_color');
-                                if (widgetBorderColor) {
-                                    widgetBorderColor.value = data.theme.widget_border_color;
-                                    const isGradient = data.theme.widget_border_color.includes('gradient');
-                                    switchWidgetBorderType(isGradient ? 'gradient' : 'solid');
-                                    if (isGradient) {
-                                        updateWidgetBorderGradient();
-                                    } else {
-                                        updateWidgetBorderColor();
-                                    }
-                                }
                             }
                             
                             // Trigger auto-save
-                            saveAppearanceForm();
+                            autoSaveForm('appearance-form', 'update_appearance', () => {
+                                const formData = new FormData();
+                                formData.append('theme_id', themeId);
+                                formData.append('layout_option', document.getElementById('layout_option').value);
+                                formData.append('custom_primary_color', document.getElementById('custom_primary_color').value);
+                                formData.append('custom_secondary_color', document.getElementById('custom_secondary_color').value);
+                                formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
+                                formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
+                                formData.append('custom_body_font', document.getElementById('custom_body_font').value);
+                                return formData;
+                            });
                         }
                     })
                     .catch(() => {
@@ -4077,28 +3648,11 @@ $csrfToken = generateCSRFToken();
         }
         
         // Update font preview on font change
-        // Font preview event listeners
-        const customHeadingFont = document.getElementById('custom_heading_font');
-        const customBodyFont = document.getElementById('custom_body_font');
-        if (customHeadingFont) customHeadingFont.addEventListener('change', updateFontPreview);
-        if (customBodyFont) customBodyFont.addEventListener('change', updateFontPreview);
-        
-        // Page font preview event listeners
-        const pagePrimaryFont = document.getElementById('page_primary_font');
-        const pageSecondaryFont = document.getElementById('page_secondary_font');
-        if (pagePrimaryFont) pagePrimaryFont.addEventListener('change', updatePageFontPreview);
-        if (pageSecondaryFont) pageSecondaryFont.addEventListener('change', updatePageFontPreview);
-        
-        // Widget font preview event listeners
-        const widgetPrimaryFont = document.getElementById('widget_primary_font');
-        const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-        if (widgetPrimaryFont) widgetPrimaryFont.addEventListener('change', updateWidgetFontPreview);
-        if (widgetSecondaryFont) widgetSecondaryFont.addEventListener('change', updateWidgetFontPreview);
+        document.getElementById('custom_heading_font').addEventListener('change', updateFontPreview);
+        document.getElementById('custom_body_font').addEventListener('change', updateFontPreview);
         
         // Load fonts on page load
-        if (customHeadingFont || customBodyFont) updateFontPreview();
-        if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview();
-        if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview();
+        updateFontPreview();
         
         // Handle appearance form with auto-save
         const appearanceForm = document.getElementById('appearance-form');
@@ -4107,10 +3661,7 @@ $csrfToken = generateCSRFToken();
             // Note: theme_id is handled separately via handleThemeChange() for radio buttons
             const appearanceFields = ['layout_option', 'custom_primary_color', 'custom_secondary_color', 
                                       'custom_accent_color', 'custom_heading_font', 'custom_body_font',
-                                      'page_primary_font', 'page_secondary_font',
-                                      'page_background', 'widget_background', 'widget_border_color',
-                                      'widget_primary_font', 'widget_secondary_font',
-                                      'widget_border_width', 'widget_border_effect',
+                                      'page_background', 'widget_border_width', 'widget_border_effect',
                                       'widget_border_shadow_intensity', 'widget_border_glow_intensity',
                                       'widget_glow_color_hidden', 'widget_spacing', 'widget_shape', 'spatial_effect'];
             appearanceFields.forEach(fieldId => {
@@ -4576,42 +4127,20 @@ $csrfToken = generateCSRFToken();
                     const primaryColor = document.getElementById('custom_primary_color').value;
                     const secondaryColor = document.getElementById('custom_secondary_color').value;
                     const accentColor = document.getElementById('custom_accent_color').value;
-                    
-                    // Legacy fonts (for backward compatibility)
-                    const headingFont = document.getElementById('custom_heading_font');
-                    const bodyFont = document.getElementById('custom_body_font');
-                    if (headingFont && headingFont.value) formData.append('custom_heading_font', headingFont.value);
-                    if (bodyFont && bodyFont.value) formData.append('custom_body_font', bodyFont.value);
-                    
-                    // Page fonts
-                    const pagePrimaryFont = document.getElementById('page_primary_font');
-                    const pageSecondaryFont = document.getElementById('page_secondary_font');
-                    if (pagePrimaryFont && pagePrimaryFont.value) formData.append('page_primary_font', pagePrimaryFont.value);
-                    if (pageSecondaryFont && pageSecondaryFont.value) formData.append('page_secondary_font', pageSecondaryFont.value);
-                    
-                    // Widget fonts
-                    const widgetPrimaryFont = document.getElementById('widget_primary_font');
-                    const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-                    if (widgetPrimaryFont && widgetPrimaryFont.value) formData.append('widget_primary_font', widgetPrimaryFont.value);
-                    if (widgetSecondaryFont && widgetSecondaryFont.value) formData.append('widget_secondary_font', widgetSecondaryFont.value);
+                    const headingFont = document.getElementById('custom_heading_font').value;
+                    const bodyFont = document.getElementById('custom_body_font').value;
                     
                     formData.append('theme_id', themeId);
                     formData.append('layout_option', layout);
                     formData.append('custom_primary_color', primaryColor);
                     formData.append('custom_secondary_color', secondaryColor);
                     formData.append('custom_accent_color', accentColor);
+                    formData.append('custom_heading_font', headingFont);
+                    formData.append('custom_body_font', bodyFont);
                     
-                    // Page background
+                    // New theme fields
                     const pageBackground = document.getElementById('page_background');
                     if (pageBackground && pageBackground.value) formData.append('page_background', pageBackground.value);
-                    
-                    // Widget background
-                    const widgetBackground = document.getElementById('widget_background');
-                    if (widgetBackground && widgetBackground.value) formData.append('widget_background', widgetBackground.value);
-                    
-                    // Widget border color
-                    const widgetBorderColor = document.getElementById('widget_border_color');
-                    if (widgetBorderColor && widgetBorderColor.value) formData.append('widget_border_color', widgetBorderColor.value);
                     
                     const spatialEffect = document.getElementById('spatial_effect');
                     if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
@@ -4841,293 +4370,6 @@ $csrfToken = generateCSRFToken();
             });
             
             saveAppearanceForm();
-        }
-        
-        // Widget Background Functions
-        function switchWidgetBackgroundType(type) {
-            const solidOption = document.getElementById('widget-bg-solid-option');
-            const gradientOption = document.getElementById('widget-bg-gradient-option');
-            const buttons = document.querySelectorAll('.widget-bg-type-btn');
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                }
-            });
-            
-            if (type === 'solid') {
-                solidOption.style.display = '';
-                gradientOption.style.display = 'none';
-            } else {
-                solidOption.style.display = 'none';
-                gradientOption.style.display = '';
-            }
-        }
-        
-        function updateWidgetBackground() {
-            const colorPicker = document.getElementById('widget_background_color');
-            const hexInput = document.getElementById('widget_background_color_hex');
-            const swatch = document.getElementById('widget-bg-swatch');
-            const hidden = document.getElementById('widget_background');
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            swatch.style.background = color;
-            hidden.value = color;
-            
-            saveAppearanceForm();
-        }
-        
-        function updateWidgetBackgroundFromHex() {
-            const hexInput = document.getElementById('widget_background_color_hex');
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('widget_background_color');
-                const swatch = document.getElementById('widget-bg-swatch');
-                const hidden = document.getElementById('widget_background');
-                
-                colorPicker.value = hex;
-                swatch.style.background = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                saveAppearanceForm();
-            } else {
-                alert('Please enter a valid hex color (e.g., #ffffff)');
-            }
-        }
-        
-        function updateWidgetGradient() {
-            const startColor = document.getElementById('widget_gradient_start_color').value;
-            const endColor = document.getElementById('widget_gradient_end_color').value;
-            const direction = document.getElementById('widget_gradient_direction').value;
-            const preview = document.getElementById('widget-gradient-preview');
-            const hidden = document.getElementById('widget_background');
-            
-            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
-            preview.style.background = gradient;
-            hidden.value = gradient;
-            
-            // Update swatches
-            document.getElementById('widget-gradient-start-swatch').style.background = startColor;
-            document.getElementById('widget-gradient-end-swatch').style.background = endColor;
-            
-            saveAppearanceForm();
-        }
-        
-        // Widget Border Color Functions
-        function switchWidgetBorderType(type) {
-            const solidOption = document.getElementById('widget-border-solid-option');
-            const gradientOption = document.getElementById('widget-border-gradient-option');
-            const buttons = document.querySelectorAll('.widget-border-type-btn');
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                }
-            });
-            
-            if (type === 'solid') {
-                solidOption.style.display = '';
-                gradientOption.style.display = 'none';
-            } else {
-                solidOption.style.display = 'none';
-                gradientOption.style.display = '';
-            }
-        }
-        
-        function updateWidgetBorderColor() {
-            const colorPicker = document.getElementById('widget_border_color_picker');
-            const hexInput = document.getElementById('widget_border_color_hex');
-            const swatch = document.getElementById('widget-border-swatch');
-            const hidden = document.getElementById('widget_border_color');
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            swatch.style.background = color;
-            hidden.value = color;
-            
-            saveAppearanceForm();
-        }
-        
-        function updateWidgetBorderColorFromHex() {
-            const hexInput = document.getElementById('widget_border_color_hex');
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('widget_border_color_picker');
-                const swatch = document.getElementById('widget-border-swatch');
-                const hidden = document.getElementById('widget_border_color');
-                
-                colorPicker.value = hex;
-                swatch.style.background = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                saveAppearanceForm();
-            } else {
-                alert('Please enter a valid hex color (e.g., #000000)');
-            }
-        }
-        
-        function updateWidgetBorderGradient() {
-            const startColor = document.getElementById('widget_border_gradient_start_color').value;
-            const endColor = document.getElementById('widget_border_gradient_end_color').value;
-            const direction = document.getElementById('widget_border_gradient_direction').value;
-            const preview = document.getElementById('widget-border-gradient-preview');
-            const hidden = document.getElementById('widget_border_color');
-            
-            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
-            preview.style.background = gradient;
-            hidden.value = gradient;
-            
-            // Update swatches
-            document.getElementById('widget-border-gradient-start-swatch').style.background = startColor;
-            document.getElementById('widget-border-gradient-end-swatch').style.background = endColor;
-            
-            saveAppearanceForm();
-        }
-        
-        // Widget Settings Drawer Functions
-        function showWidgetSettingsDrawer(themeId) {
-            const drawer = document.getElementById('widget-settings-drawer');
-            const overlay = document.getElementById('widget-settings-drawer-overlay');
-            const drawerBody = document.getElementById('widget-settings-drawer-body');
-            
-            if (!drawer || !overlay) return;
-            
-            // Show loading state
-            drawerBody.innerHTML = `
-                <div style="text-align: center; color: #666; padding: 2rem;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <p>Loading widget settings...</p>
-                </div>
-            `;
-            
-            // Show drawer
-            drawer.style.display = 'block';
-            overlay.style.display = 'block';
-            setTimeout(() => {
-                drawer.classList.add('active');
-                overlay.classList.add('active');
-            }, 10);
-            
-            // Load theme data
-            fetch('/api/themes.php?id=' + themeId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.theme) {
-                        renderWidgetSettings(data.theme);
-                    } else {
-                        drawerBody.innerHTML = '<p style="color: #ef4444;">Failed to load theme settings.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading theme:', error);
-                    drawerBody.innerHTML = '<p style="color: #ef4444;">Error loading theme settings.</p>';
-                });
-        }
-        
-        function renderWidgetSettings(theme) {
-            const drawerBody = document.getElementById('widget-settings-drawer-body');
-            
-            // Parse theme data
-            const colors = theme.colors ? JSON.parse(theme.colors) : {};
-            const fonts = theme.fonts ? JSON.parse(theme.fonts) : {};
-            const widgetStyles = theme.widget_styles ? JSON.parse(theme.widget_styles) : {};
-            
-            const pagePrimaryFont = theme.page_primary_font || fonts.heading || 'Inter';
-            const pageSecondaryFont = theme.page_secondary_font || fonts.body || 'Inter';
-            const widgetPrimaryFont = theme.widget_primary_font || pagePrimaryFont;
-            const widgetSecondaryFont = theme.widget_secondary_font || pageSecondaryFont;
-            const widgetBackground = theme.widget_background || '#ffffff';
-            const widgetBorderColor = theme.widget_border_color || '#000000';
-            
-            // Build preview HTML
-            const html = `
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Sample Widget Preview</h3>
-                    <div style="padding: 1rem; background: ${widgetBackground}; border: 2px solid ${widgetBorderColor}; border-radius: 12px; margin-bottom: 1rem;">
-                        <div style="font-family: '${widgetPrimaryFont}', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: ${colors.primary || '#000000'};">Widget Title</div>
-                        <div style="font-family: '${widgetSecondaryFont}', sans-serif; font-size: 0.875rem; color: ${colors.primary || '#000000'}; opacity: 0.8;">This is a sample widget showing how content will look with this theme's widget settings.</div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Background</h4>
-                    <div style="width: 100%; height: 60px; background: ${widgetBackground}; border: 2px solid #ddd; border-radius: 8px;"></div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Border Color</h4>
-                    <div style="width: 100%; height: 60px; background: ${widgetBorderColor}; border: 2px solid #ddd; border-radius: 8px;"></div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Fonts</h4>
-                    <div style="padding: 0.75rem; background: #f9f9f9; border-radius: 8px;">
-                        <div style="font-family: '${widgetPrimaryFont}', sans-serif; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Primary: ${widgetPrimaryFont}</div>
-                        <div style="font-family: '${widgetSecondaryFont}', sans-serif; font-size: 0.875rem; color: #666;">Secondary: ${widgetSecondaryFont}</div>
-                    </div>
-                </div>
-                
-                ${widgetStyles.border_width ? `
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Structure</h4>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Border: ${widgetStyles.border_width}</span>
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Shape: ${widgetStyles.shape || 'rounded'}</span>
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Spacing: ${widgetStyles.spacing || 'comfortable'}</span>
-                    </div>
-                </div>
-                ` : ''}
-            `;
-            
-            drawerBody.innerHTML = html;
-        }
-        
-        function closeWidgetSettingsDrawer() {
-            const drawer = document.getElementById('widget-settings-drawer');
-            const overlay = document.getElementById('widget-settings-drawer-overlay');
-            
-            if (drawer) {
-                drawer.classList.remove('active');
-                setTimeout(() => {
-                    drawer.style.display = 'none';
-                }, 300);
-            }
-            
-            if (overlay) {
-                overlay.classList.remove('active');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 300);
-            }
         }
         
         // Save Theme Function

@@ -150,18 +150,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .widget-item {
             display: block;
             padding: 1rem;
-            background: var(--widget-background, var(--secondary-color));
-            border: var(--widget-border-width, 2px) solid var(--widget-border-color, var(--primary-color));
-            border-radius: var(--widget-border-radius, 12px);
+            background: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
             text-decoration: none;
             color: var(--text-color);
             transition: all 0.3s ease;
-            box-shadow: var(--widget-box-shadow, 0 2px 4px rgba(0,0,0,0.05));
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             width: 100%;
             box-sizing: border-box;
             position: relative;
             z-index: auto;
-            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
         }
         
         /* Link widgets without thumbnails - full width button style */
@@ -214,14 +213,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .widget-content {
             flex: 1;
-            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
         }
         
         .widget-title {
             font-weight: 600;
             margin: 0 0 0.25rem 0;
-            font-family: var(--widget-primary-font, var(--page-primary-font, var(--heading-font)), sans-serif);
-            color: var(--text-color);
         }
         
         /* Video widget styles */

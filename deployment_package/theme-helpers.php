@@ -20,11 +20,7 @@ function getThemeConfig($page, $theme = null) {
     return [
         'colors' => $themeObj->getThemeColors($page, $theme),
         'fonts' => $themeObj->getThemeFonts($page, $theme),
-        'page_fonts' => $themeObj->getPageFonts($page, $theme),
-        'widget_fonts' => $themeObj->getWidgetFonts($page, $theme),
         'page_background' => $themeObj->getPageBackground($page, $theme),
-        'widget_background' => $themeObj->getWidgetBackground($page, $theme),
-        'widget_border_color' => $themeObj->getWidgetBorderColor($page, $theme),
         'widget_styles' => $themeObj->getWidgetStyles($page, $theme),
         'spatial_effect' => $themeObj->getSpatialEffect($page, $theme)
     ];
@@ -64,54 +60,6 @@ function getSpatialEffect($page, $theme = null) {
     require_once __DIR__ . '/../classes/Theme.php';
     $themeObj = new Theme();
     return $themeObj->getSpatialEffect($page, $theme);
-}
-
-/**
- * Get widget background for a page
- * @param array $page Page data array
- * @param array|null $theme Optional theme data array
- * @return string Widget background (color or gradient)
- */
-function getWidgetBackground($page, $theme = null) {
-    require_once __DIR__ . '/../classes/Theme.php';
-    $themeObj = new Theme();
-    return $themeObj->getWidgetBackground($page, $theme);
-}
-
-/**
- * Get widget border color for a page
- * @param array $page Page data array
- * @param array|null $theme Optional theme data array
- * @return string Widget border color (color or gradient)
- */
-function getWidgetBorderColor($page, $theme = null) {
-    require_once __DIR__ . '/../classes/Theme.php';
-    $themeObj = new Theme();
-    return $themeObj->getWidgetBorderColor($page, $theme);
-}
-
-/**
- * Get widget fonts for a page
- * @param array $page Page data array
- * @param array|null $theme Optional theme data array
- * @return array Widget fonts (primary, secondary)
- */
-function getWidgetFonts($page, $theme = null) {
-    require_once __DIR__ . '/../classes/Theme.php';
-    $themeObj = new Theme();
-    return $themeObj->getWidgetFonts($page, $theme);
-}
-
-/**
- * Get page fonts for a page
- * @param array $page Page data array
- * @param array|null $theme Optional theme data array
- * @return array Page fonts (primary, secondary)
- */
-function getPageFonts($page, $theme = null) {
-    require_once __DIR__ . '/../classes/Theme.php';
-    $themeObj = new Theme();
-    return $themeObj->getPageFonts($page, $theme);
 }
 
 /**

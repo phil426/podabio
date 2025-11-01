@@ -37,6 +37,7 @@ try {
                 'body' => 'Lato'
             ],
             'page_background' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'background_min_height' => '100vh',
             'widget_styles' => [
                 'border_width' => 'medium',
                 'border_effect' => 'glow',
