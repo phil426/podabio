@@ -1245,8 +1245,8 @@ class WidgetRenderer {
         
         let html = "<div class=\"follow-buttons\">";
         socialIcons.forEach((icon) => {
-            const platformName = icon.platform_name || icon.platformName || 'Link';
-            const url = icon.url || '';
+            const platformName = icon.platform_name || icon.platformName || "Link";
+            const url = icon.url || "";
             const iconClass = icon.icon || getPlatformIcon(platformName);
             
             html += "<a href=\"" + escapeHtml(url) + "\" class=\"follow-button\" target=\"_blank\" rel=\"noopener noreferrer\">";
