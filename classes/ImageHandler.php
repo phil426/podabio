@@ -72,6 +72,13 @@ class ImageHandler {
                 return UPLOAD_THUMBNAILS;
             case 'blog':
                 return UPLOAD_BLOG;
+            case 'theme_image':
+                // Temporary uploads for color extraction
+                $tempDir = UPLOAD_PATH . '/theme_temp';
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
+                return $tempDir;
             default:
                 return UPLOAD_PATH;
         }

@@ -79,7 +79,7 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 }
 
 $imageType = sanitizeInput($_POST['type'] ?? '');
-$allowedTypes = ['profile', 'background', 'thumbnail'];
+$allowedTypes = ['profile', 'background', 'thumbnail', 'theme_image'];
 
 if (!in_array($imageType, $allowedTypes)) {
     http_response_code(400);
@@ -96,6 +96,18 @@ if (!$result['success']) {
     error_log('ImageHandler upload failed: ' . ($result['error'] ?? 'Unknown error'));
     http_response_code(400);
     echo json_encode($result);
+    exit;
+}
+
+// Update page with image URL (skip for theme_image - just return path)
+if ($imageType === 'theme_image') {
+    // For theme images, just return the path (used for color extraction)
+    echo json_encode([
+        'success' => true,
+        'path' => $result['path'],
+        'url' => $result['url'],
+        'message' => 'Image uploaded successfully'
+    ]);
     exit;
 }
 

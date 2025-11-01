@@ -14,6 +14,8 @@ require_once __DIR__ . '/classes/Page.php';
 require_once __DIR__ . '/classes/User.php';
 require_once __DIR__ . '/classes/Subscription.php';
 require_once __DIR__ . '/classes/Theme.php';
+require_once __DIR__ . '/includes/theme-helpers.php';
+require_once __DIR__ . '/classes/WidgetStyleManager.php';
 require_once __DIR__ . '/config/oauth.php';
 
 // Require authentication
@@ -118,6 +120,13 @@ if ($page) {
 // Get themes using Theme class
 $themeClass = new Theme();
 $themes = $themeClass->getAllThemes(true);
+$userThemes = $page ? $themeClass->getUserThemes($userId) : [];
+$allThemes = array_merge($themes, $userThemes); // Combine system and user themes
+
+// Get current theme configuration
+$widgetStyles = $page ? getWidgetStyles($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : WidgetStyleManager::getDefaults();
+$pageBackground = $page ? getPageBackground($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : '#ffffff';
+$spatialEffect = $page ? getSpatialEffect($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : 'none';
 
 $csrfToken = generateCSRFToken();
 
@@ -1519,7 +1528,7 @@ $csrfToken = generateCSRFToken();
                     <label style="display: block; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600;">Theme</label>
                     <div class="theme-cards-container">
                         <!-- Theme Cards -->
-                        <?php foreach ($themes as $theme): 
+                        <?php foreach ($allThemes as $theme): 
                             $themeColors = parseThemeJson($theme['colors'], []);
                             $primaryColor = $themeColors['primary'] ?? '#000000';
                             $secondaryColor = $themeColors['secondary'] ?? '#ffffff';
@@ -1551,6 +1560,37 @@ $csrfToken = generateCSRFToken();
                 
                 <h3 style="margin-top: 0;">Colors</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors to override theme colors or create your own color scheme.</small>
+                
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Extract Colors from Image</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="file" id="color_extraction_image" accept="image/*" style="display: none;" onchange="handleColorExtractionImage()">
+                        <button type="button" onclick="document.getElementById('color_extraction_image').click()" style="padding: 0.75rem 1.5rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-image"></i> Upload Image
+                        </button>
+                        <span style="color: #666; font-size: 0.875rem;">or</span>
+                        <input type="text" id="color_extraction_url" placeholder="Paste image URL..." style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; max-width: 300px;">
+                        <button type="button" onclick="extractColorsFromUrl()" style="padding: 0.75rem 1.5rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            Extract
+                        </button>
+                    </div>
+                    <small style="display: block; margin-top: 0.5rem; color: #666;">Upload an image or paste a URL to automatically extract a color scheme</small>
+                    <div id="color-extraction-preview" style="display: none; margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
+                        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.75rem;">
+                            <div style="width: 60px; height: 60px; border: 2px solid #ddd; border-radius: 8px;" id="extracted-primary-swatch"></div>
+                            <div style="width: 60px; height: 60px; border: 2px solid #ddd; border-radius: 8px;" id="extracted-secondary-swatch"></div>
+                            <div style="width: 60px; height: 60px; border: 2px solid #ddd; border-radius: 8px;" id="extracted-accent-swatch"></div>
+                            <button type="button" onclick="applyExtractedColors()" style="padding: 0.75rem 1.5rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: auto;">
+                                Apply Colors
+                            </button>
+                        </div>
+                        <div style="font-size: 0.875rem; color: #666;">
+                            <strong>Primary:</strong> <span id="extracted-primary-hex"></span> | 
+                            <strong>Secondary:</strong> <span id="extracted-secondary-hex"></span> | 
+                            <strong>Accent:</strong> <span id="extracted-accent-hex"></span>
+                        </div>
+                    </div>
+                </div>
                 
                 <?php
                 // Get theme colors with fallbacks using Theme class
@@ -1635,6 +1675,241 @@ $csrfToken = generateCSRFToken();
                     <h3 id="font-preview-heading" style="font-family: '<?php echo h($customHeadingFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Heading Text</h3>
                     <p id="font-preview-body" style="font-family: '<?php echo h($customBodyFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your body text will look with the selected font.</p>
                 </div>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                
+                <h3 style="margin-top: 0;">Page Background</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for your page.</small>
+                
+                <div class="form-group">
+                    <label>Background Type</label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button type="button" class="bg-type-btn <?php echo !isGradient($pageBackground) ? 'active' : ''; ?>" data-type="solid" onclick="switchBackgroundType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
+                        <button type="button" class="bg-type-btn <?php echo isGradient($pageBackground) ? 'active' : ''; ?>" data-type="gradient" onclick="switchBackgroundType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
+                    </div>
+                    
+                    <!-- Solid Color Option -->
+                    <div id="bg-solid-option" class="bg-option" style="<?php echo isGradient($pageBackground) ? 'display: none;' : ''; ?>">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0;" id="page-bg-swatch"></div>
+                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updatePageBackground()">
+                            <input type="text" id="page_background_color_hex" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updatePageBackgroundFromHex()">
+                        </div>
+                        <input type="hidden" id="page_background" name="page_background" value="<?php echo h($pageBackground); ?>">
+                    </div>
+                    
+                    <!-- Gradient Option -->
+                    <div id="bg-gradient-option" class="bg-option" style="<?php echo !isGradient($pageBackground) ? 'display: none;' : ''; ?>">
+                        <div id="gradient-builder" style="padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
+                            <?php
+                            // Parse gradient if it exists
+                            $gradientParsed = parseGradientOrColor($pageBackground);
+                            $gradStart = '#0066ff';
+                            $gradEnd = '#ff00ff';
+                            $gradDir = '135deg';
+                            if ($gradientParsed && $gradientParsed['type'] === 'gradient') {
+                                // Extract colors and direction from gradient
+                                preg_match('/(\d+)deg/', $gradientParsed['params'], $dirMatch);
+                                preg_match('/#[0-9a-fA-F]{6}/', $gradientParsed['params'], $startMatch);
+                                preg_match('/#[0-9a-fA-F]{6}(?=\s|,|\))/', $gradientParsed['params'], $endMatch);
+                                if ($dirMatch) $gradDir = $dirMatch[1] . 'deg';
+                                if ($startMatch) $gradStart = $startMatch[0];
+                                if ($endMatch) $gradEnd = $endMatch[0];
+                            }
+                            ?>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradStart); ?>; flex-shrink: 0;" id="gradient-start-swatch"></div>
+                                        <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradEnd); ?>; flex-shrink: 0;" id="gradient-end-swatch"></div>
+                                        <input type="color" id="gradient_end_color" value="<?php echo h($gradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Direction</label>
+                                <select id="gradient_direction" onchange="updateGradient()" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                                    <option value="135deg" <?php echo $gradDir === '135deg' ? 'selected' : ''; ?>>Diagonal (135°)</option>
+                                    <option value="90deg" <?php echo $gradDir === '90deg' ? 'selected' : ''; ?>>Vertical (90°)</option>
+                                    <option value="0deg" <?php echo $gradDir === '0deg' ? 'selected' : ''; ?>>Horizontal (0°)</option>
+                                    <option value="45deg" <?php echo $gradDir === '45deg' ? 'selected' : ''; ?>>Diagonal (45°)</option>
+                                    <option value="180deg" <?php echo $gradDir === '180deg' ? 'selected' : ''; ?>>Vertical Reverse (180°)</option>
+                                </select>
+                            </div>
+                            <div style="height: 60px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($pageBackground); ?>;" id="gradient-preview"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                
+                <h3 style="margin-top: 0;">Widget Styling</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Customize the appearance of widgets (links, podcast player, etc.)</small>
+                
+                <div class="form-group">
+                    <label>Border Width</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <?php 
+                        $borderWidths = ['thin' => 'Thin', 'medium' => 'Medium', 'thick' => 'Thick'];
+                        $currentBorderWidth = $widgetStyles['border_width'] ?? 'medium';
+                        foreach ($borderWidths as $value => $label): 
+                            $isSelected = ($currentBorderWidth === $value);
+                        ?>
+                        <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="border_width" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('border_width', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" id="widget_border_width" name="widget_border_width" value="<?php echo h($currentBorderWidth); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label>Border Effect</label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button type="button" class="border-effect-btn <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'shadow' ? 'active' : ''; ?>" data-effect="shadow" onclick="switchBorderEffect('shadow')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'shadow' ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'shadow' ? '#0066ff' : 'white'; ?>; color: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'shadow' ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'shadow' ? '600' : '500'; ?>;">Shadow</button>
+                        <button type="button" class="border-effect-btn <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'glow' ? 'active' : ''; ?>" data-effect="glow" onclick="switchBorderEffect('glow')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'glow' ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'glow' ? '#0066ff' : 'white'; ?>; color: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'glow' ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo ($widgetStyles['border_effect'] ?? 'shadow') === 'glow' ? '600' : '500'; ?>;">Glow</button>
+                    </div>
+                    <input type="hidden" id="widget_border_effect" name="widget_border_effect" value="<?php echo h($widgetStyles['border_effect'] ?? 'shadow'); ?>">
+                </div>
+                
+                <!-- Shadow Options -->
+                <div id="shadow-options" class="border-effect-options" style="<?php echo ($widgetStyles['border_effect'] ?? 'shadow') !== 'shadow' ? 'display: none;' : ''; ?>">
+                    <div class="form-group">
+                        <label>Shadow Intensity</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <?php 
+                            $shadowIntensities = ['none' => 'None', 'subtle' => 'Subtle', 'pronounced' => 'Pronounced'];
+                            $currentShadowIntensity = $widgetStyles['border_shadow_intensity'] ?? 'subtle';
+                            foreach ($shadowIntensities as $value => $label): 
+                                $isSelected = ($currentShadowIntensity === $value);
+                            ?>
+                            <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="border_shadow_intensity" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('border_shadow_intensity', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="hidden" id="widget_border_shadow_intensity" name="widget_border_shadow_intensity" value="<?php echo h($currentShadowIntensity); ?>">
+                    </div>
+                </div>
+                
+                <!-- Glow Options -->
+                <div id="glow-options" class="border-effect-options" style="<?php echo ($widgetStyles['border_effect'] ?? 'shadow') !== 'glow' ? 'display: none;' : ''; ?>">
+                    <div class="form-group">
+                        <label>Glow Intensity</label>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <?php 
+                            $glowIntensities = ['none' => 'None', 'subtle' => 'Subtle', 'pronounced' => 'Pronounced'];
+                            $currentGlowIntensity = $widgetStyles['border_glow_intensity'] ?? 'none';
+                            foreach ($glowIntensities as $value => $label): 
+                                $isSelected = ($currentGlowIntensity === $value);
+                            ?>
+                            <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="border_glow_intensity" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('border_glow_intensity', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="hidden" id="widget_border_glow_intensity" name="widget_border_glow_intensity" value="<?php echo h($currentGlowIntensity); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="widget_glow_color">Glow Color</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>; flex-shrink: 0;" id="glow-color-swatch"></div>
+                            <input type="color" id="widget_glow_color" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGlowColor()">
+                            <input type="text" id="widget_glow_color_hex" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>" placeholder="#ff00ff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateGlowColorFromHex()">
+                        </div>
+                        <input type="hidden" id="widget_glow_color_hidden" name="widget_glow_color_hidden" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Spacing Between Widgets</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <?php 
+                        $spacings = ['tight' => 'Tight', 'comfortable' => 'Comfortable', 'spacious' => 'Spacious'];
+                        $currentSpacing = $widgetStyles['spacing'] ?? 'comfortable';
+                        foreach ($spacings as $value => $label): 
+                            $isSelected = ($currentSpacing === $value);
+                        ?>
+                        <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="spacing" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('spacing', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" id="widget_spacing" name="widget_spacing" value="<?php echo h($currentSpacing); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label>Widget Shape</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <?php 
+                        $shapes = ['square' => 'Square', 'rounded' => 'Rounded', 'round' => 'Round'];
+                        $currentShape = $widgetStyles['shape'] ?? 'rounded';
+                        foreach ($shapes as $value => $label): 
+                            $isSelected = ($currentShape === $value);
+                        ?>
+                        <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="shape" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('shape', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" id="widget_shape" name="widget_shape" value="<?php echo h($currentShape); ?>">
+                </div>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                
+                <h3 style="margin-top: 0;">Spatial Effect</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Apply a global visual effect to your entire page.</small>
+                
+                <div class="form-group">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                        <?php 
+                        $spatialEffects = [
+                            'none' => ['label' => 'None', 'icon' => 'fa-square', 'desc' => 'Standard layout'],
+                            'glass' => ['label' => 'Glass', 'icon' => 'fa-image', 'desc' => 'Glassmorphism effect'],
+                            'depth' => ['label' => 'Depth', 'icon' => 'fa-cube', 'desc' => '3D perspective'],
+                            'floating' => ['label' => 'Floating', 'icon' => 'fa-window-maximize', 'desc' => 'Floating container']
+                        ];
+                        $currentSpatialEffect = $spatialEffect;
+                        foreach ($spatialEffects as $value => $info): 
+                            $isSelected = ($currentSpatialEffect === $value);
+                        ?>
+                        <button type="button" class="spatial-effect-btn <?php echo $isSelected ? 'active' : ''; ?>" data-effect="<?php echo h($value); ?>" onclick="updateSpatialEffect('<?php echo h($value); ?>')" style="padding: 1rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; text-align: center; transition: all 0.2s;">
+                            <i class="fas <?php echo h($info['icon']); ?>" style="display: block; font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;"><?php echo h($info['label']); ?></div>
+                            <div style="font-size: 0.75rem; opacity: 0.8;"><?php echo h($info['desc']); ?></div>
+                        </button>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" id="spatial_effect" name="spatial_effect" value="<?php echo h($currentSpatialEffect); ?>">
+                </div>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                
+                <h3 style="margin-top: 0;">Save as Theme</h3>
+                <small style="display: block; margin-bottom: 1rem; color: #666;">Save your current customization as a reusable theme.</small>
+                
+                <div class="form-group">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="theme_name" placeholder="Enter theme name..." style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" maxlength="100">
+                        <button type="button" class="btn btn-secondary" onclick="saveTheme()" style="padding: 0.75rem 1.5rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">Save Theme</button>
+                    </div>
+                </div>
+                
+                <?php if (!empty($userThemes)): ?>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.75rem; font-weight: 600;">Your Saved Themes</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
+                        <?php foreach ($userThemes as $userTheme): 
+                            $themeColors = parseThemeJson($userTheme['colors'] ?? '{}', []);
+                            $themePrimary = $themeColors['primary'] ?? '#000000';
+                            $themeAccent = $themeColors['accent'] ?? '#0066ff';
+                        ?>
+                        <div style="background: white; border: 2px solid #ddd; border-radius: 8px; padding: 0.75rem; position: relative;">
+                            <div style="height: 60px; background: linear-gradient(135deg, <?php echo h($themePrimary); ?> 0%, <?php echo h($themeAccent); ?> 100%); border-radius: 6px; margin-bottom: 0.5rem;"></div>
+                            <div style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;"><?php echo h($userTheme['name']); ?></div>
+                            <button type="button" onclick="deleteUserTheme(<?php echo $userTheme['id']; ?>)" style="width: 100%; padding: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">Delete</button>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
                 
                 <button type="submit" class="btn btn-primary">Save Appearance</button>
             </form>
@@ -3385,32 +3660,15 @@ $csrfToken = generateCSRFToken();
             // Auto-save on changes
             // Note: theme_id is handled separately via handleThemeChange() for radio buttons
             const appearanceFields = ['layout_option', 'custom_primary_color', 'custom_secondary_color', 
-                                      'custom_accent_color', 'custom_heading_font', 'custom_body_font'];
+                                      'custom_accent_color', 'custom_heading_font', 'custom_body_font',
+                                      'page_background', 'widget_border_width', 'widget_border_effect',
+                                      'widget_border_shadow_intensity', 'widget_border_glow_intensity',
+                                      'widget_glow_color_hidden', 'widget_spacing', 'widget_shape', 'spatial_effect'];
             appearanceFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
                     field.addEventListener('change', function() {
-                        autoSaveForm('appearance-form', 'update_appearance', () => {
-                            const formData = new FormData();
-                            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
-                            const themeId = selectedRadio ? selectedRadio.value : '';
-                            const layout = document.getElementById('layout_option').value;
-                            const primaryColor = document.getElementById('custom_primary_color').value;
-                            const secondaryColor = document.getElementById('custom_secondary_color').value;
-                            const accentColor = document.getElementById('custom_accent_color').value;
-                            const headingFont = document.getElementById('custom_heading_font').value;
-                            const bodyFont = document.getElementById('custom_body_font').value;
-                            
-                            formData.append('theme_id', themeId);
-                            formData.append('layout_option', layout);
-                            formData.append('custom_primary_color', primaryColor);
-                            formData.append('custom_secondary_color', secondaryColor);
-                            formData.append('custom_accent_color', accentColor);
-                            formData.append('custom_heading_font', headingFont);
-                            formData.append('custom_body_font', bodyFont);
-                            
-                            return formData;
-                        });
+                        saveAppearanceForm();
                     });
                 }
             });
@@ -3853,6 +4111,523 @@ $csrfToken = generateCSRFToken();
                 showMessage('An error occurred', 'error');
             });
             });
+        }
+        
+        // ========== Theme System JavaScript Functions ==========
+        
+        // Helper function to build appearance form data (must be global for inline handlers)
+        function saveAppearanceForm() {
+            if (!document.getElementById('appearance-form')) return;
+            
+            autoSaveForm('appearance-form', 'update_appearance', () => {
+                    const formData = new FormData();
+                    const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
+                    const themeId = selectedRadio ? selectedRadio.value : '';
+                    const layout = document.getElementById('layout_option').value;
+                    const primaryColor = document.getElementById('custom_primary_color').value;
+                    const secondaryColor = document.getElementById('custom_secondary_color').value;
+                    const accentColor = document.getElementById('custom_accent_color').value;
+                    const headingFont = document.getElementById('custom_heading_font').value;
+                    const bodyFont = document.getElementById('custom_body_font').value;
+                    
+                    formData.append('theme_id', themeId);
+                    formData.append('layout_option', layout);
+                    formData.append('custom_primary_color', primaryColor);
+                    formData.append('custom_secondary_color', secondaryColor);
+                    formData.append('custom_accent_color', accentColor);
+                    formData.append('custom_heading_font', headingFont);
+                    formData.append('custom_body_font', bodyFont);
+                    
+                    // New theme fields
+                    const pageBackground = document.getElementById('page_background');
+                    if (pageBackground && pageBackground.value) formData.append('page_background', pageBackground.value);
+                    
+                    const spatialEffect = document.getElementById('spatial_effect');
+                    if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
+                    
+                    // Widget styles
+                    const widgetStyles = {
+                        border_width: document.getElementById('widget_border_width').value,
+                        border_effect: document.getElementById('widget_border_effect').value,
+                        border_shadow_intensity: document.getElementById('widget_border_shadow_intensity').value,
+                        border_glow_intensity: document.getElementById('widget_border_glow_intensity').value,
+                        glow_color: document.getElementById('widget_glow_color_hidden').value,
+                        spacing: document.getElementById('widget_spacing').value,
+                        shape: document.getElementById('widget_shape').value
+                    };
+                    formData.append('widget_styles', JSON.stringify(widgetStyles));
+                    
+                    return formData;
+                });
+        }
+        
+        // Page Background Functions
+        function switchBackgroundType(type) {
+            const solidOption = document.getElementById('bg-solid-option');
+            const gradientOption = document.getElementById('bg-gradient-option');
+            const buttons = document.querySelectorAll('.bg-type-btn');
+            
+            buttons.forEach(btn => {
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                    btn.style.borderColor = '#0066ff';
+                    btn.style.background = '#0066ff';
+                    btn.style.color = 'white';
+                    btn.style.fontWeight = '600';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.borderColor = '#ddd';
+                    btn.style.background = 'white';
+                    btn.style.color = '#666';
+                    btn.style.fontWeight = '500';
+                }
+            });
+            
+            if (type === 'solid') {
+                solidOption.style.display = '';
+                gradientOption.style.display = 'none';
+            } else {
+                solidOption.style.display = 'none';
+                gradientOption.style.display = '';
+            }
+        }
+        
+        function updatePageBackground() {
+            const colorPicker = document.getElementById('page_background_color');
+            const hexInput = document.getElementById('page_background_color_hex');
+            const swatch = document.getElementById('page-bg-swatch');
+            const hidden = document.getElementById('page_background');
+            
+            const color = colorPicker.value;
+            hexInput.value = color;
+            swatch.style.background = color;
+            hidden.value = color;
+            
+            saveAppearanceForm();
+        }
+        
+        function updatePageBackgroundFromHex() {
+            const hexInput = document.getElementById('page_background_color_hex');
+            let hex = hexInput.value.trim();
+            
+            if (!hex.startsWith('#')) {
+                hex = '#' + hex;
+            }
+            
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                const colorPicker = document.getElementById('page_background_color');
+                const swatch = document.getElementById('page-bg-swatch');
+                const hidden = document.getElementById('page_background');
+                
+                colorPicker.value = hex;
+                swatch.style.background = hex;
+                hidden.value = hex;
+                hexInput.value = hex;
+                
+                saveAppearanceForm();
+            } else {
+                alert('Please enter a valid hex color (e.g., #ffffff)');
+            }
+        }
+        
+        function updateGradient() {
+            const startColor = document.getElementById('gradient_start_color').value;
+            const endColor = document.getElementById('gradient_end_color').value;
+            const direction = document.getElementById('gradient_direction').value;
+            const preview = document.getElementById('gradient-preview');
+            const hidden = document.getElementById('page_background');
+            const startSwatch = document.getElementById('gradient-start-swatch');
+            const endSwatch = document.getElementById('gradient-end-swatch');
+            
+            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
+            preview.style.background = gradient;
+            hidden.value = gradient;
+            startSwatch.style.background = startColor;
+            endSwatch.style.background = endColor;
+            
+            saveAppearanceForm();
+        }
+        
+        // Widget Style Functions
+        function updateWidgetStyle(field, value) {
+            const hiddenField = document.getElementById('widget_' + field);
+            if (hiddenField) {
+                hiddenField.value = value;
+            }
+            
+            // Update button states
+            const buttons = document.querySelectorAll(`[data-field="${field}"]`);
+            buttons.forEach(btn => {
+                if (btn.dataset.value === value) {
+                    btn.classList.add('active');
+                    btn.style.borderColor = '#0066ff';
+                    btn.style.background = '#0066ff';
+                    btn.style.color = 'white';
+                    btn.style.fontWeight = '600';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.borderColor = '#ddd';
+                    btn.style.background = 'white';
+                    btn.style.color = '#666';
+                    btn.style.fontWeight = '500';
+                }
+            });
+            
+            saveAppearanceForm();
+        }
+        
+        function switchBorderEffect(effect) {
+            const shadowOptions = document.getElementById('shadow-options');
+            const glowOptions = document.getElementById('glow-options');
+            const hidden = document.getElementById('widget_border_effect');
+            const buttons = document.querySelectorAll('.border-effect-btn');
+            
+            hidden.value = effect;
+            
+            buttons.forEach(btn => {
+                if (btn.dataset.effect === effect) {
+                    btn.classList.add('active');
+                    btn.style.borderColor = '#0066ff';
+                    btn.style.background = '#0066ff';
+                    btn.style.color = 'white';
+                    btn.style.fontWeight = '600';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.borderColor = '#ddd';
+                    btn.style.background = 'white';
+                    btn.style.color = '#666';
+                    btn.style.fontWeight = '500';
+                }
+            });
+            
+            if (effect === 'shadow') {
+                shadowOptions.style.display = '';
+                glowOptions.style.display = 'none';
+            } else {
+                shadowOptions.style.display = 'none';
+                glowOptions.style.display = '';
+            }
+            
+            saveAppearanceForm();
+        }
+        
+        function updateGlowColor() {
+            const colorPicker = document.getElementById('widget_glow_color');
+            const hexInput = document.getElementById('widget_glow_color_hex');
+            const swatch = document.getElementById('glow-color-swatch');
+            const hidden = document.getElementById('widget_glow_color_hidden');
+            
+            const color = colorPicker.value;
+            hexInput.value = color;
+            swatch.style.background = color;
+            hidden.value = color;
+            
+            saveAppearanceForm();
+        }
+        
+        function updateGlowColorFromHex() {
+            const hexInput = document.getElementById('widget_glow_color_hex');
+            let hex = hexInput.value.trim();
+            
+            if (!hex.startsWith('#')) {
+                hex = '#' + hex;
+            }
+            
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                const colorPicker = document.getElementById('widget_glow_color');
+                const swatch = document.getElementById('glow-color-swatch');
+                const hidden = document.getElementById('widget_glow_color_hidden');
+                
+                colorPicker.value = hex;
+                swatch.style.background = hex;
+                hidden.value = hex;
+                hexInput.value = hex;
+                
+                saveAppearanceForm();
+            } else {
+                alert('Please enter a valid hex color (e.g., #ff00ff)');
+            }
+        }
+        
+        function updateSpatialEffect(effect) {
+            const hidden = document.getElementById('spatial_effect');
+            const buttons = document.querySelectorAll('.spatial-effect-btn');
+            
+            hidden.value = effect;
+            
+            buttons.forEach(btn => {
+                if (btn.dataset.effect === effect) {
+                    btn.classList.add('active');
+                    btn.style.borderColor = '#0066ff';
+                    btn.style.background = '#0066ff';
+                    btn.style.color = 'white';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.borderColor = '#ddd';
+                    btn.style.background = 'white';
+                    btn.style.color = '#666';
+                }
+            });
+            
+            saveAppearanceForm();
+        }
+        
+        // Save Theme Function
+        function saveTheme() {
+            const themeName = document.getElementById('theme_name').value.trim();
+            
+            if (!themeName) {
+                alert('Please enter a theme name');
+                return;
+            }
+            
+            if (themeName.length > 100) {
+                alert('Theme name must be 100 characters or less');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'save_theme');
+            formData.append('csrf_token', csrfToken);
+            formData.append('theme_name', themeName);
+            
+            // Get current colors
+            formData.append('custom_primary_color', document.getElementById('custom_primary_color').value);
+            formData.append('custom_secondary_color', document.getElementById('custom_secondary_color').value);
+            formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
+            
+            // Get current fonts
+            formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
+            formData.append('custom_body_font', document.getElementById('custom_body_font').value);
+            
+            // Get page background
+            const pageBackground = document.getElementById('page_background').value;
+            if (pageBackground) formData.append('page_background', pageBackground);
+            
+            // Get spatial effect
+            const spatialEffect = document.getElementById('spatial_effect').value;
+            if (spatialEffect) formData.append('spatial_effect', spatialEffect);
+            
+            // Get widget styles
+            const widgetStyles = {
+                border_width: document.getElementById('widget_border_width').value,
+                border_effect: document.getElementById('widget_border_effect').value,
+                border_shadow_intensity: document.getElementById('widget_border_shadow_intensity').value,
+                border_glow_intensity: document.getElementById('widget_border_glow_intensity').value,
+                glow_color: document.getElementById('widget_glow_color_hidden').value,
+                spacing: document.getElementById('widget_spacing').value,
+                shape: document.getElementById('widget_shape').value
+            };
+            formData.append('widget_styles', JSON.stringify(widgetStyles));
+            
+            showMessage('Saving theme...', 'info');
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Theme saved successfully!', 'success');
+                    document.getElementById('theme_name').value = '';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error || 'Failed to save theme', 'error');
+                }
+            })
+            .catch(() => {
+                showMessage('An error occurred', 'error');
+            });
+        }
+        
+        // Delete Theme Function
+        function deleteUserTheme(themeId) {
+            if (!confirm('Are you sure you want to delete this theme? This action cannot be undone.')) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'delete_theme');
+            formData.append('csrf_token', csrfToken);
+            formData.append('theme_id', themeId);
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Theme deleted successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.error || 'Failed to delete theme', 'error');
+                }
+            })
+            .catch(() => {
+                showMessage('An error occurred', 'error');
+            });
+        }
+        
+        // Color Extraction Functions
+        function handleColorExtractionImage() {
+            const fileInput = document.getElementById('color_extraction_image');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                return;
+            }
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please select an image file', 'error');
+                return;
+            }
+            
+            // Upload image first, then extract colors
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'theme_image');
+            formData.append('csrf_token', csrfToken);
+            
+            showMessage('Uploading image...', 'info');
+            
+            fetch('/api/upload.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Extract colors from uploaded image
+                    extractColorsFromPath(data.path);
+                } else {
+                    showMessage(data.error || 'Failed to upload image', 'error');
+                }
+            })
+            .catch(() => {
+                showMessage('An error occurred during upload', 'error');
+            });
+        }
+        
+        function extractColorsFromUrl() {
+            const urlInput = document.getElementById('color_extraction_url');
+            const imageUrl = urlInput.value.trim();
+            
+            if (!imageUrl) {
+                showMessage('Please enter an image URL', 'error');
+                return;
+            }
+            
+            // Validate URL
+            try {
+                new URL(imageUrl);
+            } catch (e) {
+                showMessage('Invalid URL format', 'error');
+                return;
+            }
+            
+            extractColors(imageUrl, 'url');
+        }
+        
+        function extractColorsFromPath(imagePath) {
+            extractColors(imagePath, 'path');
+        }
+        
+        function extractColors(imageSource, type) {
+            showMessage('Extracting colors...', 'info');
+            
+            const formData = new FormData();
+            formData.append('action', 'extract_colors');
+            formData.append('csrf_token', csrfToken);
+            
+            if (type === 'url') {
+                formData.append('image_url', imageSource);
+            } else {
+                formData.append('image_path', imageSource);
+            }
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    displayExtractedColors(data.data);
+                    showMessage('Colors extracted successfully!', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to extract colors', 'error');
+                }
+            })
+            .catch(() => {
+                showMessage('An error occurred', 'error');
+            });
+        }
+        
+        function displayExtractedColors(colors) {
+            const preview = document.getElementById('color-extraction-preview');
+            const primarySwatch = document.getElementById('extracted-primary-swatch');
+            const secondarySwatch = document.getElementById('extracted-secondary-swatch');
+            const accentSwatch = document.getElementById('extracted-accent-swatch');
+            const primaryHex = document.getElementById('extracted-primary-hex');
+            const secondaryHex = document.getElementById('extracted-secondary-hex');
+            const accentHex = document.getElementById('extracted-accent-hex');
+            
+            if (!preview || !colors) return;
+            
+            // Store extracted colors globally for apply function
+            window.extractedColors = colors;
+            
+            primarySwatch.style.background = colors.primary || '#000000';
+            secondarySwatch.style.background = colors.secondary || '#ffffff';
+            accentSwatch.style.background = colors.accent || '#0066ff';
+            
+            primaryHex.textContent = colors.primary || '#000000';
+            secondaryHex.textContent = colors.secondary || '#ffffff';
+            accentHex.textContent = colors.accent || '#0066ff';
+            
+            preview.style.display = 'block';
+        }
+        
+        function applyExtractedColors() {
+            if (!window.extractedColors) {
+                showMessage('No colors to apply', 'error');
+                return;
+            }
+            
+            const colors = window.extractedColors;
+            
+            // Update color inputs
+            document.getElementById('custom_primary_color').value = colors.primary;
+            document.getElementById('custom_secondary_color').value = colors.secondary;
+            document.getElementById('custom_accent_color').value = colors.accent;
+            
+            // Update hex inputs
+            document.getElementById('custom_primary_color_hex').value = colors.primary;
+            document.getElementById('custom_secondary_color_hex').value = colors.secondary;
+            document.getElementById('custom_accent_color_hex').value = colors.accent;
+            
+            // Update swatches
+            updateColorSwatch('primary', colors.primary);
+            updateColorSwatch('secondary', colors.secondary);
+            updateColorSwatch('accent', colors.accent);
+            
+            // Save changes
+            saveAppearanceForm();
+            
+            showMessage('Colors applied successfully!', 'success');
+            
+            // Hide preview after a moment
+            setTimeout(() => {
+                const preview = document.getElementById('color-extraction-preview');
+                if (preview) {
+                    preview.style.display = 'none';
+                }
+                document.getElementById('color_extraction_url').value = '';
+                document.getElementById('color_extraction_image').value = '';
+            }, 2000);
         }
         
         // Close directory modal on outside click
