@@ -165,9 +165,8 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .widgets-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 1rem;
         }
         
         .widget-item {
@@ -180,16 +179,15 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             color: var(--text-color);
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
         
-        /* Link widgets without thumbnails - compact inline buttons */
+        /* Link widgets without thumbnails - full width button style */
         .widget-link-simple {
             padding: 0.875rem 1.25rem !important;
-            display: inline-block;
-            width: auto;
-            flex: 0 0 auto;
-            margin-bottom: 0;
+            display: block;
+            width: 100%;
             text-align: center;
         }
         
@@ -209,7 +207,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             align-items: center;
             gap: 1rem;
             width: 100%;
-            flex: 1 1 100%;
         }
         
         /* Other widgets (podcast, video, etc.) - full width */
@@ -219,7 +216,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .widget-text,
         .widget-image {
             width: 100%;
-            flex: 1 1 100%;
         }
         
         .widget-item:hover {
