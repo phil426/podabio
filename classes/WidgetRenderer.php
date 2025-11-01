@@ -714,12 +714,9 @@ class WidgetRenderer {
             $html .= '<span class="total-time" id="total-time-' . $widgetId . '">0:00</span>';
             $html .= '<button class="volume-btn" id="volume-btn-' . $widgetId . '" aria-label="Volume control" title="Volume"><i class="fas fa-volume-up"></i></button>';
             $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="Toggle drawer" title="Toggle drawer"><i class="fas fa-chevron-down drawer-icon-toggle"></i></button>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
-            
-            // Audio element (hidden)
-            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
+            $html .= '</div>'; // Close progress-container
+            $html .= '</div>'; // Close podcast-info-compact
+            $html .= '</div>'; // Close podcast-main-content
             
             // Bottom Sheet Drawer (initially hidden)
             $html .= '<div class="podcast-bottom-sheet hidden" id="' . htmlspecialchars($drawerId) . '">';
@@ -735,10 +732,16 @@ class WidgetRenderer {
             $html .= '<div class="tab-panel active" id="shownotes-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="chapters-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="episodes-panel-' . $widgetId . '"></div>';
-            $html .= '</div>'; // Close podcast-info-compact
-            $html .= '</div>'; // Close podcast-main-content
+            $html .= '</div>'; // Close drawer-panels
+            $html .= '</div>'; // Close drawer-content-wrapper
+            $html .= '</div>'; // Close podcast-bottom-sheet
+            
             $html .= '</div>'; // Close podcast-compact-player
             $html .= '</div>'; // Close widget-content
+            
+            // Audio element (hidden)
+            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
+            
             $html .= '</div>'; // Close widget-item widget-podcast-custom
             
             // Inline JavaScript (HTML5 Audio + Vanilla JS)
