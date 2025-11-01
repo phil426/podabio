@@ -3659,8 +3659,17 @@ $csrfToken = generateCSRFToken();
         
         // Font preview update
         function updateFontPreview() {
-            const headingFont = document.getElementById('custom_heading_font').value;
-            const bodyFont = document.getElementById('custom_body_font').value;
+            const headingFontEl = document.getElementById('custom_heading_font');
+            const bodyFontEl = document.getElementById('custom_body_font');
+            
+            // Add null checks
+            if (!headingFontEl || !bodyFontEl) {
+                console.error('Font preview elements not found');
+                return;
+            }
+            
+            const headingFont = headingFontEl.value;
+            const bodyFont = bodyFontEl.value;
             
             // Load Google Fonts
             const headingFontUrl = headingFont.replace(/\s+/g, '+');
@@ -3817,18 +3826,24 @@ $csrfToken = generateCSRFToken();
                             // Apply theme colors
                             if (colors.primary) {
                                 updateColorSwatch('primary', colors.primary);
-                                document.getElementById('custom_primary_color').value = colors.primary;
-                                document.getElementById('custom_primary_color_hex').value = colors.primary;
+                                const primaryColorEl = document.getElementById('custom_primary_color');
+                                const primaryColorHexEl = document.getElementById('custom_primary_color_hex');
+                                if (primaryColorEl) primaryColorEl.value = colors.primary;
+                                if (primaryColorHexEl) primaryColorHexEl.value = colors.primary;
                             }
                             if (colors.secondary) {
                                 updateColorSwatch('secondary', colors.secondary);
-                                document.getElementById('custom_secondary_color').value = colors.secondary;
-                                document.getElementById('custom_secondary_color_hex').value = colors.secondary;
+                                const secondaryColorEl = document.getElementById('custom_secondary_color');
+                                const secondaryColorHexEl = document.getElementById('custom_secondary_color_hex');
+                                if (secondaryColorEl) secondaryColorEl.value = colors.secondary;
+                                if (secondaryColorHexEl) secondaryColorHexEl.value = colors.secondary;
                             }
                             if (colors.accent) {
                                 updateColorSwatch('accent', colors.accent);
-                                document.getElementById('custom_accent_color').value = colors.accent;
-                                document.getElementById('custom_accent_color_hex').value = colors.accent;
+                                const accentColorEl = document.getElementById('custom_accent_color');
+                                const accentColorHexEl = document.getElementById('custom_accent_color_hex');
+                                if (accentColorEl) accentColorEl.value = colors.accent;
+                                if (accentColorHexEl) accentColorHexEl.value = colors.accent;
                             }
                             
                             // Apply theme fonts (legacy support)
@@ -3903,14 +3918,18 @@ $csrfToken = generateCSRFToken();
                                             const direction = match[1] + 'deg';
                                             const startColor = match[2];
                                             const endColor = match[3];
-                                            document.getElementById('gradient_direction').value = direction;
-                                            document.getElementById('gradient_start_color').value = startColor;
-                                            document.getElementById('gradient_end_color').value = endColor;
+                                            const dirEl = document.getElementById('gradient_direction');
+                                            const startEl = document.getElementById('gradient_start_color');
+                                            const endEl = document.getElementById('gradient_end_color');
+                                            if (dirEl) dirEl.value = direction;
+                                            if (startEl) startEl.value = startColor;
+                                            if (endEl) endEl.value = endColor;
                                             updateGradient();
                                         }
                                     } else {
                                         // Solid color
-                                        document.getElementById('page_background_color').value = data.theme.page_background;
+                                        const bgColorEl = document.getElementById('page_background_color');
+                                        if (bgColorEl) bgColorEl.value = data.theme.page_background;
                                         updatePageBackground();
                                     }
                                 }
@@ -3930,14 +3949,18 @@ $csrfToken = generateCSRFToken();
                                             const direction = match[1] + 'deg';
                                             const startColor = match[2];
                                             const endColor = match[3];
-                                            document.getElementById('widget_gradient_direction').value = direction;
-                                            document.getElementById('widget_gradient_start_color').value = startColor;
-                                            document.getElementById('widget_gradient_end_color').value = endColor;
+                                            const dirEl = document.getElementById('widget_gradient_direction');
+                                            const startEl = document.getElementById('widget_gradient_start_color');
+                                            const endEl = document.getElementById('widget_gradient_end_color');
+                                            if (dirEl) dirEl.value = direction;
+                                            if (startEl) startEl.value = startColor;
+                                            if (endEl) endEl.value = endColor;
                                             updateWidgetGradient();
                                         }
                                     } else {
                                         // Solid color
-                                        document.getElementById('widget_background_color').value = data.theme.widget_background;
+                                        const bgColorEl = document.getElementById('widget_background_color');
+                                        if (bgColorEl) bgColorEl.value = data.theme.widget_background;
                                         updateWidgetBackground();
                                     }
                                 }
@@ -3957,14 +3980,18 @@ $csrfToken = generateCSRFToken();
                                             const direction = match[1] + 'deg';
                                             const startColor = match[2];
                                             const endColor = match[3];
-                                            document.getElementById('widget_border_gradient_direction').value = direction;
-                                            document.getElementById('widget_border_gradient_start_color').value = startColor;
-                                            document.getElementById('widget_border_gradient_end_color').value = endColor;
+                                            const dirEl = document.getElementById('widget_border_gradient_direction');
+                                            const startEl = document.getElementById('widget_border_gradient_start_color');
+                                            const endEl = document.getElementById('widget_border_gradient_end_color');
+                                            if (dirEl) dirEl.value = direction;
+                                            if (startEl) startEl.value = startColor;
+                                            if (endEl) endEl.value = endColor;
                                             updateWidgetBorderGradient();
                                         }
                                     } else {
                                         // Solid color
-                                        document.getElementById('widget_border_color_picker').value = data.theme.widget_border_color;
+                                        const borderColorEl = document.getElementById('widget_border_color_picker');
+                                        if (borderColorEl) borderColorEl.value = data.theme.widget_border_color;
                                         updateWidgetBorderColor();
                                     }
                                 }
