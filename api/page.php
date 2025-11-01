@@ -481,41 +481,6 @@ switch ($action) {
         }
         break;
         
-    case 'extract_colors':
-        require_once __DIR__ . '/../classes/ColorExtractor.php';
-        
-        // Check if image URL or file is provided
-        $imageUrl = sanitizeInput($_POST['image_url'] ?? '');
-        $imagePath = sanitizeInput($_POST['image_path'] ?? '');
-        
-        if (empty($imageUrl) && empty($imagePath)) {
-            echo APIResponse::error('Image URL or path required', 400);
-            break;
-        }
-        
-        $colorExtractor = new ColorExtractor();
-        $result = null;
-        
-        if (!empty($imageUrl)) {
-            // Validate URL
-            if (!filter_var($imageUrl, FILTER_VALIDATE_URL)) {
-                echo APIResponse::error('Invalid image URL', 400);
-                break;
-            }
-            $result = $colorExtractor->extractColorsFromUrl($imageUrl);
-        } else {
-            // Use local file path
-            $fullPath = ROOT_PATH . '/' . ltrim($imagePath, '/');
-            $result = $colorExtractor->extractColors($fullPath);
-        }
-        
-        if ($result['success']) {
-            echo APIResponse::success($result['colors'], 'Colors extracted successfully');
-        } else {
-            echo APIResponse::error($result['error'] ?? 'Failed to extract colors', 500);
-        }
-        break;
-        
     default:
         echo APIResponse::error('Invalid action', 400);
         break;
