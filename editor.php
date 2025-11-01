@@ -2146,8 +2146,8 @@ $csrfToken = generateCSRFToken();
             // Open configuration modal
             openWidgetModal();
             
-            // Set up RSS feed auto-population for podcast player
-            if (widget.widget_id === 'podcast_player') {
+            // Set up RSS feed auto-population for podcast players
+            if (widget.widget_id === 'podcast_player' || widget.widget_id === 'podcast_player_full') {
                 setupRSSAutoPopulate();
             }
         };
@@ -2385,8 +2385,8 @@ $csrfToken = generateCSRFToken();
                 });
             }
             
-            // For podcast player, also include description if it exists
-            if (widgetType === 'podcast_player') {
+            // For podcast players, also include description if it exists
+            if (widgetType === 'podcast_player' || widgetType === 'podcast_player_full') {
                 const descField = document.getElementById('widget_config_description');
                 if (descField && descField.value) {
                     configData['description'] = descField.value.trim();
@@ -2502,8 +2502,8 @@ $csrfToken = generateCSRFToken();
                     const fieldsContainer = document.getElementById('widget-config-fields');
                     fieldsContainer.innerHTML = '';
                     
-                    // For podcast player, add RSS Feed URL first, then Title, Description, and Cover Image
-                    if (widget.widget_type === 'podcast_player' && widgetDef) {
+                    // For podcast players, add RSS Feed URL first, then Title, Description, and Cover Image
+                    if ((widget.widget_type === 'podcast_player' || widget.widget_type === 'podcast_player_full') && widgetDef) {
                         // RSS Feed URL (first field)
                         const rssFieldDef = widgetDef.config_fields.rss_feed_url;
                         if (rssFieldDef) {
@@ -2564,8 +2564,8 @@ $csrfToken = generateCSRFToken();
                     // Widget-specific fields (skip RSS feed URL and thumbnail_image for podcast player as they're already added)
                     if (widgetDef && widgetDef.config_fields) {
                         Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
-                            // Skip RSS feed URL and thumbnail_image for podcast player (already rendered)
-                            if (widget.widget_type === 'podcast_player' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
+                            // Skip RSS feed URL and thumbnail_image for podcast players (already rendered)
+                            if ((widget.widget_type === 'podcast_player' || widget.widget_type === 'podcast_player_full') && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
                                 return;
                             }
                             const value = configData[fieldName] || '';
@@ -2628,8 +2628,8 @@ $csrfToken = generateCSRFToken();
                     
                     openWidgetModal();
                     
-                    // Set up RSS feed auto-population for podcast player
-                    if (widget.widget_type === 'podcast_player') {
+                    // Set up RSS feed auto-population for podcast players
+                    if (widget.widget_type === 'podcast_player' || widget.widget_type === 'podcast_player_full') {
                         setupRSSAutoPopulate();
                     }
                 } else {
