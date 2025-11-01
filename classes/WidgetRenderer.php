@@ -672,6 +672,12 @@ class WidgetRenderer {
             $rssFeedUrl = $configData['rss_feed_url'] ?? '';
             $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
             $pageId = isset($widget['page_id']) ? (int)$widget['page_id'] : 0;
+            $widgetType = $widget['widget_type'] ?? 'unknown';
+            
+            // Debug: Log widget type (can be removed after verification)
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log("PodNBio Widget Debug - Type: {$widgetType}, ID: {$widgetId}, PageID: {$pageId}");
+            }
             
             if (empty($rssFeedUrl)) {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
