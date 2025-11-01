@@ -643,13 +643,14 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             height: 40px;
             display: flex;
             align-items: center;
+            padding: 0 8px;
         }
         
         .waveform-canvas {
             position: absolute;
             top: 0;
-            left: 0;
-            width: 100%;
+            left: 8px;
+            width: calc(100% - 16px);
             height: 40px;
             display: block;
             z-index: 1;
@@ -657,13 +658,14 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .progress-bar {
             position: relative;
-            width: 100%;
+            width: calc(100% - 16px);
             height: 6px;
             background: rgba(0, 0, 0, 0.12);
             border-radius: 3px;
             cursor: pointer;
             z-index: 2;
-            overflow: hidden;
+            overflow: visible;
+            margin: 0 auto;
         }
         
         .progress-fill {
@@ -698,7 +700,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .progress-scrubber {
             position: absolute;
             top: 50%;
-            left: clamp(0px, calc(var(--progress-width, 0%) - 8px), calc(100% - 16px));
+            left: var(--progress-width, 0%);
             width: 16px;
             height: 16px;
             background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
@@ -706,7 +708,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             border: 3px solid var(--secondary-color);
             cursor: grab;
             z-index: 10;
-            transform: translateY(-50%);
+            transform: translate(-50%, -50%);
             transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: none;
             box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
