@@ -376,13 +376,13 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             position: relative;
         }
         
-        .progress-bar::before {
+        .progress-bar::after {
             content: "";
             position: absolute;
             top: 0;
             left: 0;
             height: 100%;
-            width: 0%;
+            width: var(--progress-width, 0%);
             background-color: var(--primary-color);
             transition: width 0.1s linear;
         }
