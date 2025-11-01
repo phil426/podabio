@@ -302,10 +302,11 @@ try {
         
         $result = $themeClass->createTheme(null, $themeName, $themeConfig);
         
-        if ($result) {
+        if ($result && isset($result['success']) && $result['success']) {
             echo "   ✓ Created theme: {$themeName}\n";
         } else {
-            echo "   ✗ Failed to create theme: {$themeName}\n";
+            $error = isset($result['error']) ? $result['error'] : 'Unknown error';
+            echo "   ✗ Failed to create theme: {$themeName} - {$error}\n";
         }
     }
     
