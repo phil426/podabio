@@ -3921,6 +3921,54 @@ $csrfToken = generateCSRFToken();
                                 }
                             }
                             
+                            // Apply widget styles from theme
+                            if (data.theme.widget_styles) {
+                                try {
+                                    const widgetStyles = typeof data.theme.widget_styles === 'string' 
+                                        ? JSON.parse(data.theme.widget_styles) 
+                                        : data.theme.widget_styles;
+                                    
+                                    if (widgetStyles.border_width) {
+                                        const borderWidth = document.getElementById('widget_border_width');
+                                        if (borderWidth) borderWidth.value = widgetStyles.border_width;
+                                    }
+                                    if (widgetStyles.border_effect) {
+                                        const borderEffect = document.getElementById('widget_border_effect');
+                                        if (borderEffect) borderEffect.value = widgetStyles.border_effect;
+                                    }
+                                    if (widgetStyles.border_shadow_intensity) {
+                                        const shadowIntensity = document.getElementById('widget_border_shadow_intensity');
+                                        if (shadowIntensity) shadowIntensity.value = widgetStyles.border_shadow_intensity;
+                                    }
+                                    if (widgetStyles.border_glow_intensity) {
+                                        const glowIntensity = document.getElementById('widget_border_glow_intensity');
+                                        if (glowIntensity) glowIntensity.value = widgetStyles.border_glow_intensity;
+                                    }
+                                    if (widgetStyles.glow_color) {
+                                        const glowColor = document.getElementById('widget_glow_color_hidden');
+                                        if (glowColor) glowColor.value = widgetStyles.glow_color;
+                                    }
+                                    if (widgetStyles.spacing) {
+                                        const spacing = document.getElementById('widget_spacing');
+                                        if (spacing) spacing.value = widgetStyles.spacing;
+                                    }
+                                    if (widgetStyles.shape) {
+                                        const shape = document.getElementById('widget_shape');
+                                        if (shape) shape.value = widgetStyles.shape;
+                                    }
+                                } catch (e) {
+                                    console.error('Failed to parse widget_styles:', e);
+                                }
+                            }
+                            
+                            // Apply spatial effect from theme
+                            if (data.theme.spatial_effect) {
+                                const spatialEffect = document.getElementById('spatial_effect');
+                                if (spatialEffect) {
+                                    spatialEffect.value = data.theme.spatial_effect;
+                                }
+                            }
+                            
                             // Trigger auto-save
                             saveAppearanceForm();
                         }
