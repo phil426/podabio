@@ -698,7 +698,7 @@ class WidgetRenderer {
             $html .= '<div class="podcast-title-compact" id="podcast-title-' . $widgetId . '">Loading...</div>';
             $html .= '<div class="episode-title-compact" id="episode-title-' . $widgetId . '">Loading episode...</div>';
             $html .= '<div class="podcast-controls-compact">';
-            $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><i class="fas fa-backward"></i><span class="skip-label">15</span></button>';
+            $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><span class="skip-label">15</span><i class="fas fa-backward"></i></button>';
             $html .= '<button class="play-pause-btn" id="play-pause-' . $widgetId . '" aria-label="Play/Pause"><i class="fas fa-play"></i></button>';
             $html .= '<button class="skip-forward-btn" id="skip-forward-' . $widgetId . '" aria-label="Skip forward 30 seconds" title="Skip forward 30s"><span class="skip-label">30</span><i class="fas fa-forward"></i></button>';
             $html .= '</div>';
