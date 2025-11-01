@@ -293,7 +293,7 @@ $csrfToken = generateCSRFToken();
         .editor-main {
             flex: 1;
             margin-left: 200px;
-            margin-right: 400px;
+            margin-right: 0;
             background: #ffffff;
             overflow-y: auto;
             height: 100vh;
@@ -1045,80 +1045,7 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        /* Right Preview Panel */
-        .preview-panel {
-            width: 400px;
-            background: #1f2937;
-            position: fixed;
-            right: 0;
-            top: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #374151;
-        }
-        
-        .preview-header {
-            padding: 1rem;
-            background: #111827;
-            border-bottom: 1px solid #374151;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .preview-header h3 {
-            color: #ffffff;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .preview-device {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        
-        .phone-frame {
-            width: 320px;
-            height: 568px;
-            background: #000000;
-            border-radius: 24px;
-            padding: 8px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            position: relative;
-        }
-        
-        .phone-screen {
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .preview-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            transform: scale(0.75);
-            transform-origin: center center;
-        }
-        
         /* Responsive */
-        @media (max-width: 1400px) {
-            .preview-panel {
-                display: none;
-            }
-            .editor-main {
-                margin-right: 0;
-            }
-        }
-        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -2228,25 +2155,6 @@ $csrfToken = generateCSRFToken();
                 <?php endif; // End if ($page) ?>
             </div>
         </main>
-        
-        <!-- Right Preview Panel -->
-        <?php if ($page): ?>
-        <aside class="preview-panel">
-            <div class="preview-header">
-                <h3>Mobile Preview</h3>
-                <button onclick="refreshPreview()" style="background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0.25rem 0.5rem;" title="Refresh Preview">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-            <div class="preview-device">
-                <div class="phone-frame">
-                    <div class="phone-screen">
-                        <iframe id="preview-iframe" class="preview-iframe" src="/<?php echo h($page['username']); ?>?preview=1" frameborder="0"></iframe>
-                    </div>
-                </div>
-            </div>
-        </aside>
-        <?php endif; ?>
     </div>
     
     <?php if ($page): ?>
@@ -2417,15 +2325,6 @@ $csrfToken = generateCSRFToken();
             const navElement = evt ? evt.currentTarget : null;
             showSection(tabName, navElement);
         };
-        
-        // Refresh preview iframe
-        function refreshPreview() {
-            const iframe = document.getElementById('preview-iframe');
-            if (iframe) {
-                iframe.src = iframe.src; // Reload iframe
-            }
-        }
-        
         // On page load, check for tab parameter
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2994,14 +2893,6 @@ $csrfToken = generateCSRFToken();
                     closeWidgetModal();
                     showToast('Widget saved successfully!', 'success');
                     
-                    // Force hard refresh of preview iframe (add cache buster)
-                    const previewIframe = document.getElementById('preview-iframe');
-                    if (previewIframe) {
-                        const currentSrc = previewIframe.src;
-                        const separator = currentSrc.includes('?') ? '&' : '?';
-                        previewIframe.src = currentSrc + separator + '_t=' + Date.now();
-                    }
-                    
                     // Reload page to show new widget in list
                     // Use a slightly longer delay to ensure database commit
                     setTimeout(() => {
@@ -3252,7 +3143,6 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     showMessage(data.message || 'Widget deleted successfully!', 'success');
-                    refreshPreview();
                     // Reload after a short delay to show changes
                     setTimeout(() => location.reload(), 1000);
                 } else {
@@ -3546,8 +3436,6 @@ $csrfToken = generateCSRFToken();
                 if (!data.success) {
                     showMessage('Failed to save widget order', 'error');
                     setTimeout(() => location.reload(), 500);
-                } else {
-                    refreshPreview();
                 }
             })
             .catch(() => {
@@ -3703,7 +3591,6 @@ $csrfToken = generateCSRFToken();
                     if (data.success) {
                         showSavingIndicator(formId, 'Saved');
                         setTimeout(() => hideSavingIndicator(formId), 2000);
-                        refreshPreview();
                     } else {
                         showSavingIndicator(formId, 'Error saving');
                         setTimeout(() => hideSavingIndicator(formId), 3000);
@@ -3769,7 +3656,6 @@ $csrfToken = generateCSRFToken();
                         statusDiv.style.display = 'none';
                     }
                     hideSavingIndicator('page-settings-form');
-                    refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to save settings', 'error');
                     hideSavingIndicator('page-settings-form');
@@ -4177,7 +4063,6 @@ $csrfToken = generateCSRFToken();
                 if (data.success) {
                     showMessage('Appearance updated successfully!', 'success');
                     hideSavingIndicator('appearance-form');
-                    refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to update appearance', 'error');
                     hideSavingIndicator('appearance-form');
@@ -4228,7 +4113,6 @@ $csrfToken = generateCSRFToken();
                 if (data.success) {
                     showMessage('Email settings saved successfully!', 'success');
                     hideSavingIndicator('email-form');
-                    refreshPreview();
                 } else {
                     showMessage(data.error || 'Failed to save email settings', 'error');
                     hideSavingIndicator('email-form');
@@ -4395,7 +4279,6 @@ $csrfToken = generateCSRFToken();
                     input.value = '';
                     
                     showToast(data.message || 'Image uploaded successfully!', 'success');
-                    refreshPreview();
                 } else {
                     showToast(data.error || 'Failed to upload image', 'error');
                 }
@@ -4481,7 +4364,6 @@ $csrfToken = generateCSRFToken();
                     }
                     
                     showToast('Profile image removed successfully', 'success');
-                    refreshPreview();
                 } else {
                     showToast(data.error || 'Failed to remove image', 'error');
                     console.error('Remove image failed:', data.error);
@@ -4521,7 +4403,6 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     showMessage('Social icon deleted successfully!', 'success');
-                    refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     showMessage(data.error || 'Failed to delete social icon', 'error');
@@ -4550,7 +4431,6 @@ $csrfToken = generateCSRFToken();
                 if (data.success) {
                     closeDirectoryModal();
                     showMessage('Social icon added successfully!', 'success');
-                    refreshPreview();
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     showMessage(data.error || 'Failed to add social icon', 'error');
