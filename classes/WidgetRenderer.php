@@ -968,8 +968,8 @@ class WidgetRenderer {
         if (!audio) return;
         
         // Ensure audio has a source
-        if (!audio.src || audio.src === '') {
-            console.warn('Audio element has no source');
+        if (!audio.src || audio.src === "") {
+            console.warn("Audio element has no source");
             return;
         }
         
