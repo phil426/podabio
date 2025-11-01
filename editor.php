@@ -2025,8 +2025,8 @@ $csrfToken = generateCSRFToken();
             const fieldsContainer = document.getElementById('widget-config-fields');
             fieldsContainer.innerHTML = '';
             
-            // For podcast player, add RSS Feed URL first, then Title, Description, and Cover Image
-            if (widget.widget_id === 'podcast_player') {
+            // For podcast players, add RSS Feed URL first, then Title, Description, and Cover Image
+            if (widget.widget_id === 'podcast_player' || widget.widget_id === 'podcast_player_full') {
                 // RSS Feed URL (first field)
                 const rssFieldDef = widget.config_fields.rss_feed_url;
                 if (rssFieldDef) {
@@ -2084,8 +2084,8 @@ $csrfToken = generateCSRFToken();
             // Add widget-specific fields (skip RSS feed URL and thumbnail_image for podcast player as they're already added)
             if (widget.config_fields) {
                 Object.entries(widget.config_fields).forEach(([fieldName, fieldDef]) => {
-                    // Skip RSS feed URL and thumbnail_image for podcast player (already rendered)
-                    if (widget.widget_id === 'podcast_player' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
+                    // Skip RSS feed URL and thumbnail_image for podcast players (already rendered)
+                    if ((widget.widget_id === 'podcast_player' || widget.widget_id === 'podcast_player_full') && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
                         return;
                     }
                     const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
