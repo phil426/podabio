@@ -574,7 +574,7 @@ class WidgetRenderer {
                 const audio = container ? container.querySelector("audio") : null;
                 
                 // Only toggle if player is already initialized
-                // Don't auto-open drawer - user must click expand button
+                // Do not auto-open drawer - user must click expand button
                 if (!audio || !playerInstance) {
                     return;
                 }
