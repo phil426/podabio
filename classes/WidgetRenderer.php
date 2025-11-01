@@ -680,22 +680,33 @@ class WidgetRenderer {
             $html = '<div class="widget-item widget-podcast-custom" id="' . htmlspecialchars($containerId) . '">';
             $html .= '<div class="widget-content">';
             
-            // Compact Player View (~100px height)
+            // Horizontal Card Layout
             $html .= '<div class="podcast-compact-player">';
+            $html .= '<div class="podcast-header-compact">';
+            $html .= '<i class="fas fa-rss rss-icon" title="RSS Feed"></i>';
+            $html .= '</div>';
+            $html .= '<div class="podcast-main-content">';
             $html .= '<img class="podcast-cover-compact" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
             $html .= '<div class="podcast-info-compact">';
-            $html .= '<div class="episode-title-compact" id="episode-title-' . $widgetId . '">Loading...</div>';
+            $html .= '<div class="podcast-title-compact" id="podcast-title-' . $widgetId . '">Loading...</div>';
+            $html .= '<div class="episode-title-compact" id="episode-title-' . $widgetId . '">Loading episode...</div>';
             $html .= '<div class="podcast-controls-compact">';
-            $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><i class="fas fa-backward"></i> <span class="skip-label">15s</span></button>';
+            $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><i class="fas fa-backward"></i><span class="skip-label">15</span></button>';
             $html .= '<button class="play-pause-btn" id="play-pause-' . $widgetId . '" aria-label="Play/Pause"><i class="fas fa-play"></i></button>';
-            $html .= '<button class="skip-forward-btn" id="skip-forward-' . $widgetId . '" aria-label="Skip forward 15 seconds" title="Skip forward 15s"><span class="skip-label">15s</span> <i class="fas fa-forward"></i></button>';
-            $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="Toggle drawer" title="Toggle drawer"><i class="fas fa-chevron-down drawer-icon-toggle"></i></button>';
+            $html .= '<button class="skip-forward-btn" id="skip-forward-' . $widgetId . '" aria-label="Skip forward 30 seconds" title="Skip forward 30s"><span class="skip-label">30</span><i class="fas fa-forward"></i></button>';
             $html .= '</div>';
             $html .= '<div class="progress-container">';
+            $html .= '<span class="current-time" id="current-time-' . $widgetId . '">0:00</span>';
+            $html .= '<div class="progress-bar-wrapper" id="progress-wrapper-' . $widgetId . '">';
+            $html .= '<canvas class="waveform-canvas" id="waveform-' . $widgetId . '" width="100" height="40"></canvas>';
             $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '">';
-            $html .= '<canvas class="waveform-canvas" id="waveform-' . $widgetId . '" width="100" height="30"></canvas>';
+            $html .= '<div class="progress-fill" id="progress-fill-' . $widgetId . '"></div>';
+            $html .= '<div class="progress-scrubber" id="progress-scrubber-' . $widgetId . '"></div>';
             $html .= '</div>';
-            $html .= '<span class="time-display" id="time-display-' . $widgetId . '">0:00 / 0:00</span>';
+            $html .= '</div>';
+            $html .= '<span class="total-time" id="total-time-' . $widgetId . '">0:00</span>';
+            $html .= '<button class="volume-btn" id="volume-btn-' . $widgetId . '" aria-label="Volume control" title="Volume"><i class="fas fa-volume-up"></i></button>';
+            $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="Toggle drawer" title="Toggle drawer"><i class="fas fa-chevron-down drawer-icon-toggle"></i></button>';
             $html .= '</div>';
             $html .= '</div>';
             $html .= '</div>';
@@ -789,24 +800,17 @@ class WidgetRenderer {
                 // Set canvas size to match container
                 const container = waveformCanvas.parentElement;
                 if (container) {
-                    const updateCanvasSize = () => {
+                        const updateCanvasSize = () => {
                         const rect = container.getBoundingClientRect();
                         waveformCanvas.width = rect.width;
-                        waveformCanvas.height = 30;
+                        waveformCanvas.height = 40;
                         drawWaveform();
                     };
                     updateCanvasSize();
                     window.addEventListener("resize", updateCanvasSize);
                 }
                 
-                // Add click handler for seeking
-                waveformCanvas.addEventListener("click", (e) => {
-                    if (!audio || !audio.duration) return;
-                    const rect = waveformCanvas.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const percent = clickX / rect.width;
-                    audio.currentTime = percent * audio.duration;
-                });
+                // Waveform click seeking is handled by progress bar
             }
         } catch (e) {
             console.warn("Web Audio API not supported or error:", e);
@@ -1004,8 +1008,12 @@ class WidgetRenderer {
             waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
         }
         
-        const titleEl = document.getElementById("episode-title-" + widgetId);
-        if (titleEl) titleEl.textContent = episode.title;
+        const podcastTitleEl = document.getElementById("podcast-title-" + widgetId);
+        if (podcastTitleEl && feedData && feedData.feed) {
+            podcastTitleEl.textContent = feedData.feed.title || "Podcast";
+        }
+        const episodeTitleEl = document.getElementById("episode-title-" + widgetId);
+        if (episodeTitleEl) episodeTitleEl.textContent = episode.title;
         const coverEl = document.getElementById("podcast-cover-" + widgetId);
         if (coverEl && episode.cover) {
             coverEl.src = episode.cover;
