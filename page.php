@@ -535,12 +535,15 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .expand-drawer-btn {
             width: 36px;
             height: 36px;
+            min-width: 36px;
+            min-height: 36px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
             color: var(--primary-color);
             cursor: pointer;
             display: flex;
+            flex-shrink: 0;
             align-items: center;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
