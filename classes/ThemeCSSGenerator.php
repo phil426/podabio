@@ -182,13 +182,17 @@ class ThemeCSSGenerator {
         $css .= $this->generateCSSVariables();
         $css .= "\n";
         
+        // Check if background is a gradient
+        $isGradient = strpos($this->pageBackground, 'gradient') !== false || strpos($this->pageBackground, 'linear-gradient') !== false || strpos($this->pageBackground, 'radial-gradient') !== false;
+        
         // Base body styles
         $css .= "body {\n";
         $css .= "    font-family: var(--body-font), sans-serif;\n";
         $css .= "    background: var(--page-background);\n";
-        $css .= "    background-attachment: fixed;\n";
-        $css .= "    background-size: cover;\n";
-        $css .= "    background-repeat: no-repeat;\n";
+        if (!$isGradient) {
+            // For solid colors, use fixed attachment for full coverage
+            $css .= "    background-attachment: fixed;\n";
+        }
         $css .= "    min-height: 100vh;\n";
         $css .= "    color: var(--text-color);\n";
         $css .= "    margin: 0;\n";
