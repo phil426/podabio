@@ -412,86 +412,203 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .skip-back-btn,
         .play-pause-btn,
         .skip-forward-btn {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 2px solid var(--primary-color);
-            background: transparent;
-            color: var(--primary-color);
+            border: none;
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.8) 100%);
+            color: var(--secondary-color);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             font-size: 0.875rem;
             padding: 0;
             position: relative;
             gap: 0.1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .skip-back-btn::before,
+        .skip-forward-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+        
+        .skip-back-btn:hover::before,
+        .skip-forward-btn:hover::before {
+            width: 100%;
+            height: 100%;
         }
         
         .play-pause-btn {
-            width: 48px;
-            height: 48px;
-            font-size: 1rem;
+            width: 56px;
+            height: 56px;
+            font-size: 1.125rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.9) 100%);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
+            z-index: 2;
+        }
+        
+        .play-pause-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+        
+        .play-pause-btn:hover::after {
+            width: 120%;
+            height: 120%;
         }
         
         .skip-label {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             line-height: 1;
             margin: 0;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 1;
         }
         
         .skip-back-btn:hover,
         .play-pause-btn:hover,
         .skip-forward-btn:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
-            transform: scale(1.05);
+            transform: scale(1.12) translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .skip-back-btn:active,
+        .play-pause-btn:active,
+        .skip-forward-btn:active {
+            transform: scale(1.05) translateY(0);
+            transition: transform 0.1s ease;
+        }
+        
+        .skip-back-btn i,
+        .skip-forward-btn i {
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+        
+        .skip-back-btn:hover i,
+        .skip-forward-btn:hover i {
+            transform: scale(1.15);
+        }
+        
+        .play-pause-btn i {
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+        
+        .play-pause-btn:hover i {
+            transform: scale(1.1);
         }
         
         .volume-btn,
         .expand-drawer-btn {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border: 1px solid var(--primary-color);
-            background: transparent;
+            border: none;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
             color: var(--primary-color);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             font-size: 0.875rem;
             padding: 0;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .expand-drawer-btn {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.85) 100%);
             color: var(--secondary-color);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .expand-drawer-btn:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
-            transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
+        .expand-drawer-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+        
+        .expand-drawer-btn:hover::before {
+            width: 140%;
+            height: 140%;
+        }
+        
+        .expand-drawer-btn:hover {
+            transform: scale(1.15) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .expand-drawer-btn:active {
+            transform: scale(1.05) translateY(0);
+        }
+        
         .drawer-icon-toggle {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+            position: relative;
         }
         
         .expand-drawer-btn.active .drawer-icon-toggle {
             transform: rotate(180deg);
         }
         
+        .expand-drawer-btn.active {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, var(--primary-color) 100%);
+        }
+        
         .volume-btn:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 100%);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .volume-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .volume-btn i,
+        .expand-drawer-btn i {
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .volume-btn:hover i {
+            transform: scale(1.2);
         }
         
         .progress-container {
