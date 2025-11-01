@@ -649,16 +649,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             padding: 0 8px;
         }
         
-        .waveform-canvas {
-            position: absolute;
-            top: 0;
-            left: 8px;
-            width: calc(100% - 16px);
-            height: 40px;
-            display: block;
-            z-index: 1;
-        }
-        
         .progress-bar {
             position: relative;
             width: calc(100% - 16px);

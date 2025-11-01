@@ -705,7 +705,6 @@ class WidgetRenderer {
             $html .= '<div class="progress-container">';
             $html .= '<span class="current-time" id="current-time-' . $widgetId . '">0:00</span>';
             $html .= '<div class="progress-bar-wrapper" id="progress-wrapper-' . $widgetId . '">';
-            $html .= '<canvas class="waveform-canvas" id="waveform-' . $widgetId . '" width="100" height="40"></canvas>';
             $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '">';
             $html .= '<div class="progress-fill" id="progress-fill-' . $widgetId . '"></div>';
             $html .= '<div class="progress-scrubber" id="progress-scrubber-' . $widgetId . '"></div>';
@@ -781,14 +780,6 @@ class WidgetRenderer {
     let feedData = null;
     let autoCollapseTimer = null;
     let hasUserInteracted = false;
-    let audioContext = null;
-    let analyser = null;
-    let dataArray = null;
-    let waveformCanvas = null;
-    let waveformCtx = null;
-    let animationFrame = null;
-    let audioSource = null;
-    let audioInitialized = false;
     
     function initAudio() {
         audio = document.getElementById(playerId);
@@ -797,134 +788,18 @@ class WidgetRenderer {
         // Ensure audio volume is set immediately (default might be 0 or muted)
         audio.volume = 1.0;
         audio.muted = false;
-        audio.crossOrigin = "anonymous";  // Required for Web Audio with cross-origin sources
-        
-        // Initialize Web Audio API for waveform (only once per audio element)
-        if (audioInitialized) return;
-        
-        try {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Resume AudioContext on user interaction (required by browser autoplay policy)
-            const resumeAudioContext = () => {
-                if (audioContext && audioContext.state === "suspended") {
-                    audioContext.resume().catch(e => console.warn("AudioContext resume failed:", e));
-                }
-            };
-            
-            // Resume on any user interaction
-            document.addEventListener("click", resumeAudioContext, { once: true });
-            document.addEventListener("touchstart", resumeAudioContext, { once: true });
-            
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            
-            // createMediaElementSource can only be called once per audio element
-            // Check if source already exists by checking if audio has been connected
-            try {
-                audioSource = audioContext.createMediaElementSource(audio);
-                audioSource.connect(analyser);
-                // Connect analyser to destination to ensure audio actually plays
-                analyser.connect(audioContext.destination);
-                audioInitialized = true;
-            } catch (e) {
-                console.warn("Audio source already connected or error:", e);
-                // If source already exists, make sure analyser is still connected
-                if (analyser && audioContext) {
-                    try {
-                        analyser.connect(audioContext.destination);
-                    } catch (connErr) {
-                        console.warn("Failed to connect analyser:", connErr);
-                    }
-                }
-                audioInitialized = true;
-            }
-            
-            // Initialize waveform canvas
-            waveformCanvas = document.getElementById("waveform-" + widgetId);
-            if (waveformCanvas) {
-                waveformCtx = waveformCanvas.getContext("2d");
-                // Set canvas size to match container
-                const container = waveformCanvas.parentElement;
-                if (container) {
-                        const updateCanvasSize = () => {
-                        const rect = container.getBoundingClientRect();
-                        waveformCanvas.width = rect.width;
-                        waveformCanvas.height = 40;
-                        drawWaveform();
-                    };
-                    updateCanvasSize();
-                    window.addEventListener("resize", updateCanvasSize);
-                }
-                
-                // Waveform click seeking is handled by progress bar
-            }
-        } catch (e) {
-            console.warn("Web Audio API not supported or error:", e);
-        }
         
         audio.addEventListener("play", () => {
             updatePlayButton(true);
-            startWaveformAnimation();
         });
         audio.addEventListener("pause", () => {
             updatePlayButton(false);
-            stopWaveformAnimation();
         });
         audio.addEventListener("timeupdate", updateProgress);
         audio.addEventListener("loadedmetadata", updateDuration);
         audio.addEventListener("ended", () => {
             updatePlayButton(false);
-            stopWaveformAnimation();
         });
-    }
-    
-    function drawWaveform() {
-        if (!waveformCanvas || !waveformCtx || !analyser) return;
-        
-        const width = waveformCanvas.width;
-        const height = waveformCanvas.height;
-        
-        // Clear canvas
-        waveformCtx.clearRect(0, 0, width, height);
-        
-        // Draw waveform bars
-        analyser.getByteFrequencyData(dataArray);
-        
-        const barCount = Math.min(50, dataArray.length);
-        const barWidth = width / barCount;
-        const barSpacing = 2;
-        
-        for (let i = 0; i < barCount; i++) {
-            const dataIndex = Math.floor((i / barCount) * dataArray.length);
-            const barHeight = (dataArray[dataIndex] / 255) * height * 0.8;
-            
-            const x = i * barWidth;
-            const y = (height - barHeight) / 2;
-            
-            // Draw bar
-            waveformCtx.fillStyle = audio && !audio.paused ? "#333" : "#999";
-            waveformCtx.fillRect(x + barSpacing / 2, y, barWidth - barSpacing, barHeight);
-        }
-    }
-    
-    function startWaveformAnimation() {
-        if (animationFrame) return;
-        function animate() {
-            drawWaveform();
-            animationFrame = requestAnimationFrame(animate);
-        }
-        animate();
-    }
-    
-    function stopWaveformAnimation() {
-        if (animationFrame) {
-            cancelAnimationFrame(animationFrame);
-            animationFrame = null;
-        }
-        // Draw static waveform one more time
-        drawWaveform();
     }
     
     function formatTime(seconds) {
@@ -998,40 +873,12 @@ class WidgetRenderer {
             return;
         }
         
-        // Resume AudioContext if suspended (required by browser autoplay policy)
-        if (audioContext && audioContext.state === "suspended") {
-            audioContext.resume().then(() => {
-                if (audio.paused) {
-                    audio.play().catch(e => {
-                        console.error("Play failed:", e);
-                        // Try again without AudioContext if it fails
-                        if (audioContext && audioContext.state === "suspended") {
-                            // Fallback: try direct play
-                            audio.play().catch(err => console.error("Direct play also failed:", err));
-                        }
-                    });
-                } else {
-                    audio.pause();
-                }
-            }).catch(e => {
-                console.warn("AudioContext resume failed:", e);
-                // Try direct play/pause anyway
-                audio.paused ? audio.play().catch(err => console.error("Play failed:", err)) : audio.pause();
+        if (audio.paused) {
+            audio.play().catch(e => {
+                console.error("Play failed:", e);
             });
         } else {
-            if (audio.paused) {
-                audio.play().catch(e => {
-                    console.error("Play failed:", e);
-                    // If play fails, try to ensure AudioContext is running
-                    if (audioContext && audioContext.state === "suspended") {
-                        audioContext.resume().then(() => {
-                            audio.play().catch(err => console.error("Play failed after resume:", err));
-                        });
-                    }
-                });
-            } else {
-                audio.pause();
-            }
+            audio.pause();
         }
     }
     
@@ -1100,17 +947,11 @@ class WidgetRenderer {
         const episode = episodes[index];
         if (!audio || !episode.audio) return;
         audio.pause();
-        stopWaveformAnimation();
         audio.crossOrigin = "anonymous";  // Ensure CORS is set before loading
         audio.src = episode.audio;
         audio.volume = 1.0;
         audio.muted = false;
         audio.load();
-        
-        // Reset waveform
-        if (waveformCanvas && waveformCtx) {
-            waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-        }
         
         const podcastTitleEl = document.getElementById("podcast-title-" + widgetId);
         if (podcastTitleEl && feedData && feedData.feed) {
