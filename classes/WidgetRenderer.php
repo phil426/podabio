@@ -684,7 +684,15 @@ class WidgetRenderer {
             // Get social icons for this page
             require_once __DIR__ . '/Page.php';
             $pageClass = new Page();
-            $socialIcons = $pageClass->getSocialIcons($pageId);
+            $socialIcons = [];
+            if ($pageId > 0) {
+                try {
+                    $socialIcons = $pageClass->getSocialIcons($pageId);
+                } catch (Exception $e) {
+                    error_log("Error fetching social icons: " . $e->getMessage());
+                    $socialIcons = [];
+                }
+            }
             
             $containerId = 'podnbio-player-' . $widgetId;
             $playerId = 'podnbio-audio-' . $widgetId;
