@@ -97,6 +97,21 @@ class WidgetRegistry {
                 'auto_populate_from_rss' => true
             ],
             
+            // PodNBio Player - Custom compact podcast widget
+            'podcast_player_custom' => [
+                'widget_id' => 'podcast_player_custom',
+                'name' => 'PodNBio Player',
+                'description' => 'Compact podcast player with bottom sheet drawer, chapters, and episode navigation',
+                'thumbnail' => '/assets/widget-thumbnails/podcast-custom.png',
+                'category' => 'podcast',
+                'requires_api' => false,
+                'config_fields' => [
+                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Enter your RSS feed URL to auto-populate title, description, and cover image.', 'placeholder' => 'https://example.com/podcast.rss'],
+                    'thumbnail_image' => ['type' => 'url', 'label' => 'Cover Image (auto-filled from RSS)', 'required' => false, 'help' => 'Cover image from RSS feed']
+                ],
+                'auto_populate_from_rss' => true
+            ],
+            
             // Additional widgets will be added as they're implemented
         ];
     }

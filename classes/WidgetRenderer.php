@@ -51,6 +51,9 @@ class WidgetRenderer {
             case 'podcast_player_full':
                 return self::renderPodcastPlayerFull($widget, $configData);
                 
+            case 'podcast_player_custom':
+                return self::renderPodcastPlayerCustom($widget, $configData);
+                
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
@@ -642,6 +645,409 @@ class WidgetRenderer {
             error_log("Podcast full player render error: " . $e->getMessage());
             return '<div class="widget-item widget-podcast-full"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
         }
+    }
+    
+    /**
+     * Render PodNBio Player - Custom compact podcast widget
+     * Ultra-compact design (100-120px height) with bottom sheet drawer
+     */
+    private static function renderPodcastPlayerCustom($widget, $configData) {
+        try {
+            $title = $widget['title'] ?? 'Podcast Player';
+            $rssFeedUrl = $configData['rss_feed_url'] ?? '';
+            $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+            
+            if (empty($rssFeedUrl)) {
+                return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
+            }
+            
+            if ($widgetId <= 0) {
+                return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
+            }
+        
+            $containerId = 'podnbio-player-' . $widgetId;
+            $playerId = 'podnbio-audio-' . $widgetId;
+            $drawerId = 'podnbio-drawer-' . $widgetId;
+            
+            $html = '<div class="widget-item widget-podcast-custom" id="' . htmlspecialchars($containerId) . '">';
+            $html .= '<div class="widget-content">';
+            
+            // Compact Player View (~100px height)
+            $html .= '<div class="podcast-compact-player">';
+            $html .= '<img class="podcast-cover-compact" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
+            $html .= '<div class="podcast-info-compact">';
+            $html .= '<div class="episode-title-compact" id="episode-title-' . $widgetId . '">Loading...</div>';
+            $html .= '<div class="podcast-controls-compact">';
+            $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><i class="fas fa-backward"></i> <span class="skip-label">15s</span></button>';
+            $html .= '<button class="play-pause-btn" id="play-pause-' . $widgetId . '" aria-label="Play/Pause"><i class="fas fa-play"></i></button>';
+            $html .= '<button class="skip-forward-btn" id="skip-forward-' . $widgetId . '" aria-label="Skip forward 15 seconds" title="Skip forward 15s"><span class="skip-label">15s</span> <i class="fas fa-forward"></i></button>';
+            $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="More info" title="More info"><i class="fas fa-chevron-up"></i></button>';
+            $html .= '</div>';
+            $html .= '<div class="progress-container">';
+            $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '"></div>';
+            $html .= '<span class="time-display" id="time-display-' . $widgetId . '">0:00 / 0:00</span>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            // Audio element (hidden)
+            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
+            
+            // Bottom Sheet Drawer (initially visible, auto-hides after 3s)
+            $html .= '<div class="podcast-bottom-sheet" id="' . htmlspecialchars($drawerId) . '">';
+            $html .= '<div class="drawer-backdrop" id="drawer-backdrop-' . $widgetId . '"></div>';
+            $html .= '<div class="drawer-content-wrapper">';
+            $html .= '<div class="drawer-drag-handle"></div>';
+            $html .= '<div class="drawer-tabs">';
+            $html .= '<button class="tab-btn active" data-tab="shownotes" id="tab-shownotes-' . $widgetId . '">Show Notes</button>';
+            $html .= '<button class="tab-btn" data-tab="chapters" id="tab-chapters-' . $widgetId . '">Chapters</button>';
+            $html .= '<button class="tab-btn" data-tab="episodes" id="tab-episodes-' . $widgetId . '">More Episodes</button>';
+            $html .= '</div>';
+            $html .= '<div class="drawer-panels">';
+            $html .= '<div class="tab-panel active" id="shownotes-panel-' . $widgetId . '"></div>';
+            $html .= '<div class="tab-panel" id="chapters-panel-' . $widgetId . '"></div>';
+            $html .= '<div class="tab-panel" id="episodes-panel-' . $widgetId . '"></div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            // Inline JavaScript (HTML5 Audio + Vanilla JS)
+            $html .= self::getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssFeedUrl);
+        
+            return $html;
+        } catch (Exception $e) {
+            error_log("PodNBio Player render error: " . $e->getMessage());
+            return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
+        }
+    }
+    
+    /**
+     * Get inline JavaScript for PodNBio Player
+     * Full HTML5 Audio + Vanilla JS implementation
+     */
+    private static function getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssUrl) {
+        // Escape variables for JavaScript
+        $jsWidgetId = (int)$widgetId;
+        $jsContainerId = json_encode($containerId);
+        $jsPlayerId = json_encode($playerId);
+        $jsDrawerId = json_encode($drawerId);
+        $jsRssUrl = json_encode($rssUrl);
+        
+        return '<script>
+(function() {
+    const widgetId = ' . $jsWidgetId . ';
+    const containerId = ' . $jsContainerId . ';
+    const playerId = ' . $jsPlayerId . ';
+    const drawerId = ' . $jsDrawerId . ';
+    const rssUrl = ' . $jsRssUrl . ';
+    
+    let audio = null;
+    let episodes = [];
+    let chapters = [];
+    let currentEpisodeIndex = 0;
+    let feedData = null;
+    let autoCollapseTimer = null;
+    let hasUserInteracted = false;
+    
+    function initAudio() {
+        audio = document.getElementById(playerId);
+        if (!audio) return;
+        audio.addEventListener("play", () => updatePlayButton(true));
+        audio.addEventListener("pause", () => updatePlayButton(false));
+        audio.addEventListener("timeupdate", updateProgress);
+        audio.addEventListener("loadedmetadata", updateDuration);
+        audio.addEventListener("ended", () => updatePlayButton(false));
+    }
+    
+    function formatTime(seconds) {
+        if (!isFinite(seconds) || isNaN(seconds)) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return mins + ":" + (secs < 10 ? "0" : "") + secs;
+    }
+    
+    function updatePlayButton(isPlaying) {
+        const btn = document.getElementById("play-pause-" + widgetId);
+        if (!btn) return;
+        const icon = btn.querySelector("i");
+        if (icon) icon.className = isPlaying ? "fas fa-pause" : "fas fa-play";
+    }
+    
+    function updateProgress() {
+        if (!audio || !audio.duration) return;
+        const progress = (audio.currentTime / audio.duration) * 100;
+        const progressBar = document.getElementById("progress-bar-" + widgetId);
+        if (progressBar) progressBar.style.width = progress + "%";
+        const timeDisplay = document.getElementById("time-display-" + widgetId);
+        if (timeDisplay) timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+        updateCurrentChapter();
+    }
+    
+    function updateDuration() {
+        if (!audio) return;
+        const timeDisplay = document.getElementById("time-display-" + widgetId);
+        if (timeDisplay && audio.duration) timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+    }
+    
+    function updateCurrentChapter() {
+        if (!audio || chapters.length === 0) return;
+        const currentTime = audio.currentTime;
+        let activeChapter = null;
+        for (let i = chapters.length - 1; i >= 0; i--) {
+            if (chapters[i].start <= currentTime) {
+                activeChapter = chapters[i];
+                break;
+            }
+        }
+        const chaptersPanel = document.getElementById("chapters-panel-" + widgetId);
+        if (chaptersPanel) {
+            chaptersPanel.querySelectorAll(".chapter-item").forEach((item, index) => {
+                item.classList.toggle("active", chapters[index] === activeChapter);
+            });
+        }
+    }
+    
+    function togglePlayPause() {
+        if (!audio) return;
+        audio.paused ? audio.play() : audio.pause();
+    }
+    
+    function skipBackward() {
+        if (!audio) return;
+        audio.currentTime = Math.max(0, audio.currentTime - 15);
+    }
+    
+    function skipForward() {
+        if (!audio || !audio.duration) return;
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 15);
+    }
+    
+    function openDrawer() {
+        const drawer = document.getElementById(drawerId);
+        const backdrop = document.getElementById("drawer-backdrop-" + widgetId);
+        if (!drawer) return;
+        drawer.classList.remove("hidden");
+        if (backdrop) backdrop.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        hasUserInteracted = true;
+        if (autoCollapseTimer) {
+            clearTimeout(autoCollapseTimer);
+            autoCollapseTimer = null;
+        }
+    }
+    
+    function closeDrawer() {
+        const drawer = document.getElementById(drawerId);
+        const backdrop = document.getElementById("drawer-backdrop-" + widgetId);
+        if (!drawer) return;
+        drawer.classList.add("hidden");
+        if (backdrop) backdrop.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+    
+    function switchTab(tabName) {
+        document.querySelectorAll("#" + drawerId + " .tab-btn").forEach(btn => btn.classList.remove("active"));
+        const activeBtn = document.getElementById("tab-" + tabName + "-" + widgetId);
+        if (activeBtn) activeBtn.classList.add("active");
+        document.querySelectorAll("#" + drawerId + " .tab-panel").forEach(panel => panel.classList.remove("active"));
+        const activePanel = document.getElementById(tabName + "-panel-" + widgetId);
+        if (activePanel) activePanel.classList.add("active");
+    }
+    
+    function jumpToChapter(chapterIndex) {
+        if (!audio || !chapters[chapterIndex]) return;
+        audio.currentTime = chapters[chapterIndex].start;
+        if (audio.paused) audio.play();
+    }
+    
+    function loadEpisode(index) {
+        if (index < 0 || index >= episodes.length) return;
+        currentEpisodeIndex = index;
+        const episode = episodes[index];
+        if (!audio || !episode.audio) return;
+        audio.pause();
+        audio.src = episode.audio;
+        audio.load();
+        const titleEl = document.getElementById("episode-title-" + widgetId);
+        if (titleEl) titleEl.textContent = episode.title;
+        const coverEl = document.getElementById("podcast-cover-" + widgetId);
+        if (coverEl && episode.cover) {
+            coverEl.src = episode.cover;
+            coverEl.style.display = "block";
+        }
+        updateShowNotes(episode);
+        parseChapters(episode);
+    }
+    
+    function updateShowNotes(episode) {
+        const panel = document.getElementById("shownotes-panel-" + widgetId);
+        if (!panel) return;
+        const sanitize = (html) => {
+            const div = document.createElement("div");
+            div.textContent = html;
+            return div.innerHTML;
+        };
+        let html = "";
+        if (episode.description) {
+            const temp = document.createElement("div");
+            temp.innerHTML = episode.description;
+            const textContent = temp.textContent || temp.innerText || "";
+            html = "<div class=\"show-notes-content\">" + sanitize(textContent) + "</div>";
+        } else {
+            html = "<div class=\"show-notes-content\">No show notes available.</div>";
+        }
+        panel.innerHTML = html;
+    }
+    
+    function parseChapters(episode) {
+        chapters = [];
+        if (episode.chapters && Array.isArray(episode.chapters)) {
+            chapters = episode.chapters.map(ch => ({
+                title: ch.title || "Untitled",
+                start: parseFloat(ch.start) || 0
+            })).sort((a, b) => a.start - b.start);
+        }
+        renderChapters();
+    }
+    
+    function renderChapters() {
+        const panel = document.getElementById("chapters-panel-" + widgetId);
+        if (!panel) return;
+        if (chapters.length === 0) {
+            panel.innerHTML = "<div class=\"chapters-empty\">No chapters available for this episode.</div>";
+            return;
+        }
+        let html = "<ul class=\"chapters-list\">";
+        chapters.forEach((chapter, index) => {
+            const timeStr = formatTime(chapter.start);
+            html += "<li class=\"chapter-item\" data-index=\"" + index + "\">";
+            html += "<span class=\"chapter-time\">" + timeStr + "</span>";
+            html += "<span class=\"chapter-title\">" + escapeHtml(chapter.title) + "</span>";
+            html += "</li>";
+        });
+        html += "</ul>";
+        panel.innerHTML = html;
+        panel.querySelectorAll(".chapter-item").forEach((item, index) => {
+            item.addEventListener("click", () => jumpToChapter(index));
+        });
+    }
+    
+    function renderEpisodes() {
+        const panel = document.getElementById("episodes-panel-" + widgetId);
+        if (!panel || episodes.length === 0) return;
+        let html = "<ul class=\"episodes-list\">";
+        episodes.forEach((episode, index) => {
+            const activeClass = index === currentEpisodeIndex ? "active" : "";
+            html += "<li class=\"episode-item " + activeClass + "\" data-index=\"" + index + "\">";
+            if (episode.cover) {
+                html += "<img src=\"" + escapeHtml(episode.cover) + "\" alt=\"" + escapeHtml(episode.title) + "\" class=\"episode-thumbnail\">";
+            }
+            html += "<div class=\"episode-info\">";
+            html += "<div class=\"episode-name\">" + escapeHtml(episode.title) + "</div>";
+            if (episode.description) {
+                const desc = escapeHtml(episode.description).substring(0, 100);
+                html += "<div class=\"episode-desc\">" + desc + "...</div>";
+            }
+            html += "</div>";
+            html += "</li>";
+        });
+        html += "</ul>";
+        panel.innerHTML = html;
+        panel.querySelectorAll(".episode-item").forEach((item) => {
+            item.addEventListener("click", () => {
+                const index = parseInt(item.getAttribute("data-index"));
+                loadEpisode(index);
+                closeDrawer();
+            });
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function fetchAndParseRSS() {
+        fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl))
+            .then(response => response.json())
+            .then(data => {
+                feedData = data;
+                if (data.status === "ok" && data.items && data.items.length > 0) {
+                    episodes = data.items.map(item => {
+                        let audioUrl = null;
+                        if (item.enclosure && item.enclosure.link) {
+                            audioUrl = item.enclosure.link;
+                        } else if (item.enclosure && item.enclosure.url) {
+                            audioUrl = item.enclosure.url;
+                        }
+                        if (!audioUrl && item.media && item.media.content) {
+                            if (Array.isArray(item.media.content)) {
+                                const audioContent = item.media.content.find(c => c.$ && c.$.type && c.$.type.startsWith("audio/"));
+                                if (audioContent && audioContent.$.url) audioUrl = audioContent.$.url;
+                            } else if (item.media.content.$ && item.media.content.$.url) {
+                                audioUrl = item.media.content.$.url;
+                            }
+                        }
+                        return {
+                            title: item.title || "Untitled Episode",
+                            audio: audioUrl,
+                            cover: data.feed?.image || item.thumbnail || "",
+                            description: item.description || item.content || "",
+                            pubDate: item.pubDate || "",
+                            chapters: []
+                        };
+                    }).filter(ep => ep.audio);
+                    
+                    if (episodes.length > 0) {
+                        loadEpisode(0);
+                        const coverEl = document.getElementById("podcast-cover-" + widgetId);
+                        if (coverEl && feedData.feed?.image) {
+                            coverEl.src = feedData.feed.image;
+                            coverEl.style.display = "block";
+                        }
+                        renderEpisodes();
+                        autoCollapseTimer = setTimeout(() => {
+                            if (!hasUserInteracted) closeDrawer();
+                        }, 3000);
+                    } else {
+                        showError("No playable episodes found in RSS feed.");
+                    }
+                } else {
+                    showError("Failed to load RSS feed. Please check your feed URL.");
+                }
+            })
+            .catch(error => {
+                console.error("RSS fetch error:", error);
+                showError("Error loading podcast feed. Please try again later.");
+            });
+    }
+    
+    function showError(message) {
+        const titleEl = document.getElementById("episode-title-" + widgetId);
+        if (titleEl) {
+            titleEl.textContent = message;
+            titleEl.style.color = "#dc3545";
+        }
+    }
+    
+    initAudio();
+    document.getElementById("play-pause-" + widgetId)?.addEventListener("click", togglePlayPause);
+    document.getElementById("skip-back-" + widgetId)?.addEventListener("click", skipBackward);
+    document.getElementById("skip-forward-" + widgetId)?.addEventListener("click", skipForward);
+    document.getElementById("expand-drawer-" + widgetId)?.addEventListener("click", openDrawer);
+    document.getElementById("drawer-backdrop-" + widgetId)?.addEventListener("click", closeDrawer);
+    document.querySelectorAll("#" + drawerId + " .tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            switchTab(btn.getAttribute("data-tab"));
+            hasUserInteracted = true;
+        });
+    });
+    fetchAndParseRSS();
+})();
+</script>';
     }
     
     /**
