@@ -740,7 +740,7 @@ class WidgetRenderer {
             $html .= '</div>'; // Close widget-content
             
             // Audio element (hidden)
-            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
+            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata" crossorigin="anonymous"></audio>';
             
             $html .= '</div>'; // Close widget-item widget-podcast-custom
             
@@ -797,6 +797,7 @@ class WidgetRenderer {
         // Ensure audio volume is set immediately (default might be 0 or muted)
         audio.volume = 1.0;
         audio.muted = false;
+        audio.crossOrigin = "anonymous";  // Required for Web Audio with cross-origin sources
         
         // Initialize Web Audio API for waveform (only once per audio element)
         if (audioInitialized) return;
@@ -1100,6 +1101,7 @@ class WidgetRenderer {
         if (!audio || !episode.audio) return;
         audio.pause();
         stopWaveformAnimation();
+        audio.crossOrigin = "anonymous";  // Ensure CORS is set before loading
         audio.src = episode.audio;
         audio.volume = 1.0;
         audio.muted = false;
