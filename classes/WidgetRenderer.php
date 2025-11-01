@@ -779,7 +779,9 @@ class WidgetRenderer {
         if (!audio || !audio.duration) return;
         const progress = (audio.currentTime / audio.duration) * 100;
         const progressBar = document.getElementById("progress-bar-" + widgetId);
-        if (progressBar) progressBar.style.width = progress + "%";
+        if (progressBar) {
+            progressBar.style.setProperty("--progress-width", progress + "%");
+        }
         const timeDisplay = document.getElementById("time-display-" + widgetId);
         if (timeDisplay) timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
         updateCurrentChapter();
@@ -826,11 +828,13 @@ class WidgetRenderer {
     
     function openDrawer() {
         const drawer = document.getElementById(drawerId);
-        const backdrop = document.getElementById("drawer-backdrop-" + widgetId);
         if (!drawer) return;
-        drawer.classList.remove("hidden");
-        if (backdrop) backdrop.classList.remove("hidden");
-        document.body.style.overflow = "hidden";
+        
+        // Use requestAnimationFrame for smoother animation
+        requestAnimationFrame(() => {
+            drawer.classList.remove("hidden");
+        });
+        
         hasUserInteracted = true;
         if (autoCollapseTimer) {
             clearTimeout(autoCollapseTimer);
@@ -840,11 +844,9 @@ class WidgetRenderer {
     
     function closeDrawer() {
         const drawer = document.getElementById(drawerId);
-        const backdrop = document.getElementById("drawer-backdrop-" + widgetId);
         if (!drawer) return;
+        
         drawer.classList.add("hidden");
-        if (backdrop) backdrop.classList.add("hidden");
-        document.body.style.overflow = "";
     }
     
     function switchTab(tabName) {
@@ -1037,8 +1039,17 @@ class WidgetRenderer {
     document.getElementById("play-pause-" + widgetId)?.addEventListener("click", togglePlayPause);
     document.getElementById("skip-back-" + widgetId)?.addEventListener("click", skipBackward);
     document.getElementById("skip-forward-" + widgetId)?.addEventListener("click", skipForward);
-    document.getElementById("expand-drawer-" + widgetId)?.addEventListener("click", openDrawer);
-    document.getElementById("drawer-backdrop-" + widgetId)?.addEventListener("click", closeDrawer);
+            document.getElementById("expand-drawer-" + widgetId)?.addEventListener("click", () => {
+                const drawer = document.getElementById(drawerId);
+                if (drawer && drawer.classList.contains("hidden")) {
+                    openDrawer();
+                } else {
+                    closeDrawer();
+                }
+            });
+            
+            // Close drawer when clicking drag handle
+            document.querySelector("#" + drawerId + " .drawer-drag-handle")?.addEventListener("click", closeDrawer);
     document.querySelectorAll("#" + drawerId + " .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             switchTab(btn.getAttribute("data-tab"));

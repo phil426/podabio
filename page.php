@@ -276,6 +276,12 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         /* PodNBio Player - Custom Compact Widget Styles */
         .widget-podcast-custom {
             position: relative;
+            overflow: visible;
+        }
+        
+        .widget-podcast-custom .widget-content {
+            position: relative;
+            overflow: visible;
         }
         
         .podcast-compact-player {
@@ -394,105 +400,160 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             white-space: nowrap;
         }
         
-        /* Bottom Sheet Drawer */
+        /* Compact Drawer Tray - Slides up from widget */
         .podcast-bottom-sheet {
-            position: fixed;
+            position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            max-height: 80vh;
+            max-height: 400px;
             background: var(--secondary-color);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            transform: translateY(0);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
-        .podcast-bottom-sheet.hidden {
-            transform: translateY(100%);
-            pointer-events: none;
-            visibility: hidden;
+        .podcast-bottom-sheet:not(.hidden) {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .drawer-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-        
-        .drawer-backdrop.hidden {
-            opacity: 0;
-            pointer-events: none;
-            visibility: hidden;
+            display: none; /* No backdrop needed for compact tray */
         }
         
         .drawer-content-wrapper {
-            padding: 1rem;
-            max-height: calc(80vh - 2rem);
-            overflow-y: auto;
+            padding: 0;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
         }
         
         .drawer-drag-handle {
-            width: 40px;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 2px;
-            margin: 0.5rem auto;
+            width: 36px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            margin: 12px auto 8px;
             cursor: grab;
+            transition: background 0.2s ease;
+        }
+        
+        .drawer-drag-handle:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
         
         .drawer-tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            gap: 0;
+            margin: 0;
+            padding: 0 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(0, 0, 0, 0.02);
         }
         
         .tab-btn {
-            padding: 0.75rem 1rem;
+            flex: 1;
+            padding: 14px 16px;
             background: transparent;
             border: none;
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
             color: var(--text-color);
             cursor: pointer;
             font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0.6;
+        }
+        
+        .tab-btn::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 60%;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px 3px 0 0;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .tab-btn.active {
-            border-bottom-color: var(--primary-color);
+            opacity: 1;
             color: var(--primary-color);
+        }
+        
+        .tab-btn.active::after {
+            transform: translateX(-50%) scaleX(1);
         }
         
         .tab-btn:hover {
-            color: var(--primary-color);
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.02);
         }
         
         .drawer-panels {
-            margin-top: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem;
+            min-height: 0;
+        }
+        
+        .drawer-panels::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
         
         .tab-panel {
             display: none;
+            animation: fadeIn 0.25s ease-in-out;
         }
         
         .tab-panel.active {
             display: block;
         }
         
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .show-notes-content {
             color: var(--text-color);
-            line-height: 1.6;
-            font-size: 0.875rem;
+            line-height: 1.65;
+            font-size: 0.9375rem;
+            padding: 0.5rem 0;
         }
         
         .chapters-list {
@@ -503,41 +564,66 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .chapter-item {
             display: flex;
+            align-items: center;
             gap: 1rem;
-            padding: 0.75rem;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-bottom: 0.5rem;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
+            margin-bottom: 6px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .chapter-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--primary-color);
+            border-radius: 0 2px 2px 0;
+            transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .chapter-item:hover {
-            background: rgba(0, 0, 0, 0.05);
-            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateX(4px);
         }
         
         .chapter-item.active {
-            background: rgba(0, 102, 255, 0.1);
-            border-color: var(--primary-color);
+            background: rgba(0, 102, 255, 0.08);
+            border-color: rgba(0, 102, 255, 0.2);
+        }
+        
+        .chapter-item.active::before {
+            height: 60%;
         }
         
         .chapter-time {
             font-weight: 600;
             color: var(--primary-color);
-            min-width: 60px;
+            min-width: 56px;
+            font-size: 0.8125rem;
+            font-variant-numeric: tabular-nums;
         }
         
         .chapter-title {
             flex: 1;
             color: var(--text-color);
+            font-size: 0.9375rem;
+            font-weight: 500;
         }
         
         .chapters-empty {
             color: var(--text-color);
-            opacity: 0.7;
+            opacity: 0.5;
             text-align: center;
-            padding: 2rem;
+            padding: 3rem 1rem;
+            font-size: 0.875rem;
         }
         
         .episodes-list {
@@ -548,31 +634,58 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .episode-item {
             display: flex;
-            gap: 1rem;
-            padding: 1rem;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
             border-radius: 12px;
             cursor: pointer;
-            margin-bottom: 0.75rem;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .episode-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
         }
         
         .episode-item:hover {
-            background: rgba(0, 0, 0, 0.05);
-            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .episode-item:hover::after {
+            left: 100%;
         }
         
         .episode-item.active {
-            background: rgba(0, 102, 255, 0.1);
-            border-color: var(--primary-color);
+            background: rgba(0, 102, 255, 0.08);
+            border-color: rgba(0, 102, 255, 0.2);
+            box-shadow: 0 0 0 1px rgba(0, 102, 255, 0.1);
         }
         
         .episode-thumbnail {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
+            width: 64px;
+            height: 64px;
+            border-radius: 10px;
             object-fit: cover;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .episode-item:hover .episode-thumbnail {
+            transform: scale(1.05);
         }
         
         .episode-info {
@@ -582,16 +695,25 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .episode-name {
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 4px;
             color: var(--text-color);
-            font-size: 1rem;
+            font-size: 0.9375rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
         .episode-desc {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: var(--text-color);
-            opacity: 0.7;
+            opacity: 0.6;
             line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
         @media (max-width: 768px) {
