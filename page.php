@@ -167,6 +167,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            position: relative;
         }
         
         .widget-item {
@@ -181,6 +182,8 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             width: 100%;
             box-sizing: border-box;
+            position: relative;
+            z-index: auto;
         }
         
         /* Link widgets without thumbnails - full width button style */

@@ -735,11 +735,11 @@ class WidgetRenderer {
             $html .= '<div class="tab-panel active" id="shownotes-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="chapters-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="episodes-panel-' . $widgetId . '"></div>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
+            $html .= '</div>'; // Close podcast-info-compact
+            $html .= '</div>'; // Close podcast-main-content
+            $html .= '</div>'; // Close podcast-compact-player
+            $html .= '</div>'; // Close widget-content
+            $html .= '</div>'; // Close widget-item widget-podcast-custom
             
             // Inline JavaScript (HTML5 Audio + Vanilla JS)
             $html .= self::getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssFeedUrl);
