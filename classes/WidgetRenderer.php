@@ -79,7 +79,11 @@ class WidgetRenderer {
         
         $clickUrl = "/click.php?link_id={$widgetId}&page_id={$pageId}";
         
-        $html = '<a href="' . htmlspecialchars($clickUrl) . '" class="widget-item" target="_blank" rel="noopener noreferrer">';
+        // Determine if this is a simple link (no thumbnail) vs full-width link
+        $isSimpleLink = !$thumbnail;
+        $widgetClass = 'widget-item' . ($isSimpleLink ? ' widget-link-simple' : '');
+        
+        $html = '<a href="' . htmlspecialchars($clickUrl) . '" class="' . $widgetClass . '" target="_blank" rel="noopener noreferrer">';
         
         if ($thumbnail) {
             $html .= '<img src="' . htmlspecialchars($thumbnail) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';

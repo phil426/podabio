@@ -165,8 +165,9 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .widgets-container {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: flex-start;
         }
         
         .widget-item {
@@ -176,11 +177,49 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             border: 2px solid var(--primary-color);
             border-radius: 12px;
             text-decoration: none;
-            color: var(--primary-color);
+            color: var(--text-color);
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 0;
+        }
+        
+        /* Link widgets without thumbnails - compact inline buttons */
+        .widget-link-simple {
+            padding: 0.875rem 1.25rem !important;
+            display: inline-block;
+            width: auto;
+            flex: 0 0 auto;
+            margin-bottom: 0;
+            text-align: center;
+        }
+        
+        .widget-link-simple .widget-content {
+            padding: 0 !important;
+        }
+        
+        .widget-link-simple .widget-title {
+            margin: 0 !important;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        /* Link widgets with thumbnails - full width flex layout */
+        .widget-item:has(.widget-thumbnail) {
             display: flex;
             align-items: center;
             gap: 1rem;
+            width: 100%;
+            flex: 1 1 100%;
+        }
+        
+        /* Other widgets (podcast, video, etc.) - full width */
+        .widget-podcast-custom,
+        .widget-podcast,
+        .widget-video,
+        .widget-text,
+        .widget-image {
+            width: 100%;
+            flex: 1 1 100%;
         }
         
         .widget-item:hover {
