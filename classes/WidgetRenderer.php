@@ -1053,17 +1053,28 @@ class WidgetRenderer {
     document.getElementById("play-pause-" + widgetId)?.addEventListener("click", togglePlayPause);
     document.getElementById("skip-back-" + widgetId)?.addEventListener("click", skipBackward);
     document.getElementById("skip-forward-" + widgetId)?.addEventListener("click", skipForward);
-            document.getElementById("expand-drawer-" + widgetId)?.addEventListener("click", () => {
-                const drawer = document.getElementById(drawerId);
-                if (drawer && drawer.classList.contains("hidden")) {
-                    openDrawer();
-                } else {
-                    closeDrawer();
-                }
-            });
-            
-            // Close drawer when clicking drag handle
-            document.querySelector("#" + drawerId + " .drawer-drag-handle")?.addEventListener("click", closeDrawer);
+    
+    // Toggle drawer button
+    const toggleBtn = document.getElementById("expand-drawer-" + widgetId);
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            const drawer = document.getElementById(drawerId);
+            if (drawer && drawer.classList.contains("hidden")) {
+                openDrawer();
+                toggleBtn.classList.add("active");
+            } else {
+                closeDrawer();
+                toggleBtn.classList.remove("active");
+            }
+        });
+    }
+    
+    // Close drawer when clicking drag handle
+    document.querySelector("#" + drawerId + " .drawer-drag-handle")?.addEventListener("click", () => {
+        closeDrawer();
+        const toggleBtn = document.getElementById("expand-drawer-" + widgetId);
+        if (toggleBtn) toggleBtn.classList.remove("active");
+    });
     document.querySelectorAll("#" + drawerId + " .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             switchTab(btn.getAttribute("data-tab"));
