@@ -351,11 +351,12 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             display: flex;
             gap: 1rem;
             align-items: flex-start;
+            min-height: 140px;
         }
         
         .podcast-cover-compact {
-            width: 100px;
-            height: 100px;
+            width: 140px;
+            height: 140px;
             border-radius: 12px;
             object-fit: cover;
             flex-shrink: 0;
@@ -1038,22 +1039,37 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         @media (max-width: 768px) {
             .podcast-compact-player {
-                padding: 0.5rem;
+                padding: 0.75rem;
                 gap: 0.5rem;
+                min-height: 140px;
+            }
+            
+            .podcast-main-content {
+                min-height: 140px;
             }
             
             .podcast-cover-compact {
-                width: 60px;
-                height: 60px;
+                width: 140px;
+                height: 140px;
             }
             
             .skip-back-btn,
-            .play-pause-btn,
-            .skip-forward-btn,
+            .skip-forward-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.75rem;
+            }
+            
+            .play-pause-btn {
+                width: 73px;
+                height: 73px;
+                font-size: 1.375rem;
+            }
+            
             .expand-drawer-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 0.7rem;
+                width: 36px;
+                height: 36px;
+                font-size: 0.875rem;
             }
             
             .play-pause-btn {
