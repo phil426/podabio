@@ -787,18 +787,22 @@ class WidgetRenderer {
     let waveformCanvas = null;
     let waveformCtx = null;
     let animationFrame = null;
+    let audioSource = null;
+    let audioInitialized = false;
     
     function initAudio() {
         audio = document.getElementById(playerId);
         if (!audio) return;
         
-        // Initialize Web Audio API for waveform
+        // Initialize Web Audio API for waveform (only once per audio element)
+        if (audioInitialized) return;
+        
         try {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
             // Resume AudioContext on user interaction (required by browser autoplay policy)
             const resumeAudioContext = () => {
-                if (audioContext.state === 'suspended') {
+                if (audioContext && audioContext.state === 'suspended') {
                     audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
                 }
             };
@@ -811,9 +815,18 @@ class WidgetRenderer {
             analyser.fftSize = 256;
             dataArray = new Uint8Array(analyser.frequencyBinCount);
             
-            const source = audioContext.createMediaElementSource(audio);
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
+            // createMediaElementSource can only be called once per audio element
+            // Check if source already exists by checking if audio has been connected
+            try {
+                audioSource = audioContext.createMediaElementSource(audio);
+                audioSource.connect(analyser);
+                analyser.connect(audioContext.destination);
+                audioInitialized = true;
+            } catch (e) {
+                console.warn("Audio source already connected or error:", e);
+                // If source already exists, just create analyser connection separately
+                audioInitialized = true;
+            }
             
             // Initialize waveform canvas
             waveformCanvas = document.getElementById("waveform-" + widgetId);
@@ -954,13 +967,46 @@ class WidgetRenderer {
     function togglePlayPause() {
         if (!audio) return;
         
+        // Ensure audio has a source
+        if (!audio.src || audio.src === '') {
+            console.warn('Audio element has no source');
+            return;
+        }
+        
         // Resume AudioContext if suspended (required by browser autoplay policy)
         if (audioContext && audioContext.state === 'suspended') {
             audioContext.resume().then(() => {
-                audio.paused ? audio.play().catch(e => console.error('Play failed:', e)) : audio.pause();
-            }).catch(e => console.warn('AudioContext resume failed:', e));
+                if (audio.paused) {
+                    audio.play().catch(e => {
+                        console.error('Play failed:', e);
+                        // Try again without AudioContext if it fails
+                        if (audioContext && audioContext.state === 'suspended') {
+                            // Fallback: try direct play
+                            audio.play().catch(err => console.error('Direct play also failed:', err));
+                        }
+                    });
+                } else {
+                    audio.pause();
+                }
+            }).catch(e => {
+                console.warn('AudioContext resume failed:', e);
+                // Try direct play/pause anyway
+                audio.paused ? audio.play().catch(err => console.error('Play failed:', err)) : audio.pause();
+            });
         } else {
-            audio.paused ? audio.play().catch(e => console.error('Play failed:', e)) : audio.pause();
+            if (audio.paused) {
+                audio.play().catch(e => {
+                    console.error('Play failed:', e);
+                    // If play fails, try to ensure AudioContext is running
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume().then(() => {
+                            audio.play().catch(err => console.error('Play failed after resume:', err));
+                        });
+                    }
+                });
+            } else {
+                audio.pause();
+            }
         }
     }
     
