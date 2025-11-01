@@ -795,6 +795,18 @@ class WidgetRenderer {
         // Initialize Web Audio API for waveform
         try {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Resume AudioContext on user interaction (required by browser autoplay policy)
+            const resumeAudioContext = () => {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
+                }
+            };
+            
+            // Resume on any user interaction
+            document.addEventListener('click', resumeAudioContext, { once: true });
+            document.addEventListener('touchstart', resumeAudioContext, { once: true });
+            
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 256;
             dataArray = new Uint8Array(analyser.frequencyBinCount);
@@ -941,7 +953,15 @@ class WidgetRenderer {
     
     function togglePlayPause() {
         if (!audio) return;
-        audio.paused ? audio.play() : audio.pause();
+        
+        // Resume AudioContext if suspended (required by browser autoplay policy)
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                audio.paused ? audio.play().catch(e => console.error('Play failed:', e)) : audio.pause();
+            }).catch(e => console.warn('AudioContext resume failed:', e));
+        } else {
+            audio.paused ? audio.play().catch(e => console.error('Play failed:', e)) : audio.pause();
+        }
     }
     
     function skipBackward() {
