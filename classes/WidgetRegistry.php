@@ -67,36 +67,6 @@ class WidgetRegistry {
                 ]
             ],
             
-            // Podcast Player Widget (Shikwasa-based with drawer)
-            'podcast_player' => [
-                'widget_id' => 'podcast_player',
-                'name' => 'Podcast Player',
-                'description' => 'Embed a Shikwasa podcast player with RSS feed support (expandable drawer)',
-                'thumbnail' => '/assets/widget-thumbnails/podcast.png',
-                'category' => 'podcast',
-                'requires_api' => false,
-                'config_fields' => [
-                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Enter your RSS feed URL to auto-populate title, description, and cover image.', 'placeholder' => 'https://example.com/podcast.rss'],
-                    'thumbnail_image' => ['type' => 'url', 'label' => 'Cover Image (auto-filled from RSS)', 'required' => false, 'help' => 'Cover image from RSS feed']
-                ],
-                'auto_populate_from_rss' => true
-            ],
-            
-            // Podcast Full Player Widget (Shikwasa-based, always visible)
-            'podcast_player_full' => [
-                'widget_id' => 'podcast_player_full',
-                'name' => 'Podcast Full Player',
-                'description' => 'Embed a full Shikwasa podcast player that is always visible (no drawer)',
-                'thumbnail' => '/assets/widget-thumbnails/podcast-full.png',
-                'category' => 'podcast',
-                'requires_api' => false,
-                'config_fields' => [
-                    'rss_feed_url' => ['type' => 'url', 'label' => 'RSS Feed URL', 'required' => true, 'help' => 'Enter your RSS feed URL to auto-populate title, description, and cover image.', 'placeholder' => 'https://example.com/podcast.rss'],
-                    'thumbnail_image' => ['type' => 'url', 'label' => 'Cover Image (auto-filled from RSS)', 'required' => false, 'help' => 'Cover image from RSS feed']
-                ],
-                'auto_populate_from_rss' => true
-            ],
-            
             // PodNBio Player - Custom compact podcast widget
             'podcast_player_custom' => [
                 'widget_id' => 'podcast_player_custom',
