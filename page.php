@@ -733,7 +733,13 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             if (!empty($widgets)):
                 foreach ($widgets as $widget): 
                     $widget['page_id'] = $page['id']; // Ensure page_id is set for renderer
-                    echo WidgetRenderer::render($widget);
+                    try {
+                        echo WidgetRenderer::render($widget);
+                    } catch (Exception $e) {
+                        // Log error but don't break the page
+                        error_log("Widget render error: " . $e->getMessage());
+                        echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
+                    }
                 endforeach;
             // Fallback to legacy links if no widgets exist
             elseif (!empty($links)):

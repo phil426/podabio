@@ -184,13 +184,19 @@ class WidgetRenderer {
      * Render podcast player widget (Shikwasa-based) with minimal view and expandable drawer
      */
     private static function renderPodcastPlayer($widget, $configData) {
-        $title = $widget['title'] ?? 'Podcast Player';
-        $rssFeedUrl = $configData['rss_feed_url'] ?? '';
-        $widgetId = $widget['id'] ?? 0;
-        
-        if (!$rssFeedUrl) {
-            return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
-        }
+        try {
+            $title = $widget['title'] ?? 'Podcast Player';
+            $rssFeedUrl = $configData['rss_feed_url'] ?? '';
+            $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+            
+            if (empty($rssFeedUrl)) {
+                return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
+            }
+            
+            // Validate widgetId
+            if ($widgetId <= 0) {
+                return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
+            }
         
         $containerId = 'shikwasa-podcast-' . $widgetId;
         $minimalId = 'podcast-minimal-' . $widgetId;
