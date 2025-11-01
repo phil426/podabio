@@ -181,7 +181,7 @@ class WidgetRenderer {
     }
     
     /**
-     * Render podcast player widget (Shikwasa-based)
+     * Render podcast player widget (Shikwasa-based) with minimal view and expandable drawer
      */
     private static function renderPodcastPlayer($widget, $configData) {
         $title = $widget['title'] ?? 'Podcast Player';
@@ -193,24 +193,66 @@ class WidgetRenderer {
         }
         
         $containerId = 'shikwasa-podcast-' . $widgetId;
+        $minimalId = 'podcast-minimal-' . $widgetId;
+        $drawerId = 'podcast-drawer-' . $widgetId;
+        $playerContainerId = 'shikwasa-player-container-' . $widgetId;
+        $playlistId = 'podcast-playlist-' . $widgetId;
         
-        $html = '<div class="widget-item widget-podcast">';
+        $html = '<div class="widget-item widget-podcast" id="widget-podcast-' . $widgetId . '">';
         $html .= '<div class="widget-content">';
-        if ($title) {
-            $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
-        }
-        $html .= '<div id="' . htmlspecialchars($containerId) . '" class="shikwasa-podcast-container" data-rss-url="' . htmlspecialchars($rssFeedUrl) . '"></div>';
+        
+        // Minimal Collapsed View
+        $html .= '<div id="' . htmlspecialchars($minimalId) . '" class="podcast-widget-minimal">';
+        $html .= '<img class="podcast-cover" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
+        $html .= '<div class="podcast-info">';
+        $html .= '<div class="podcast-title" id="podcast-title-' . $widgetId . '">' . htmlspecialchars($title) . '</div>';
+        $html .= '<div class="episode-title" id="episode-title-' . $widgetId . '">Loading...</div>';
+        $html .= '<div class="minimal-controls">';
+        $html .= '<button class="minimal-play-pause" id="minimal-play-pause-' . $widgetId . '" aria-label="Play/Pause">';
+        $html .= '<i class="fas fa-play"></i>';
+        $html .= '</button>';
+        $html .= '<div class="minimal-progress">';
+        $html .= '<div class="minimal-progress-bar" id="minimal-progress-bar-' . $widgetId . '"></div>';
+        $html .= '</div>';
+        $html .= '<div class="minimal-time" id="minimal-time-' . $widgetId . '">0:00</div>';
+        $html .= '<button class="minimal-expand" id="minimal-expand-' . $widgetId . '" aria-label="Expand Player">';
+        $html .= '<i class="fas fa-chevron-up"></i>';
+        $html .= '</button>';
+        $html .= '</div>';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        // Expanded Drawer
+        $html .= '<div id="' . htmlspecialchars($drawerId) . '" class="podcast-widget-drawer hidden">';
+        $html .= '<div class="drawer-header">';
+        $html .= '<button class="drawer-close" id="drawer-close-' . $widgetId . '" aria-label="Close Player">';
+        $html .= '<i class="fas fa-times"></i>';
+        $html .= '</button>';
+        $html .= '</div>';
+        $html .= '<div id="' . htmlspecialchars($playerContainerId) . '" class="shikwasa-podcast-container" data-rss-url="' . htmlspecialchars($rssFeedUrl) . '"></div>';
+        $html .= '<div id="' . htmlspecialchars($playlistId) . '" class="drawer-playlist"></div>';
+        $html .= '</div>';
+        
         $html .= '</div>';
         $html .= '</div>';
         
         // Add Shikwasa initialization script
         $html .= '<script>
         (function() {
-            const container = document.getElementById("' . $containerId . '");
-            const rssUrl = container.getAttribute("data-rss-url");
+            const widgetId = ' . $widgetId . ';
+            const minimalId = "' . $minimalId . '";
+            const drawerId = "' . $drawerId . '";
+            const containerId = "' . $playerContainerId . '";
+            const playlistId = "' . $playlistId . '";
+            const rssUrl = "' . htmlspecialchars($rssFeedUrl) . '";
             
+            let playerInstance = null;
+            let episodes = [];
+            let currentEpisodeIndex = 0;
+            let feedData = null;
+            
+            // Load Shikwasa library if not already loaded
             if (!window.Shikwasa) {
-                // Load Shikwasa library if not already loaded
                 const link = document.createElement("link");
                 link.rel = "stylesheet";
                 link.href = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.css";
@@ -219,22 +261,21 @@ class WidgetRenderer {
                 const script = document.createElement("script");
                 script.src = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.js";
                 script.onload = function() {
-                    initializePlayer();
+                    fetchAndParseRSS();
                 };
                 document.head.appendChild(script);
             } else {
-                initializePlayer();
+                fetchAndParseRSS();
             }
             
-            function initializePlayer() {
-                // Fetch RSS feed and parse episodes
+            function fetchAndParseRSS() {
                 fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl))
                     .then(response => response.json())
                     .then(data => {
+                        feedData = data;
                         if (data.status === "ok" && data.items && data.items.length > 0) {
                             // Parse episodes from RSS feed
-                            const episodes = data.items.map(item => {
-                                // Try multiple methods to get audio URL
+                            episodes = data.items.map(item => {
                                 let audioUrl = null;
                                 
                                 // Method 1: Check enclosure (standard RSS)
@@ -268,47 +309,309 @@ class WidgetRenderer {
                                     title: item.title || "Untitled Episode",
                                     audio: audioUrl,
                                     cover: data.feed?.image || item.thumbnail || item.enclosure?.image || "",
-                                    description: item.description || item.content || ""
+                                    description: item.description || item.content || "",
+                                    pubDate: item.pubDate || ""
                                 };
                             }).filter(ep => ep.audio);
                             
                             if (episodes.length > 0) {
-                                // Get theme color from CSS variable
-                                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--primary-color") || getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || "#0066ff";
-                                
-                                // Initialize Shikwasa player with playlist
-                                try {
-                                    const player = new Shikwasa.Player({
-                                        container: container,
-                                        audio: episodes[0],
-                                        playlist: episodes.length > 1 ? episodes.slice(1) : [],
-                                        themeColor: primaryColor.trim(),
-                                        theme: "auto"
-                                    });
-                                    
-                                    // Apply additional styling after initialization
-                                    setTimeout(() => {
-                                        const playerEl = container.querySelector(".shk-player");
-                                        if (playerEl) {
-                                            playerEl.style.fontFamily = "inherit";
-                                            playerEl.style.color = getComputedStyle(document.documentElement).getPropertyValue("--text-color") || "inherit";
-                                        }
-                                    }, 100);
-                                } catch (error) {
-                                    console.error("Failed to initialize Shikwasa player:", error);
-                                    container.innerHTML = "<p style=\'color: #dc3545;\'>Failed to load podcast player. Please check your RSS feed URL.</p>";
-                                }
+                                updateMinimalView();
+                                setupEventListeners();
                             } else {
-                                container.innerHTML = "<p style=\'color: #666;\'>No playable episodes found in RSS feed. Make sure your RSS feed includes audio file URLs.</p>";
+                                showError("No playable episodes found in RSS feed.");
                             }
                         } else {
-                            container.innerHTML = "<p style=\'color: #dc3545;\'>Failed to load RSS feed. Please check your feed URL.</p>";
+                            showError("Failed to load RSS feed. Please check your feed URL.");
                         }
                     })
                     .catch(error => {
                         console.error("RSS fetch error:", error);
-                        container.innerHTML = "<p style=\'color: #dc3545;\'>Error loading podcast feed. Please try again later.</p>";
+                        showError("Error loading podcast feed. Please try again later.");
                     });
+            }
+            
+            function updateMinimalView() {
+                if (episodes.length === 0) return;
+                
+                const firstEpisode = episodes[0];
+                const coverEl = document.getElementById("podcast-cover-" + widgetId);
+                const podcastTitleEl = document.getElementById("podcast-title-" + widgetId);
+                const episodeTitleEl = document.getElementById("episode-title-" + widgetId);
+                
+                // Update cover image
+                if (feedData.feed?.image || firstEpisode.cover) {
+                    const coverUrl = feedData.feed?.image || firstEpisode.cover;
+                    coverEl.src = coverUrl;
+                    coverEl.style.display = "block";
+                }
+                
+                // Update titles
+                if (feedData.feed?.title) {
+                    podcastTitleEl.textContent = feedData.feed.title;
+                }
+                episodeTitleEl.textContent = firstEpisode.title;
+            }
+            
+            function initializePlayer() {
+                if (episodes.length === 0) return;
+                
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                // Get theme color from CSS variable
+                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--primary-color") || 
+                                    getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || 
+                                    "#0066ff";
+                
+                try {
+                    playerInstance = new Shikwasa.Player({
+                        container: container,
+                        audio: episodes[currentEpisodeIndex],
+                        playlist: episodes.length > 1 ? episodes.slice(1) : [],
+                        themeColor: primaryColor.trim(),
+                        theme: "auto"
+                    });
+                    
+                    // Setup player event listeners
+                    setupPlayerListeners();
+                    
+                    // Render playlist
+                    renderPlaylist();
+                    
+                    // Apply additional styling
+                    setTimeout(() => {
+                        const playerEl = container.querySelector(".shk-player");
+                        if (playerEl) {
+                            playerEl.style.fontFamily = "inherit";
+                            playerEl.style.color = getComputedStyle(document.documentElement).getPropertyValue("--text-color") || "inherit";
+                        }
+                    }, 100);
+                } catch (error) {
+                    console.error("Failed to initialize Shikwasa player:", error);
+                    showError("Failed to load podcast player.");
+                }
+            }
+            
+            function setupPlayerListeners() {
+                // Sync minimal controls with player state
+                // Wait a bit for Shikwasa to fully initialize
+                setTimeout(() => {
+                    if (!playerInstance) return;
+                    
+                    // Try to get audio element from player
+                    const container = document.getElementById(containerId);
+                    const audio = container ? container.querySelector("audio") : null;
+                    
+                    if (!audio) {
+                        // Try alternative method - Shikwasa might store audio differently
+                        const playerEl = container ? container.querySelector(".shk-player") : null;
+                        if (playerEl) {
+                            // Find audio element within player
+                            const audioEl = playerEl.querySelector("audio");
+                            if (audioEl) {
+                                attachAudioListeners(audioEl);
+                            }
+                        }
+                        return;
+                    }
+                    
+                    attachAudioListeners(audio);
+                }, 200);
+            }
+            
+            function attachAudioListeners(audio) {
+                audio.addEventListener("play", () => {
+                    updateMinimalPlayButton(true);
+                });
+                
+                audio.addEventListener("pause", () => {
+                    updateMinimalPlayButton(false);
+                });
+                
+                audio.addEventListener("timeupdate", () => {
+                    updateMinimalProgress();
+                });
+                
+                audio.addEventListener("loadedmetadata", () => {
+                    updateMinimalProgress();
+                });
+            }
+            
+            function updateMinimalPlayButton(isPlaying) {
+                const btn = document.getElementById("minimal-play-pause-" + widgetId);
+                if (btn) {
+                    const icon = btn.querySelector("i");
+                    if (icon) {
+                        icon.className = isPlaying ? "fas fa-pause" : "fas fa-play";
+                    }
+                }
+            }
+            
+            function updateMinimalProgress() {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const audio = container.querySelector("audio");
+                if (!audio) return;
+                
+                const progress = (audio.currentTime / audio.duration) * 100 || 0;
+                const currentTime = formatTime(audio.currentTime || 0);
+                
+                const progressBar = document.getElementById("minimal-progress-bar-" + widgetId);
+                const timeEl = document.getElementById("minimal-time-" + widgetId);
+                
+                if (progressBar) {
+                    progressBar.style.width = progress + "%";
+                }
+                if (timeEl) {
+                    timeEl.textContent = currentTime;
+                }
+            }
+            
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return mins + ":" + (secs < 10 ? "0" : "") + secs;
+            }
+            
+            function renderPlaylist() {
+                const playlistEl = document.getElementById(playlistId);
+                if (!playlistEl || episodes.length === 0) return;
+                
+                // Sanitize HTML to prevent XSS
+                const sanitize = (str) => {
+                    const div = document.createElement("div");
+                    div.textContent = str;
+                    return div.innerHTML;
+                };
+                
+                playlistEl.innerHTML = "<h3 class=\"playlist-title\">Episodes</h3><ul class=\"playlist-list\">" +
+                    episodes.map((ep, index) => {
+                        const title = sanitize(ep.title);
+                        const description = ep.description ? sanitize(ep.description.substring(0, 100) + "...") : "";
+                        const cover = ep.cover ? sanitize(ep.cover) : "";
+                        return `<li class="playlist-item ${index === currentEpisodeIndex ? 'active' : ''}" data-index="${index}">
+                            ${cover ? `<img src="${cover}" alt="${title}" class="playlist-thumbnail">` : ''}
+                            <div class="playlist-info">
+                                <div class="playlist-episode-title">${title}</div>
+                                ${description ? `<div class="playlist-episode-description">${description}</div>` : ''}
+                            </div>
+                        </li>`;
+                    }).join("") + "</ul>";
+                
+                // Add click handlers to playlist items
+                playlistEl.querySelectorAll(".playlist-item").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const index = parseInt(item.getAttribute("data-index"));
+                        playEpisode(index);
+                    });
+                });
+            }
+            
+            function playEpisode(index) {
+                if (index < 0 || index >= episodes.length) return;
+                
+                currentEpisodeIndex = index;
+                
+                // Pause current audio if playing
+                const container = document.getElementById(containerId);
+                if (container) {
+                    const audio = container.querySelector("audio");
+                    if (audio) {
+                        audio.pause();
+                    }
+                    container.innerHTML = "";
+                }
+                
+                // Reinitialize player with new episode
+                setTimeout(() => {
+                    initializePlayer();
+                    renderPlaylist();
+                }, 100);
+            }
+            
+            function setupEventListeners() {
+                // Expand button
+                const expandBtn = document.getElementById("minimal-expand-" + widgetId);
+                if (expandBtn) {
+                    expandBtn.addEventListener("click", openDrawer);
+                }
+                
+                // Close button
+                const closeBtn = document.getElementById("drawer-close-" + widgetId);
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", closeDrawer);
+                }
+                
+                // Play/Pause button
+                const playPauseBtn = document.getElementById("minimal-play-pause-" + widgetId);
+                if (playPauseBtn) {
+                    playPauseBtn.addEventListener("click", togglePlayPause);
+                }
+                
+                // Keyboard controls
+                document.addEventListener("keydown", function(e) {
+                    const drawer = document.getElementById(drawerId);
+                    if (!drawer || drawer.classList.contains("hidden")) return;
+                    
+                    if (e.key === "Escape") {
+                        closeDrawer();
+                    }
+                });
+            }
+            
+            function togglePlayPause() {
+                const container = document.getElementById(containerId);
+                const audio = container ? container.querySelector("audio") : null;
+                
+                if (!audio || !playerInstance) {
+                    // If player not initialized, open drawer first
+                    openDrawer();
+                    setTimeout(() => {
+                        const containerAfter = document.getElementById(containerId);
+                        const audioAfter = containerAfter ? containerAfter.querySelector("audio") : null;
+                        if (audioAfter) {
+                            audioAfter.play();
+                        }
+                    }, 500);
+                    return;
+                }
+                
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            }
+            
+            function openDrawer() {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+                
+                drawer.classList.remove("hidden");
+                
+                // Initialize player if not already done
+                if (!playerInstance) {
+                    initializePlayer();
+                }
+                
+                // Prevent body scroll when drawer is open
+                document.body.style.overflow = "hidden";
+            }
+            
+            function closeDrawer() {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+                
+                drawer.classList.add("hidden");
+                document.body.style.overflow = "";
+            }
+            
+            function showError(message) {
+                const minimalEl = document.getElementById(minimalId);
+                if (minimalEl) {
+                    minimalEl.innerHTML = `<div class="podcast-error">${message}</div>`;
+                }
             }
         })();
         </script>';
