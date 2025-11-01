@@ -650,11 +650,12 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .progress-bar {
             position: relative;
             width: 100%;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 2px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 3px;
             cursor: pointer;
             z-index: 2;
+            overflow: hidden;
         }
         
         .progress-fill {
@@ -663,10 +664,27 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             left: 0;
             height: 100%;
             width: var(--progress-width, 0%);
-            background-color: var(--primary-color);
-            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.8) 100%);
+            border-radius: 3px;
             transition: width 0.1s linear;
             pointer-events: none;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .progress-scrubber {
@@ -674,23 +692,31 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             top: 50%;
             left: var(--progress-width, 0%);
             transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-            background-color: var(--primary-color);
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.9) 100%);
             border-radius: 50%;
-            border: 2px solid var(--secondary-color);
+            border: 3px solid var(--secondary-color);
             cursor: grab;
             z-index: 3;
-            transition: left 0.1s linear;
+            transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         
         .progress-scrubber:active {
             cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
         
         .progress-bar-wrapper:hover .progress-scrubber {
-            transform: translate(-50%, -50%) scale(1.2);
+            transform: translate(-50%, -50%) scale(1.25);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+        
+        .progress-bar-wrapper:hover .progress-fill {
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
         }
         
         /* Compact Drawer Tray - Expands from widget, pushes content down */
