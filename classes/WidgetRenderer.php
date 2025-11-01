@@ -896,10 +896,14 @@ class WidgetRenderer {
     }
     
     function seekToPosition(event) {
-        if (!audio || !audio.duration) return;
+        if (!audio || !audio.duration || isDragging) return;
         const progressBar = document.getElementById("progress-bar-" + widgetId);
-        const progressWrapper = document.getElementById("progress-wrapper-" + widgetId);
-        if (!progressBar || !progressWrapper) return;
+        if (!progressBar) return;
+        
+        // Don't seek if clicking on the scrubber itself
+        if (event.target && event.target.id === "progress-scrubber-" + widgetId) {
+            return;
+        }
         
         const rect = progressBar.getBoundingClientRect();
         const clickX = event.clientX - rect.left;
@@ -916,11 +920,25 @@ class WidgetRenderer {
         const scrubber = document.getElementById("progress-scrubber-" + widgetId);
         if (!progressBar || !scrubber) return;
         
+        // Stop event propagation to prevent progress bar click
+        if (event.stopPropagation) event.stopPropagation();
+        
         scrubber.classList.add("dragging");
         
-        const rect = progressBar.getBoundingClientRect();
-        const clickX = (event.clientX || event.touches[0].clientX) - rect.left;
-        const percent = Math.max(0, Math.min(1, clickX / rect.width));
+        // If dragging from scrubber, use its position; otherwise calculate from mouse/touch
+        let clickX;
+        if (event.target && event.target.id === "progress-scrubber-" + widgetId) {
+            // Dragging from scrubber - use current position
+            const rect = progressBar.getBoundingClientRect();
+            const scrubberLeft = scrubber.getBoundingClientRect().left;
+            clickX = scrubberLeft - rect.left + 8; // Add half scrubber width
+        } else {
+            // Dragging from progress bar
+            const rect = progressBar.getBoundingClientRect();
+            clickX = (event.clientX || (event.touches && event.touches[0].clientX)) - rect.left;
+        }
+        
+        const percent = Math.max(0, Math.min(1, clickX / progressBar.offsetWidth));
         audio.currentTime = percent * audio.duration;
         
         if (event.preventDefault) event.preventDefault();
@@ -1036,6 +1054,11 @@ class WidgetRenderer {
         }
         updateShowNotes(episode);
         parseChapters(episode);
+        
+        // Ensure progress controls are set up after audio loads
+        audio.addEventListener("loadedmetadata", () => {
+            setupProgressControls();
+        }, { once: true });
     }
     
     function updateShowNotes(episode) {
@@ -1209,6 +1232,11 @@ class WidgetRenderer {
                         }
                         renderEpisodes();
                         
+                        // Setup progress controls after episode loads
+                        setTimeout(() => {
+                            setupProgressControls();
+                        }, 100);
+                        
                         // Drawer starts closed (user can open it with toggle button)
                     } else {
                         showError("No playable episodes found in RSS feed.");
@@ -1236,18 +1264,39 @@ class WidgetRenderer {
     document.getElementById("skip-back-" + widgetId)?.addEventListener("click", skipBackward);
     document.getElementById("skip-forward-" + widgetId)?.addEventListener("click", skipForward);
     
-    // Progress bar click to seek
-    const progressBar = document.getElementById("progress-bar-" + widgetId);
-    if (progressBar) {
+    // Setup progress bar and scrubber interaction after elements exist
+    let controlsSetup = false;
+    function setupProgressControls() {
+        const progressBar = document.getElementById("progress-bar-" + widgetId);
+        const scrubber = document.getElementById("progress-scrubber-" + widgetId);
+        const progressWrapper = document.getElementById("progress-wrapper-" + widgetId);
+        
+        if (!progressBar || !scrubber || controlsSetup) return;
+        controlsSetup = true;
+        
+        // Progress bar click to seek
         progressBar.addEventListener("click", seekToPosition);
-    }
-    
-    // Scrubber drag functionality
-    const scrubber = document.getElementById("progress-scrubber-" + widgetId);
-    if (scrubber) {
-        scrubber.addEventListener("mousedown", startDrag);
+        
+        // Also allow clicking on wrapper
+        if (progressWrapper) {
+            progressWrapper.addEventListener("click", (e) => {
+                // Only seek if not clicking on scrubber
+                if (e.target.id !== "progress-scrubber-" + widgetId && 
+                    !e.target.closest("#progress-scrubber-" + widgetId)) {
+                    seekToPosition(e);
+                }
+            });
+        }
+        
+        // Scrubber drag functionality
+        scrubber.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+            startDrag(e);
+        });
+        
         scrubber.addEventListener("touchstart", (e) => {
             e.preventDefault();
+            e.stopPropagation();
             startDrag(e.touches[0]);
         });
     }
