@@ -70,16 +70,17 @@ class WidgetRenderer {
         $icon = $configData['icon'] ?? null;
         $disclosure = $configData['disclosure_text'] ?? null;
         
-        // Always render the widget, even if URL is empty (show it as a button/link that might be incomplete)
+        // Always render the widget if it has a title, even if URL is empty
         // This ensures all widgets show up on the page
-        if (!$url && !$title) {
+        if (!$title || (trim($title) === '')) {
             return '';
         }
         
         $pageId = $widget['page_id'] ?? 0;
         $widgetId = $widget['id'] ?? 0;
         
-        $clickUrl = "/click.php?link_id={$widgetId}&page_id={$pageId}";
+        // Use URL if available, otherwise use # as placeholder
+        $clickUrl = $url ? "/click.php?link_id={$widgetId}&page_id={$pageId}" : "#";
         
         // Determine if this is a simple link (no thumbnail) vs full-width link
         $isSimpleLink = !$thumbnail;
