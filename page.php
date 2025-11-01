@@ -7,9 +7,11 @@
 require_once __DIR__ . '/config/constants.php';
 require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/theme-helpers.php';
 require_once __DIR__ . '/classes/Page.php';
 require_once __DIR__ . '/classes/Analytics.php';
 require_once __DIR__ . '/classes/Theme.php';
+require_once __DIR__ . '/classes/ThemeCSSGenerator.php';
 
 // Check if request is for custom domain or username
 $domain = $_SERVER['HTTP_HOST'];
@@ -63,6 +65,9 @@ $accentColor = $colors['accent'];
 $headingFont = $fonts['heading'];
 $bodyFont = $fonts['body'];
 
+// Initialize ThemeCSSGenerator for complete CSS generation
+$cssGenerator = new ThemeCSSGenerator($page, $theme);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,34 +96,11 @@ $bodyFont = $fonts['body'];
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     
+    <?php echo $cssGenerator->generateCompleteStyleBlock(); ?>
+    
+    <!-- Additional widget-specific styles -->
     <style>
-        :root {
-            --primary-color: <?php echo h($primaryColor); ?>;
-            --secondary-color: <?php echo h($secondaryColor); ?>;
-            --accent-color: <?php echo h($accentColor); ?>;
-        }
-        
-        body {
-            font-family: '<?php echo h($bodyFont); ?>', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: <?php echo h($secondaryColor); ?>;
-            color: <?php echo h($primaryColor); ?>;
-        }
-        
-        h1, h2, h3 {
-            font-family: '<?php echo h($headingFont); ?>', sans-serif;
-        }
-        
-        <?php if ($page['background_image']): ?>
-        body {
-            background-image: url('<?php echo h($page['background_image']); ?>');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        <?php endif; ?>
-        
+        /* Page container and layout */
         .page-container {
             max-width: 600px;
             margin: 0 auto;
@@ -1471,7 +1453,7 @@ $bodyFont = $fonts['body'];
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $cssGenerator->getSpatialEffectClass(); ?>">
     <div class="page-container">
         <div class="profile-header">
             <?php if ($page['profile_image']): ?>
