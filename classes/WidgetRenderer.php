@@ -1212,26 +1212,26 @@ class WidgetRenderer {
     function getPlatformIcon(platformName) {
         const platform = platformName.toLowerCase();
         const iconMap = {
-            'facebook': 'fab fa-facebook',
-            'twitter': 'fab fa-twitter',
-            'instagram': 'fab fa-instagram',
-            'youtube': 'fab fa-youtube',
-            'tiktok': 'fab fa-tiktok',
-            'spotify': 'fab fa-spotify',
-            'apple': 'fab fa-apple',
-            'apple podcasts': 'fab fa-podcast',
-            'linkedin': 'fab fa-linkedin',
-            'pinterest': 'fab fa-pinterest',
-            'snapchat': 'fab fa-snapchat',
-            'reddit': 'fab fa-reddit',
-            'discord': 'fab fa-discord',
-            'twitch': 'fab fa-twitch',
-            'patreon': 'fab fa-patreon',
-            'email': 'fas fa-envelope',
-            'website': 'fas fa-globe',
-            'website url': 'fas fa-link'
+            "facebook": "fab fa-facebook",
+            "twitter": "fab fa-twitter",
+            "instagram": "fab fa-instagram",
+            "youtube": "fab fa-youtube",
+            "tiktok": "fab fa-tiktok",
+            "spotify": "fab fa-spotify",
+            "apple": "fab fa-apple",
+            "apple podcasts": "fab fa-podcast",
+            "linkedin": "fab fa-linkedin",
+            "pinterest": "fab fa-pinterest",
+            "snapchat": "fab fa-snapchat",
+            "reddit": "fab fa-reddit",
+            "discord": "fab fa-discord",
+            "twitch": "fab fa-twitch",
+            "patreon": "fab fa-patreon",
+            "email": "fas fa-envelope",
+            "website": "fas fa-globe",
+            "website url": "fas fa-link"
         };
-        return iconMap[platform] || 'fas fa-link';
+        return iconMap[platform] || "fas fa-link";
     }
     
     function renderFollow() {
