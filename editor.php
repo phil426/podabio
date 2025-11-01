@@ -3884,8 +3884,20 @@ $csrfToken = generateCSRFToken();
                                     const isGradient = data.theme.page_background.includes('gradient');
                                     switchBackgroundType(isGradient ? 'gradient' : 'solid');
                                     if (isGradient) {
-                                        updateGradient();
+                                        // Parse and populate gradient fields
+                                        const match = data.theme.page_background.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
+                                        if (match) {
+                                            const direction = match[1] + 'deg';
+                                            const startColor = match[2];
+                                            const endColor = match[3];
+                                            document.getElementById('gradient_direction').value = direction;
+                                            document.getElementById('gradient_start_color').value = startColor;
+                                            document.getElementById('gradient_end_color').value = endColor;
+                                            updateGradient();
+                                        }
                                     } else {
+                                        // Solid color
+                                        document.getElementById('page_background_color').value = data.theme.page_background;
                                         updatePageBackground();
                                     }
                                 }
@@ -3899,8 +3911,20 @@ $csrfToken = generateCSRFToken();
                                     const isGradient = data.theme.widget_background.includes('gradient');
                                     switchWidgetBackgroundType(isGradient ? 'gradient' : 'solid');
                                     if (isGradient) {
-                                        updateWidgetGradient();
+                                        // Parse and populate gradient fields
+                                        const match = data.theme.widget_background.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
+                                        if (match) {
+                                            const direction = match[1] + 'deg';
+                                            const startColor = match[2];
+                                            const endColor = match[3];
+                                            document.getElementById('widget_gradient_direction').value = direction;
+                                            document.getElementById('widget_gradient_start_color').value = startColor;
+                                            document.getElementById('widget_gradient_end_color').value = endColor;
+                                            updateWidgetGradient();
+                                        }
                                     } else {
+                                        // Solid color
+                                        document.getElementById('widget_background_color').value = data.theme.widget_background;
                                         updateWidgetBackground();
                                     }
                                 }
@@ -3914,8 +3938,20 @@ $csrfToken = generateCSRFToken();
                                     const isGradient = data.theme.widget_border_color.includes('gradient');
                                     switchWidgetBorderType(isGradient ? 'gradient' : 'solid');
                                     if (isGradient) {
-                                        updateWidgetBorderGradient();
+                                        // Parse and populate gradient fields
+                                        const match = data.theme.widget_border_color.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
+                                        if (match) {
+                                            const direction = match[1] + 'deg';
+                                            const startColor = match[2];
+                                            const endColor = match[3];
+                                            document.getElementById('widget_border_gradient_direction').value = direction;
+                                            document.getElementById('widget_border_gradient_start_color').value = startColor;
+                                            document.getElementById('widget_border_gradient_end_color').value = endColor;
+                                            updateWidgetBorderGradient();
+                                        }
                                     } else {
+                                        // Solid color
+                                        document.getElementById('widget_border_color_picker').value = data.theme.widget_border_color;
                                         updateWidgetBorderColor();
                                     }
                                 }
