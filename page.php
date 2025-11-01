@@ -1506,10 +1506,16 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                 foreach ($widgets as $widget): 
                     $widget['page_id'] = $page['id']; // Ensure page_id is set for renderer
                     try {
-                        echo WidgetRenderer::render($widget);
+                        $rendered = WidgetRenderer::render($widget);
+                        if (!empty($rendered)) {
+                            echo $rendered;
+                        } else {
+                            // Log when widget returns empty but exists in DB
+                            error_log("Widget " . ($widget['id'] ?? 'unknown') . " (type: " . ($widget['widget_type'] ?? 'unknown') . ") returned empty render");
+                        }
                     } catch (Exception $e) {
                         // Log error but don't break the page
-                        error_log("Widget render error: " . $e->getMessage());
+                        error_log("Widget render error for widget ID " . ($widget['id'] ?? 'unknown') . ": " . $e->getMessage());
                         echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
                     }
                 endforeach;

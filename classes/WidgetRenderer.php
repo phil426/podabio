@@ -70,7 +70,9 @@ class WidgetRenderer {
         $icon = $configData['icon'] ?? null;
         $disclosure = $configData['disclosure_text'] ?? null;
         
-        if (!$url) {
+        // Always render the widget, even if URL is empty (show it as a button/link that might be incomplete)
+        // This ensures all widgets show up on the page
+        if (!$url && !$title) {
             return '';
         }
         
