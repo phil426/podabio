@@ -239,12 +239,12 @@ class WidgetRenderer {
         // Add Shikwasa initialization script
         $html .= '<script>
         (function() {
-            const widgetId = ' . $widgetId . ';
-            const minimalId = "' . $minimalId . '";
-            const drawerId = "' . $drawerId . '";
-            const containerId = "' . $playerContainerId . '";
-            const playlistId = "' . $playlistId . '";
-            const rssUrl = "' . htmlspecialchars($rssFeedUrl) . '";
+            const widgetId = ' . (int)$widgetId . ';
+            const minimalId = ' . json_encode($minimalId) . ';
+            const drawerId = ' . json_encode($drawerId) . ';
+            const containerId = ' . json_encode($playerContainerId) . ';
+            const playlistId = ' . json_encode($playlistId) . ';
+            const rssUrl = ' . json_encode($rssFeedUrl) . ';
             
             let playerInstance = null;
             let episodes = [];
