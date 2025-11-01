@@ -85,7 +85,7 @@ class ThemeCSSGenerator {
         
         if ($this->spatialEffect === 'glass') {
             $css .= "body.spatial-glass {\n";
-            $css .= "    background: rgba(255, 255, 255, 0.7);\n";
+            $css .= "    background: var(--page-background);\n";
             $css .= "    backdrop-filter: blur(20px) saturate(180%);\n";
             $css .= "    -webkit-backdrop-filter: blur(20px) saturate(180%);\n";
             $css .= "}\n\n";
@@ -186,9 +186,19 @@ class ThemeCSSGenerator {
         $css .= "body {\n";
         $css .= "    font-family: var(--body-font), sans-serif;\n";
         $css .= "    background: var(--page-background);\n";
+        $css .= "    background-attachment: fixed;\n";
+        $css .= "    background-size: cover;\n";
+        $css .= "    background-repeat: no-repeat;\n";
+        $css .= "    min-height: 100vh;\n";
         $css .= "    color: var(--text-color);\n";
         $css .= "    margin: 0;\n";
         $css .= "    padding: 0;\n";
+        $css .= "}\n\n";
+        
+        // Ensure html element also has background for full coverage
+        $css .= "html {\n";
+        $css .= "    background: var(--page-background);\n";
+        $css .= "    min-height: 100%;\n";
         $css .= "}\n\n";
         
         // Typography
