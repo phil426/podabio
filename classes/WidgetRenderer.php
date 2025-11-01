@@ -820,12 +820,26 @@ class WidgetRenderer {
             try {
                 audioSource = audioContext.createMediaElementSource(audio);
                 audioSource.connect(analyser);
+                // Connect analyser to destination to ensure audio actually plays
                 analyser.connect(audioContext.destination);
                 audioInitialized = true;
             } catch (e) {
                 console.warn("Audio source already connected or error:", e);
-                // If source already exists, just create analyser connection separately
+                // If source already exists, make sure analyser is still connected
+                if (analyser && audioContext) {
+                    try {
+                        analyser.connect(audioContext.destination);
+                    } catch (connErr) {
+                        console.warn("Failed to connect analyser:", connErr);
+                    }
+                }
                 audioInitialized = true;
+            }
+            
+            // Ensure audio volume is set (default might be 0 or muted)
+            if (audio) {
+                audio.volume = 1.0;
+                audio.muted = false;
             }
             
             // Initialize waveform canvas
@@ -929,21 +943,33 @@ class WidgetRenderer {
     }
     
     function updateProgress() {
-        if (!audio || !audio.duration) return;
-        const progress = (audio.currentTime / audio.duration) * 100;
+        if (!audio) return;
+        const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
         const progressBar = document.getElementById("progress-bar-" + widgetId);
         if (progressBar) {
             progressBar.style.setProperty("--progress-width", progress + "%");
         }
-        const timeDisplay = document.getElementById("time-display-" + widgetId);
-        if (timeDisplay) timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+        const currentTimeEl = document.getElementById("current-time-" + widgetId);
+        if (currentTimeEl) {
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        }
+        const totalTimeEl = document.getElementById("total-time-" + widgetId);
+        if (totalTimeEl && audio.duration) {
+            totalTimeEl.textContent = formatTime(audio.duration);
+        }
         updateCurrentChapter();
     }
     
     function updateDuration() {
         if (!audio) return;
-        const timeDisplay = document.getElementById("time-display-" + widgetId);
-        if (timeDisplay && audio.duration) timeDisplay.textContent = formatTime(audio.currentTime) + " / " + formatTime(audio.duration);
+        const totalTimeEl = document.getElementById("total-time-" + widgetId);
+        if (totalTimeEl && audio.duration) {
+            totalTimeEl.textContent = formatTime(audio.duration);
+        }
+        const currentTimeEl = document.getElementById("current-time-" + widgetId);
+        if (currentTimeEl) {
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        }
     }
     
     function updateCurrentChapter() {
