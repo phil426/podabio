@@ -140,9 +140,13 @@ class Theme {
         // First, try page-specific page fonts (new columns)
         if (!empty($page['page_primary_font']) || !empty($page['page_secondary_font'])) {
             $defaults = $this->getDefaultFonts();
+            $pagePrimary = $page['page_primary_font'] ?? $defaults['page_primary_font'];
+            $pageSecondary = $page['page_secondary_font'] ?? $defaults['page_secondary_font'];
             return [
-                'page_primary_font' => $page['page_primary_font'] ?? $defaults['page_primary_font'],
-                'page_secondary_font' => $page['page_secondary_font'] ?? $defaults['page_secondary_font']
+                'page_primary_font' => $pagePrimary,
+                'page_secondary_font' => $pageSecondary,
+                'heading' => $pagePrimary,
+                'body' => $pageSecondary
             ];
         }
         
@@ -160,9 +164,13 @@ class Theme {
             // Try new theme columns first
             if (!empty($theme['page_primary_font']) || !empty($theme['page_secondary_font'])) {
                 $defaults = $this->getDefaultFonts();
+                $pagePrimary = $theme['page_primary_font'] ?? $defaults['page_primary_font'];
+                $pageSecondary = $theme['page_secondary_font'] ?? $defaults['page_secondary_font'];
                 return [
-                    'page_primary_font' => $theme['page_primary_font'] ?? $defaults['page_primary_font'],
-                    'page_secondary_font' => $theme['page_secondary_font'] ?? $defaults['page_secondary_font']
+                    'page_primary_font' => $pagePrimary,
+                    'page_secondary_font' => $pageSecondary,
+                    'heading' => $pagePrimary,
+                    'body' => $pageSecondary
                 ];
             }
             
@@ -201,9 +209,16 @@ class Theme {
         // Apply defaults for any missing fonts
         $defaults = $this->getDefaultFonts();
         // Map legacy 'heading'/'body' to new structure
+        $pagePrimary = $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'];
+        $pageSecondary = $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font'];
+        
         return [
-            'page_primary_font' => $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'],
-            'page_secondary_font' => $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font']
+            // New structure
+            'page_primary_font' => $pagePrimary,
+            'page_secondary_font' => $pageSecondary,
+            // Legacy support
+            'heading' => $pagePrimary,
+            'body' => $pageSecondary
         ];
     }
     
