@@ -941,7 +941,7 @@ class WidgetRenderer {
     
     function skipForward() {
         if (!audio || !audio.duration) return;
-        audio.currentTime = Math.min(audio.duration, audio.currentTime + 15);
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 30);
     }
     
     function openDrawer() {
