@@ -491,18 +491,19 @@ class WidgetRenderer {
                     return div.innerHTML;
                 };
                 
-                playlistEl.innerHTML = "<h3 class=\"playlist-title\">Episodes</h3><ul class=\"playlist-list\">" +
+                playlistEl.innerHTML = "<h3 class=\\"playlist-title\\">Episodes</h3><ul class=\\"playlist-list\\">" +
                     episodes.map((ep, index) => {
                         const title = sanitize(ep.title);
                         const description = ep.description ? sanitize(ep.description.substring(0, 100) + "...") : "";
                         const cover = ep.cover ? sanitize(ep.cover) : "";
-                        return `<li class="playlist-item ${index === currentEpisodeIndex ? 'active' : ''}" data-index="${index}">
-                            ${cover ? `<img src="${cover}" alt="${title}" class="playlist-thumbnail">` : ''}
-                            <div class="playlist-info">
-                                <div class="playlist-episode-title">${title}</div>
-                                ${description ? `<div class="playlist-episode-description">${description}</div>` : ''}
-                            </div>
-                        </li>`;
+                        const activeClass = index === currentEpisodeIndex ? "active" : "";
+                        return "<li class=\\"playlist-item " + activeClass + "\\" data-index=\\"" + index + "\\">" +
+                            (cover ? "<img src=\\"" + cover + "\\" alt=\\"" + title + "\\" class=\\"playlist-thumbnail\\">" : "") +
+                            "<div class=\\"playlist-info\\">" +
+                            "<div class=\\"playlist-episode-title\\">" + title + "</div>" +
+                            (description ? "<div class=\\"playlist-episode-description\\">" + description + "</div>" : "") +
+                            "</div>" +
+                            "</li>";
                     }).join("") + "</ul>";
                 
                 // Add click handlers to playlist items
