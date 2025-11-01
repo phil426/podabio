@@ -405,12 +405,12 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .podcast-controls-compact {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.75rem;
             margin-top: 0.25rem;
         }
         
         .skip-back-btn,
-        .play-pause-btn,
         .skip-forward-btn {
             width: 44px;
             height: 44px;
@@ -430,6 +430,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             gap: 0.1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            flex-shrink: 0;
         }
         
         .skip-back-btn::before,
@@ -453,12 +454,24 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         }
         
         .play-pause-btn {
-            width: 56px;
-            height: 56px;
-            font-size: 1.125rem;
+            width: 73px;
+            height: 73px;
+            font-size: 1.375rem;
             background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.9) 100%);
+            color: var(--secondary-color);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 0;
+            position: relative;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
             z-index: 2;
+            flex-shrink: 0;
+            overflow: hidden;
         }
         
         .play-pause-btn::after {
