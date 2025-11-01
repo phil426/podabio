@@ -623,6 +623,10 @@ class WidgetRenderer {
         </script>';
         
         return $html;
+        } catch (Exception $e) {
+            error_log("Podcast player render error: " . $e->getMessage());
+            return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
+        }
     }
     
     /**
