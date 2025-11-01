@@ -115,7 +115,8 @@ class Page {
             'username', 'custom_domain', 'rss_feed_url', 'podcast_name', 
             'podcast_description', 'cover_image_url', 'theme_id', 'colors', 
             'fonts', 'layout_option', 'background_image', 'profile_image',
-            'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin'
+            'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin',
+            'page_background', 'widget_styles', 'spatial_effect'
         ];
         
         $updates = [];
@@ -124,7 +125,7 @@ class Page {
         foreach ($allowedFields as $field) {
             // Use array_key_exists to allow null values (for deleting images, etc.)
             if (array_key_exists($field, $data)) {
-                if ($field === 'colors' || $field === 'fonts') {
+                if ($field === 'colors' || $field === 'fonts' || $field === 'widget_styles') {
                     // JSON encode arrays (allow null for clearing)
                     $updates[] = "$field = ?";
                     $params[] = ($data[$field] === null || $data[$field] === '') ? null : (is_array($data[$field]) ? json_encode($data[$field]) : $data[$field]);

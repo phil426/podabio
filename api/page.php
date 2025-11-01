@@ -10,8 +10,12 @@ require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/security.php';
+require_once __DIR__ . '/../includes/theme-helpers.php';
 require_once __DIR__ . '/../classes/Page.php';
 require_once __DIR__ . '/../classes/RSSParser.php';
+require_once __DIR__ . '/../classes/Theme.php';
+require_once __DIR__ . '/../classes/APIResponse.php';
+require_once __DIR__ . '/../classes/WidgetStyleManager.php';
 
 // Require authentication
 requireAuth();
@@ -163,8 +167,41 @@ switch ($action) {
             $updateData['fonts'] = $fonts;
         }
         
+        // Handle page background
+        if (isset($_POST['page_background'])) {
+            $updateData['page_background'] = sanitizeInput($_POST['page_background']);
+        }
+        
+        // Handle widget styles
+        if (isset($_POST['widget_styles'])) {
+            $widgetStylesJson = $_POST['widget_styles'];
+            if (is_string($widgetStylesJson)) {
+                $widgetStyles = json_decode($widgetStylesJson, true);
+            } else {
+                $widgetStyles = $widgetStylesJson;
+            }
+            
+            if (is_array($widgetStyles)) {
+                // Sanitize and merge with defaults
+                $updateData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
+            }
+        }
+        
+        // Handle spatial effect
+        if (isset($_POST['spatial_effect'])) {
+            $spatialEffect = sanitizeInput($_POST['spatial_effect']);
+            $validEffects = ['none', 'glass', 'depth', 'floating'];
+            if (in_array($spatialEffect, $validEffects, true)) {
+                $updateData['spatial_effect'] = $spatialEffect;
+            }
+        }
+        
         $result = $page->update($pageId, $updateData);
-        echo json_encode(['success' => $result, 'error' => $result ? null : 'Failed to update appearance']);
+        if ($result) {
+            echo APIResponse::success(null, 'Appearance updated successfully');
+        } else {
+            echo APIResponse::error('Failed to update appearance');
+        }
         break;
         
     case 'update_email_settings':
@@ -288,9 +325,110 @@ switch ($action) {
         }
         break;
         
+    case 'save_theme':
+        $themeName = trim(sanitizeInput($_POST['theme_name'] ?? ''));
+        
+        if (empty($themeName) || strlen($themeName) > 100) {
+            echo APIResponse::error('Theme name must be 1-100 characters', 400);
+            break;
+        }
+        
+        // Collect current theme configuration
+        $themeData = [
+            'colors' => [],
+            'fonts' => [],
+            'page_background' => null,
+            'widget_styles' => null,
+            'spatial_effect' => 'none'
+        ];
+        
+        // Get current colors
+        if (isset($_POST['custom_primary_color'])) {
+            $themeData['colors']['primary'] = sanitizeInput($_POST['custom_primary_color']);
+        }
+        if (isset($_POST['custom_secondary_color'])) {
+            $themeData['colors']['secondary'] = sanitizeInput($_POST['custom_secondary_color']);
+        }
+        if (isset($_POST['custom_accent_color'])) {
+            $themeData['colors']['accent'] = sanitizeInput($_POST['custom_accent_color']);
+        }
+        
+        // Get current fonts
+        if (isset($_POST['custom_heading_font'])) {
+            $themeData['fonts']['heading'] = sanitizeInput($_POST['custom_heading_font']);
+        }
+        if (isset($_POST['custom_body_font'])) {
+            $themeData['fonts']['body'] = sanitizeInput($_POST['custom_body_font']);
+        }
+        
+        // Get page background
+        if (isset($_POST['page_background'])) {
+            $themeData['page_background'] = sanitizeInput($_POST['page_background']);
+        }
+        
+        // Get widget styles
+        if (isset($_POST['widget_styles'])) {
+            $widgetStylesJson = $_POST['widget_styles'];
+            if (is_string($widgetStylesJson)) {
+                $widgetStyles = json_decode($widgetStylesJson, true);
+            } else {
+                $widgetStyles = $widgetStylesJson;
+            }
+            
+            if (is_array($widgetStyles)) {
+                $themeData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
+            }
+        }
+        
+        // Get spatial effect
+        if (isset($_POST['spatial_effect'])) {
+            $spatialEffect = sanitizeInput($_POST['spatial_effect']);
+            $validEffects = ['none', 'glass', 'depth', 'floating'];
+            if (in_array($spatialEffect, $validEffects, true)) {
+                $themeData['spatial_effect'] = $spatialEffect;
+            }
+        }
+        
+        // Create theme
+        $theme = new Theme();
+        $result = $theme->createTheme($userId, $themeName, $themeData);
+        
+        if ($result['success']) {
+            echo APIResponse::success([
+                'theme_id' => $result['theme_id'],
+                'theme_name' => $themeName
+            ], 'Theme saved successfully');
+        } else {
+            echo APIResponse::error($result['error'] ?? 'Failed to save theme');
+        }
+        break;
+        
+    case 'delete_theme':
+        $themeId = (int)($_POST['theme_id'] ?? 0);
+        
+        if (!$themeId) {
+            echo APIResponse::error('Theme ID required', 400);
+            break;
+        }
+        
+        $theme = new Theme();
+        $result = $theme->deleteUserTheme($themeId, $userId);
+        
+        if ($result) {
+            echo APIResponse::success(null, 'Theme deleted successfully');
+        } else {
+            echo APIResponse::error('Failed to delete theme or theme not found');
+        }
+        break;
+        
+    case 'extract_colors':
+        // This will be handled via upload API first, then processed here
+        // For now, placeholder - will be fully implemented with ColorExtractor class
+        echo APIResponse::error('Color extraction not yet implemented', 501);
+        break;
+        
     default:
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid action']);
+        echo APIResponse::error('Invalid action', 400);
         break;
 }
 
