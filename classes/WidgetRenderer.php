@@ -760,15 +760,119 @@ class WidgetRenderer {
     let feedData = null;
     let autoCollapseTimer = null;
     let hasUserInteracted = false;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
+    let waveformCanvas = null;
+    let waveformCtx = null;
+    let animationFrame = null;
     
     function initAudio() {
         audio = document.getElementById(playerId);
         if (!audio) return;
-        audio.addEventListener("play", () => updatePlayButton(true));
-        audio.addEventListener("pause", () => updatePlayButton(false));
+        
+        // Initialize Web Audio API for waveform
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            const source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            // Initialize waveform canvas
+            waveformCanvas = document.getElementById("waveform-" + widgetId);
+            if (waveformCanvas) {
+                waveformCtx = waveformCanvas.getContext("2d");
+                // Set canvas size to match container
+                const container = waveformCanvas.parentElement;
+                if (container) {
+                    const updateCanvasSize = () => {
+                        const rect = container.getBoundingClientRect();
+                        waveformCanvas.width = rect.width;
+                        waveformCanvas.height = 30;
+                        drawWaveform();
+                    };
+                    updateCanvasSize();
+                    window.addEventListener("resize", updateCanvasSize);
+                }
+                
+                // Add click handler for seeking
+                waveformCanvas.addEventListener("click", (e) => {
+                    if (!audio || !audio.duration) return;
+                    const rect = waveformCanvas.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percent = clickX / rect.width;
+                    audio.currentTime = percent * audio.duration;
+                });
+            }
+        } catch (e) {
+            console.warn("Web Audio API not supported or error:", e);
+        }
+        
+        audio.addEventListener("play", () => {
+            updatePlayButton(true);
+            startWaveformAnimation();
+        });
+        audio.addEventListener("pause", () => {
+            updatePlayButton(false);
+            stopWaveformAnimation();
+        });
         audio.addEventListener("timeupdate", updateProgress);
         audio.addEventListener("loadedmetadata", updateDuration);
-        audio.addEventListener("ended", () => updatePlayButton(false));
+        audio.addEventListener("ended", () => {
+            updatePlayButton(false);
+            stopWaveformAnimation();
+        });
+    }
+    
+    function drawWaveform() {
+        if (!waveformCanvas || !waveformCtx || !analyser) return;
+        
+        const width = waveformCanvas.width;
+        const height = waveformCanvas.height;
+        
+        // Clear canvas
+        waveformCtx.clearRect(0, 0, width, height);
+        
+        // Draw waveform bars
+        analyser.getByteFrequencyData(dataArray);
+        
+        const barCount = Math.min(50, dataArray.length);
+        const barWidth = width / barCount;
+        const barSpacing = 2;
+        
+        for (let i = 0; i < barCount; i++) {
+            const dataIndex = Math.floor((i / barCount) * dataArray.length);
+            const barHeight = (dataArray[dataIndex] / 255) * height * 0.8;
+            
+            const x = i * barWidth;
+            const y = (height - barHeight) / 2;
+            
+            // Draw bar
+            waveformCtx.fillStyle = audio && !audio.paused ? "#333" : "#999";
+            waveformCtx.fillRect(x + barSpacing / 2, y, barWidth - barSpacing, barHeight);
+        }
+    }
+    
+    function startWaveformAnimation() {
+        if (animationFrame) return;
+        function animate() {
+            drawWaveform();
+            animationFrame = requestAnimationFrame(animate);
+        }
+        animate();
+    }
+    
+    function stopWaveformAnimation() {
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        // Draw static waveform one more time
+        drawWaveform();
     }
     
     function formatTime(seconds) {
