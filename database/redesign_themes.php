@@ -13,7 +13,7 @@ echo "Theme Redesign Script\n";
 echo "=====================\n\n";
 
 try {
-    $pdo = getDbConnection();
+    $pdo = getDB();
     
     // Delete all existing themes (except user themes - they have user_id set)
     echo "1. Deleting system themes...\n";
