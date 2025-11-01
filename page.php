@@ -323,40 +323,46 @@ $bodyFont = $fonts['body'];
         
         .podcast-compact-player {
             position: relative;
-            padding: 1rem;
-            min-height: 140px;
+            padding: 0.875rem;
+            min-height: 110px;
             display: flex;
             flex-direction: column;
         }
         
         .podcast-header-compact {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
+            top: 0.75rem;
+            right: 0.75rem;
             z-index: 10;
         }
         
         .rss-icon {
             color: #ff6600;
-            font-size: 1.25rem;
-            opacity: 0.8;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .rss-icon:hover {
+            opacity: 1;
         }
         
         .podcast-main-content {
             display: flex;
-            gap: 1rem;
+            gap: 0.875rem;
             align-items: flex-start;
-            min-height: 140px;
+            min-height: 110px;
         }
         
         .podcast-cover-compact {
-            width: 140px;
-            height: 140px;
-            border-radius: 12px;
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
             object-fit: cover;
             flex-shrink: 0;
-            background: #f0f0f0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 100%);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .podcast-info-compact {
@@ -364,26 +370,27 @@ $bodyFont = $fonts['body'];
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.375rem;
         }
         
         .podcast-title-compact {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-color);
-            line-height: 1.3;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            line-height: 1.25;
             margin: 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            letter-spacing: -0.01em;
         }
         
         .episode-title-compact {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             font-weight: 400;
-            color: var(--text-color);
-            opacity: 0.7;
+            color: var(--primary-color);
+            opacity: 0.65;
             line-height: 1.3;
             margin: 0;
             display: -webkit-box;
@@ -396,29 +403,29 @@ $bodyFont = $fonts['body'];
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
-            margin-top: 0.25rem;
+            gap: 0.625rem;
+            margin-top: 0.375rem;
         }
         
         .skip-back-btn,
         .skip-forward-btn {
-            width: 44px;
-            height: 44px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             border: none;
-            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.8) 100%);
+            background: var(--primary-color);
             color: var(--secondary-color);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-size: 0.875rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.75rem;
             padding: 0;
             position: relative;
-            gap: 0.1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+            gap: 0.05rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -444,10 +451,10 @@ $bodyFont = $fonts['body'];
         }
         
         .play-pause-btn {
-            width: 73px;
-            height: 73px;
-            font-size: 1.375rem;
-            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.9) 100%);
+            width: 56px;
+            height: 56px;
+            font-size: 1.125rem;
+            background: var(--primary-color);
             color: var(--secondary-color);
             border: none;
             border-radius: 50%;
@@ -455,10 +462,10 @@ $bodyFont = $fonts['body'];
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 0;
             position: relative;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
             z-index: 2;
             flex-shrink: 0;
             overflow: hidden;
@@ -483,26 +490,26 @@ $bodyFont = $fonts['body'];
         }
         
         .skip-label {
-            font-size: 0.7rem;
+            font-size: 0.625rem;
             line-height: 1;
             margin: 0;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            opacity: 0.9;
             z-index: 1;
         }
         
         .skip-back-btn:hover,
         .play-pause-btn:hover,
         .skip-forward-btn:hover {
-            transform: scale(1.12) translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: scale(1.08) translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
         }
         
         .skip-back-btn:active,
         .play-pause-btn:active,
         .skip-forward-btn:active {
-            transform: scale(1.05) translateY(0);
+            transform: scale(1.02) translateY(0);
             transition: transform 0.1s ease;
         }
         
@@ -528,31 +535,31 @@ $bodyFont = $fonts['body'];
         
         .volume-btn,
         .expand-drawer-btn {
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
-            min-height: 36px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
             border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
             color: var(--primary-color);
             cursor: pointer;
             display: flex;
             flex-shrink: 0;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-size: 0.875rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.8125rem;
             padding: 0;
             position: relative;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
         
         .expand-drawer-btn {
-            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.85) 100%);
+            background: var(--primary-color);
             color: var(--secondary-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
         }
         
         .expand-drawer-btn::before {
@@ -563,9 +570,9 @@ $bodyFont = $fonts['body'];
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
             transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
+            transition: width 0.3s ease, height 0.3s ease;
         }
         
         .expand-drawer-btn:hover::before {
@@ -574,8 +581,8 @@ $bodyFont = $fonts['body'];
         }
         
         .expand-drawer-btn:hover {
-            transform: scale(1.15) translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            transform: scale(1.1) translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
         }
         
         .expand-drawer-btn:active {
@@ -583,7 +590,7 @@ $bodyFont = $fonts['body'];
         }
         
         .drawer-icon-toggle {
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1;
             position: relative;
         }
@@ -593,17 +600,19 @@ $bodyFont = $fonts['body'];
         }
         
         .expand-drawer-btn.active {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, var(--primary-color) 100%);
+            background: var(--primary-color);
+            opacity: 0.95;
         }
         
         .volume-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 100%);
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(0, 0, 0, 0.12);
+            transform: scale(1.08);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
         }
         
         .volume-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
         }
         
         .volume-btn i,
@@ -620,36 +629,38 @@ $bodyFont = $fonts['body'];
         .progress-container {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.625rem;
             width: 100%;
             margin-top: 0.5rem;
         }
         
         .current-time,
         .total-time {
-            font-size: 0.75rem;
-            color: var(--text-color);
-            opacity: 0.8;
+            font-size: 0.6875rem;
+            color: var(--primary-color);
+            opacity: 0.7;
             white-space: nowrap;
-            min-width: 40px;
+            min-width: 36px;
             text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
         }
         
         .progress-bar-wrapper {
             flex: 1;
             position: relative;
-            height: 40px;
+            height: 32px;
             display: flex;
             align-items: center;
-            padding: 0 8px;
+            padding: 0 6px;
         }
         
         .progress-bar {
             position: relative;
-            width: calc(100% - 16px);
-            height: 6px;
-            background: rgba(0, 0, 0, 0.12);
-            border-radius: 3px;
+            width: calc(100% - 12px);
+            height: 4px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 2px;
             cursor: pointer;
             z-index: 2;
             overflow: visible;
@@ -662,11 +673,10 @@ $bodyFont = $fonts['body'];
             left: 0;
             height: 100%;
             width: var(--progress-width, 0%);
-            background: linear-gradient(90deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.8) 100%);
-            border-radius: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
             transition: width 0.1s linear;
             pointer-events: none;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
         }
         
         .progress-fill::after {
@@ -689,24 +699,24 @@ $bodyFont = $fonts['body'];
             position: absolute;
             top: 50%;
             left: var(--progress-width, 0%);
-            width: 16px;
-            height: 16px;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            width: 12px;
+            height: 12px;
+            background: var(--secondary-color);
             border-radius: 50%;
-            border: 3px solid var(--secondary-color);
+            border: 2px solid var(--primary-color);
             cursor: grab;
             z-index: 10;
             transform: translate(-50%, -50%);
             transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: auto;
-            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             touch-action: none;
         }
         
         .progress-scrubber:active {
             cursor: grabbing;
-            transform: translate(-50%, -50%) scale(1.3);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transform: translate(-50%, -50%) scale(1.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
         
@@ -715,12 +725,12 @@ $bodyFont = $fonts['body'];
         }
         
         .progress-bar-wrapper:hover .progress-scrubber {
-            transform: translate(-50%, -50%) scale(1.25);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
         }
         
         .progress-bar-wrapper:hover .progress-fill {
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+            opacity: 0.9;
         }
         
         /* Compact Drawer Tray - Expands from widget, pushes content down */
@@ -1036,36 +1046,36 @@ $bodyFont = $fonts['body'];
         @media (max-width: 768px) {
             .podcast-compact-player {
                 padding: 0.75rem;
-                gap: 0.5rem;
-                min-height: 140px;
+                min-height: 110px;
             }
             
             .podcast-main-content {
-                min-height: 140px;
+                min-height: 110px;
+                gap: 0.75rem;
             }
             
             .podcast-cover-compact {
-                width: 140px;
-                height: 140px;
+                width: 90px;
+                height: 90px;
             }
             
             .skip-back-btn,
             .skip-forward-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 0.75rem;
+                width: 36px;
+                height: 36px;
+                font-size: 0.6875rem;
             }
             
             .play-pause-btn {
-                width: 73px;
-                height: 73px;
-                font-size: 1.375rem;
+                width: 52px;
+                height: 52px;
+                font-size: 1rem;
             }
             
             .expand-drawer-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 0.875rem;
+                width: 30px;
+                height: 30px;
+                font-size: 0.75rem;
             }
             
             .podcast-bottom-sheet {
