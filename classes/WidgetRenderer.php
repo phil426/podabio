@@ -692,7 +692,9 @@ class WidgetRenderer {
             $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="Toggle drawer" title="Toggle drawer"><i class="fas fa-chevron-down drawer-icon-toggle"></i></button>';
             $html .= '</div>';
             $html .= '<div class="progress-container">';
-            $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '"></div>';
+            $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '">';
+            $html .= '<canvas class="waveform-canvas" id="waveform-' . $widgetId . '" width="100" height="30"></canvas>';
+            $html .= '</div>';
             $html .= '<span class="time-display" id="time-display-' . $widgetId . '">0:00 / 0:00</span>';
             $html .= '</div>';
             $html .= '</div>';
@@ -701,8 +703,8 @@ class WidgetRenderer {
             // Audio element (hidden)
             $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
             
-            // Bottom Sheet Drawer (initially visible, auto-hides after 3s)
-            $html .= '<div class="podcast-bottom-sheet" id="' . htmlspecialchars($drawerId) . '">';
+            // Bottom Sheet Drawer (initially hidden)
+            $html .= '<div class="podcast-bottom-sheet hidden" id="' . htmlspecialchars($drawerId) . '">';
             $html .= '<div class="drawer-backdrop" id="drawer-backdrop-' . $widgetId . '"></div>';
             $html .= '<div class="drawer-content-wrapper">';
             $html .= '<div class="drawer-drag-handle"></div>';
@@ -889,8 +891,15 @@ class WidgetRenderer {
         const episode = episodes[index];
         if (!audio || !episode.audio) return;
         audio.pause();
+        stopWaveformAnimation();
         audio.src = episode.audio;
         audio.load();
+        
+        // Reset waveform
+        if (waveformCanvas && waveformCtx) {
+            waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        }
+        
         const titleEl = document.getElementById("episode-title-" + widgetId);
         if (titleEl) titleEl.textContent = episode.title;
         const coverEl = document.getElementById("podcast-cover-" + widgetId);
@@ -1073,11 +1082,7 @@ class WidgetRenderer {
                         }
                         renderEpisodes();
                         
-                        // Auto-expand drawer on initial load for 3 seconds
-                        openDrawer();
-                        autoCollapseTimer = setTimeout(() => {
-                            if (!hasUserInteracted) closeDrawer();
-                        }, 3000);
+                        // Drawer starts closed (user can open it with toggle button)
                     } else {
                         showError("No playable episodes found in RSS feed.");
                     }

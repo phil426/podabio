@@ -346,6 +346,13 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 0.75rem;
             padding: 0;
+            position: relative;
+        }
+        
+        .skip-back-btn,
+        .skip-forward-btn {
+            flex-direction: column;
+            gap: 0.15rem;
         }
         
         .play-pause-btn {
@@ -383,8 +390,10 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         }
         
         .skip-label {
-            font-size: 0.65rem;
-            margin: 0 0.25rem;
+            font-size: 0.6rem;
+            line-height: 1;
+            margin: 0;
+            font-weight: 500;
         }
         
         .progress-container {
@@ -396,11 +405,20 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         
         .progress-bar {
             flex: 1;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.1);
+            height: 30px;
+            background: transparent;
             border-radius: 2px;
             overflow: hidden;
             position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .waveform-canvas {
+            width: 100%;
+            height: 30px;
+            display: block;
+            cursor: pointer;
         }
         
         .progress-bar::after {
@@ -410,8 +428,10 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             left: 0;
             height: 100%;
             width: var(--progress-width, 0%);
-            background-color: var(--primary-color);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.05) 100%);
+            pointer-events: none;
             transition: width 0.1s linear;
+            mix-blend-mode: multiply;
         }
         
         .time-display {
@@ -430,7 +450,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             background: var(--secondary-color);
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
             margin-top: 0.5rem;
             transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
             will-change: height;
