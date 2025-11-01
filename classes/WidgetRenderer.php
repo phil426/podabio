@@ -671,6 +671,7 @@ class WidgetRenderer {
             $title = $widget['title'] ?? 'Podcast Player';
             $rssFeedUrl = $configData['rss_feed_url'] ?? '';
             $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+            $pageId = isset($widget['page_id']) ? (int)$widget['page_id'] : 0;
             
             if (empty($rssFeedUrl)) {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
@@ -680,6 +681,11 @@ class WidgetRenderer {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
             }
         
+            // Get social icons for this page
+            require_once __DIR__ . '/Page.php';
+            $pageClass = new Page();
+            $socialIcons = $pageClass->getSocialIcons($pageId);
+            
             $containerId = 'podnbio-player-' . $widgetId;
             $playerId = 'podnbio-audio-' . $widgetId;
             $drawerId = 'podnbio-drawer-' . $widgetId;
@@ -726,11 +732,13 @@ class WidgetRenderer {
             $html .= '<button class="tab-btn active" data-tab="shownotes" id="tab-shownotes-' . $widgetId . '">Show Notes</button>';
             $html .= '<button class="tab-btn" data-tab="chapters" id="tab-chapters-' . $widgetId . '">Chapters</button>';
             $html .= '<button class="tab-btn" data-tab="episodes" id="tab-episodes-' . $widgetId . '">More Episodes</button>';
+            $html .= '<button class="tab-btn" data-tab="follow" id="tab-follow-' . $widgetId . '">Follow</button>';
             $html .= '</div>';
             $html .= '<div class="drawer-panels">';
             $html .= '<div class="tab-panel active" id="shownotes-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="chapters-panel-' . $widgetId . '"></div>';
             $html .= '<div class="tab-panel" id="episodes-panel-' . $widgetId . '"></div>';
+            $html .= '<div class="tab-panel" id="follow-panel-' . $widgetId . '"></div>';
             $html .= '</div>'; // Close drawer-panels
             $html .= '</div>'; // Close drawer-content-wrapper
             $html .= '</div>'; // Close podcast-bottom-sheet
@@ -744,7 +752,7 @@ class WidgetRenderer {
             $html .= '</div>'; // Close widget-item widget-podcast-custom
             
             // Inline JavaScript (HTML5 Audio + Vanilla JS)
-            $html .= self::getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssFeedUrl);
+            $html .= self::getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssFeedUrl, $socialIcons);
         
             return $html;
         } catch (Exception $e) {
@@ -757,13 +765,14 @@ class WidgetRenderer {
      * Get inline JavaScript for PodNBio Player
      * Full HTML5 Audio + Vanilla JS implementation
      */
-    private static function getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssUrl) {
+    private static function getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssUrl, $socialIcons = []) {
         // Escape variables for JavaScript
         $jsWidgetId = (int)$widgetId;
         $jsContainerId = json_encode($containerId);
         $jsPlayerId = json_encode($playerId);
         $jsDrawerId = json_encode($drawerId);
         $jsRssUrl = json_encode($rssUrl);
+        $jsSocialIcons = json_encode($socialIcons);
         
         return '<script>
 (function() {
@@ -772,6 +781,7 @@ class WidgetRenderer {
     const playerId = ' . $jsPlayerId . ';
     const drawerId = ' . $jsDrawerId . ';
     const rssUrl = ' . $jsRssUrl . ';
+    const socialIcons = ' . $jsSocialIcons . ';
     
     let audio = null;
     let episodes = [];
@@ -780,6 +790,7 @@ class WidgetRenderer {
     let feedData = null;
     let autoCollapseTimer = null;
     let hasUserInteracted = false;
+    let isDragging = false;
     
     function initAudio() {
         audio = document.getElementById(playerId);
@@ -818,7 +829,7 @@ class WidgetRenderer {
     
     function updateProgress() {
         if (!audio) return;
-        // Don't update progress while dragging (to avoid conflict)
+        // Do not update progress while dragging (to avoid conflict)
         if (isDragging) return;
         
         const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
@@ -900,7 +911,7 @@ class WidgetRenderer {
         const progressBar = document.getElementById("progress-bar-" + widgetId);
         if (!progressBar) return;
         
-        // Don't seek if clicking on the scrubber itself
+        // Do not seek if clicking on the scrubber itself
         if (event.target && event.target.id === "progress-scrubber-" + widgetId) {
             return;
         }
@@ -910,8 +921,6 @@ class WidgetRenderer {
         const percent = Math.max(0, Math.min(1, clickX / rect.width));
         audio.currentTime = percent * audio.duration;
     }
-    
-    let isDragging = false;
     
     function startDrag(event) {
         if (!audio || !audio.duration) return;
@@ -933,7 +942,7 @@ class WidgetRenderer {
             const scrubberLeft = scrubber.getBoundingClientRect().left;
             clickX = scrubberLeft - rect.left + 8; // Add half scrubber width
         } else {
-            // Dragging from progress bar
+            // Dragging from progress bar area
             const rect = progressBar.getBoundingClientRect();
             clickX = (event.clientX || (event.touches && event.touches[0].clientX)) - rect.left;
         }
@@ -950,7 +959,7 @@ class WidgetRenderer {
         const progressWrapper = document.getElementById("progress-wrapper-" + widgetId);
         if (!progressBar || !progressWrapper) return;
         
-        // Use progress bar's rect for accurate calculation
+        // Use progress bar rect for accurate calculation
         const rect = progressBar.getBoundingClientRect();
         const dragX = (event.clientX || (event.touches && event.touches[0].clientX)) - rect.left;
         const percent = Math.max(0, Math.min(1, dragX / rect.width));
@@ -1186,6 +1195,55 @@ class WidgetRenderer {
         });
     }
     
+    function getPlatformIcon(platformName) {
+        const platform = platformName.toLowerCase();
+        const iconMap = {
+            'facebook': 'fab fa-facebook',
+            'twitter': 'fab fa-twitter',
+            'instagram': 'fab fa-instagram',
+            'youtube': 'fab fa-youtube',
+            'tiktok': 'fab fa-tiktok',
+            'spotify': 'fab fa-spotify',
+            'apple': 'fab fa-apple',
+            'apple podcasts': 'fab fa-podcast',
+            'linkedin': 'fab fa-linkedin',
+            'pinterest': 'fab fa-pinterest',
+            'snapchat': 'fab fa-snapchat',
+            'reddit': 'fab fa-reddit',
+            'discord': 'fab fa-discord',
+            'twitch': 'fab fa-twitch',
+            'patreon': 'fab fa-patreon',
+            'email': 'fas fa-envelope',
+            'website': 'fas fa-globe',
+            'website url': 'fas fa-link'
+        };
+        return iconMap[platform] || 'fas fa-link';
+    }
+    
+    function renderFollow() {
+        const panel = document.getElementById("follow-panel-" + widgetId);
+        if (!panel) return;
+        
+        if (!socialIcons || socialIcons.length === 0) {
+            panel.innerHTML = "<div class=\"follow-empty\">No social links available.</div>";
+            return;
+        }
+        
+        let html = "<div class=\"follow-buttons\">";
+        socialIcons.forEach((icon) => {
+            const platformName = icon.platform_name || icon.platformName || 'Link';
+            const url = icon.url || '';
+            const iconClass = icon.icon || getPlatformIcon(platformName);
+            
+            html += "<a href=\"" + escapeHtml(url) + "\" class=\"follow-button\" target=\"_blank\" rel=\"noopener noreferrer\">";
+            html += "<i class=\"" + escapeHtml(iconClass) + "\"></i>";
+            html += "<span class=\"follow-button-label\">" + escapeHtml(platformName) + "</span>";
+            html += "</a>";
+        });
+        html += "</div>";
+        panel.innerHTML = html;
+    }
+    
     function escapeHtml(text) {
         const div = document.createElement("div");
         div.textContent = text;
@@ -1335,10 +1393,20 @@ class WidgetRenderer {
     });
     document.querySelectorAll("#" + drawerId + " .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-            switchTab(btn.getAttribute("data-tab"));
+            const tabName = btn.getAttribute("data-tab");
+            switchTab(tabName);
             hasUserInteracted = true;
+            
+            // Render follow tab when opened
+            if (tabName === "follow") {
+                renderFollow();
+            }
         });
     });
+    
+    // Initial render of follow tab
+    renderFollow();
+    
     fetchAndParseRSS();
 })();
 </script>';

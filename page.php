@@ -1028,7 +1028,96 @@ $bodyFont = $fonts['body'];
             overflow: hidden;
         }
         
+        /* Follow Tab Styles */
+        .follow-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        
+        .follow-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .follow-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .follow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: var(--secondary-color);
+        }
+        
+        .follow-button:hover::before {
+            opacity: 0.1;
+        }
+        
+        .follow-button i {
+            font-size: 1.125rem;
+            width: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.2s ease;
+        }
+        
+        .follow-button:hover i {
+            transform: scale(1.1);
+        }
+        
+        .follow-button-label {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .follow-empty {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-color);
+            opacity: 0.6;
+            font-size: 0.875rem;
+        }
+        
         @media (max-width: 768px) {
+            .follow-buttons {
+                grid-template-columns: 1fr;
+                gap: 0.625rem;
+            }
+            
+            .follow-button {
+                padding: 1rem 1.125rem;
+            }
+            
             .podcast-compact-player {
                 padding: 0.75rem;
                 min-height: 110px;
