@@ -802,8 +802,8 @@ class WidgetRenderer {
             
             // Resume AudioContext on user interaction (required by browser autoplay policy)
             const resumeAudioContext = () => {
-                if (audioContext && audioContext.state === 'suspended') {
-                    audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
+                if (audioContext && audioContext.state === "suspended") {
+                    audioContext.resume().catch(e => console.warn("AudioContext resume failed:", e));
                 }
             };
             
@@ -974,33 +974,33 @@ class WidgetRenderer {
         }
         
         // Resume AudioContext if suspended (required by browser autoplay policy)
-        if (audioContext && audioContext.state === 'suspended') {
+        if (audioContext && audioContext.state === "suspended") {
             audioContext.resume().then(() => {
                 if (audio.paused) {
                     audio.play().catch(e => {
-                        console.error('Play failed:', e);
+                        console.error("Play failed:", e);
                         // Try again without AudioContext if it fails
-                        if (audioContext && audioContext.state === 'suspended') {
+                        if (audioContext && audioContext.state === "suspended") {
                             // Fallback: try direct play
-                            audio.play().catch(err => console.error('Direct play also failed:', err));
+                            audio.play().catch(err => console.error("Direct play also failed:", err));
                         }
                     });
                 } else {
                     audio.pause();
                 }
             }).catch(e => {
-                console.warn('AudioContext resume failed:', e);
+                console.warn("AudioContext resume failed:", e);
                 // Try direct play/pause anyway
-                audio.paused ? audio.play().catch(err => console.error('Play failed:', err)) : audio.pause();
+                audio.paused ? audio.play().catch(err => console.error("Play failed:", err)) : audio.pause();
             });
         } else {
             if (audio.paused) {
                 audio.play().catch(e => {
-                    console.error('Play failed:', e);
+                    console.error("Play failed:", e);
                     // If play fails, try to ensure AudioContext is running
-                    if (audioContext && audioContext.state === 'suspended') {
+                    if (audioContext && audioContext.state === "suspended") {
                         audioContext.resume().then(() => {
-                            audio.play().catch(err => console.error('Play failed after resume:', err));
+                            audio.play().catch(err => console.error("Play failed after resume:", err));
                         });
                     }
                 });
