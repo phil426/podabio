@@ -739,7 +739,7 @@ class WidgetRenderer {
             $html .= '</div>'; // Close widget-content
             
             // Audio element (hidden)
-            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata" crossorigin="anonymous"></audio>';
+            $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
             
             $html .= '</div>'; // Close widget-item widget-podcast-custom
             
@@ -947,7 +947,6 @@ class WidgetRenderer {
         const episode = episodes[index];
         if (!audio || !episode.audio) return;
         audio.pause();
-        audio.crossOrigin = "anonymous";  // Ensure CORS is set before loading
         audio.src = episode.audio;
         audio.volume = 1.0;
         audio.muted = false;
