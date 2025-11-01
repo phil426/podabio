@@ -399,12 +399,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .podcast-controls-compact {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .podcast-controls-compact {
-            display: flex;
-            align-items: center;
             justify-content: center;
             gap: 0.75rem;
             margin-top: 0.25rem;
