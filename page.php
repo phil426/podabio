@@ -698,7 +698,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .progress-scrubber {
             position: absolute;
             top: 50%;
-            left: 0;
+            left: clamp(0px, calc(var(--progress-width, 0%) - 8px), calc(100% - 16px));
             width: 16px;
             height: 16px;
             background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
@@ -706,20 +706,20 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             border: 3px solid var(--secondary-color);
             cursor: grab;
             z-index: 10;
-            transform: translateY(-50%) translateX(calc(var(--progress-width, 0%) * (100% - 16px) / 100%));
-            transition: transform 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
+            transform: translateY(-50%);
+            transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: none;
             box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
         }
         
         .progress-scrubber:active {
             cursor: grabbing;
-            transform: translateY(-50%) translateX(calc(var(--progress-width, 0%) * (100% - 16px) / 100%)) scale(1.3);
+            transform: translateY(-50%) scale(1.3);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
         
         .progress-bar-wrapper:hover .progress-scrubber {
-            transform: translateY(-50%) translateX(calc(var(--progress-width, 0%) * (100% - 16px) / 100%)) scale(1.25);
+            transform: translateY(-50%) scale(1.25);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         }
         
