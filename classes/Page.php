@@ -85,11 +85,15 @@ class Page {
         }
         
         try {
+            // Get first available theme or use NULL if none exist
+            $defaultTheme = fetchOne("SELECT id FROM themes WHERE is_active = 1 ORDER BY id LIMIT 1");
+            $themeId = $defaultTheme ? $defaultTheme['id'] : null;
+            
             $stmt = $this->pdo->prepare("
                 INSERT INTO pages (user_id, username, theme_id, layout_option)
-                VALUES (?, ?, 1, 'layout1')
+                VALUES (?, ?, ?, 'layout1')
             ");
-            $stmt->execute([$userId, $username]);
+            $stmt->execute([$userId, $username, $themeId]);
             
             $pageId = $this->pdo->lastInsertId();
             
