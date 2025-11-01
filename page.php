@@ -1072,11 +1072,6 @@ $bodyFont = $fonts['body'] ?? 'Inter';
                 font-size: 0.875rem;
             }
             
-            .play-pause-btn {
-                width: 34px;
-                height: 34px;
-            }
-            
             .podcast-bottom-sheet {
                 max-height: 90vh;
                 border-radius: 0;
