@@ -808,8 +808,8 @@ class WidgetRenderer {
             };
             
             // Resume on any user interaction
-            document.addEventListener('click', resumeAudioContext, { once: true });
-            document.addEventListener('touchstart', resumeAudioContext, { once: true });
+            document.addEventListener("click", resumeAudioContext, { once: true });
+            document.addEventListener("touchstart", resumeAudioContext, { once: true });
             
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 256;
