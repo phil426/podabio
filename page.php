@@ -702,14 +702,14 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             transform: translate(-50%, -50%);
             width: 16px;
             height: 16px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 0, 0, 0.9) 100%);
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
             border-radius: 50%;
             border: 3px solid var(--secondary-color);
             cursor: grab;
             z-index: 10;
             transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
         }
         
         .progress-scrubber:active {
