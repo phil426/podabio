@@ -1504,8 +1504,8 @@ $bodyFont = $fonts['body'];
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--secondary-color);
-            border: 2px solid var(--primary-color);
+            background: transparent;
+            border: none;
             color: var(--primary-color);
             text-decoration: none;
             transition: all 0.3s ease;
@@ -1518,7 +1518,7 @@ $bodyFont = $fonts['body'];
         
         .social-icon:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            opacity: 0.8;
         }
         
         .drawer-overlay {
