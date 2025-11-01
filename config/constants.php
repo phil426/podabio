@@ -95,6 +95,12 @@ define('PLAN_FREE', 'free');
 define('PLAN_PREMIUM', 'premium');
 define('PLAN_PRO', 'pro');
 
+// Theme defaults
+define('THEME_DEFAULT_PRIMARY_COLOR', '#000000');
+define('THEME_DEFAULT_SECONDARY_COLOR', '#ffffff');
+define('THEME_DEFAULT_ACCENT_COLOR', '#0066ff');
+define('THEME_DEFAULT_FONT', 'Inter');
+
 // Timezone
 date_default_timezone_set('UTC');
 

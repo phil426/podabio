@@ -13,6 +13,7 @@ require_once __DIR__ . '/includes/security.php';
 require_once __DIR__ . '/classes/Page.php';
 require_once __DIR__ . '/classes/User.php';
 require_once __DIR__ . '/classes/Subscription.php';
+require_once __DIR__ . '/classes/Theme.php';
 require_once __DIR__ . '/config/oauth.php';
 
 // Require authentication
@@ -114,8 +115,9 @@ if ($page) {
     $socialIcons = $pageClass->getSocialIcons($pageId);
 }
 
-// Get themes
-$themes = fetchAll("SELECT * FROM themes WHERE is_active = 1 ORDER BY name ASC");
+// Get themes using Theme class
+$themeClass = new Theme();
+$themes = $themeClass->getAllThemes(true);
 
 $csrfToken = generateCSRFToken();
 
@@ -1465,10 +1467,11 @@ $csrfToken = generateCSRFToken();
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors if no theme is selected or to override theme colors.</small>
                 
                 <?php
-                $pageColors = $page['colors'] ? json_decode($page['colors'], true) : [];
-                $customPrimary = $pageColors['primary'] ?? '#000000';
-                $customSecondary = $pageColors['secondary'] ?? '#ffffff';
-                $customAccent = $pageColors['accent'] ?? '#0066ff';
+                // Get theme colors with fallbacks using Theme class
+                $colors = getThemeColors($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null);
+                $customPrimary = $colors['primary'];
+                $customSecondary = $colors['secondary'];
+                $customAccent = $colors['accent'];
                 ?>
                 
                 <div class="form-group">
@@ -1507,28 +1510,13 @@ $csrfToken = generateCSRFToken();
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for headings and body text. Popular Google Fonts are included.</small>
                 
                 <?php
-                $pageFonts = $page['fonts'] ? json_decode($page['fonts'], true) : [];
-                $customHeadingFont = $pageFonts['heading'] ?? 'Inter';
-                $customBodyFont = $pageFonts['body'] ?? 'Inter';
+                // Get theme fonts with fallbacks using Theme class
+                $fonts = getThemeFonts($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null);
+                $customHeadingFont = $fonts['heading'];
+                $customBodyFont = $fonts['body'];
                 
-                // Popular Google Fonts
-                $googleFonts = [
-                    'Inter' => 'Inter',
-                    'Roboto' => 'Roboto',
-                    'Open Sans' => 'Open Sans',
-                    'Lato' => 'Lato',
-                    'Montserrat' => 'Montserrat',
-                    'Poppins' => 'Poppins',
-                    'Raleway' => 'Raleway',
-                    'Source Sans Pro' => 'Source Sans Pro',
-                    'Playfair Display' => 'Playfair Display',
-                    'Merriweather' => 'Merriweather',
-                    'Nunito' => 'Nunito',
-                    'Oswald' => 'Oswald',
-                    'PT Sans' => 'PT Sans',
-                    'Ubuntu' => 'Ubuntu',
-                    'Crimson Text' => 'Crimson Text'
-                ];
+                // Get Google Fonts list from helper function
+                $googleFonts = getGoogleFontsList();
                 ?>
                 
                 <div class="form-group">

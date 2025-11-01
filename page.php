@@ -9,6 +9,7 @@ require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/classes/Page.php';
 require_once __DIR__ . '/classes/Analytics.php';
+require_once __DIR__ . '/classes/Theme.php';
 
 // Check if request is for custom domain or username
 $domain = $_SERVER['HTTP_HOST'];
@@ -45,22 +46,22 @@ $links = $pageClass->getLinks($page['id']); // Legacy support
 // Removed episodes - now handled via Podcast Player widget
 $socialIcons = $pageClass->getSocialIcons($page['id']);
 
-// Get theme
+// Get theme and extract colors/fonts using Theme class
+$themeClass = new Theme();
 $theme = null;
 if ($page['theme_id']) {
-    $theme = $pageClass->getTheme($page['theme_id']);
+    $theme = $themeClass->getTheme($page['theme_id']);
 }
 
-// Parse theme colors/fonts
-$colors = $page['colors'] ? json_decode($page['colors'], true) : ($theme ? json_decode($theme['colors'], true) : []);
-$fonts = $page['fonts'] ? json_decode($page['fonts'], true) : ($theme ? json_decode($theme['fonts'], true) : []);
+$colors = getThemeColors($page, $theme);
+$fonts = getThemeFonts($page, $theme);
 
-// Default values
-$primaryColor = $colors['primary'] ?? '#000000';
-$secondaryColor = $colors['secondary'] ?? '#ffffff';
-$accentColor = $colors['accent'] ?? '#0066ff';
-$headingFont = $fonts['heading'] ?? 'Inter';
-$bodyFont = $fonts['body'] ?? 'Inter';
+// Extract individual values
+$primaryColor = $colors['primary'];
+$secondaryColor = $colors['secondary'];
+$accentColor = $colors['accent'];
+$headingFont = $fonts['heading'];
+$bodyFont = $fonts['body'];
 
 ?>
 <!DOCTYPE html>
@@ -72,14 +73,8 @@ $bodyFont = $fonts['body'] ?? 'Inter';
     
     <!-- Google Fonts -->
     <?php
-    // Load fonts if custom fonts are set
-    $headingFont = $fonts['heading'] ?? 'Inter';
-    $bodyFont = $fonts['body'] ?? 'Inter';
-    
-    // Build Google Fonts URL
-    $headingFontUrl = str_replace(' ', '+', $headingFont);
-    $bodyFontUrl = str_replace(' ', '+', $bodyFont);
-    $fontUrl = "https://fonts.googleapis.com/css2?family={$headingFontUrl}:wght@400;600;700&family={$bodyFontUrl}:wght@400;500&display=swap";
+    // Build Google Fonts URL using Theme class
+    $fontUrl = $themeClass->buildGoogleFontsUrl($fonts);
     ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

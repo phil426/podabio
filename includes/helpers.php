@@ -334,3 +334,81 @@ function fa_icon($icon, $style = 'solid', $class = '') {
     return '<i class="' . h($classes) . '" aria-hidden="true"></i>';
 }
 
+/**
+ * Safe JSON parsing for theme data with error handling
+ * @param string $json JSON string to parse
+ * @param mixed $default Default value if parsing fails
+ * @return mixed Parsed data or default value
+ */
+function parseThemeJson($json, $default = []) {
+    if (empty($json)) {
+        return $default;
+    }
+    
+    // If already an array, return as-is
+    if (is_array($json)) {
+        return $json;
+    }
+    
+    // Try to decode JSON
+    $decoded = json_decode($json, true);
+    
+    // Check for JSON errors
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+        return $decoded;
+    }
+    
+    // Return default on error
+    return $default;
+}
+
+/**
+ * Get theme colors for a page
+ * Wrapper function for Theme class
+ * @param array $page Page data array
+ * @param array|null $theme Optional theme data array
+ * @return array Colors array with primary, secondary, accent keys
+ */
+function getThemeColors($page, $theme = null) {
+    require_once __DIR__ . '/../classes/Theme.php';
+    $themeObj = new Theme();
+    return $themeObj->getThemeColors($page, $theme);
+}
+
+/**
+ * Get theme fonts for a page
+ * Wrapper function for Theme class
+ * @param array $page Page data array
+ * @param array|null $theme Optional theme data array
+ * @return array Fonts array with heading, body keys
+ */
+function getThemeFonts($page, $theme = null) {
+    require_once __DIR__ . '/../classes/Theme.php';
+    $themeObj = new Theme();
+    return $themeObj->getThemeFonts($page, $theme);
+}
+
+/**
+ * Get available Google Fonts list
+ * @return array Associative array of font values => display names
+ */
+function getGoogleFontsList() {
+    return [
+        'Inter' => 'Inter',
+        'Roboto' => 'Roboto',
+        'Open Sans' => 'Open Sans',
+        'Lato' => 'Lato',
+        'Montserrat' => 'Montserrat',
+        'Poppins' => 'Poppins',
+        'Raleway' => 'Raleway',
+        'Source Sans Pro' => 'Source Sans Pro',
+        'Playfair Display' => 'Playfair Display',
+        'Merriweather' => 'Merriweather',
+        'Nunito' => 'Nunito',
+        'Oswald' => 'Oswald',
+        'PT Sans' => 'PT Sans',
+        'Ubuntu' => 'Ubuntu',
+        'Crimson Text' => 'Crimson Text'
+    ];
+}
+

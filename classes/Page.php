@@ -222,7 +222,9 @@ class Page {
      * @return array|null
      */
     public function getTheme($themeId) {
-        return fetchOne("SELECT * FROM themes WHERE id = ? AND is_active = 1", [$themeId]);
+        require_once __DIR__ . '/Theme.php';
+        $themeClass = new Theme();
+        return $themeClass->getTheme($themeId);
     }
     
     /**
