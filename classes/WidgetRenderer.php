@@ -330,20 +330,22 @@ class WidgetRenderer {
                                     getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || 
                                     "#0066ff";
                 
+                // Prepare first episode with podcast cover image on the player
+                const firstEpisode = {
+                    title: episodes[currentEpisodeIndex].title,
+                    audio: episodes[currentEpisodeIndex].audio,
+                    cover: podcastCoverImage || episodes[currentEpisodeIndex].cover || "",
+                    description: episodes[currentEpisodeIndex].description || ""
+                };
+                
                 try {
                     playerInstance = new Shikwasa.Player({
                         container: container,
-                        audio: episodes[currentEpisodeIndex],
-                        playlist: episodes.length > 1 ? episodes.slice(1) : [],
+                        audio: firstEpisode,
+                        playlist: [], // No playlist - single episode only
                         themeColor: primaryColor.trim(),
                         theme: "auto"
                     });
-                    
-                    // Setup player event listeners
-                    setupPlayerListeners();
-                    
-                    // Render playlist
-                    renderPlaylist();
                     
                     // Apply additional styling
                     setTimeout(() => {
@@ -359,243 +361,10 @@ class WidgetRenderer {
                 }
             }
             
-            function setupPlayerListeners() {
-                // Sync minimal controls with player state
-                // Wait a bit for Shikwasa to fully initialize
-                setTimeout(() => {
-                    if (!playerInstance) return;
-                    
-                    // Try to get audio element from player
-                    const container = document.getElementById(containerId);
-                    const audio = container ? container.querySelector("audio") : null;
-                    
-                    if (!audio) {
-                        // Try alternative method - Shikwasa might store audio differently
-                        const playerEl = container ? container.querySelector(".shk-player") : null;
-                        if (playerEl) {
-                            // Find audio element within player
-                            const audioEl = playerEl.querySelector("audio");
-                            if (audioEl) {
-                                attachAudioListeners(audioEl);
-                            }
-                        }
-                        return;
-                    }
-                    
-                    attachAudioListeners(audio);
-                }, 200);
-            }
-            
-            function attachAudioListeners(audio) {
-                audio.addEventListener("play", () => {
-                    updateMinimalPlayButton(true);
-                });
-                
-                audio.addEventListener("pause", () => {
-                    updateMinimalPlayButton(false);
-                });
-                
-                audio.addEventListener("timeupdate", () => {
-                    updateMinimalProgress();
-                });
-                
-                audio.addEventListener("loadedmetadata", () => {
-                    updateMinimalProgress();
-                });
-            }
-            
-            function updateMinimalPlayButton(isPlaying) {
-                const btn = document.getElementById("minimal-play-pause-" + widgetId);
-                if (btn) {
-                    const icon = btn.querySelector("i");
-                    if (icon) {
-                        icon.className = isPlaying ? "fas fa-pause" : "fas fa-play";
-                    }
-                }
-            }
-            
-            function updateMinimalProgress() {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const audio = container.querySelector("audio");
-                if (!audio) return;
-                
-                const progress = (audio.currentTime / audio.duration) * 100 || 0;
-                const currentTime = formatTime(audio.currentTime || 0);
-                
-                const progressBar = document.getElementById("minimal-progress-bar-" + widgetId);
-                const timeEl = document.getElementById("minimal-time-" + widgetId);
-                
-                if (progressBar) {
-                    progressBar.style.width = progress + "%";
-                }
-                if (timeEl) {
-                    timeEl.textContent = currentTime;
-                }
-            }
-            
-            function formatTime(seconds) {
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return mins + ":" + (secs < 10 ? "0" : "") + secs;
-            }
-            
-            function renderPlaylist() {
-                const playlistEl = document.getElementById(playlistId);
-                if (!playlistEl || episodes.length === 0) return;
-                
-                // Sanitize HTML to prevent XSS
-                const sanitize = (str) => {
-                    const div = document.createElement("div");
-                    div.textContent = str;
-                    return div.innerHTML;
-                };
-                
-                playlistEl.innerHTML = "<h3 class=\\"playlist-title\\">Episodes</h3><ul class=\\"playlist-list\\">" +
-                    episodes.map((ep, index) => {
-                        const title = sanitize(ep.title);
-                        const description = ep.description ? sanitize(ep.description.substring(0, 100) + "...") : "";
-                        const cover = ep.cover ? sanitize(ep.cover) : "";
-                        const activeClass = index === currentEpisodeIndex ? "active" : "";
-                        return "<li class=\\"playlist-item " + activeClass + "\\" data-index=\\"" + index + "\\">" +
-                            (cover ? "<img src=\\"" + cover + "\\" alt=\\"" + title + "\\" class=\\"playlist-thumbnail\\">" : "") +
-                            "<div class=\\"playlist-info\\">" +
-                            "<div class=\\"playlist-episode-title\\">" + title + "</div>" +
-                            (description ? "<div class=\\"playlist-episode-description\\">" + description + "</div>" : "") +
-                            "</div>" +
-                            "</li>";
-                    }).join("") + "</ul>";
-                
-                // Add click handlers to playlist items
-                playlistEl.querySelectorAll(".playlist-item").forEach(item => {
-                    item.addEventListener("click", () => {
-                        const index = parseInt(item.getAttribute("data-index"));
-                        playEpisode(index);
-                    });
-                });
-            }
-            
-            function playEpisode(index) {
-                if (index < 0 || index >= episodes.length) return;
-                
-                currentEpisodeIndex = index;
-                
-                // Pause current audio if playing
+            function showError(message) {
                 const container = document.getElementById(containerId);
                 if (container) {
-                    const audio = container.querySelector("audio");
-                    if (audio) {
-                        audio.pause();
-                    }
-                    container.innerHTML = "";
-                }
-                
-                // Reinitialize player with new episode
-                setTimeout(() => {
-                    initializePlayer();
-                    renderPlaylist();
-                }, 100);
-            }
-            
-            function setupEventListeners() {
-                // Expand button
-                const expandBtn = document.getElementById("minimal-expand-" + widgetId);
-                if (expandBtn) {
-                    expandBtn.addEventListener("click", openDrawer);
-                }
-                
-                // Close button
-                const closeBtn = document.getElementById("drawer-close-" + widgetId);
-                if (closeBtn) {
-                    closeBtn.addEventListener("click", closeDrawer);
-                }
-                
-                // Play/Pause button
-                const playPauseBtn = document.getElementById("minimal-play-pause-" + widgetId);
-                if (playPauseBtn) {
-                    playPauseBtn.addEventListener("click", togglePlayPause);
-                }
-                
-                // Keyboard controls
-                document.addEventListener("keydown", function(e) {
-                    const drawer = document.getElementById(drawerId);
-                    if (!drawer || drawer.classList.contains("hidden")) return;
-                    
-                    if (e.key === "Escape") {
-                        closeDrawer();
-                    }
-                });
-            }
-            
-            function togglePlayPause() {
-                const container = document.getElementById(containerId);
-                const audio = container ? container.querySelector("audio") : null;
-                
-                // Only toggle if player is already initialized
-                // Do not auto-open drawer - user must click expand button
-                if (!audio || !playerInstance) {
-                    return;
-                }
-                
-                if (audio.paused) {
-                    audio.play();
-                } else {
-                    audio.pause();
-                }
-            }
-            
-            function openDrawer() {
-                const drawer = document.getElementById(drawerId);
-                if (!drawer || drawerOpening || drawerClosing) return;
-                
-                // Prevent multiple simultaneous opens
-                if (!drawer.classList.contains("hidden")) return;
-                
-                drawerOpening = true;
-                
-                // Remove hidden class to trigger animation
-                drawer.classList.remove("hidden");
-                
-                // Initialize player if not already done
-                if (!playerInstance) {
-                    initializePlayer();
-                }
-                
-                // Prevent body scroll when drawer is open
-                document.body.style.overflow = "hidden";
-                
-                // Reset flag after animation completes
-                setTimeout(() => {
-                    drawerOpening = false;
-                }, 350);
-            }
-            
-            function closeDrawer() {
-                const drawer = document.getElementById(drawerId);
-                if (!drawer || drawerOpening || drawerClosing) return;
-                
-                // Prevent multiple simultaneous closes
-                if (drawer.classList.contains("hidden")) return;
-                
-                drawerClosing = true;
-                
-                // Add hidden class to trigger animation
-                drawer.classList.add("hidden");
-                
-                // Restore body scroll
-                document.body.style.overflow = "";
-                
-                // Reset flag after animation completes
-                setTimeout(() => {
-                    drawerClosing = false;
-                }, 350);
-            }
-            
-            function showError(message) {
-                const minimalEl = document.getElementById(minimalId);
-                if (minimalEl) {
-                    minimalEl.innerHTML = `<div class="podcast-error">${message}</div>`;
+                    container.innerHTML = "<div class=\\"podcast-error\\">" + message + "</div>";
                 }
             }
         })();
