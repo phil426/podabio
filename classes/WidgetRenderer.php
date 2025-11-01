@@ -48,6 +48,9 @@ class WidgetRenderer {
             case 'podcast_player':
                 return self::renderPodcastPlayer($widget, $configData);
                 
+            case 'podcast_player_full':
+                return self::renderPodcastPlayerFull($widget, $configData);
+                
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
@@ -646,6 +649,273 @@ class WidgetRenderer {
         } catch (Exception $e) {
             error_log("Podcast player render error: " . $e->getMessage());
             return '<div class="widget-item widget-podcast"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
+        }
+    }
+    
+    /**
+     * Render podcast full player widget (Shikwasa-based, always visible, no drawer)
+     */
+    private static function renderPodcastPlayerFull($widget, $configData) {
+        try {
+            $title = $widget['title'] ?? 'Podcast Player';
+            $rssFeedUrl = $configData['rss_feed_url'] ?? '';
+            $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+            
+            if (empty($rssFeedUrl)) {
+                return '<div class="widget-item widget-podcast-full"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
+            }
+            
+            // Validate widgetId
+            if ($widgetId <= 0) {
+                return '<div class="widget-item widget-podcast-full"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
+            }
+        
+            $containerId = 'shikwasa-podcast-full-' . $widgetId;
+            $playerContainerId = 'shikwasa-player-full-' . $widgetId;
+            $playlistId = 'podcast-playlist-full-' . $widgetId;
+            
+            $html = '<div class="widget-item widget-podcast-full" id="widget-podcast-full-' . $widgetId . '">';
+            $html .= '<div class="widget-content">';
+            
+            // Podcast Header (cover + info)
+            $html .= '<div class="podcast-header-full">';
+            $html .= '<img class="podcast-cover-full" id="podcast-cover-full-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
+            $html .= '<div class="podcast-header-info">';
+            $html .= '<h3 class="podcast-title-full" id="podcast-title-full-' . $widgetId . '">' . htmlspecialchars($title) . '</h3>';
+            $html .= '<p class="episode-title-full" id="episode-title-full-' . $widgetId . '">Loading...</p>';
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            // Full Shikwasa Player (always visible)
+            $html .= '<div id="' . htmlspecialchars($playerContainerId) . '" class="shikwasa-podcast-container-full" data-rss-url="' . htmlspecialchars($rssFeedUrl) . '"></div>';
+            
+            // Playlist (always visible)
+            $html .= '<div id="' . htmlspecialchars($playlistId) . '" class="podcast-playlist-full"></div>';
+            
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            // Add Shikwasa initialization script
+            $html .= '<script>
+        (function() {
+            const widgetId = ' . (int)$widgetId . ';
+            const containerId = ' . json_encode($playerContainerId) . ';
+            const playlistId = ' . json_encode($playlistId) . ';
+            const rssUrl = ' . json_encode($rssFeedUrl) . ';
+            
+            let playerInstance = null;
+            let episodes = [];
+            let currentEpisodeIndex = 0;
+            let feedData = null;
+            
+            // Load Shikwasa library if not already loaded
+            if (!window.Shikwasa) {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.css";
+                document.head.appendChild(link);
+                
+                const script = document.createElement("script");
+                script.src = "https://cdn.jsdelivr.net/npm/shikwasa@2/dist/shikwasa.min.js";
+                script.onload = function() {
+                    fetchAndParseRSS();
+                };
+                document.head.appendChild(script);
+            } else {
+                fetchAndParseRSS();
+            }
+            
+            function fetchAndParseRSS() {
+                fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl))
+                    .then(response => response.json())
+                    .then(data => {
+                        feedData = data;
+                        if (data.status === "ok" && data.items && data.items.length > 0) {
+                            // Parse episodes from RSS feed
+                            episodes = data.items.map(item => {
+                                let audioUrl = null;
+                                
+                                // Method 1: Check enclosure (standard RSS)
+                                if (item.enclosure && item.enclosure.link) {
+                                    audioUrl = item.enclosure.link;
+                                } else if (item.enclosure && item.enclosure.url) {
+                                    audioUrl = item.enclosure.url;
+                                }
+                                
+                                // Method 2: Check media:content (iTunes RSS)
+                                if (!audioUrl && item.media && item.media.content) {
+                                    if (Array.isArray(item.media.content)) {
+                                        const audioContent = item.media.content.find(c => c.$.type && c.$.type.startsWith("audio/"));
+                                        if (audioContent && audioContent.$.url) {
+                                            audioUrl = audioContent.$.url;
+                                        }
+                                    } else if (item.media.content.$.url) {
+                                        audioUrl = item.media.content.$.url;
+                                    }
+                                }
+                                
+                                // Method 3: Check for links in description/content
+                                if (!audioUrl && item.description) {
+                                    const match = item.description.match(/href=["\']([^"\']+\.(mp3|m4a|ogg|wav))["\']/i);
+                                    if (match) {
+                                        audioUrl = match[1];
+                                    }
+                                }
+                                
+                                return {
+                                    title: item.title || "Untitled Episode",
+                                    audio: audioUrl,
+                                    cover: data.feed?.image || item.thumbnail || item.enclosure?.image || "",
+                                    description: item.description || item.content || "",
+                                    pubDate: item.pubDate || ""
+                                };
+                            }).filter(ep => ep.audio);
+                            
+                            if (episodes.length > 0) {
+                                updateHeaderView();
+                                initializePlayer();
+                                renderPlaylist();
+                            } else {
+                                showError("No playable episodes found in RSS feed.");
+                            }
+                        } else {
+                            showError("Failed to load RSS feed. Please check your feed URL.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("RSS fetch error:", error);
+                        showError("Error loading podcast feed. Please try again later.");
+                    });
+            }
+            
+            function updateHeaderView() {
+                if (episodes.length === 0) return;
+                
+                const firstEpisode = episodes[0];
+                const coverEl = document.getElementById("podcast-cover-full-" + widgetId);
+                const podcastTitleEl = document.getElementById("podcast-title-full-" + widgetId);
+                const episodeTitleEl = document.getElementById("episode-title-full-" + widgetId);
+                
+                // Update cover image
+                if (feedData.feed?.image || firstEpisode.cover) {
+                    const coverUrl = feedData.feed?.image || firstEpisode.cover;
+                    coverEl.src = coverUrl;
+                    coverEl.style.display = "block";
+                }
+                
+                // Update titles
+                if (feedData.feed?.title && podcastTitleEl) {
+                    podcastTitleEl.textContent = feedData.feed.title;
+                }
+                if (episodeTitleEl) {
+                    episodeTitleEl.textContent = firstEpisode.title;
+                }
+            }
+            
+            function initializePlayer() {
+                if (episodes.length === 0) return;
+                
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                // Get theme color from CSS variable
+                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--primary-color") || 
+                                    getComputedStyle(document.documentElement).getPropertyValue("--accent-color") || 
+                                    "#0066ff";
+                
+                try {
+                    playerInstance = new Shikwasa.Player({
+                        container: container,
+                        audio: episodes[currentEpisodeIndex],
+                        playlist: episodes.length > 1 ? episodes.slice(1) : [],
+                        themeColor: primaryColor.trim(),
+                        theme: "auto"
+                    });
+                    
+                    // Apply additional styling
+                    setTimeout(() => {
+                        const playerEl = container.querySelector(".shk-player");
+                        if (playerEl) {
+                            playerEl.style.fontFamily = "inherit";
+                            playerEl.style.color = getComputedStyle(document.documentElement).getPropertyValue("--text-color") || "inherit";
+                        }
+                    }, 100);
+                } catch (error) {
+                    console.error("Failed to initialize Shikwasa player:", error);
+                    showError("Failed to load podcast player.");
+                }
+            }
+            
+            function renderPlaylist() {
+                const playlistEl = document.getElementById(playlistId);
+                if (!playlistEl || episodes.length === 0) return;
+                
+                // Sanitize HTML to prevent XSS
+                const sanitize = (str) => {
+                    const div = document.createElement("div");
+                    div.textContent = str;
+                    return div.innerHTML;
+                };
+                
+                playlistEl.innerHTML = "<h4 class=\\"playlist-title-full\\">Episodes</h4><ul class=\\"episode-list-full\\">" +
+                    episodes.map((ep, index) => {
+                        const title = sanitize(ep.title);
+                        const description = ep.description ? sanitize(ep.description.substring(0, 150) + "...") : "";
+                        const cover = ep.cover ? sanitize(ep.cover) : "";
+                        const activeClass = index === currentEpisodeIndex ? "active" : "";
+                        return "<li class=\\"episode-item-full " + activeClass + "\\" data-index=\\"" + index + "\\">" +
+                            (cover ? "<img src=\\"" + cover + "\\" alt=\\"" + title + "\\" class=\\"episode-thumbnail-full\\">" : "") +
+                            "<div class=\\"episode-info-full\\">" +
+                            "<div class=\\"episode-name-full\\">" + title + "</div>" +
+                            (description ? "<div class=\\"episode-desc-full\\">" + description + "</div>" : "") +
+                            "</div>" +
+                            "</li>";
+                    }).join("") + "</ul>";
+                
+                // Add click handlers to playlist items
+                playlistEl.querySelectorAll(".episode-item-full").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const index = parseInt(item.getAttribute("data-index"));
+                        playEpisode(index);
+                    });
+                });
+            }
+            
+            function playEpisode(index) {
+                if (index < 0 || index >= episodes.length) return;
+                
+                currentEpisodeIndex = index;
+                
+                // Pause current audio if playing
+                const container = document.getElementById(containerId);
+                if (container) {
+                    const audio = container.querySelector("audio");
+                    if (audio) {
+                        audio.pause();
+                    }
+                    container.innerHTML = "";
+                }
+                
+                // Reinitialize player with new episode
+                setTimeout(() => {
+                    initializePlayer();
+                    renderPlaylist();
+                }, 100);
+            }
+            
+            function showError(message) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = "<div class=\\"podcast-error\\">" + message + "</div>";
+                }
+            }
+        })();
+        </script>';
+        
+            return $html;
+        } catch (Exception $e) {
+            error_log("Podcast full player render error: " . $e->getMessage());
+            return '<div class="widget-item widget-podcast-full"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
         }
     }
     
