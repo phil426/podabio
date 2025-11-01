@@ -401,13 +401,17 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             overflow-y: auto;
             z-index: 1000;
             transform: translateY(0);
-            transition: transform 0.3s ease-out;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         
         .podcast-widget-drawer.hidden {
             transform: translateY(100%);
             pointer-events: none;
+            visibility: hidden;
         }
         
         .podcast-widget-drawer .drawer-header {

@@ -256,6 +256,8 @@ class WidgetRenderer {
             let episodes = [];
             let currentEpisodeIndex = 0;
             let feedData = null;
+            let drawerOpening = false;
+            let drawerClosing = false;
             
             // Load Shikwasa library if not already loaded
             if (!window.Shikwasa) {
@@ -571,16 +573,9 @@ class WidgetRenderer {
                 const container = document.getElementById(containerId);
                 const audio = container ? container.querySelector("audio") : null;
                 
+                // Only toggle if player is already initialized
+                // Don't auto-open drawer - user must click expand button
                 if (!audio || !playerInstance) {
-                    // If player not initialized, open drawer first
-                    openDrawer();
-                    setTimeout(() => {
-                        const containerAfter = document.getElementById(containerId);
-                        const audioAfter = containerAfter ? containerAfter.querySelector("audio") : null;
-                        if (audioAfter) {
-                            audioAfter.play();
-                        }
-                    }, 500);
                     return;
                 }
                 
@@ -593,8 +588,14 @@ class WidgetRenderer {
             
             function openDrawer() {
                 const drawer = document.getElementById(drawerId);
-                if (!drawer) return;
+                if (!drawer || drawerOpening || drawerClosing) return;
                 
+                // Prevent multiple simultaneous opens
+                if (!drawer.classList.contains("hidden")) return;
+                
+                drawerOpening = true;
+                
+                // Remove hidden class to trigger animation
                 drawer.classList.remove("hidden");
                 
                 // Initialize player if not already done
@@ -604,14 +605,32 @@ class WidgetRenderer {
                 
                 // Prevent body scroll when drawer is open
                 document.body.style.overflow = "hidden";
+                
+                // Reset flag after animation completes
+                setTimeout(() => {
+                    drawerOpening = false;
+                }, 350);
             }
             
             function closeDrawer() {
                 const drawer = document.getElementById(drawerId);
-                if (!drawer) return;
+                if (!drawer || drawerOpening || drawerClosing) return;
                 
+                // Prevent multiple simultaneous closes
+                if (drawer.classList.contains("hidden")) return;
+                
+                drawerClosing = true;
+                
+                // Add hidden class to trigger animation
                 drawer.classList.add("hidden");
+                
+                // Restore body scroll
                 document.body.style.overflow = "";
+                
+                // Reset flag after animation completes
+                setTimeout(() => {
+                    drawerClosing = false;
+                }, 350);
             }
             
             function showError(message) {
