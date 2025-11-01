@@ -343,7 +343,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 0.75rem;
             padding: 0;
         }
@@ -354,10 +354,30 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             font-size: 0.875rem;
         }
         
+        .expand-drawer-btn {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .expand-drawer-btn:hover {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .drawer-icon-toggle {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .expand-drawer-btn.active .drawer-icon-toggle {
+            transform: rotate(180deg);
+        }
+        
         .skip-back-btn:hover,
         .play-pause-btn:hover,
-        .skip-forward-btn:hover,
-        .expand-drawer-btn:hover {
+        .skip-forward-btn:hover {
             background: var(--primary-color);
             color: var(--secondary-color);
         }

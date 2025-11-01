@@ -681,7 +681,7 @@ class WidgetRenderer {
             $html .= '<button class="skip-back-btn" id="skip-back-' . $widgetId . '" aria-label="Skip back 15 seconds" title="Skip back 15s"><i class="fas fa-backward"></i> <span class="skip-label">15s</span></button>';
             $html .= '<button class="play-pause-btn" id="play-pause-' . $widgetId . '" aria-label="Play/Pause"><i class="fas fa-play"></i></button>';
             $html .= '<button class="skip-forward-btn" id="skip-forward-' . $widgetId . '" aria-label="Skip forward 15 seconds" title="Skip forward 15s"><span class="skip-label">15s</span> <i class="fas fa-forward"></i></button>';
-            $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="More info" title="More info"><i class="fas fa-chevron-up"></i></button>';
+            $html .= '<button class="expand-drawer-btn" id="expand-drawer-' . $widgetId . '" aria-label="Toggle drawer" title="Toggle drawer"><i class="fas fa-chevron-down drawer-icon-toggle"></i></button>';
             $html .= '</div>';
             $html .= '<div class="progress-container">';
             $html .= '<div class="progress-bar" id="progress-bar-' . $widgetId . '"></div>';
@@ -833,6 +833,12 @@ class WidgetRenderer {
         // Remove hidden class to trigger expansion animation
         drawer.classList.remove("hidden");
         
+        // Update toggle button state
+        const toggleBtn = document.getElementById("expand-drawer-" + widgetId);
+        if (toggleBtn) {
+            toggleBtn.classList.add("active");
+        }
+        
         hasUserInteracted = true;
         if (autoCollapseTimer) {
             clearTimeout(autoCollapseTimer);
@@ -846,6 +852,12 @@ class WidgetRenderer {
         
         // Add hidden class to trigger collapse animation
         drawer.classList.add("hidden");
+        
+        // Update toggle button state
+        const toggleBtn = document.getElementById("expand-drawer-" + widgetId);
+        if (toggleBtn) {
+            toggleBtn.classList.remove("active");
+        }
     }
     
     function switchTab(tabName) {
