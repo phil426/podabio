@@ -266,6 +266,13 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             width: 100%;
         }
         
+        .podcast-widget-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
         /* Minimal Collapsed View */
         .podcast-widget-minimal {
             display: flex;
