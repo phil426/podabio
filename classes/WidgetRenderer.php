@@ -830,7 +830,7 @@ class WidgetRenderer {
         const drawer = document.getElementById(drawerId);
         if (!drawer) return;
         
-        // Remove hidden class to trigger expansion animation
+        // Remove hidden class to trigger expansion animation (height transition)
         drawer.classList.remove("hidden");
         
         // Update toggle button state
@@ -850,7 +850,7 @@ class WidgetRenderer {
         const drawer = document.getElementById(drawerId);
         if (!drawer) return;
         
-        // Add hidden class to trigger collapse animation
+        // Add hidden class to trigger collapse animation (height transition)
         drawer.classList.add("hidden");
         
         // Update toggle button state

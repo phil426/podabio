@@ -276,8 +276,8 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         /* PodNBio Player - Custom Compact Widget Styles */
         .widget-podcast-custom {
             position: relative;
-            overflow: visible;
-            transition: margin-bottom 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            overflow: hidden;
+            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
         }
         
         .widget-podcast-custom .widget-content {
@@ -425,23 +425,21 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .podcast-bottom-sheet {
             position: relative;
             width: 100%;
-            max-height: 0;
+            height: 0;
             overflow: hidden;
             background: var(--secondary-color);
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
             margin-top: 0.5rem;
-            transition: max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease 0.1s;
-            opacity: 0;
-            will-change: max-height, opacity;
+            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            will-change: height;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
         }
         
         .podcast-bottom-sheet:not(.hidden) {
-            max-height: 400px;
-            opacity: 1;
+            height: 400px;
         }
         
         .drawer-backdrop {
