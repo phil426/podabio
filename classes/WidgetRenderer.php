@@ -1011,6 +1011,9 @@ class WidgetRenderer {
                             coverEl.style.display = "block";
                         }
                         renderEpisodes();
+                        
+                        // Auto-expand drawer on initial load for 3 seconds
+                        openDrawer();
                         autoCollapseTimer = setTimeout(() => {
                             if (!hasUserInteracted) closeDrawer();
                         }, 3000);
