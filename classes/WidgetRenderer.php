@@ -818,6 +818,9 @@ class WidgetRenderer {
     
     function updateProgress() {
         if (!audio) return;
+        // Don't update progress while dragging (to avoid conflict)
+        if (isDragging) return;
+        
         const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
         const progressBar = document.getElementById("progress-bar-" + widgetId);
         if (progressBar) {
@@ -890,6 +893,74 @@ class WidgetRenderer {
     function skipForward() {
         if (!audio || !audio.duration) return;
         audio.currentTime = Math.min(audio.duration, audio.currentTime + 30);
+    }
+    
+    function seekToPosition(event) {
+        if (!audio || !audio.duration) return;
+        const progressBar = document.getElementById("progress-bar-" + widgetId);
+        const progressWrapper = document.getElementById("progress-wrapper-" + widgetId);
+        if (!progressBar || !progressWrapper) return;
+        
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const percent = Math.max(0, Math.min(1, clickX / rect.width));
+        audio.currentTime = percent * audio.duration;
+    }
+    
+    let isDragging = false;
+    
+    function startDrag(event) {
+        if (!audio || !audio.duration) return;
+        isDragging = true;
+        const progressBar = document.getElementById("progress-bar-" + widgetId);
+        const scrubber = document.getElementById("progress-scrubber-" + widgetId);
+        if (!progressBar || !scrubber) return;
+        
+        scrubber.classList.add("dragging");
+        
+        const rect = progressBar.getBoundingClientRect();
+        const clickX = (event.clientX || event.touches[0].clientX) - rect.left;
+        const percent = Math.max(0, Math.min(1, clickX / rect.width));
+        audio.currentTime = percent * audio.duration;
+        
+        if (event.preventDefault) event.preventDefault();
+    }
+    
+    function doDrag(event) {
+        if (!isDragging || !audio || !audio.duration) return;
+        const progressBar = document.getElementById("progress-bar-" + widgetId);
+        const progressWrapper = document.getElementById("progress-wrapper-" + widgetId);
+        if (!progressBar || !progressWrapper) return;
+        
+        // Use progress bar's rect for accurate calculation
+        const rect = progressBar.getBoundingClientRect();
+        const dragX = (event.clientX || (event.touches && event.touches[0].clientX)) - rect.left;
+        const percent = Math.max(0, Math.min(1, dragX / rect.width));
+        const newTime = percent * audio.duration;
+        
+        // Update audio time
+        audio.currentTime = newTime;
+        
+        // Manually update progress bar and time display while dragging
+        const progressBarEl = document.getElementById("progress-bar-" + widgetId);
+        if (progressBarEl) {
+            progressBarEl.style.setProperty("--progress-width", percent * 100 + "%");
+        }
+        const currentTimeEl = document.getElementById("current-time-" + widgetId);
+        if (currentTimeEl) {
+            currentTimeEl.textContent = formatTime(newTime);
+        }
+        
+        if (event.preventDefault) event.preventDefault();
+    }
+    
+    function stopDrag(event) {
+        if (!isDragging) return;
+        isDragging = false;
+        const scrubber = document.getElementById("progress-scrubber-" + widgetId);
+        if (scrubber) {
+            scrubber.classList.remove("dragging");
+        }
     }
     
     function openDrawer() {
@@ -1164,6 +1235,33 @@ class WidgetRenderer {
     document.getElementById("play-pause-" + widgetId)?.addEventListener("click", togglePlayPause);
     document.getElementById("skip-back-" + widgetId)?.addEventListener("click", skipBackward);
     document.getElementById("skip-forward-" + widgetId)?.addEventListener("click", skipForward);
+    
+    // Progress bar click to seek
+    const progressBar = document.getElementById("progress-bar-" + widgetId);
+    if (progressBar) {
+        progressBar.addEventListener("click", seekToPosition);
+    }
+    
+    // Scrubber drag functionality
+    const scrubber = document.getElementById("progress-scrubber-" + widgetId);
+    if (scrubber) {
+        scrubber.addEventListener("mousedown", startDrag);
+        scrubber.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            startDrag(e.touches[0]);
+        });
+    }
+    
+    // Global mouse/touch move and up for dragging
+    document.addEventListener("mousemove", doDrag);
+    document.addEventListener("mouseup", stopDrag);
+    document.addEventListener("touchmove", (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            doDrag(e.touches[0]);
+        }
+    });
+    document.addEventListener("touchend", stopDrag);
     
     // Toggle drawer button
     const toggleBtn = document.getElementById("expand-drawer-" + widgetId);

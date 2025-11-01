@@ -698,18 +698,24 @@ $bodyFont = $fonts['body'];
             z-index: 10;
             transform: translate(-50%, -50%);
             transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
-            pointer-events: none;
+            pointer-events: auto;
             box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
+            touch-action: none;
         }
         
         .progress-scrubber:active {
             cursor: grabbing;
-            transform: translateY(-50%) scale(1.3);
+            transform: translate(-50%, -50%) scale(1.3);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        
+        .progress-scrubber.dragging {
+            transition: none;
         }
         
         .progress-bar-wrapper:hover .progress-scrubber {
-            transform: translateY(-50%) scale(1.25);
+            transform: translate(-50%, -50%) scale(1.25);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         }
         
