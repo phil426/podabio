@@ -2046,7 +2046,7 @@ $csrfToken = generateCSRFToken();
                     <div class="form-group">
                         <label for="widget_config_title">Title <span style="color: #dc3545;">*</span></label>
                         <input type="text" id="widget_config_title" name="title" required placeholder="Enter widget title">
-                        <small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>
+                        ${(widget.widget_id === 'podcast_player' || widget.widget_id === 'podcast_player_full') ? '<small style="color: #666; display: block; margin-top: 0.25rem;">Will be auto-populated from RSS feed</small>' : ''}
                     </div>
                 `;
                 
