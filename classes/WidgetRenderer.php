@@ -830,10 +830,8 @@ class WidgetRenderer {
         const drawer = document.getElementById(drawerId);
         if (!drawer) return;
         
-        // Use requestAnimationFrame for smoother animation
-        requestAnimationFrame(() => {
-            drawer.classList.remove("hidden");
-        });
+        // Remove hidden class to trigger expansion animation
+        drawer.classList.remove("hidden");
         
         hasUserInteracted = true;
         if (autoCollapseTimer) {
@@ -846,6 +844,7 @@ class WidgetRenderer {
         const drawer = document.getElementById(drawerId);
         if (!drawer) return;
         
+        // Add hidden class to trigger collapse animation
         drawer.classList.add("hidden");
     }
     

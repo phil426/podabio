@@ -277,6 +277,7 @@ $bodyFont = $fonts['body'] ?? 'Inter';
         .widget-podcast-custom {
             position: relative;
             overflow: visible;
+            transition: margin-bottom 0.4s cubic-bezier(0.32, 0.72, 0, 1);
         }
         
         .widget-podcast-custom .widget-content {
@@ -400,31 +401,27 @@ $bodyFont = $fonts['body'] ?? 'Inter';
             white-space: nowrap;
         }
         
-        /* Compact Drawer Tray - Slides up from widget */
+        /* Compact Drawer Tray - Expands from widget, pushes content down */
         .podcast-bottom-sheet {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-height: 400px;
+            position: relative;
+            width: 100%;
+            max-height: 0;
+            overflow: hidden;
             background: var(--secondary-color);
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
-            z-index: 100;
-            transform: translateY(100%);
-            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+            margin-top: 0.5rem;
+            transition: max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease 0.1s;
             opacity: 0;
-            pointer-events: none;
-            will-change: transform, opacity;
+            will-change: max-height, opacity;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
         }
         
         .podcast-bottom-sheet:not(.hidden) {
-            transform: translateY(0);
+            max-height: 400px;
             opacity: 1;
-            pointer-events: auto;
         }
         
         .drawer-backdrop {
