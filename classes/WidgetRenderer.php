@@ -202,45 +202,18 @@ class WidgetRenderer {
             }
         
         $containerId = 'shikwasa-podcast-' . $widgetId;
-        $minimalId = 'podcast-minimal-' . $widgetId;
-        $drawerId = 'podcast-drawer-' . $widgetId;
         $playerContainerId = 'shikwasa-player-container-' . $widgetId;
-        $playlistId = 'podcast-playlist-' . $widgetId;
         
         $html = '<div class="widget-item widget-podcast" id="widget-podcast-' . $widgetId . '">';
         $html .= '<div class="widget-content">';
         
-        // Minimal Collapsed View
-        $html .= '<div id="' . htmlspecialchars($minimalId) . '" class="podcast-widget-minimal">';
-        $html .= '<img class="podcast-cover" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
-        $html .= '<div class="podcast-info">';
-        $html .= '<div class="podcast-title" id="podcast-title-' . $widgetId . '">' . htmlspecialchars($title) . '</div>';
-        $html .= '<div class="episode-title" id="episode-title-' . $widgetId . '">Loading...</div>';
-        $html .= '<div class="minimal-controls">';
-        $html .= '<button class="minimal-play-pause" id="minimal-play-pause-' . $widgetId . '" aria-label="Play/Pause">';
-        $html .= '<i class="fas fa-play"></i>';
-        $html .= '</button>';
-        $html .= '<div class="minimal-progress">';
-        $html .= '<div class="minimal-progress-bar" id="minimal-progress-bar-' . $widgetId . '"></div>';
-        $html .= '</div>';
-        $html .= '<div class="minimal-time" id="minimal-time-' . $widgetId . '">0:00</div>';
-        $html .= '<button class="minimal-expand" id="minimal-expand-' . $widgetId . '" aria-label="Expand Player">';
-        $html .= '<i class="fas fa-chevron-up"></i>';
-        $html .= '</button>';
-        $html .= '</div>';
-        $html .= '</div>';
-        $html .= '</div>';
+        // Podcast Title (optional, above player)
+        if ($title) {
+            $html .= '<div class="podcast-widget-title" id="podcast-widget-title-' . $widgetId . '">' . htmlspecialchars($title) . '</div>';
+        }
         
-        // Expanded Drawer
-        $html .= '<div id="' . htmlspecialchars($drawerId) . '" class="podcast-widget-drawer hidden">';
-        $html .= '<div class="drawer-header">';
-        $html .= '<button class="drawer-close" id="drawer-close-' . $widgetId . '" aria-label="Close Player">';
-        $html .= '<i class="fas fa-times"></i>';
-        $html .= '</button>';
-        $html .= '</div>';
+        // Full Shikwasa Player (always visible, no drawer, no playlist)
         $html .= '<div id="' . htmlspecialchars($playerContainerId) . '" class="shikwasa-podcast-container" data-rss-url="' . htmlspecialchars($rssFeedUrl) . '"></div>';
-        $html .= '<div id="' . htmlspecialchars($playlistId) . '" class="drawer-playlist"></div>';
-        $html .= '</div>';
         
         $html .= '</div>';
         $html .= '</div>';
@@ -249,18 +222,14 @@ class WidgetRenderer {
         $html .= '<script>
         (function() {
             const widgetId = ' . (int)$widgetId . ';
-            const minimalId = ' . json_encode($minimalId) . ';
-            const drawerId = ' . json_encode($drawerId) . ';
             const containerId = ' . json_encode($playerContainerId) . ';
-            const playlistId = ' . json_encode($playlistId) . ';
             const rssUrl = ' . json_encode($rssFeedUrl) . ';
             
             let playerInstance = null;
             let episodes = [];
             let currentEpisodeIndex = 0;
             let feedData = null;
-            let drawerOpening = false;
-            let drawerClosing = false;
+            let podcastCoverImage = null;
             
             // Load Shikwasa library if not already loaded
             if (!window.Shikwasa) {
@@ -326,8 +295,17 @@ class WidgetRenderer {
                             }).filter(ep => ep.audio);
                             
                             if (episodes.length > 0) {
-                                updateMinimalView();
-                                setupEventListeners();
+                                // Get podcast cover from RSS feed
+                                podcastCoverImage = feedData.feed?.image || episodes[0].cover || "";
+                                
+                                // Update widget title if RSS feed has title
+                                const titleEl = document.getElementById("podcast-widget-title-" + widgetId);
+                                if (feedData.feed?.title && titleEl) {
+                                    titleEl.textContent = feedData.feed.title;
+                                }
+                                
+                                // Initialize player immediately (full player, no drawer, no playlist)
+                                initializePlayer();
                             } else {
                                 showError("No playable episodes found in RSS feed.");
                             }
@@ -339,28 +317,6 @@ class WidgetRenderer {
                         console.error("RSS fetch error:", error);
                         showError("Error loading podcast feed. Please try again later.");
                     });
-            }
-            
-            function updateMinimalView() {
-                if (episodes.length === 0) return;
-                
-                const firstEpisode = episodes[0];
-                const coverEl = document.getElementById("podcast-cover-" + widgetId);
-                const podcastTitleEl = document.getElementById("podcast-title-" + widgetId);
-                const episodeTitleEl = document.getElementById("episode-title-" + widgetId);
-                
-                // Update cover image
-                if (feedData.feed?.image || firstEpisode.cover) {
-                    const coverUrl = feedData.feed?.image || firstEpisode.cover;
-                    coverEl.src = coverUrl;
-                    coverEl.style.display = "block";
-                }
-                
-                // Update titles
-                if (feedData.feed?.title) {
-                    podcastTitleEl.textContent = feedData.feed.title;
-                }
-                episodeTitleEl.textContent = firstEpisode.title;
             }
             
             function initializePlayer() {
