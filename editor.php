@@ -2930,11 +2930,33 @@ $csrfToken = generateCSRFToken();
         }
         
         function saveWidgetOrder() {
+            if (!widgetsList) {
+                console.error('Widgets list not found');
+                return;
+            }
+            
             const items = Array.from(widgetsList.querySelectorAll('.widget-item'));
-            const widgetOrders = items.map((item, index) => ({
-                widget_id: parseInt(item.getAttribute('data-widget-id')),
-                display_order: index + 1
-            }));
+            if (items.length === 0) {
+                console.warn('No widgets found to reorder');
+                return;
+            }
+            
+            const widgetOrders = items.map((item, index) => {
+                const widgetId = item.getAttribute('data-widget-id');
+                if (!widgetId) {
+                    console.warn('Widget item missing data-widget-id:', item);
+                    return null;
+                }
+                return {
+                    widget_id: parseInt(widgetId),
+                    display_order: index + 1
+                };
+            }).filter(order => order !== null);
+            
+            if (widgetOrders.length === 0) {
+                console.error('No valid widget orders to save');
+                return;
+            }
             
             const formData = new FormData();
             formData.append('action', 'reorder');
