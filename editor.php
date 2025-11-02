@@ -5870,12 +5870,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 return;
             }
             
-            // Add null checks
-            if (!headingFontEl || !bodyFontEl) {
-                console.error('Font preview elements not found');
-                return;
-            }
-            
             const headingFont = headingFontEl.value;
             const bodyFont = bodyFontEl.value;
             
