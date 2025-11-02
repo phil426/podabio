@@ -170,21 +170,74 @@ $csrfToken = generateCSRFToken();
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: drift 25s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            animation: pulseGlow 8s ease-in-out infinite;
+            z-index: 0;
+        }
+        
+        @keyframes drift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(50px, 50px) rotate(360deg); }
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
         
         .editor-layout {
             display: flex;
             height: 100vh;
             width: 100vw;
+            position: relative;
+            z-index: 1;
         }
         
         /* Left Sidebar Navigation */
         .sidebar {
             width: 200px;
-            background: #ffffff;
-            border-right: 1px solid #e5e7eb;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(229, 231, 235, 0.8);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -193,6 +246,7 @@ $csrfToken = generateCSRFToken();
             top: 0;
             height: 100vh;
             z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         }
         
         .sidebar-header {
@@ -250,9 +304,12 @@ $csrfToken = generateCSRFToken();
             flex: 1;
             margin-left: 200px;
             margin-right: 0;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             overflow-y: auto;
             height: 100vh;
+            position: relative;
+            z-index: 1;
         }
         
         .editor-content {
