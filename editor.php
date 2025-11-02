@@ -3540,6 +3540,34 @@ $csrfToken = generateCSRFToken();
             }
         });
         
+        // Handle Featured Widget Toggle
+        window.handleFeaturedToggle = function(widgetId, isFeatured) {
+            const effectGroup = document.getElementById('featured-effect-group');
+            if (effectGroup) {
+                effectGroup.style.display = isFeatured ? 'block' : 'none';
+            }
+            
+            // If enabling featured, unfeature other widgets
+            if (isFeatured) {
+                unfeatureOtherWidgets(widgetId);
+            }
+        };
+        
+        // Unfeature all other widgets (only one featured at a time)
+        function unfeatureOtherWidgets(exceptWidgetId) {
+            // This will be handled on save, but we can update UI immediately
+            const allFeaturedCheckboxes = document.querySelectorAll('#widget-form input[name="is_featured"]');
+            allFeaturedCheckboxes.forEach(checkbox => {
+                const widgetItem = checkbox.closest('.widget-accordion-item');
+                if (widgetItem) {
+                    const currentWidgetId = widgetItem.getAttribute('data-widget-id');
+                    if (currentWidgetId && parseInt(currentWidgetId) !== parseInt(exceptWidgetId)) {
+                        checkbox.checked = false;
+                    }
+                }
+            });
+        }
+        
         // Widget Visibility Toggle
         function toggleWidgetVisibility(widgetId, isVisible) {
             const formData = new FormData();
@@ -4451,6 +4479,35 @@ $csrfToken = generateCSRFToken();
                                 `;
                             }
                         });
+                    }
+                    
+                    // Add Featured Widget section (after all config fields)
+                    if (widgetDef && widget.widget_id) {
+                        const isFeatured = widget.is_featured || 0;
+                        const featuredEffect = widget.featured_effect || '';
+                        fieldsContainer.innerHTML += `
+                            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                                    <input type="checkbox" id="widget_config_is_featured" name="is_featured" value="1" ${isFeatured ? 'checked' : ''} onchange="handleFeaturedToggle(${widgetId}, this.checked)">
+                                    <span>Featured Widget</span>
+                                </label>
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Highlight this widget with special effects to draw attention</small>
+                            </div>
+                            <div class="form-group" id="featured-effect-group" style="display: ${isFeatured ? 'block' : 'none'};">
+                                <label for="widget_config_featured_effect">Featured Effect</label>
+                                <select id="widget_config_featured_effect" name="featured_effect">
+                                    <option value="">Select an effect...</option>
+                                    <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle</option>
+                                    <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
+                                    <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
+                                    <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
+                                    <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
+                                    <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                                </select>
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Choose a special effect for this featured widget</small>
+                            </div>
+                        `;
                     }
                     
                     // Update submit button

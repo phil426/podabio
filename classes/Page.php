@@ -578,6 +578,16 @@ class Page {
             $params[] = (int)$data['is_active'];
         }
         
+        if (isset($data['is_featured'])) {
+            $updates[] = "is_featured = ?";
+            $params[] = (int)$data['is_featured'];
+        }
+        
+        if (isset($data['featured_effect'])) {
+            $updates[] = "featured_effect = ?";
+            $params[] = $data['featured_effect'];
+        }
+        
         if (empty($updates)) {
             return ['success' => false, 'error' => 'No fields to update'];
         }

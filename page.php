@@ -206,6 +206,81 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
+        /* Featured Widget Effects */
+        .featured-widget {
+            position: relative;
+        }
+        
+        .featured-widget .widget-item {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Jiggle Effect */
+        @keyframes jiggle {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px) rotate(-1deg); }
+            75% { transform: translateX(3px) rotate(1deg); }
+        }
+        
+        .featured-effect-jiggle .widget-item {
+            animation: jiggle 0.5s ease-in-out infinite;
+        }
+        
+        /* Burn Effect - glowing ember-like glow */
+        @keyframes burn {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 150, 0, 0.8), 0 0 40px rgba(255, 100, 0, 0.5), 0 0 60px rgba(255, 50, 0, 0.3); }
+        }
+        
+        .featured-effect-burn .widget-item {
+            animation: burn 1.5s ease-in-out infinite;
+        }
+        
+        /* Rotating Glow */
+        @keyframes rotating-glow {
+            0% { box-shadow: 0 0 15px rgba(0, 102, 255, 0.6), 0 0 30px rgba(0, 102, 255, 0.4); filter: hue-rotate(0deg); }
+            25% { box-shadow: 0 0 15px rgba(255, 100, 200, 0.6), 0 0 30px rgba(255, 100, 200, 0.4); filter: hue-rotate(90deg); }
+            50% { box-shadow: 0 0 15px rgba(100, 255, 100, 0.6), 0 0 30px rgba(100, 255, 100, 0.4); filter: hue-rotate(180deg); }
+            75% { box-shadow: 0 0 15px rgba(255, 200, 100, 0.6), 0 0 30px rgba(255, 200, 100, 0.4); filter: hue-rotate(270deg); }
+            100% { box-shadow: 0 0 15px rgba(0, 102, 255, 0.6), 0 0 30px rgba(0, 102, 255, 0.4); filter: hue-rotate(360deg); }
+        }
+        
+        .featured-effect-rotating-glow .widget-item {
+            animation: rotating-glow 3s linear infinite;
+        }
+        
+        /* Blink Effect */
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+        
+        .featured-effect-blink .widget-item {
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        
+        /* Pulse Effect */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            50% { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3); }
+        }
+        
+        .featured-effect-pulse .widget-item {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Shake Effect */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        
+        .featured-effect-shake .widget-item {
+            animation: shake 0.8s ease-in-out infinite;
+        }
+        
         .widget-thumbnail {
             width: 60px;
             height: 60px;
@@ -1527,10 +1602,20 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             if (!empty($widgets)):
                 foreach ($widgets as $widget): 
                     $widget['page_id'] = $page['id']; // Ensure page_id is set for renderer
+                    $isFeatured = !empty($widget['is_featured']);
+                    $featuredEffect = $widget['featured_effect'] ?? '';
+                    
                     try {
                         $rendered = WidgetRenderer::render($widget);
                         if (!empty($rendered)) {
+                            // Wrap in featured container if featured
+                            if ($isFeatured && $featuredEffect) {
+                                echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
+                            }
                             echo $rendered;
+                            if ($isFeatured && $featuredEffect) {
+                                echo '</div>';
+                            }
                         } else {
                             // Log when widget returns empty but exists in DB
                             error_log("Widget " . ($widget['id'] ?? 'unknown') . " (type: " . ($widget['widget_type'] ?? 'unknown') . ") returned empty render");
