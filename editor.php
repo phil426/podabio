@@ -3985,19 +3985,73 @@ $csrfToken = generateCSRFToken();
             const contentDiv = document.getElementById(`widget-content-${widgetId}`);
             if (!contentDiv) return;
             
-            // Ensure allWidgets is loaded
-            function loadSettings() {
-                // Fetch widget data via POST
-                const formData = new FormData();
-                formData.append('action', 'get');
-                formData.append('widget_id', widgetId);
-                formData.append('csrf_token', csrfToken);
-                
-                fetch('/api/widgets.php', {
-                    method: 'POST',
-                    body: formData
-                })
+            // Ensure widget definitions are loaded first
+            function ensureWidgetDefinitionsLoaded() {
+                return new Promise((resolve, reject) => {
+                    // If already loaded, resolve immediately
+                    if (allWidgets.length > 0) {
+                        resolve();
+                        return;
+                    }
+                    
+                    // Load widget definitions
+                    const loadFormData = new FormData();
+                    loadFormData.append('action', 'get_available');
+                    loadFormData.append('csrf_token', csrfToken);
+                    
+                    fetch('/api/widgets.php', {
+                        method: 'POST',
+                        body: loadFormData
+                    })
                     .then(response => response.json())
+                    .then(widgetData => {
+                        if (widgetData.success && (widgetData.available_widgets || widgetData.widgets)) {
+                            const widgets = widgetData.available_widgets || widgetData.widgets;
+                            // Handle both array and object formats
+                            if (Array.isArray(widgets)) {
+                                allWidgets = widgets;
+                            } else if (typeof widgets === 'object') {
+                                // Convert object to array
+                                allWidgets = Object.values(widgets);
+                            } else {
+                                reject(new Error('Invalid widget format'));
+                                return;
+                            }
+                            console.log('Widget definitions loaded:', allWidgets.length);
+                            resolve();
+                        } else {
+                            reject(new Error('Failed to load widget definitions: ' + (widgetData.error || 'Unknown error')));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading widget definitions:', error);
+                        reject(error);
+                    });
+                });
+            }
+            
+            // Main loading function
+            function loadSettings() {
+                // First ensure widget definitions are loaded
+                ensureWidgetDefinitionsLoaded()
+                    .then(() => {
+                        // Now fetch the widget data
+                        const formData = new FormData();
+                        formData.append('action', 'get');
+                        formData.append('widget_id', widgetId);
+                        formData.append('csrf_token', csrfToken);
+                        
+                        return fetch('/api/widgets.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success && data.widget) {
                             const widget = data.widget;
@@ -4005,54 +4059,24 @@ $csrfToken = generateCSRFToken();
                                 ? JSON.parse(widget.config_data) 
                                 : (widget.config_data || {});
                             
-                            // Get widget definition - load if not already loaded
-                            let widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
-                            
-                            if (!widgetDef && allWidgets.length === 0) {
-                                // Load widget definitions first
-                                const loadFormData = new FormData();
-                                loadFormData.append('action', 'get_available');
-                                loadFormData.append('csrf_token', csrfToken);
-                                
-                                fetch('/api/widgets.php', {
-                                    method: 'POST',
-                                    body: loadFormData
-                                })
-                                .then(response => response.json())
-                                .then(widgetData => {
-                                    if (widgetData.success && (widgetData.available_widgets || widgetData.widgets)) {
-                                        const widgets = widgetData.available_widgets || widgetData.widgets;
-                                        allWidgets = Array.isArray(widgets) ? widgets : Object.values(widgets);
-                                        widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
-                                        if (widgetDef) {
-                                            renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
-                                        } else {
-                                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
-                                        }
-                                    } else {
-                                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget definitions</p>';
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error loading widget definitions:', error);
-                                    contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget definitions</p>';
-                                });
-                                return;
-                            }
+                            // Find widget definition
+                            const widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
                             
                             if (!widgetDef) {
-                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
+                                console.error('Widget definition not found for type:', widget.widget_type);
+                                console.log('Available widget types:', allWidgets.map(w => w.widget_id));
+                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type "' + widget.widget_type + '" not found</p>';
                                 return;
                             }
                             
                             renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
                         } else {
-                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p>';
                         }
                     })
                     .catch(error => {
                         console.error('Error loading widget settings:', error);
-                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings: ' + error.message + '</p>';
                     });
             }
             
