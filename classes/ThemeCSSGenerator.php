@@ -165,28 +165,6 @@ class ThemeCSSGenerator {
         $css .= "    100% { filter: blur(var(--widget-glow-blur)) hue-rotate(360deg); }\n";
         $css .= "}\n\n";
         
-        $css .= ".widget-item[data-border-effect=\"glow\"] {\n";
-        $css .= "    position: relative;\n";
-        $css .= "    box-shadow: none;\n";
-        $css .= "    animation: glow-pulse 3s ease-in-out infinite;\n";
-        $css .= "}\n\n";
-        
-        $css .= ".widget-item[data-border-effect=\"glow\"]::before {\n";
-        $css .= "    content: '';\n";
-        $css .= "    position: absolute;\n";
-        $css .= "    inset: -2px;\n";
-        $css .= "    border-radius: inherit;\n";
-        $css .= "    padding: 2px;\n";
-        $css .= "    background: var(--widget-glow-color);\n";
-        $css .= "    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);\n";
-        $css .= "    -webkit-mask-composite: xor;\n";
-        $css .= "    mask-composite: exclude;\n";
-        $css .= "    filter: blur(var(--widget-glow-blur));\n";
-        $css .= "    opacity: var(--widget-glow-opacity);\n";
-        $css .= "    animation: glow-rotate 4s linear infinite;\n";
-        $css .= "    z-index: -1;\n";
-        $css .= "}\n\n";
-        
         return $css;
     }
     
@@ -242,9 +220,37 @@ class ThemeCSSGenerator {
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         if ($borderEffect === 'shadow') {
             $css .= "    box-shadow: var(--widget-box-shadow);\n";
+        } elseif ($borderEffect === 'glow') {
+            $css .= "    box-shadow: none;\n";
+            $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'none';
+            if ($glowIntensity !== 'none') {
+                $css .= "    animation: glow-pulse 3s ease-in-out infinite;\n";
+            }
         }
         
         $css .= "}\n\n";
+        
+        // Add glow ::before pseudo-element if glow is enabled
+        if ($borderEffect === 'glow') {
+            $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'none';
+            if ($glowIntensity !== 'none') {
+                $css .= ".widget-item::before {\n";
+                $css .= "    content: '';\n";
+                $css .= "    position: absolute;\n";
+                $css .= "    inset: -2px;\n";
+                $css .= "    border-radius: inherit;\n";
+                $css .= "    padding: 2px;\n";
+                $css .= "    background: var(--widget-glow-color);\n";
+                $css .= "    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);\n";
+                $css .= "    -webkit-mask-composite: xor;\n";
+                $css .= "    mask-composite: exclude;\n";
+                $css .= "    filter: blur(var(--widget-glow-blur));\n";
+                $css .= "    opacity: var(--widget-glow-opacity);\n";
+                $css .= "    animation: glow-rotate 4s linear infinite;\n";
+                $css .= "    z-index: -1;\n";
+                $css .= "}\n\n";
+            }
+        }
         
         // Widget typography
         $css .= ".widget-item h1, .widget-item h2, .widget-item h3, .widget-title {\n";
