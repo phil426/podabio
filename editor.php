@@ -3456,6 +3456,11 @@ $csrfToken = generateCSRFToken();
                 sectionElement.classList.add('active');
             }
             
+            // Auto-load analytics if analytics tab is opened
+            if (sectionName === 'analytics' && typeof loadWidgetAnalytics === 'function') {
+                loadWidgetAnalytics();
+            }
+            
             // Add active class to clicked nav item
             if (navElement) {
                 navElement.classList.add('active');
