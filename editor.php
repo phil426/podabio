@@ -1671,7 +1671,7 @@ $csrfToken = generateCSRFToken();
                 </div>
                 
                 <div class="form-group">
-                    <label for="page_secondary_font">Page Secondary Font</label>
+                    <label for="page_secondary_font">Page Body Text and Description Font</label>
                     <select id="page_secondary_font" name="page_secondary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <?php foreach ($googleFonts as $fontValue => $fontName): ?>
                             <option value="<?php echo h($fontValue); ?>" <?php echo ($pageSecondaryFont == $fontValue) ? 'selected' : ''; ?>>
