@@ -3688,6 +3688,22 @@ $csrfToken = generateCSRFToken();
             });
         }
         
+        // Listen for appearance changes to refresh preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const appearanceForm = document.getElementById('appearance-form');
+            if (appearanceForm) {
+                appearanceForm.addEventListener('input', refreshPreview);
+                appearanceForm.addEventListener('change', refreshPreview);
+            }
+            
+            // Listen for widget changes
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('.btn-primary') && e.target.closest('.widget-accordion-content')) {
+                    refreshPreview();
+                }
+            });
+        });
+        
         // On page load, check for tab parameter
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
