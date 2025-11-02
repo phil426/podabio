@@ -285,6 +285,197 @@ $csrfToken = generateCSRFToken();
             list-style: none;
             padding: 0;
         }
+        
+        /* Widget Accordion Styles */
+        .widget-accordion-item {
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.2s;
+        }
+        
+        .widget-accordion-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .widget-accordion-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+        
+        .widget-accordion-item.drag-over {
+            border-top: 3px solid #0066ff;
+        }
+        
+        .widget-accordion-header {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .widget-accordion-header:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
+        }
+        
+        .widget-accordion-header .drag-handle {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: move;
+            margin-right: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .widget-accordion-header .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        .widget-accordion-header .widget-type-icon {
+            font-size: 1.1rem;
+            color: #0066ff;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .widget-accordion-header .widget-header-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 0;
+        }
+        
+        .widget-accordion-header .widget-header-title {
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .widget-accordion-header .widget-header-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .widget-accordion-header .accordion-icon {
+            margin-left: 0.5rem;
+            font-size: 0.875rem;
+            transition: transform 0.3s;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+        
+        .widget-accordion-item.expanded .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .widget-accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            background: #f9fafb;
+        }
+        
+        .widget-accordion-item.expanded .widget-accordion-content {
+            padding: 1.5rem 1.25rem;
+            max-height: 5000px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .widget-accordion-content .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .widget-accordion-content .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .widget-accordion-content .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        
+        .widget-accordion-content .form-group input,
+        .widget-accordion-content .form-group textarea,
+        .widget-accordion-content .form-group select {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        
+        .widget-accordion-content .form-group input:focus,
+        .widget-accordion-content .form-group textarea:focus,
+        .widget-accordion-content .form-group select:focus {
+            outline: none;
+            border-color: #0066ff;
+        }
+        
+        .widget-accordion-content .form-group small {
+            display: block;
+            margin-top: 0.375rem;
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+        
+        .widget-accordion-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .widget-accordion-actions .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .widget-save-indicator {
+            font-size: 0.875rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+        
+        .widget-save-indicator.saving {
+            color: #0066ff;
+        }
+        
+        .widget-save-indicator.saved {
+            color: #059669;
+        }
+        
+        /* Legacy widget-item styles for backward compatibility */
         .widget-item {
             background: #f9f9f9;
             border: 1px solid #ddd;
@@ -1625,8 +1816,25 @@ $csrfToken = generateCSRFToken();
                 <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
             </div>
             
-            <ul id="widgets-list" class="widgets-list">
+            <div id="widgets-list" class="widgets-list">
                 <?php 
+                // Helper function to get widget type icon
+                function getWidgetTypeIcon($widgetType) {
+                    $icons = [
+                        'custom_link' => 'fa-link',
+                        'youtube_video' => 'fa-youtube',
+                        'text_html' => 'fa-text',
+                        'image' => 'fa-image',
+                        'podcast_player_custom' => 'fa-podcast',
+                        'rss_feed' => 'fa-rss',
+                        'video' => 'fa-video',
+                        'email' => 'fa-envelope',
+                        'calendar' => 'fa-calendar',
+                        'social' => 'fa-share-alt'
+                    ];
+                    return $icons[$widgetType] ?? 'fa-puzzle-piece';
+                }
+                
                 // Get widgets (try new method first, fallback to links for compatibility)
                 $widgets = [];
                 if ($page && method_exists($pageClass, 'getWidgets')) {
@@ -1650,7 +1858,9 @@ $csrfToken = generateCSRFToken();
                 }
                 ?>
                 <?php if (empty($widgets)): ?>
-                    <li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>
+                    <div style="padding: 2rem; text-align: center; color: #666;">
+                        No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.
+                    </div>
                 <?php else: ?>
                     <?php foreach ($widgets as $widget): 
                         $configData = is_string($widget['config_data'] ?? '') 
@@ -1658,25 +1868,33 @@ $csrfToken = generateCSRFToken();
                             : ($widget['config_data'] ?? []);
                         $widgetType = $widget['widget_type'] ?? 'custom_link';
                         $displayInfo = $configData['url'] ?? $widgetType;
+                        $widgetIcon = getWidgetTypeIcon($widgetType);
+                        $subtitle = $widgetType;
+                        if ($displayInfo && $displayInfo !== $widgetType) {
+                            $displayPreview = strlen($displayInfo) > 50 ? substr($displayInfo, 0, 50) . '...' : $displayInfo;
+                            $subtitle .= ' • ' . $displayPreview;
+                        }
                     ?>
-                        <li class="widget-item" data-widget-id="<?php echo $widget['id']; ?>">
-                            <div class="widget-info">
-                                <div class="widget-title">
-                                    <?php echo h($widget['title']); ?>
-                                    <span style="font-size: 0.75rem; color: #999; font-weight: normal; margin-left: 0.5rem;">
-                                        (<?php echo h($widgetType); ?>)
-                                    </span>
+                        <div class="widget-accordion-item" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
+                            <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
+                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
+                                <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
+                                <div class="widget-header-info">
+                                    <div class="widget-header-title"><?php echo h($widget['title']); ?></div>
+                                    <div class="widget-header-subtitle"><?php echo h($subtitle); ?></div>
                                 </div>
-                                <div class="widget-url"><?php echo h($displayInfo); ?></div>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </button>
+                            <div class="widget-accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
+                                <div style="text-align: center; padding: 2rem; color: #666;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                                    <p>Loading widget settings...</p>
+                                </div>
                             </div>
-                            <div class="widget-actions">
-                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $widget['id']; ?>, this)">Edit</button>
-                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $widget['id']; ?>)">Delete</button>
-                            </div>
-                        </li>
+                        </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
-            </ul>
+            </div>
         </div>
         
         <!-- Social Icons Tab -->
@@ -2853,6 +3071,9 @@ $csrfToken = generateCSRFToken();
             // Initialize accordion states
             initializeAccordions();
             
+            // Initialize widget accordion states
+            initializeWidgetAccordions();
+            
             // Auto-upload profile images when file is selected (Settings tab only)
             const profileImageInputSettings = document.getElementById('profile-image-input-settings');
             if (profileImageInputSettings) {
@@ -2863,6 +3084,21 @@ $csrfToken = generateCSRFToken();
                 });
             }
         });
+        
+        function initializeWidgetAccordions() {
+            const widgetAccordions = document.querySelectorAll('.widget-accordion-item');
+            widgetAccordions.forEach(accordion => {
+                const widgetId = accordion.getAttribute('data-widget-id');
+                if (!widgetId) return;
+                
+                const savedState = localStorage.getItem(`widget_accordion_${widgetId}`);
+                if (savedState === 'expanded') {
+                    accordion.classList.add('expanded');
+                    // Load settings if expanded
+                    loadWidgetSettingsInline(parseInt(widgetId));
+                }
+            });
+        }
         
         // Widget Gallery Functions
         let allWidgets = [];
@@ -3456,7 +3692,14 @@ $csrfToken = generateCSRFToken();
         
         
         window.editWidget = function(widgetId, buttonElement) {
-            const widgetItem = buttonElement ? buttonElement.closest('.widget-item') : document.querySelector(`[data-widget-id="${widgetId}"]`);
+            // Try to find widget item - check for accordion first, then legacy
+            let widgetItem = null;
+            if (buttonElement) {
+                widgetItem = buttonElement.closest('.widget-accordion-item') || buttonElement.closest('.widget-item');
+            } else {
+                widgetItem = document.querySelector(`.widget-accordion-item[data-widget-id="${widgetId}"]`) || 
+                           document.querySelector(`.widget-item[data-widget-id="${widgetId}"]`);
+            }
             
             if (!widgetItem) return;
             
@@ -3667,8 +3910,16 @@ $csrfToken = generateCSRFToken();
             .then(data => {
                 if (data.success) {
                     showMessage(data.message || 'Widget deleted successfully!', 'success');
-                    // Reload after a short delay to show changes
-                    setTimeout(() => location.reload(), 1000);
+                    // Remove widget accordion from DOM
+                    const widgetAccordion = document.getElementById(`widget-accordion-${widgetId}`);
+                    if (widgetAccordion) {
+                        widgetAccordion.remove();
+                    }
+                    // Check if widgets list is empty and show message
+                    const widgetsList = document.getElementById('widgets-list');
+                    if (widgetsList && widgetsList.querySelectorAll('.widget-accordion-item').length === 0) {
+                        widgetsList.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</div>';
+                    }
                 } else {
                     showMessage(data.error, 'error');
                 }
@@ -3677,6 +3928,244 @@ $csrfToken = generateCSRFToken();
                 showMessage('An error occurred', 'error');
             });
         }
+        
+        // Widget Accordion Functions
+        window.toggleWidgetAccordion = function(widgetId) {
+            const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
+            if (!accordionItem) return;
+            
+            const isExpanded = accordionItem.classList.contains('expanded');
+            const contentDiv = document.getElementById(`widget-content-${widgetId}`);
+            
+            if (!isExpanded) {
+                // Expand accordion
+                accordionItem.classList.add('expanded');
+                
+                // Load widget settings if not already loaded
+                if (contentDiv && contentDiv.querySelector('.fa-spinner')) {
+                    loadWidgetSettingsInline(widgetId);
+                }
+            } else {
+                // Collapse accordion
+                accordionItem.classList.remove('expanded');
+            }
+            
+            // Save state to localStorage
+            localStorage.setItem(`widget_accordion_${widgetId}`, isExpanded ? 'collapsed' : 'expanded');
+        };
+        
+        window.loadWidgetSettingsInline = function(widgetId) {
+            const contentDiv = document.getElementById(`widget-content-${widgetId}`);
+            if (!contentDiv) return;
+            
+            // Fetch widget data via POST
+            const formData = new FormData();
+            formData.append('action', 'get');
+            formData.append('widget_id', widgetId);
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.widget) {
+                        const widget = data.widget;
+                        const configData = typeof widget.config_data === 'string' 
+                            ? JSON.parse(widget.config_data) 
+                            : (widget.config_data || {});
+                        
+                        // Get widget definition
+                        const widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
+                        if (!widgetDef) {
+                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
+                            return;
+                        }
+                        
+                        // Generate form HTML
+                        let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
+                        
+                        // Add title field
+                        formHTML += `
+                            <div class="form-group">
+                                <label for="widget-inline-title-${widgetId}">Title <span style="color: #dc3545;">*</span></label>
+                                <input type="text" id="widget-inline-title-${widgetId}" 
+                                       name="title" 
+                                       value="${(widget.title || '').replace(/"/g, '&quot;')}" 
+                                       required 
+                                       onchange="saveWidgetSettingsInline(${widgetId})"
+                                       class="widget-setting-input">
+                            </div>
+                        `;
+                        
+                        // Add widget-specific fields
+                        if (widgetDef.config_fields) {
+                            Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
+                                const value = configData[fieldName] || '';
+                                const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                                const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                                const helpText = fieldDef.help ? `<small>${fieldDef.help}</small>` : '';
+                                
+                                const fieldId = `widget-inline-${fieldName}-${widgetId}`;
+                                let fieldHTML = '';
+                                
+                                if (fieldDef.type === 'textarea') {
+                                    fieldHTML = `
+                                        <div class="form-group">
+                                            <label for="${fieldId}">${fieldDef.label}${required}</label>
+                                            <textarea id="${fieldId}" 
+                                                      name="${fieldName}" 
+                                                      ${fieldDef.required ? 'required' : ''}
+                                                      rows="${fieldDef.rows || 4}"
+                                                      onchange="saveWidgetSettingsInline(${widgetId})"
+                                                      class="widget-setting-input">${safeValue}</textarea>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                } else if (fieldDef.type === 'checkbox') {
+                                    const checked = value ? 'checked' : '';
+                                    fieldHTML = `
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                                <input type="checkbox" 
+                                                       id="${fieldId}" 
+                                                       name="${fieldName}" 
+                                                       ${checked}
+                                                       onchange="saveWidgetSettingsInline(${widgetId})"
+                                                       class="widget-setting-input">
+                                                <span>${fieldDef.label}${required}</span>
+                                            </label>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                } else {
+                                    fieldHTML = `
+                                        <div class="form-group">
+                                            <label for="${fieldId}">${fieldDef.label}${required}</label>
+                                            <input type="${fieldDef.type || 'text'}" 
+                                                   id="${fieldId}" 
+                                                   name="${fieldName}" 
+                                                   value="${safeValue}"
+                                                   placeholder="${fieldDef.placeholder || ''}"
+                                                   ${fieldDef.required ? 'required' : ''}
+                                                   onchange="saveWidgetSettingsInline(${widgetId})"
+                                                   class="widget-setting-input">
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                }
+                                
+                                formHTML += fieldHTML;
+                            });
+                        }
+                        
+                        // Add action buttons
+                        formHTML += `
+                            <div class="widget-accordion-actions">
+                                <button type="button" class="btn btn-secondary" onclick="editWidget(${widgetId}, this)">Edit</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteWidget(${widgetId})">Delete</button>
+                                <div class="widget-save-indicator" id="widget-save-indicator-${widgetId}"></div>
+                            </div>
+                        `;
+                        
+                        formHTML += '</form>';
+                        contentDiv.innerHTML = formHTML;
+                    } else {
+                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading widget settings:', error);
+                    contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                });
+        };
+        
+        // Debounce helper for auto-save
+        const widgetSaveDebounceTimers = {};
+        
+        window.saveWidgetSettingsInline = function(widgetId) {
+            const form = document.querySelector(`.widget-settings-form[data-widget-id="${widgetId}"]`);
+            const indicator = document.getElementById(`widget-save-indicator-${widgetId}`);
+            
+            if (!form) return;
+            
+            // Clear existing timer
+            if (widgetSaveDebounceTimers[widgetId]) {
+                clearTimeout(widgetSaveDebounceTimers[widgetId]);
+            }
+            
+            // Update indicator
+            if (indicator) {
+                indicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Saving...</span>';
+                indicator.className = 'widget-save-indicator saving';
+            }
+            
+            // Collect form data
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('csrf_token', csrfToken);
+            
+            // Get title
+            const titleInput = form.querySelector(`#widget-inline-title-${widgetId}`);
+            if (titleInput) {
+                formData.append('title', titleInput.value.trim());
+            }
+            
+            // Get widget config fields
+            const config = {};
+            const inputs = form.querySelectorAll('.widget-setting-input');
+            inputs.forEach(input => {
+                if (input.name && input.name !== 'title') {
+                    if (input.type === 'checkbox') {
+                        config[input.name] = input.checked;
+                    } else {
+                        config[input.name] = input.value;
+                    }
+                }
+            });
+            
+            formData.append('config_data', JSON.stringify(config));
+            
+            // Debounce the save
+            widgetSaveDebounceTimers[widgetId] = setTimeout(() => {
+                fetch('/api/widgets.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (indicator) {
+                            indicator.innerHTML = '<i class="fas fa-check-circle"></i> <span>Saved</span>';
+                            indicator.className = 'widget-save-indicator saved';
+                            setTimeout(() => {
+                                if (indicator) {
+                                    indicator.innerHTML = '';
+                                    indicator.className = 'widget-save-indicator';
+                                }
+                            }, 2000);
+                        }
+                    } else {
+                        if (indicator) {
+                            indicator.innerHTML = '<i class="fas fa-exclamation-circle"></i> <span>Error</span>';
+                            indicator.className = 'widget-save-indicator';
+                            indicator.style.color = '#dc3545';
+                        }
+                        console.error('Save error:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Save error:', error);
+                    if (indicator) {
+                        indicator.innerHTML = '<i class="fas fa-exclamation-circle"></i> <span>Error</span>';
+                        indicator.className = 'widget-save-indicator';
+                        indicator.style.color = '#dc3545';
+                    }
+                });
+            }, 500); // 500ms debounce
+        };
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -3857,7 +4346,163 @@ $csrfToken = generateCSRFToken();
         let draggedElement = null;
         const widgetsList = document.getElementById('widgets-list');
         
+        function initWidgetDragAndDrop() {
+            if (!widgetsList) return;
+            
+            // Remove old listeners by cloning (clean slate)
+            const items = widgetsList.querySelectorAll('.widget-accordion-item, .widget-item');
+            items.forEach(item => {
+                // Make accordion items sortable via drag handle
+                if (item.classList.contains('widget-accordion-item')) {
+                    const dragHandle = item.querySelector('.drag-handle');
+                    if (dragHandle) {
+                        dragHandle.setAttribute('draggable', 'true');
+                        dragHandle.style.cursor = 'move';
+                        
+                        dragHandle.addEventListener('dragstart', function(e) {
+                            draggedElement = item;
+                            item.classList.add('dragging');
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('text/html', item.innerHTML);
+                        });
+                        
+                        dragHandle.addEventListener('dragend', function() {
+                            item.classList.remove('dragging');
+                            widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(el => {
+                                el.classList.remove('drag-over');
+                            });
+                            draggedElement = null;
+                        });
+                    }
+                } else if (item.classList.contains('widget-item')) {
+                    // Legacy widget-item support
+                    item.setAttribute('draggable', 'true');
+                    
+                    item.addEventListener('dragstart', function(e) {
+                        draggedElement = this;
+                        this.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    
+                    item.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        widgetsList.querySelectorAll('.widget-item').forEach(el => {
+                            el.classList.remove('drag-over');
+                        });
+                    });
+                }
+            });
+            
+            // Add drop zone listeners to all items
+            widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(item => {
+                item.addEventListener('dragover', function(e) {
+                    if (!draggedElement) return;
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                    }
+                    e.dataTransfer.dropEffect = 'move';
+                    if (this !== draggedElement && this !== draggedElement.parentNode) {
+                        this.classList.add('drag-over');
+                    }
+                    return false;
+                });
+                
+                item.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                item.addEventListener('drop', function(e) {
+                    if (e.stopPropagation) {
+                        e.stopPropagation();
+                    }
+                    
+                    if (draggedElement && draggedElement !== this) {
+                        const allItems = Array.from(widgetsList.querySelectorAll('.widget-accordion-item, .widget-item'));
+                        const draggedIndex = allItems.indexOf(draggedElement);
+                        const targetIndex = allItems.indexOf(this);
+                        
+                        if (draggedIndex < targetIndex) {
+                            widgetsList.insertBefore(draggedElement, this.nextSibling);
+                        } else {
+                            widgetsList.insertBefore(draggedElement, this);
+                        }
+                        
+                        // Save new order
+                        saveWidgetOrder();
+                    }
+                    
+                    this.classList.remove('drag-over');
+                    return false;
+                });
+            });
+        }
+        
+        // Initialize drag and drop on page load and after widget updates
         if (widgetsList) {
+            initWidgetDragAndDrop();
+            
+            // Reinitialize after dynamic updates (MutationObserver)
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
+                        initWidgetDragAndDrop();
+                    }
+                });
+            });
+            observer.observe(widgetsList, { childList: true, subtree: false });
+        }
+        
+        function saveWidgetOrder() {
+            if (!widgetsList) {
+                console.error('Widgets list not found');
+                return;
+            }
+            
+            const items = Array.from(widgetsList.querySelectorAll('.widget-accordion-item, .widget-item'));
+            if (items.length === 0) {
+                console.warn('No widgets found to reorder');
+                return;
+            }
+            
+            const widgetOrders = items.map((item, index) => {
+                const widgetId = item.getAttribute('data-widget-id');
+                if (!widgetId) {
+                    console.warn('Widget item missing data-widget-id:', item);
+                    return null;
+                }
+                return {
+                    widget_id: parseInt(widgetId),
+                    display_order: index + 1
+                };
+            }).filter(order => order !== null);
+            
+            if (widgetOrders.length === 0) {
+                console.warn('No valid widget orders to save');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'reorder');
+            formData.append('widget_orders', JSON.stringify(widgetOrders));
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Failed to save widget order:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving widget order:', error);
+            });
+        }
+        
+        // Legacy drag and drop (keep for backward compatibility)
+        if (widgetsList && widgetsList.querySelectorAll('.widget-item').length > 0 && widgetsList.querySelectorAll('.widget-accordion-item').length === 0) {
             // Make widgets sortable
             Array.from(widgetsList.children).forEach(item => {
                 if (item.classList.contains('widget-item')) {
@@ -3914,57 +4559,6 @@ $csrfToken = generateCSRFToken();
                         return false;
                     });
                 }
-            });
-        }
-        
-        function saveWidgetOrder() {
-            if (!widgetsList) {
-                console.error('Widgets list not found');
-                return;
-            }
-            
-            const items = Array.from(widgetsList.querySelectorAll('.widget-item'));
-            if (items.length === 0) {
-                console.warn('No widgets found to reorder');
-                return;
-            }
-            
-            const widgetOrders = items.map((item, index) => {
-                const widgetId = item.getAttribute('data-widget-id');
-                if (!widgetId) {
-                    console.warn('Widget item missing data-widget-id:', item);
-                    return null;
-                }
-                return {
-                    widget_id: parseInt(widgetId),
-                    display_order: index + 1
-                };
-            }).filter(order => order !== null);
-            
-            if (widgetOrders.length === 0) {
-                console.error('No valid widget orders to save');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('action', 'reorder');
-            formData.append('widget_orders', JSON.stringify(widgetOrders));
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/widgets.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    showMessage('Failed to save widget order', 'error');
-                    setTimeout(() => location.reload(), 500);
-                }
-            })
-            .catch(() => {
-                showMessage('An error occurred while saving order', 'error');
-                setTimeout(() => location.reload(), 500);
             });
         }
         
