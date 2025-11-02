@@ -322,6 +322,8 @@ $csrfToken = generateCSRFToken();
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid #e5e7eb;
+            transform: translateZ(0);
+            will-change: transform;
         }
         
         .editor-header h1 {
@@ -348,9 +350,9 @@ $csrfToken = generateCSRFToken();
             margin-bottom: 1.5rem;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            overflow: hidden;
             background: white;
-            transition: all 0.2s;
+            transition: box-shadow 0.2s;
+            position: relative;
         }
         
         .widget-accordion-item:hover {
@@ -433,27 +435,48 @@ $csrfToken = generateCSRFToken();
         .widget-accordion-header .accordion-icon {
             margin-left: 0.5rem;
             font-size: 0.875rem;
-            transition: transform 0.3s;
+            transition: transform 0.3s linear;
             color: #6b7280;
             flex-shrink: 0;
         }
         
-        .widget-accordion-item.expanded .accordion-icon {
+        .widget-accordion-item.active .accordion-icon {
             transform: rotate(180deg);
         }
         
-        .widget-accordion-content {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-            background: #f9fafb;
+        .widget-accordion-item.active .widget-accordion-header {
+            background: #f0f7ff;
+            border-color: #0066ff;
         }
         
-        .widget-accordion-item.expanded .widget-accordion-content {
+        .widget-accordion-content {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.2s ease;
+            overflow: hidden;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .widget-accordion-content.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .widget-content-inner {
             padding: 1.5rem 1.25rem;
-            max-height: 5000px;
-            border-top: 1px solid #e5e7eb;
+            transition: none !important;
         }
         
         .widget-accordion-content .form-group {
@@ -1303,7 +1326,7 @@ $csrfToken = generateCSRFToken();
         .accordion-header .accordion-icon {
             margin-left: auto;
             font-size: 0.875rem;
-            transition: transform 0.3s;
+            transition: transform 0.3s linear;
         }
         
         .accordion-section.expanded .accordion-icon {
@@ -1311,15 +1334,24 @@ $csrfToken = generateCSRFToken();
         }
         
         .accordion-content {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            display: none;
+            opacity: 0;
+            transition: none !important;
+        }
+        
+        .accordion-content > * {
+            padding: 1.5rem 1.25rem;
         }
         
         .accordion-section.expanded .accordion-content {
-            padding: 1.5rem 1.25rem;
-            max-height: 5000px;
+            display: block;
+            opacity: 1;
+            animation: fadeIn 0.15s linear forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         /* Reset Button Styles */
@@ -1408,6 +1440,9 @@ $csrfToken = generateCSRFToken();
         .user-menu {
             position: relative;
             display: inline-block;
+            transform: translateZ(0);
+            will-change: transform;
+            isolation: isolate;
         }
         
         .user-menu-button {
@@ -2116,7 +2151,7 @@ $csrfToken = generateCSRFToken();
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
                             <div class="widget-accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
-                                <div style="text-align: center; padding: 2rem; color: #666;">
+                                <div class="widget-content-inner" style="text-align: center; color: #666;">
                                     <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
                                     <p>Loading widget settings...</p>
                                 </div>
@@ -3365,6 +3400,20 @@ $csrfToken = generateCSRFToken();
             if (userMenu && dropdown && !userMenu.contains(event.target)) {
                 closeUserMenu();
             }
+            
+            // Close widget dropdowns when clicking outside
+            const widgetItems = document.querySelectorAll('.widget-accordion-item');
+            widgetItems.forEach(item => {
+                const contentDiv = item.querySelector('.widget-accordion-content');
+                if (contentDiv && contentDiv.classList.contains('show') && !item.contains(event.target)) {
+                    contentDiv.classList.remove('show');
+                    item.classList.remove('active');
+                    const widgetId = item.getAttribute('data-widget-id');
+                    if (widgetId) {
+                        localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
+                    }
+                }
+            });
         });
         
         // On page load, check for tab parameter
@@ -3403,15 +3452,28 @@ $csrfToken = generateCSRFToken();
         
         function initializeWidgetAccordions() {
             const widgetAccordions = document.querySelectorAll('.widget-accordion-item');
+            
+            // Pre-load all widget settings so content is ready before dropdown opens
             widgetAccordions.forEach(accordion => {
                 const widgetId = accordion.getAttribute('data-widget-id');
                 if (!widgetId) return;
                 
+                // Pre-load content for all widgets (keep hidden until dropdown opens)
+                loadWidgetSettingsInline(parseInt(widgetId));
+                
+                // Restore open state from localStorage (using new 'open'/'closed' format)
                 const savedState = localStorage.getItem(`widget_accordion_${widgetId}`);
-                if (savedState === 'expanded') {
-                    accordion.classList.add('expanded');
-                    // Load settings if expanded
-                    loadWidgetSettingsInline(parseInt(widgetId));
+                const contentDiv = document.getElementById(`widget-content-${widgetId}`);
+                if (contentDiv && (savedState === 'open' || savedState === 'expanded')) {
+                    // Check if there are any other widgets already open
+                    const alreadyOpen = document.querySelector('.widget-accordion-content.show');
+                    if (!alreadyOpen) {
+                        contentDiv.classList.add('show');
+                        accordion.classList.add('active');
+                    } else {
+                        // If another widget is already open, keep this one closed
+                        localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
+                    }
                 }
             });
         }
@@ -4272,26 +4334,42 @@ $csrfToken = generateCSRFToken();
         // Widget Accordion Functions
         window.toggleWidgetAccordion = function(widgetId) {
             const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
-            if (!accordionItem) return;
-            
-            const isExpanded = accordionItem.classList.contains('expanded');
             const contentDiv = document.getElementById(`widget-content-${widgetId}`);
             
-            if (!isExpanded) {
-                // Expand accordion
-                accordionItem.classList.add('expanded');
+            if (!accordionItem || !contentDiv) return;
+            
+            const isOpen = contentDiv.classList.contains('show');
+            
+            if (isOpen) {
+                // Close this dropdown
+                contentDiv.classList.remove('show');
+                accordionItem.classList.remove('active');
+                localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
+            } else {
+                // Close all other widgets first (only one open at a time)
+                document.querySelectorAll('.widget-accordion-content.show').forEach(openContent => {
+                    if (openContent !== contentDiv) {
+                        openContent.classList.remove('show');
+                        const openWidgetId = openContent.id.replace('widget-content-', '');
+                        const openItem = document.getElementById(`widget-accordion-${openWidgetId}`);
+                        if (openItem) {
+                            openItem.classList.remove('active');
+                            localStorage.setItem(`widget_accordion_${openWidgetId}`, 'closed');
+                        }
+                    }
+                });
+                
+                // Open this dropdown
+                contentDiv.classList.add('show');
+                accordionItem.classList.add('active');
                 
                 // Load widget settings if not already loaded
-                if (contentDiv && contentDiv.querySelector('.fa-spinner')) {
+                if (contentDiv.querySelector('.fa-spinner')) {
                     loadWidgetSettingsInline(widgetId);
                 }
-            } else {
-                // Collapse accordion
-                accordionItem.classList.remove('expanded');
+                
+                localStorage.setItem(`widget_accordion_${widgetId}`, 'open');
             }
-            
-            // Save state to localStorage
-            localStorage.setItem(`widget_accordion_${widgetId}`, isExpanded ? 'collapsed' : 'expanded');
         };
         
         window.loadWidgetSettingsInline = function(widgetId) {
@@ -4411,7 +4489,7 @@ $csrfToken = generateCSRFToken();
                             if (!widgetDef) {
                                 console.error('Widget definition not found for type:', widget.widget_type);
                                 console.log('Available widget types:', allWidgets.map(w => w.widget_id));
-                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type "' + widget.widget_type + '" not found</p>';
+                                contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error: Widget type "' + widget.widget_type + '" not found</p></div>';
                                 return;
                             }
                             
@@ -4429,16 +4507,16 @@ $csrfToken = generateCSRFToken();
                             } catch (error) {
                                 console.error('Error calling renderWidgetSettingsInline:', error);
                                 console.error('Error stack:', error.stack);
-                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: ' + error.message + '</p>';
+                                contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error: ' + error.message + '</p></div>';
                             }
                         } else {
                             console.error('Failed to load widget:', data);
-                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p>';
+                            contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p></div>';
                         }
                     })
                     .catch(error => {
                         console.error('Error loading widget settings:', error);
-                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings: ' + error.message + '</p>';
+                        contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error loading widget settings: ' + error.message + '</p></div>';
                     });
             }
             
@@ -4462,8 +4540,8 @@ $csrfToken = generateCSRFToken();
             }
             
             try {
-                // Generate form HTML
-                let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
+                // Generate form HTML - wrap in widget-content-inner to maintain structure
+                let formHTML = '<div class="widget-content-inner"><form class="widget-settings-form" data-widget-id="' + widgetId + '">';
                 
                 // Add title field
                 formHTML += `
@@ -4548,7 +4626,7 @@ $csrfToken = generateCSRFToken();
                 </div>
                 `;
                 
-                formHTML += '</form>';
+                formHTML += '</form></div>';
                 console.log('Setting contentDiv.innerHTML, length:', formHTML.length);
                 console.log('contentDiv before setting:', contentDiv, 'isConnected:', contentDiv.isConnected);
                 
@@ -4571,6 +4649,7 @@ $csrfToken = generateCSRFToken();
                 console.log('innerHTML set! New length:', contentDiv.innerHTML.length);
                 console.log('contentDiv.outerHTML preview:', contentDiv.outerHTML.substring(0, 300));
                 
+                
                 // Verify it was set
                 setTimeout(() => {
                     const checkDiv = document.getElementById(`widget-content-${widgetId}`);
@@ -4583,7 +4662,7 @@ $csrfToken = generateCSRFToken();
             } catch (error) {
                 console.error('Error in renderWidgetSettingsInline:', error);
                 console.error('Error stack:', error.stack);
-                contentDiv.innerHTML = '<p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p>';
+                contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p></div>';
             }
         };
         
