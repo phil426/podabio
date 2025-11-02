@@ -1543,10 +1543,9 @@ $csrfToken = generateCSRFToken();
                 
                 <!-- Page Background -->
                 <h3 style="margin-top: 0;">Page Background</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for your page.</small>
                 
                 <div class="form-group">
-                    <label>Background Type</label>
+                    <label>Background</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                         <button type="button" class="bg-type-btn <?php echo !isGradient($pageBackground) ? 'active' : ''; ?>" data-type="solid" onclick="switchBackgroundType('solid')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo !isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo !isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo !isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Solid Color</button>
                         <button type="button" class="bg-type-btn <?php echo isGradient($pageBackground) ? 'active' : ''; ?>" data-type="gradient" onclick="switchBackgroundType('gradient')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo isGradient($pageBackground) ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#0066ff' : 'white'; ?>; color: <?php echo isGradient($pageBackground) ? 'white' : '#666'; ?>; cursor: pointer; font-weight: 600;">Gradient</button>
@@ -1555,8 +1554,8 @@ $csrfToken = generateCSRFToken();
                     <!-- Solid Color Option -->
                     <div id="bg-solid-option" class="bg-option" style="<?php echo isGradient($pageBackground) ? 'display: none;' : ''; ?>">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0;" id="page-bg-swatch"></div>
-                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updatePageBackground()">
+                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0; cursor: pointer;" id="page-bg-swatch" onclick="document.getElementById('page_background_color').click();"></div>
+                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; display: none;" onchange="updatePageBackground()">
                             <input type="text" id="page_background_color_hex" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updatePageBackgroundFromHex()">
                         </div>
                         <input type="hidden" id="page_background" name="page_background" value="<?php echo h($pageBackground); ?>">
