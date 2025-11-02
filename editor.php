@@ -1554,8 +1554,7 @@ $csrfToken = generateCSRFToken();
                     <!-- Solid Color Option -->
                     <div id="bg-solid-option" class="bg-option" style="<?php echo isGradient($pageBackground) ? 'display: none;' : ''; ?>">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>; flex-shrink: 0; cursor: pointer;" id="page-bg-swatch" onclick="document.getElementById('page_background_color').click();"></div>
-                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; display: none;" onchange="updatePageBackground()">
+                            <input type="color" id="page_background_color" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updatePageBackground()">
                             <input type="text" id="page_background_color_hex" value="<?php echo isGradient($pageBackground) ? '#ffffff' : h($pageBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updatePageBackgroundFromHex()">
                         </div>
                         <input type="hidden" id="page_background" name="page_background" value="<?php echo h($pageBackground); ?>">
@@ -1583,17 +1582,11 @@ $csrfToken = generateCSRFToken();
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradStart); ?>; flex-shrink: 0;" id="gradient-start-swatch"></div>
-                                        <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
-                                    </div>
+                                    <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($gradEnd); ?>; flex-shrink: 0;" id="gradient-end-swatch"></div>
-                                        <input type="color" id="gradient_end_color" value="<?php echo h($gradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
-                                    </div>
+                                    <input type="color" id="gradient_end_color" value="<?php echo h($gradEnd); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
                                 </div>
                             </div>
                             <div style="margin-bottom: 1rem;">
@@ -1625,27 +1618,24 @@ $csrfToken = generateCSRFToken();
                 <div class="form-group">
                     <label for="custom_primary_color">Text and Borders</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customPrimary); ?>; flex-shrink: 0;" id="primary-color-swatch"></div>
-                        <input type="color" id="custom_primary_color" name="custom_primary_color" value="<?php echo h($customPrimary); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('primary', this.value)">
-                        <input type="text" id="custom_primary_color_hex" value="<?php echo h($customPrimary); ?>" placeholder="#000000" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('primary', this.value)">
+                        <input type="color" id="custom_primary_color" name="custom_primary_color" value="<?php echo h($customPrimary); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateColorSwatch('primary', this.value)">
+                        <input type="text" id="custom_primary_color_hex" value="<?php echo h($customPrimary); ?>" placeholder="#000000" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('primary', this.value)">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="custom_secondary_color">Element Background</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customSecondary); ?>; flex-shrink: 0;" id="secondary-color-swatch"></div>
-                        <input type="color" id="custom_secondary_color" name="custom_secondary_color" value="<?php echo h($customSecondary); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('secondary', this.value)">
-                        <input type="text" id="custom_secondary_color_hex" value="<?php echo h($customSecondary); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('secondary', this.value)">
+                        <input type="color" id="custom_secondary_color" name="custom_secondary_color" value="<?php echo h($customSecondary); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateColorSwatch('secondary', this.value)">
+                        <input type="text" id="custom_secondary_color_hex" value="<?php echo h($customSecondary); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('secondary', this.value)">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="custom_accent_color">Highlights and Links</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customAccent); ?>; flex-shrink: 0;" id="accent-color-swatch"></div>
-                        <input type="color" id="custom_accent_color" name="custom_accent_color" value="<?php echo h($customAccent); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('accent', this.value)">
-                        <input type="text" id="custom_accent_color_hex" value="<?php echo h($customAccent); ?>" placeholder="#0066ff" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('accent', this.value)">
+                        <input type="color" id="custom_accent_color" name="custom_accent_color" value="<?php echo h($customAccent); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateColorSwatch('accent', this.value)">
+                        <input type="text" id="custom_accent_color_hex" value="<?php echo h($customAccent); ?>" placeholder="#0066ff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('accent', this.value)">
                     </div>
                 </div>
                 
@@ -1714,8 +1704,7 @@ $csrfToken = generateCSRFToken();
                     <!-- Solid Color Option -->
                     <div id="widget-bg-solid-option" class="widget-bg-option" style="<?php echo isGradient($widgetBackground) ? 'display: none;' : ''; ?>">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>; flex-shrink: 0;" id="widget-bg-swatch"></div>
-                            <input type="color" id="widget_background_color" value="<?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBackground()">
+                            <input type="color" id="widget_background_color" value="<?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateWidgetBackground()">
                             <input type="text" id="widget_background_color_hex" value="<?php echo isGradient($widgetBackground) ? '#ffffff' : h($widgetBackground); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateWidgetBackgroundFromHex()">
                         </div>
                         <input type="hidden" id="widget_background" name="widget_background" value="<?php echo h($widgetBackground); ?>">
@@ -1742,17 +1731,11 @@ $csrfToken = generateCSRFToken();
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetGradStart); ?>; flex-shrink: 0;" id="widget-gradient-start-swatch"></div>
-                                        <input type="color" id="widget_gradient_start_color" value="<?php echo h($widgetGradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
-                                    </div>
+                                    <input type="color" id="widget_gradient_start_color" value="<?php echo h($widgetGradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetGradEnd); ?>; flex-shrink: 0;" id="widget-gradient-end-swatch"></div>
-                                        <input type="color" id="widget_gradient_end_color" value="<?php echo h($widgetGradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
-                                    </div>
+                                    <input type="color" id="widget_gradient_end_color" value="<?php echo h($widgetGradEnd); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
                                 </div>
                             </div>
                             <div style="margin-bottom: 1rem;">
@@ -1786,8 +1769,7 @@ $csrfToken = generateCSRFToken();
                     <!-- Solid Color Option -->
                     <div id="widget-border-solid-option" class="widget-border-option" style="<?php echo isGradient($widgetBorderColor) ? 'display: none;' : ''; ?>">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>; flex-shrink: 0;" id="widget-border-swatch"></div>
-                            <input type="color" id="widget_border_color_picker" value="<?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderColor()">
+                            <input type="color" id="widget_border_color_picker" value="<?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateWidgetBorderColor()">
                             <input type="text" id="widget_border_color_hex" value="<?php echo isGradient($widgetBorderColor) ? '#000000' : h($widgetBorderColor); ?>" placeholder="#000000" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateWidgetBorderColorFromHex()">
                         </div>
                         <input type="hidden" id="widget_border_color" name="widget_border_color" value="<?php echo h($widgetBorderColor); ?>">
@@ -1814,17 +1796,11 @@ $csrfToken = generateCSRFToken();
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBorderGradStart); ?>; flex-shrink: 0;" id="widget-border-gradient-start-swatch"></div>
-                                        <input type="color" id="widget_border_gradient_start_color" value="<?php echo h($widgetBorderGradStart); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
-                                    </div>
+                                    <input type="color" id="widget_border_gradient_start_color" value="<?php echo h($widgetBorderGradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
-                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetBorderGradEnd); ?>; flex-shrink: 0;" id="widget-border-gradient-end-swatch"></div>
-                                        <input type="color" id="widget_border_gradient_end_color" value="<?php echo h($widgetBorderGradEnd); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
-                                    </div>
+                                    <input type="color" id="widget_border_gradient_end_color" value="<?php echo h($widgetBorderGradEnd); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
                                 </div>
                             </div>
                             <div style="margin-bottom: 1rem;">
@@ -1966,8 +1942,7 @@ $csrfToken = generateCSRFToken();
                     <div class="form-group">
                         <label for="widget_glow_color">Glow Color</label>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>; flex-shrink: 0;" id="glow-color-swatch"></div>
-                            <input type="color" id="widget_glow_color" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>" style="width: 100px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGlowColor()">
+                            <input type="color" id="widget_glow_color" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" onchange="updateGlowColor()">
                             <input type="text" id="widget_glow_color_hex" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>" placeholder="#ff00ff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateGlowColorFromHex()">
                         </div>
                         <input type="hidden" id="widget_glow_color_hidden" name="widget_glow_color_hidden" value="<?php echo h($widgetStyles['glow_color'] ?? '#ff00ff'); ?>">
@@ -3646,7 +3621,6 @@ $csrfToken = generateCSRFToken();
         
         // Color picker functions
         function updateColorSwatch(type, color) {
-            document.getElementById(type + '-color-swatch').style.background = color;
             document.getElementById('custom_' + type + '_color_hex').value = color;
             
             // Update previews if primary color changed
@@ -3664,7 +3638,6 @@ $csrfToken = generateCSRFToken();
             }
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 document.getElementById('custom_' + type + '_color').value = hex;
-                document.getElementById(type + '-color-swatch').style.background = hex;
                 
                 // Update previews if primary color changed
                 if (type === 'primary') {
@@ -4742,17 +4715,15 @@ $csrfToken = generateCSRFToken();
         function updatePageBackground() {
             const colorPicker = document.getElementById('page_background_color');
             const hexInput = document.getElementById('page_background_color_hex');
-            const swatch = document.getElementById('page-bg-swatch');
             const hidden = document.getElementById('page_background');
             
-            if (!colorPicker || !hexInput || !swatch || !hidden) {
+            if (!colorPicker || !hexInput || !hidden) {
                 console.error('Page background elements not found');
                 return;
             }
             
             const color = colorPicker.value;
             hexInput.value = color;
-            swatch.style.background = color;
             hidden.value = color;
             
             // Update page preview
@@ -4778,11 +4749,9 @@ $csrfToken = generateCSRFToken();
             
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 const colorPicker = document.getElementById('page_background_color');
-                const swatch = document.getElementById('page-bg-swatch');
                 const hidden = document.getElementById('page_background');
                 
                 colorPicker.value = hex;
-                swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
                 
@@ -4801,10 +4770,8 @@ $csrfToken = generateCSRFToken();
             const directionEl = document.getElementById('gradient_direction');
             const preview = document.getElementById('gradient-preview');
             const hidden = document.getElementById('page_background');
-            const startSwatch = document.getElementById('gradient-start-swatch');
-            const endSwatch = document.getElementById('gradient-end-swatch');
             
-            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden || !startSwatch || !endSwatch) {
+            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
                 console.error('Gradient elements not found');
                 return;
             }
@@ -4816,8 +4783,6 @@ $csrfToken = generateCSRFToken();
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
             hidden.value = gradient;
-            startSwatch.style.background = startColor;
-            endSwatch.style.background = endColor;
             
             // Update page preview
             updatePageFontPreview();
@@ -4894,17 +4859,15 @@ $csrfToken = generateCSRFToken();
         function updateGlowColor() {
             const colorPicker = document.getElementById('widget_glow_color');
             const hexInput = document.getElementById('widget_glow_color_hex');
-            const swatch = document.getElementById('glow-color-swatch');
             const hidden = document.getElementById('widget_glow_color_hidden');
             
-            if (!colorPicker || !hexInput || !swatch || !hidden) {
+            if (!colorPicker || !hexInput || !hidden) {
                 console.error('Glow color elements not found');
                 return;
             }
             
             const color = colorPicker.value;
             hexInput.value = color;
-            swatch.style.background = color;
             hidden.value = color;
             
             saveAppearanceForm();
@@ -4926,16 +4889,14 @@ $csrfToken = generateCSRFToken();
             
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 const colorPicker = document.getElementById('widget_glow_color');
-                const swatch = document.getElementById('glow-color-swatch');
                 const hidden = document.getElementById('widget_glow_color_hidden');
                 
-                if (!colorPicker || !swatch || !hidden) {
+                if (!colorPicker || !hidden) {
                     console.error('Glow color elements not found');
                     return;
                 }
                 
                 colorPicker.value = hex;
-                swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
                 
@@ -5000,17 +4961,15 @@ $csrfToken = generateCSRFToken();
         function updateWidgetBackground() {
             const colorPicker = document.getElementById('widget_background_color');
             const hexInput = document.getElementById('widget_background_color_hex');
-            const swatch = document.getElementById('widget-bg-swatch');
             const hidden = document.getElementById('widget_background');
             
-            if (!colorPicker || !hexInput || !swatch || !hidden) {
+            if (!colorPicker || !hexInput || !hidden) {
                 console.error('Widget background elements not found');
                 return;
             }
             
             const color = colorPicker.value;
             hexInput.value = color;
-            swatch.style.background = color;
             hidden.value = color;
             
             // Update widget preview
@@ -5036,11 +4995,9 @@ $csrfToken = generateCSRFToken();
             
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 const colorPicker = document.getElementById('widget_background_color');
-                const swatch = document.getElementById('widget-bg-swatch');
                 const hidden = document.getElementById('widget_background');
                 
                 colorPicker.value = hex;
-                swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
                 
@@ -5072,12 +5029,6 @@ $csrfToken = generateCSRFToken();
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
             hidden.value = gradient;
-            
-            // Update swatches
-            const startSwatch = document.getElementById('widget-gradient-start-swatch');
-            const endSwatch = document.getElementById('widget-gradient-end-swatch');
-            if (startSwatch) startSwatch.style.background = startColor;
-            if (endSwatch) endSwatch.style.background = endColor;
             
             saveAppearanceForm();
         }
@@ -5114,17 +5065,15 @@ $csrfToken = generateCSRFToken();
         function updateWidgetBorderColor() {
             const colorPicker = document.getElementById('widget_border_color_picker');
             const hexInput = document.getElementById('widget_border_color_hex');
-            const swatch = document.getElementById('widget-border-swatch');
             const hidden = document.getElementById('widget_border_color');
             
-            if (!colorPicker || !hexInput || !swatch || !hidden) {
+            if (!colorPicker || !hexInput || !hidden) {
                 console.error('Widget border color elements not found');
                 return;
             }
             
             const color = colorPicker.value;
             hexInput.value = color;
-            swatch.style.background = color;
             hidden.value = color;
             
             saveAppearanceForm();
@@ -5147,11 +5096,9 @@ $csrfToken = generateCSRFToken();
             
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 const colorPicker = document.getElementById('widget_border_color_picker');
-                const swatch = document.getElementById('widget-border-swatch');
                 const hidden = document.getElementById('widget_border_color');
                 
                 colorPicker.value = hex;
-                swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
                 
@@ -5180,12 +5127,6 @@ $csrfToken = generateCSRFToken();
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
             hidden.value = gradient;
-            
-            // Update swatches
-            const startSwatch = document.getElementById('widget-border-gradient-start-swatch');
-            const endSwatch = document.getElementById('widget-border-gradient-end-swatch');
-            if (startSwatch) startSwatch.style.background = startColor;
-            if (endSwatch) endSwatch.style.background = endColor;
             
             saveAppearanceForm();
         }
