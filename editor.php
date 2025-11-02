@@ -146,6 +146,9 @@ if (!isset($pageFonts['page_primary_font'])) {
 
 $csrfToken = generateCSRFToken();
 
+// Generate page URL for preview
+$pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
