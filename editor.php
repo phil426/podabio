@@ -1614,9 +1614,6 @@ $csrfToken = generateCSRFToken();
                 <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
                 
                 <!-- Page Colors -->
-                <h3 style="margin-top: 0;">Page Colors</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Customize colors to override theme colors or create your own color scheme.</small>
-                
                 <?php
                 // Get theme colors with fallbacks using Theme class
                 $colors = getThemeColors($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null);
@@ -1626,41 +1623,35 @@ $csrfToken = generateCSRFToken();
                 ?>
                 
                 <div class="form-group">
-                    <label for="custom_primary_color">Primary Color</label>
+                    <label for="custom_primary_color">Text and Borders</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customPrimary); ?>; flex-shrink: 0;" id="primary-color-swatch"></div>
                         <input type="color" id="custom_primary_color" name="custom_primary_color" value="<?php echo h($customPrimary); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('primary', this.value)">
                         <input type="text" id="custom_primary_color_hex" value="<?php echo h($customPrimary); ?>" placeholder="#000000" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('primary', this.value)">
-                        <small style="margin-left: 10px; color: #666;">Text and borders</small>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="custom_secondary_color">Secondary Color</label>
+                    <label for="custom_secondary_color">Element Background</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customSecondary); ?>; flex-shrink: 0;" id="secondary-color-swatch"></div>
                         <input type="color" id="custom_secondary_color" name="custom_secondary_color" value="<?php echo h($customSecondary); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('secondary', this.value)">
                         <input type="text" id="custom_secondary_color_hex" value="<?php echo h($customSecondary); ?>" placeholder="#ffffff" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('secondary', this.value)">
-                        <small style="margin-left: 10px; color: #666;">Background</small>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="custom_accent_color">Accent Color</label>
+                    <label for="custom_accent_color">Highlights and Links</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: <?php echo h($customAccent); ?>; flex-shrink: 0;" id="accent-color-swatch"></div>
                         <input type="color" id="custom_accent_color" name="custom_accent_color" value="<?php echo h($customAccent); ?>" style="width: 80px; height: 40px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateColorSwatch('accent', this.value)">
                         <input type="text" id="custom_accent_color_hex" value="<?php echo h($customAccent); ?>" placeholder="#0066ff" style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('accent', this.value)">
-                        <small style="margin-left: 10px; color: #666;">Highlights and links</small>
                     </div>
                 </div>
                 
                 <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
                 
                 <!-- Page Fonts -->
-                <h3 style="margin-top: 0;">Page Fonts</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for page headings and body text. Popular Google Fonts are included.</small>
-                
                 <?php
                 // Get Google Fonts list from helper function
                 $googleFonts = getGoogleFontsList();
