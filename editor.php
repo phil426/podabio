@@ -863,6 +863,7 @@ $csrfToken = generateCSRFToken();
             z-index: 2000;
             opacity: 0;
             visibility: hidden;
+            display: none;
             transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
             /* Removed backdrop-filter to prevent blur */
         }
@@ -885,11 +886,12 @@ $csrfToken = generateCSRFToken();
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             max-height: 85vh;
             overflow: hidden;
-            display: flex;
+            display: none;
             flex-direction: column;
         }
         
         .drawer.active {
+            display: flex;
             transform: translateY(0);
         }
         
@@ -2965,8 +2967,8 @@ $csrfToken = generateCSRFToken();
         </div>
         
         <!-- Widget Settings Drawer -->
-        <div id="widget-settings-drawer-overlay" class="drawer-overlay" onclick="closeWidgetSettingsDrawer()"></div>
-        <div id="widget-settings-drawer" class="drawer">
+        <div id="widget-settings-drawer-overlay" class="drawer-overlay" onclick="closeWidgetSettingsDrawer()" style="display: none;"></div>
+        <div id="widget-settings-drawer" class="drawer" style="display: none;">
             <div class="drawer-handle"></div>
             <div class="drawer-content">
                 <div class="drawer-header">
