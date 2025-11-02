@@ -157,6 +157,7 @@ $csrfToken = generateCSRFToken();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" integrity="sha512-zxBiDORGDEEYDdKFuBcWopSKKXMFiFJ6xvEl2g+JNRSzUfwJH6/OPT0VH4C7/hPESj0Qd/etr6vWTYBS9sFJ8w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
         * {
@@ -1350,6 +1351,119 @@ $csrfToken = generateCSRFToken();
                 width: 100%;
             }
         }
+        
+        /* Crop Modal Styles */
+        .crop-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .crop-modal-overlay.active {
+            display: flex;
+        }
+        
+        .crop-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .crop-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .crop-modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .crop-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+        
+        .crop-modal-close:hover {
+            color: #111827;
+        }
+        
+        .crop-modal-body {
+            margin-bottom: 1.5rem;
+        }
+        
+        #croppie-container {
+            width: 100%;
+            height: 400px;
+        }
+        
+        .crop-modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .crop-modal-actions button {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .crop-modal-cancel {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #374151;
+        }
+        
+        .crop-modal-cancel:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        
+        .crop-modal-apply {
+            background: #0066ff;
+            border: 2px solid #0066ff;
+            color: white;
+        }
+        
+        .crop-modal-apply:hover {
+            background: #0052cc;
+            border-color: #0052cc;
+        }
+        
+        @media (max-width: 640px) {
+            .crop-modal {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            #croppie-container {
+                height: 300px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2401,6 +2515,25 @@ $csrfToken = generateCSRFToken();
             </div>
         </div>
         
+        <!-- Image Crop Modal -->
+        <div id="crop-modal-overlay" class="crop-modal-overlay">
+            <div class="crop-modal">
+                <div class="crop-modal-header">
+                    <h3>Crop Profile Image</h3>
+                    <button type="button" class="crop-modal-close" onclick="closeCropModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="crop-modal-body">
+                    <div id="croppie-container"></div>
+                </div>
+                <div class="crop-modal-actions">
+                    <button type="button" class="crop-modal-cancel" onclick="closeCropModal()">Cancel</button>
+                    <button type="button" class="crop-modal-apply" onclick="applyCrop()">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Email Subscription Tab -->
         <div id="tab-email" class="tab-content">
             <h2>Email Subscription Settings</h2>
@@ -2569,6 +2702,9 @@ $csrfToken = generateCSRFToken();
             </div>
         </div>
         <?php endif; ?>
+    
+    <!-- Croppie Image Cropper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js" integrity="sha512-Gs+PsXsGkmr+15rqObPJnotkwO3T9iTOxvkUEB3DlWGF4VQHK/Mgz62pFGyOpSZLQZtH1T5CpnJdGrGmj7j6Pw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -4713,7 +4849,13 @@ $csrfToken = generateCSRFToken();
             });
         }
         
-        // Image upload functionality
+        // Global variables for image cropping
+        let croppieInstance = null;
+        let currentCropContext = null;
+        let currentCropInputId = null;
+        let currentCropPreviewId = null;
+        
+        // Image upload functionality - opens crop modal
         function uploadImage(type, context = 'appearance') {
             // Only handle profile images
             if (type !== 'profile') {
@@ -4752,148 +4894,211 @@ $csrfToken = generateCSRFToken();
                 return;
             }
             
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('type', type);
-            formData.append('csrf_token', csrfToken);
+            // Store context for later use
+            currentCropContext = context;
+            currentCropInputId = inputId;
+            currentCropPreviewId = previewId;
             
-            // Debug logging
-            console.log('Uploading image:', {
-                type: type,
-                context: context,
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: file.type,
-                inputId: inputId,
-                previewId: previewId
+            // Open crop modal with image
+            openCropModal(file);
+        }
+        
+        // Open crop modal with image
+        function openCropModal(file) {
+            const overlay = document.getElementById('crop-modal-overlay');
+            const container = document.getElementById('croppie-container');
+            
+            if (!overlay || !container) {
+                console.error('Crop modal elements not found');
+                showToast('Crop modal not available', 'error');
+                return;
+            }
+            
+            // Destroy existing croppie instance if it exists
+            if (croppieInstance) {
+                croppieInstance.destroy();
+            }
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Initialize Croppie with 1:1 aspect ratio
+            croppieInstance = new Croppie(container, {
+                viewport: { width: 300, height: 300, type: 'square' },
+                boundary: { width: '100%', height: 400 },
+                showZoomer: true,
+                enableOrientation: true,
+                enforceBoundary: true
             });
             
+            // Bind image to croppie
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                croppieInstance.bind({
+                    url: e.target.result
+                });
+            };
+            reader.readAsDataURL(file);
+            
+            // Show modal
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close crop modal
+        function closeCropModal() {
+            const overlay = document.getElementById('crop-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            // Clean up
+            if (croppieInstance) {
+                croppieInstance.destroy();
+                croppieInstance = null;
+            }
+            
+            // Clear file input if we have the context
+            const inputId = currentCropInputId;
+            if (inputId) {
+                const input = document.getElementById(inputId);
+                if (input) input.value = '';
+            }
+            
+            currentCropContext = null;
+            currentCropInputId = null;
+            currentCropPreviewId = null;
+        }
+        
+        // Apply crop and upload
+        function applyCrop() {
+            if (!croppieInstance) {
+                showToast('No image to crop', 'error');
+                return;
+            }
+            
+            // Show loading state
             showToast('Uploading image...', 'info');
             
-            fetch('/api/upload.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                console.log('Upload response status:', response.status, response.statusText);
+            // Get cropped image as blob
+            croppieInstance.result('blob', {
+                type: 'image/jpeg',
+                quality: 0.9,
+                size: { width: 400, height: 400 }
+            }).then(function(blob) {
+                // Upload the cropped blob
+                const formData = new FormData();
+                formData.append('image', blob, 'profile.jpg');
+                formData.append('type', 'profile');
+                formData.append('csrf_token', csrfToken);
                 
-                // Check if response is OK
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Upload failed - response text:', text);
-                        try {
-                            const json = JSON.parse(text);
-                            throw new Error(json.error || 'Upload failed');
-                        } catch (e) {
-                            if (e instanceof Error && e.message !== 'Upload failed') {
-                                throw e;
+                fetch('/api/upload.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('Upload failed:', text);
+                            try {
+                                const json = JSON.parse(text);
+                                throw new Error(json.error || 'Upload failed');
+                            } catch (e) {
+                                if (e instanceof Error && e.message !== 'Upload failed') {
+                                    throw e;
+                                }
+                                throw new Error(text || 'Upload failed');
                             }
-                            throw new Error(text || 'Upload failed with status ' + response.status);
-                        }
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Upload response data:', data);
-                
-                if (data.success) {
-                    // Update preview
-                    const preview = document.getElementById(previewId);
-                    
-                    if (!preview) {
-                        console.error('Preview element not found:', previewId);
-                        console.error('Available preview elements:', document.querySelectorAll('[id*="preview"]'));
-                        showToast('Image uploaded but preview could not be updated', 'error');
-                        return;
+                        });
                     }
-                    
-                    // Use the URL from the response
-                    const imageUrl = data.url || data.path;
-                    
-                    if (!imageUrl) {
-                        console.error('No image URL in response:', data);
-                        showToast('Image uploaded but no URL returned', 'error');
-                        return;
-                    }
-                    
-                    console.log('Updating preview with URL:', imageUrl);
-                    
-                    // Update or create preview image
-                    if (preview && preview.tagName === 'IMG') {
-                        // Update existing image - add timestamp to force reload
-                        console.log('Updating existing IMG element');
-                        preview.src = imageUrl + '?t=' + Date.now();
-                    } else if (preview && preview.parentNode) {
-                        // Replace div with img
-                        console.log('Replacing DIV with IMG element');
-                        const img = document.createElement('img');
-                        img.id = previewId;
-                        img.src = imageUrl;
-                        img.alt = 'Profile';
-                        img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
-                        preview.parentNode.replaceChild(img, preview);
-                        console.log('Preview image replaced successfully');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        handleImageUploadSuccess(data, currentCropPreviewId);
+                        closeCropModal();
+                        showToast('Image uploaded successfully!', 'success');
                     } else {
-                        console.error('Preview element or parent not found');
-                        console.error('Preview:', preview);
-                        console.error('Preview parent:', preview ? preview.parentNode : 'null');
+                        showToast(data.error || 'Failed to upload image', 'error');
                     }
-                    
-                    // Update user menu avatars
-                    const userMenuAvatars = document.querySelectorAll('.user-menu-avatar');
-                    userMenuAvatars.forEach(avatar => {
-                        // Check if it already has an img tag
-                        const existingImg = avatar.querySelector('img');
-                        if (existingImg) {
-                            existingImg.src = imageUrl + '?t=' + Date.now();
-                        } else {
-                            // Replace initial letter with image
-                            const img = document.createElement('img');
-                            img.src = imageUrl + '?t=' + Date.now();
-                            img.alt = 'Profile';
-                            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;';
-                            avatar.innerHTML = '';
-                            avatar.appendChild(img);
-                        }
-                    });
-                    
-                    // Show remove button if not visible
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    showToast(error.message || 'An error occurred while uploading', 'error');
+                });
+            }).catch(function(error) {
+                console.error('Crop error:', error);
+                showToast('Failed to process image', 'error');
+            });
+        }
+        
+        // Handle successful image upload
+        function handleImageUploadSuccess(data, previewId) {
+            const imageUrl = data.url || data.path;
+            
+            if (!imageUrl) {
+                console.error('No image URL in response');
+                return;
+            }
+            
+            // Update preview
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                if (preview.tagName === 'IMG') {
+                    preview.src = imageUrl + '?t=' + Date.now();
+                } else if (preview.parentNode) {
+                    const img = document.createElement('img');
+                    img.id = previewId;
+                    img.src = imageUrl;
+                    img.alt = 'Profile';
+                    img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;';
+                    preview.parentNode.replaceChild(img, preview);
+                }
+            }
+            
+            // Update user menu avatars
+            const userMenuAvatars = document.querySelectorAll('.user-menu-avatar');
+            userMenuAvatars.forEach(avatar => {
+                const existingImg = avatar.querySelector('img');
+                if (existingImg) {
+                    existingImg.src = imageUrl + '?t=' + Date.now();
+                } else {
+                    const img = document.createElement('img');
+                    img.src = imageUrl + '?t=' + Date.now();
+                    img.alt = 'Profile';
+                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;';
+                    avatar.innerHTML = '';
+                    avatar.appendChild(img);
+                }
+            });
+            
+            // Show remove button if needed
+            if (currentCropContext) {
+                const inputId = currentCropInputId;
+                const input = document.getElementById(inputId);
+                
+                if (input) {
                     let buttonContainer;
-                    if (context === 'settings') {
-                        // In settings context, find the button container div
+                    if (currentCropContext === 'settings') {
                         buttonContainer = input.closest('div').querySelector('div[style*="display: flex"]');
                     } else {
-                        // In appearance context, find the button container div
                         buttonContainer = input.nextElementSibling;
                     }
                     
                     if (buttonContainer) {
-                        // Check if remove button already exists
                         const existingRemoveBtn = buttonContainer.querySelector('.btn-danger');
                         if (!existingRemoveBtn) {
                             const removeBtn = document.createElement('button');
                             removeBtn.type = 'button';
                             removeBtn.className = 'btn btn-danger btn-small';
                             removeBtn.textContent = 'Remove';
-                            removeBtn.onclick = () => removeImage(type, context);
+                            removeBtn.onclick = () => removeImage('profile', currentCropContext);
                             buttonContainer.appendChild(removeBtn);
                         }
                     }
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    showToast(data.message || 'Image uploaded successfully!', 'success');
-                } else {
-                    showToast(data.error || 'Failed to upload image', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('Upload error:', error);
-                console.error('Error stack:', error.stack);
-                showToast(error.message || 'An error occurred while uploading', 'error');
-            });
+            }
         }
         
         function removeImage(type, context = 'appearance') {
