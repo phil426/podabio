@@ -2850,6 +2850,16 @@ $csrfToken = generateCSRFToken();
             
             // Initialize accordion states
             initializeAccordions();
+            
+            // Auto-upload profile images when file is selected (Settings tab only)
+            const profileImageInputSettings = document.getElementById('profile-image-input-settings');
+            if (profileImageInputSettings) {
+                profileImageInputSettings.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files.length > 0) {
+                        uploadImage('profile', 'settings');
+                    }
+                });
+            }
         });
         
         // Widget Gallery Functions
@@ -4034,17 +4044,6 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        // Auto-upload profile images when file is selected (Settings tab only)
-        const profileImageInputSettings = document.getElementById('profile-image-input-settings');
-        
-        if (profileImageInputSettings) {
-            profileImageInputSettings.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files.length > 0) {
-                    uploadImage('profile', 'settings');
-                }
-            });
-        }
-        
         // Auto-save functionality with debouncing
         let saveTimeouts = {};
         let savingIndicators = {};
@@ -4857,6 +4856,8 @@ $csrfToken = generateCSRFToken();
         
         // Image upload functionality - opens crop modal
         function uploadImage(type, context = 'appearance') {
+            console.log('uploadImage called:', { type, context });
+            
             // Only handle profile images
             if (type !== 'profile') {
                 console.error('Invalid image type:', type);
@@ -4877,9 +4878,12 @@ $csrfToken = generateCSRFToken();
             const file = input.files[0];
             
             if (!file) {
+                console.warn('No file selected');
                 showToast('Please select an image file', 'error');
                 return;
             }
+            
+            console.log('File selected:', { name: file.name, size: file.size, type: file.type });
             
             // Validate file size (5MB max)
             if (file.size > 5 * 1024 * 1024) {
@@ -4905,6 +4909,13 @@ $csrfToken = generateCSRFToken();
         
         // Open crop modal with image
         function openCropModal(file) {
+            // Check if Croppie is loaded
+            if (typeof Croppie === 'undefined') {
+                console.error('Croppie library not loaded');
+                showToast('Image cropper not available. Please refresh the page.', 'error');
+                return;
+            }
+            
             const overlay = document.getElementById('crop-modal-overlay');
             const container = document.getElementById('croppie-container');
             
@@ -4916,33 +4927,51 @@ $csrfToken = generateCSRFToken();
             
             // Destroy existing croppie instance if it exists
             if (croppieInstance) {
-                croppieInstance.destroy();
+                try {
+                    croppieInstance.destroy();
+                } catch (e) {
+                    console.warn('Error destroying croppie instance:', e);
+                }
             }
             
             // Clear container
             container.innerHTML = '';
             
-            // Initialize Croppie with 1:1 aspect ratio
-            croppieInstance = new Croppie(container, {
-                viewport: { width: 300, height: 300, type: 'square' },
-                boundary: { width: '100%', height: 400 },
-                showZoomer: true,
-                enableOrientation: true,
-                enforceBoundary: true
-            });
-            
-            // Bind image to croppie
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                croppieInstance.bind({
-                    url: e.target.result
+            try {
+                // Initialize Croppie with 1:1 aspect ratio
+                croppieInstance = new Croppie(container, {
+                    viewport: { width: 300, height: 300, type: 'square' },
+                    boundary: { width: '100%', height: 400 },
+                    showZoomer: true,
+                    enableOrientation: true,
+                    enforceBoundary: true
                 });
-            };
-            reader.readAsDataURL(file);
-            
-            // Show modal
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
+                
+                // Bind image to croppie
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        croppieInstance.bind({
+                            url: e.target.result
+                        });
+                        
+                        // Show modal after image is loaded
+                        overlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    } catch (error) {
+                        console.error('Error binding image to croppie:', error);
+                        showToast('Failed to load image for cropping', 'error');
+                    }
+                };
+                reader.onerror = function() {
+                    console.error('Error reading file');
+                    showToast('Failed to read image file', 'error');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Error initializing Croppie:', error);
+                showToast('Failed to initialize image cropper', 'error');
+            }
         }
         
         // Close crop modal
