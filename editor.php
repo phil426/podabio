@@ -2078,7 +2078,25 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             <div class="editor-content">
                 <div class="editor-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                        <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
+                            
+                            <?php if ($page && !empty($pageUrl)): ?>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.875rem;">
+                                <span style="color: #6b7280; font-weight: 500;"><?php echo h($pageUrl); ?></span>
+                                <button 
+                                    type="button" 
+                                    onclick="copyPageUrl()" 
+                                    id="copy-url-btn"
+                                    style="background: none; border: none; color: #0066ff; cursor: pointer; padding: 0.25rem 0.5rem; display: flex; align-items: center; gap: 0.25rem; border-radius: 4px; transition: background 0.2s;"
+                                    onmouseover="this.style.background='#e0f2fe'"
+                                    onmouseout="this.style.background='none'"
+                                    title="Copy page URL">
+                                    <i class="fas fa-copy" id="copy-url-icon"></i>
+                                </button>
+                            </div>
+                            <?php endif; ?>
+                        </div>
                         
                         <!-- User Menu Dropdown -->
                         <div class="user-menu">
@@ -3650,6 +3668,57 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Live Preview System
         let previewUpdateTimeout = null;
+        
+        // Copy page URL to clipboard
+        window.copyPageUrl = function() {
+            const pageUrl = '<?php echo isset($pageUrl) ? h($pageUrl) : ''; ?>';
+            if (!pageUrl) return;
+            
+            // Use Clipboard API if available
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(pageUrl).then(() => {
+                    showCopySuccess();
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    fallbackCopy(pageUrl);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopy(pageUrl);
+            }
+        };
+        
+        function showCopySuccess() {
+            const btn = document.getElementById('copy-url-btn');
+            const icon = document.getElementById('copy-url-icon');
+            if (btn && icon) {
+                const originalIcon = icon.className;
+                icon.className = 'fas fa-check';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    icon.className = originalIcon;
+                    btn.style.color = '#0066ff';
+                }, 2000);
+            }
+            showToast('Page URL copied to clipboard!', 'success');
+        }
+        
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                showToast('Failed to copy URL. Please copy manually.', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
         
         // Toggle preview panel
         window.togglePreview = function() {
