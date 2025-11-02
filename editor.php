@@ -242,54 +242,6 @@ $csrfToken = generateCSRFToken();
             font-size: 1rem;
         }
         
-        .sidebar-footer {
-            padding: 0.75rem 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .user-profile:hover {
-            background: #f9fafb;
-        }
-        
-        .user-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #0066ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
-        
-        .user-info {
-            flex: 1;
-            font-size: 0.75rem;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            color: #111827;
-            font-size: 0.75rem;
-        }
-        
-        .user-email {
-            color: #6b7280;
-            font-size: 0.7rem;
-        }
-        
         /* Center Editor Area */
         .editor-main {
             flex: 1;
@@ -1198,6 +1150,206 @@ $csrfToken = generateCSRFToken();
         .segmented-control button:not(.active):hover {
             background: #f9fafb;
         }
+        
+        /* User Menu Dropdown */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-menu-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .user-menu-button:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        
+        .user-menu-button.active {
+            background: #f0f7ff;
+            border-color: #0066ff;
+        }
+        
+        .user-menu-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066ff 0%, #00aaff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .user-menu-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
+        }
+        
+        .user-menu-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        .user-menu-email {
+            color: #6b7280;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            width: 240px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        
+        .user-menu-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-menu-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .user-menu-header-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-menu-header-email {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-menu-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .user-menu-status.verified {
+            color: #059669;
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .user-menu-status.unverified {
+            color: #dc2626;
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            transition: background 0.2s;
+            font-size: 0.875rem;
+            border: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .user-menu-item:hover {
+            background: #f9fafb;
+        }
+        
+        .user-menu-item i {
+            width: 16px;
+            color: #6b7280;
+        }
+        
+        .user-menu-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 0.5rem 0;
+        }
+        
+        .user-menu-icon {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        
+        @media (max-width: 768px) {
+            .editor-header {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .editor-header > div {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .user-menu {
+                width: 100%;
+            }
+            
+            .user-menu-button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .user-menu-dropdown {
+                right: 0;
+                left: 0;
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1239,35 +1391,58 @@ $csrfToken = generateCSRFToken();
                     </a>
                 <?php endif; ?>
             </nav>
-            
-            <div class="sidebar-footer">
-                <div class="user-profile" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]'))">
-                    <div class="user-avatar">
-                        <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
-                        <div class="user-email"><?php echo h($user['email']); ?></div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: #9ca3af;"></i>
-                </div>
-            </div>
         </aside>
         
         <!-- Center Editor -->
         <main class="editor-main">
             <div class="editor-content">
                 <div class="editor-header">
-                    <h1><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                        <?php if ($page): ?>
-                            <a href="/<?php echo h($page['username']); ?>" target="_blank" class="btn btn-primary">
-                                <i class="fas fa-external-link-alt"></i> View Page
-                            </a>
-                        <?php endif; ?>
-                        <a href="/logout.php" class="btn btn-secondary">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
+                        
+                        <!-- User Menu Dropdown -->
+                        <div class="user-menu">
+                            <button type="button" class="user-menu-button" onclick="toggleUserMenu()" id="user-menu-button">
+                                <div class="user-menu-avatar">
+                                    <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                </div>
+                                <div class="user-menu-info">
+                                    <div class="user-menu-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                                    <div class="user-menu-email"><?php echo h($user['email']); ?></div>
+                                </div>
+                                <i class="fas fa-chevron-down user-menu-icon"></i>
+                            </button>
+                            
+                            <div class="user-menu-dropdown" id="user-menu-dropdown">
+                                <div class="user-menu-header">
+                                    <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                                    <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
+                                    <div class="user-menu-status <?php echo $user['email_verified'] ? 'verified' : 'unverified'; ?>">
+                                        <i class="fas <?php echo $user['email_verified'] ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+                                        <?php echo $user['email_verified'] ? 'Verified' : 'Unverified'; ?>
+                                    </div>
+                                </div>
+                                
+                                <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu();">
+                                    <i class="fas fa-user"></i>
+                                    <span>Account Settings</span>
+                                </a>
+                                
+                                <?php if ($page): ?>
+                                <a href="/<?php echo h($page['username']); ?>" target="_blank" class="user-menu-item">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>View Page</span>
+                                </a>
+                                <?php endif; ?>
+                                
+                                <div class="user-menu-divider"></div>
+                                
+                                <a href="/logout.php" class="user-menu-item">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
         
@@ -2471,6 +2646,42 @@ $csrfToken = generateCSRFToken();
                 }
             });
         }
+        
+        // User Menu Dropdown Functions
+        window.toggleUserMenu = function() {
+            const dropdown = document.getElementById('user-menu-dropdown');
+            const button = document.getElementById('user-menu-button');
+            
+            if (!dropdown || !button) return;
+            
+            const isOpen = dropdown.classList.contains('show');
+            
+            if (isOpen) {
+                dropdown.classList.remove('show');
+                button.classList.remove('active');
+            } else {
+                dropdown.classList.add('show');
+                button.classList.add('active');
+            }
+        };
+        
+        window.closeUserMenu = function() {
+            const dropdown = document.getElementById('user-menu-dropdown');
+            const button = document.getElementById('user-menu-button');
+            
+            if (dropdown) dropdown.classList.remove('show');
+            if (button) button.classList.remove('active');
+        };
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.querySelector('.user-menu');
+            const dropdown = document.getElementById('user-menu-dropdown');
+            
+            if (userMenu && dropdown && !userMenu.contains(event.target)) {
+                closeUserMenu();
+            }
+        });
         
         // On page load, check for tab parameter
         document.addEventListener('DOMContentLoaded', function() {
