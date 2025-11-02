@@ -4246,8 +4246,10 @@ $csrfToken = generateCSRFToken();
                     return;
                 }
                 
+                console.log('About to set innerHTML, formHTML preview (first 200 chars):', formHTML.substring(0, 200));
                 contentDiv.innerHTML = formHTML;
-                console.log('Content set successfully, new innerHTML length:', contentDiv.innerHTML.length);
+                console.log('innerHTML set! New length:', contentDiv.innerHTML.length);
+                console.log('contentDiv.outerHTML preview:', contentDiv.outerHTML.substring(0, 300));
                 
                 // Verify it was set
                 setTimeout(() => {
