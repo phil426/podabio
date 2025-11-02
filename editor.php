@@ -359,6 +359,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow: visible;
         }
         
+        /* Ensure bottom corners are rounded when dropdown is closed */
+        .widget-accordion-item:not(.active) {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .widget-accordion-item.active {
+            overflow: visible;
+        }
+        
         .widget-accordion-item:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
@@ -386,8 +396,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: #111827;
             transition: all 0.2s;
             text-align: left;
-            border-radius: 8px 8px 0 0;
+            border-radius: 8px;
             overflow: hidden;
+        }
+        
+        /* When item is active (dropdown open), header only has top rounded corners */
+        .widget-accordion-item.active .widget-accordion-header {
+            border-radius: 8px 8px 0 0;
         }
         
         .widget-accordion-header:hover {
