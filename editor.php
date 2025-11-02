@@ -153,11 +153,13 @@ $csrfToken = generateCSRFToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Page - <?php echo h(APP_NAME); ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230066ff'/><text x='50' y='70' font-size='60' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial, sans-serif'>P</text></svg>">
+    <link rel="alternate icon" href="/favicon.php">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://unpkg.com/croppie@2.6.5/croppie.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" integrity="sha512-zxBiDORGDEEYDdKFuBcWopSKKXMFiFJ6xvEl2g+JNRSzUfwJH6/OPT0VH4C7/hPESj0Qd/etr6vWTYBS9sFJ8w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
         * {
@@ -283,115 +285,6 @@ $csrfToken = generateCSRFToken();
             list-style: none;
             padding: 0;
         }
-        
-        /* Widget Accordion Styles */
-        .widget-accordion-item {
-            margin-bottom: 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: white;
-            overflow: hidden;
-            transition: all 0.2s;
-        }
-        
-        .widget-accordion-item:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .widget-accordion-item.dragging {
-            opacity: 0.5;
-            transform: scale(0.98);
-        }
-        
-        .widget-accordion-item.drag-over {
-            border-top: 3px solid #0066ff;
-        }
-        
-        .widget-accordion-header {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #111827;
-            transition: all 0.2s;
-            text-align: left;
-        }
-        
-        .widget-accordion-header:hover {
-            background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
-        }
-        
-        .widget-accordion-header .drag-handle {
-            color: #9ca3af;
-            font-size: 1.1rem;
-            cursor: move;
-            margin-right: 0.25rem;
-        }
-        
-        .widget-accordion-header .widget-type-icon {
-            font-size: 1.1rem;
-            color: #0066ff;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .widget-accordion-header .widget-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-        
-        .widget-accordion-header .widget-title {
-            font-weight: 600;
-            color: #111827;
-            margin: 0;
-        }
-        
-        .widget-accordion-header .widget-subtitle {
-            font-size: 0.875rem;
-            color: #6b7280;
-            font-weight: normal;
-        }
-        
-        .widget-accordion-header .widget-actions-inline {
-            display: flex;
-            gap: 0.5rem;
-            margin-left: auto;
-        }
-        
-        .widget-accordion-header .accordion-icon {
-            margin-left: 0.5rem;
-            font-size: 0.875rem;
-            transition: transform 0.3s;
-            color: #6b7280;
-        }
-        
-        .widget-accordion-item.expanded .accordion-icon {
-            transform: rotate(180deg);
-        }
-        
-        .widget-accordion-content {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-        }
-        
-        .widget-accordion-item.expanded .widget-accordion-content {
-            padding: 1.5rem 1.25rem;
-            max-height: 5000px;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
-        }
-        
-        /* Legacy widget-item styles for compatibility */
         .widget-item {
             background: #f9f9f9;
             border: 1px solid #ddd;
@@ -1661,7 +1554,7 @@ $csrfToken = generateCSRFToken();
                                     </div>
                                 </div>
                                 
-                                <a href="javascript:void(0)" class="user-menu-item" onclick="var navItem = document.querySelector('a.nav-item[onclick*=account]'); showSection('account', navItem); closeUserMenu();">
+                                <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu();">
                                     <i class="fas fa-user"></i>
                                     <span>Account Settings</span>
                                 </a>
@@ -1732,26 +1625,8 @@ $csrfToken = generateCSRFToken();
                 <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
             </div>
             
-            <div id="widgets-list" class="widgets-list">
+            <ul id="widgets-list" class="widgets-list">
                 <?php 
-                // Helper function to get widget icon
-                function getWidgetTypeIcon($widgetType) {
-                    $icons = [
-                        'podcast' => 'fa-podcast',
-                        'rss_feed' => 'fa-rss',
-                        'youtube' => 'fa-youtube',
-                        'video' => 'fa-video',
-                        'link' => 'fa-link',
-                        'custom_link' => 'fa-link',
-                        'email' => 'fa-envelope',
-                        'calendar' => 'fa-calendar',
-                        'image' => 'fa-image',
-                        'text' => 'fa-text',
-                        'social' => 'fa-share-alt'
-                    ];
-                    return $icons[$widgetType] ?? 'fa-puzzle-piece';
-                }
-                
                 // Get widgets (try new method first, fallback to links for compatibility)
                 $widgets = [];
                 if ($page && method_exists($pageClass, 'getWidgets')) {
@@ -1775,9 +1650,7 @@ $csrfToken = generateCSRFToken();
                 }
                 ?>
                 <?php if (empty($widgets)): ?>
-                    <div style="padding: 2rem; text-align: center; color: #666;">
-                        No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.
-                    </div>
+                    <li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>
                 <?php else: ?>
                     <?php foreach ($widgets as $widget): 
                         $configData = is_string($widget['config_data'] ?? '') 
@@ -1785,36 +1658,25 @@ $csrfToken = generateCSRFToken();
                             : ($widget['config_data'] ?? []);
                         $widgetType = $widget['widget_type'] ?? 'custom_link';
                         $displayInfo = $configData['url'] ?? $widgetType;
-                        $widgetIcon = getWidgetTypeIcon($widgetType);
                     ?>
-                        <div class="widget-accordion-item" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
-                            <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
-                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
-                                <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
-                                <div class="widget-info">
-                                    <div class="widget-title"><?php echo h($widget['title']); ?></div>
-                                    <div class="widget-subtitle"><?php echo h($widgetType); ?> • <?php echo h(strlen($displayInfo) > 60 ? substr($displayInfo, 0, 60) . '...' : $displayInfo); ?></div>
+                        <li class="widget-item" data-widget-id="<?php echo $widget['id']; ?>">
+                            <div class="widget-info">
+                                <div class="widget-title">
+                                    <?php echo h($widget['title']); ?>
+                                    <span style="font-size: 0.75rem; color: #999; font-weight: normal; margin-left: 0.5rem;">
+                                        (<?php echo h($widgetType); ?>)
+                                    </span>
                                 </div>
-                                <div class="widget-actions-inline">
-                                    <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editWidget(<?php echo $widget['id']; ?>, this);" title="Edit Widget">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteWidget(<?php echo $widget['id']; ?>);" title="Delete Widget">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                                <i class="fas fa-chevron-down accordion-icon"></i>
-                            </button>
-                            <div class="widget-accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
-                                <div style="text-align: center; padding: 2rem; color: #666;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
-                                    <p>Loading widget settings...</p>
-                                </div>
+                                <div class="widget-url"><?php echo h($displayInfo); ?></div>
                             </div>
-                        </div>
+                            <div class="widget-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $widget['id']; ?>, this)">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $widget['id']; ?>)">Delete</button>
+                            </div>
+                        </li>
                     <?php endforeach; ?>
                 <?php endif; ?>
-            </div>
+            </ul>
         </div>
         
         <!-- Social Icons Tab -->
@@ -2405,7 +2267,7 @@ $csrfToken = generateCSRFToken();
                 <!-- Widget Fonts -->
                 <div class="accordion-section" id="widget-fonts">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('widget-fonts')">
-                        <i class="fas fa-text-height"></i>
+                        <i class="fas fa-typewriter"></i>
                         <span>Widget Fonts</span>
                         <i class="fas fa-chevron-down accordion-icon"></i>
                     </button>
@@ -2844,7 +2706,7 @@ $csrfToken = generateCSRFToken();
         <?php endif; ?>
     
     <!-- Croppie Image Cropper -->
-    <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js" integrity="sha512-Gs+PsXsGkmr+15rqObPJnotkwO3T9iTOxvkUEB3DlWGF4VQHK/Mgz62pFGyOpSZLQZtH1T5CpnJdGrGmj7j6Pw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -2908,108 +2770,6 @@ $csrfToken = generateCSRFToken();
                 localStorage.setItem(`accordion_${sectionId}`, 'expanded');
             }
         };
-        
-        // Widget Accordion Functions
-        window.toggleWidgetAccordion = function(widgetId) {
-            const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
-            if (!accordionItem) return;
-            
-            const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-            if (!contentDiv) return;
-            
-            const isExpanded = accordionItem.classList.contains('expanded');
-            
-            // Toggle the expanded state
-            if (isExpanded) {
-                accordionItem.classList.remove('expanded');
-                localStorage.setItem(`widget_accordion_${widgetId}`, 'collapsed');
-            } else {
-                accordionItem.classList.add('expanded');
-                localStorage.setItem(`widget_accordion_${widgetId}`, 'expanded');
-                
-                // Load widget settings if not already loaded
-                if (contentDiv.querySelector('.loading-placeholder') || contentDiv.innerHTML.includes('Loading widget settings')) {
-                    loadWidgetSettings(widgetId, contentDiv);
-                }
-            }
-        };
-        
-        // Load widget settings into accordion content
-        function loadWidgetSettings(widgetId, contentDiv) {
-            const formData = new FormData();
-            formData.append('action', 'get');
-            formData.append('widget_id', widgetId);
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/widgets.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.widget) {
-                    const widget = data.widget;
-                    const configData = typeof widget.config_data === 'string' 
-                        ? JSON.parse(widget.config_data) 
-                        : (widget.config_data || {});
-                    
-                    // Build settings HTML
-                    let settingsHTML = '<div class="widget-settings-form">';
-                    settingsHTML += '<h4 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; color: #111827;">Widget Settings</h4>';
-                    
-                    // Display widget type and title
-                    settingsHTML += `<div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb;">`;
-                    settingsHTML += `<div style="font-weight: 600; margin-bottom: 0.5rem;">Type: <span style="color: #6b7280; font-weight: normal;">${widget.widget_type || 'Unknown'}</span></div>`;
-                    settingsHTML += `</div>`;
-                    
-                    // Display all config data
-                    if (Object.keys(configData).length > 0) {
-                        settingsHTML += '<div style="margin-bottom: 1rem;">';
-                        settingsHTML += '<label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">Configuration:</label>';
-                        settingsHTML += '<div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem;">';
-                        
-                        for (const [key, value] of Object.entries(configData)) {
-                            if (value !== null && value !== '') {
-                                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                                const displayValue = typeof value === 'string' && value.length > 100 
-                                    ? value.substring(0, 100) + '...' 
-                                    : value;
-                                settingsHTML += `<div style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f3f4f6;">`;
-                                settingsHTML += `<div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">${displayKey}:</div>`;
-                                settingsHTML += `<div style="font-weight: 500; color: #111827; word-break: break-word;">${h(displayValue)}</div>`;
-                                settingsHTML += `</div>`;
-                            }
-                        }
-                        
-                        settingsHTML += '</div></div>';
-                    }
-                    
-                    // Action buttons
-                    settingsHTML += '<div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">';
-                    settingsHTML += `<button class="btn btn-primary" onclick="editWidget(${widgetId}, this)" style="flex: 1; padding: 0.75rem;">Edit Settings</button>`;
-                    settingsHTML += `<button class="btn btn-danger" onclick="if(confirm('Are you sure you want to delete this widget?')) { deleteWidget(${widgetId}); }" style="padding: 0.75rem 1.5rem;">Delete</button>`;
-                    settingsHTML += '</div>';
-                    
-                    settingsHTML += '</div>';
-                    
-                    contentDiv.innerHTML = settingsHTML;
-                } else {
-                    contentDiv.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Failed to load widget settings</div>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading widget settings:', error);
-                contentDiv.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Error loading widget settings</div>';
-            });
-        }
-        
-        // Helper function for escaping HTML (inline version)
-        function h(str) {
-            if (str === null || str === undefined) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
         
         // Initialize accordion states from localStorage
         function initializeAccordions() {
@@ -5097,7 +4857,7 @@ $csrfToken = generateCSRFToken();
         let currentCropPreviewId = null;
         
         // Image upload functionality - opens crop modal
-        window.uploadImage = function(type, context = 'appearance') {
+        function uploadImage(type, context = 'appearance') {
             console.log('uploadImage called:', { type, context });
             
             // Only handle profile images
@@ -5145,171 +4905,11 @@ $csrfToken = generateCSRFToken();
             currentCropInputId = inputId;
             currentCropPreviewId = previewId;
             
-            // Auto-crop and upload image
-            autoCropAndUpload(file);
+            // Open crop modal with image
+            openCropModal(file);
         }
         
-        // Automatically crop image to center square and upload
-        function autoCropAndUpload(file) {
-            // Check if Croppie is loaded
-            if (typeof Croppie === 'undefined') {
-                console.error('Croppie library not loaded');
-                // Fallback: upload without cropping
-                uploadFileDirectly(file);
-                return;
-            }
-            
-            showToast('Processing image...', 'info');
-            
-            try {
-                // Create a temporary container for Croppie (not visible)
-                let tempContainer = document.getElementById('temp-croppie-container');
-                if (!tempContainer) {
-                    tempContainer = document.createElement('div');
-                    tempContainer.id = 'temp-croppie-container';
-                    tempContainer.style.position = 'fixed';
-                    tempContainer.style.top = '-9999px';
-                    tempContainer.style.width = '400px';
-                    tempContainer.style.height = '400px';
-                    document.body.appendChild(tempContainer);
-                }
-                
-                // Initialize Croppie with 1:1 aspect ratio (centered crop)
-                if (croppieInstance) {
-                    croppieInstance.destroy();
-                }
-                
-                croppieInstance = new Croppie(tempContainer, {
-                    viewport: { width: 400, height: 400, type: 'square' },
-                    boundary: { width: 400, height: 400 },
-                    enableOrientation: true,
-                    enforceBoundary: true,
-                    showZoomer: false
-                });
-                
-                // Load image and auto-crop to center
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    croppieInstance.bind({
-                        url: e.target.result,
-                        zoom: 0
-                    }).then(function() {
-                        // Get cropped image as blob (400x400 square from center)
-                        return croppieInstance.result('blob', {
-                            type: 'image/jpeg',
-                            quality: 0.9,
-                            size: { width: 400, height: 400 }
-                        });
-                    }).then(function(blob) {
-                        // Upload the cropped blob
-                        uploadCroppedBlob(blob);
-                    }).catch(function(error) {
-                        console.error('Crop error:', error);
-                        // Fallback: upload original
-                        uploadFileDirectly(file);
-                    });
-                };
-                reader.onerror = function() {
-                    console.error('Error reading file');
-                    showToast('Failed to read image file', 'error');
-                };
-                reader.readAsDataURL(file);
-            } catch (error) {
-                console.error('Error initializing auto-crop:', error);
-                // Fallback: upload original
-                uploadFileDirectly(file);
-            }
-        }
-        
-        // Upload cropped blob to server
-        function uploadCroppedBlob(blob) {
-            showToast('Uploading image...', 'info');
-            
-            const formData = new FormData();
-            formData.append('image', blob, 'profile.jpg');
-            formData.append('type', 'profile');
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/upload.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Upload failed:', text);
-                        try {
-                            const json = JSON.parse(text);
-                            throw new Error(json.error || 'Upload failed');
-                        } catch (e) {
-                            if (e instanceof Error && e.message !== 'Upload failed') {
-                                throw e;
-                            }
-                            throw new Error(text || 'Upload failed');
-                        }
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    handleImageUploadSuccess(data, currentCropPreviewId);
-                    showToast('Image uploaded successfully!', 'success');
-                } else {
-                    showToast(data.error || 'Failed to upload image', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Upload error:', error);
-                showToast(error.message || 'An error occurred while uploading', 'error');
-            });
-        }
-        
-        // Fallback: upload file without cropping
-        function uploadFileDirectly(file) {
-            showToast('Uploading image...', 'info');
-            
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('type', 'profile');
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/upload.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Upload failed:', text);
-                        try {
-                            const json = JSON.parse(text);
-                            throw new Error(json.error || 'Upload failed');
-                        } catch (e) {
-                            if (e instanceof Error && e.message !== 'Upload failed') {
-                                throw e;
-                            }
-                            throw new Error(text || 'Upload failed');
-                        }
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    handleImageUploadSuccess(data, currentCropPreviewId);
-                    showToast('Image uploaded successfully!', 'success');
-                } else {
-                    showToast(data.error || 'Failed to upload image', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Upload error:', error);
-                showToast(error.message || 'An error occurred while uploading', 'error');
-            });
-        }
-        
-        // Open crop modal with image (kept for compatibility, now unused)
+        // Open crop modal with image
         function openCropModal(file) {
             // Check if Croppie is loaded
             if (typeof Croppie === 'undefined') {
@@ -5532,7 +5132,7 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        window.removeImage = function(type, context = 'appearance') {
+        function removeImage(type, context = 'appearance') {
             // Only handle profile images
             if (type !== 'profile') {
                 console.error('Invalid image type:', type);

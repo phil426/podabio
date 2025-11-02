@@ -1,9 +1,12 @@
 # Podn.Bio - Apache Configuration
 
-# Enable rewrite engine
-<IfModule mod_rewrite.c>
+    # Enable rewrite engine
+    <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
+    
+    # Redirect favicon.ico to favicon generator
+    RewriteRule ^favicon\.ico$ /favicon.php [L]
     
     # Redirect to HTTPS (uncomment for production)
     # RewriteCond %{HTTPS} off
