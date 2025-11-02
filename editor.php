@@ -4125,9 +4125,9 @@ $csrfToken = generateCSRFToken();
             try {
                 // Generate form HTML
                 let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
-            
-            // Add title field
-            formHTML += `
+                
+                // Add title field
+                formHTML += `
                 <div class="form-group">
                     <label for="widget-inline-title-${widgetId}">Title <span style="color: #dc3545;">*</span></label>
                     <input type="text" id="widget-inline-title-${widgetId}" 
@@ -4198,17 +4198,17 @@ $csrfToken = generateCSRFToken();
                     
                     formHTML += fieldHTML;
                 });
-            }
-            
-            // Add action buttons
-            formHTML += `
+                }
+                
+                // Add action buttons
+                formHTML += `
                 <div class="widget-accordion-actions">
                     <button type="button" class="btn btn-secondary" onclick="editWidget(${widgetId}, this)">Edit</button>
                     <button type="button" class="btn btn-danger" onclick="deleteWidget(${widgetId})">Delete</button>
                     <div class="widget-save-indicator" id="widget-save-indicator-${widgetId}"></div>
                 </div>
-            `;
-            
+                `;
+                
                 formHTML += '</form>';
                 console.log('Setting contentDiv.innerHTML, length:', formHTML.length);
                 contentDiv.innerHTML = formHTML;
