@@ -142,6 +142,16 @@ $googleAuthUrl = getGoogleAuthUrl();
             margin-bottom: 2rem;
         }
         
+        .auth-logo-link {
+            display: inline-block;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        
+        .auth-logo-link:hover {
+            transform: scale(1.05);
+        }
+        
         .auth-logo-icon {
             width: 56px;
             height: 56px;
@@ -154,6 +164,11 @@ $googleAuthUrl = getGoogleAuthUrl();
             font-size: 1.75rem;
             margin-bottom: 1rem;
             box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            transition: box-shadow 0.2s;
+        }
+        
+        .auth-logo-link:hover .auth-logo-icon {
+            box-shadow: 0 6px 16px rgba(0, 102, 255, 0.4);
         }
         
         .auth-box h1 {
@@ -353,9 +368,11 @@ $googleAuthUrl = getGoogleAuthUrl();
     <div class="auth-container">
         <div class="auth-box">
             <div class="auth-logo">
-                <div class="auth-logo-icon">
-                    <i class="fas fa-podcast"></i>
-                </div>
+                <a href="/" class="auth-logo-link" title="Back to Home">
+                    <div class="auth-logo-icon">
+                        <i class="fas fa-podcast"></i>
+                    </div>
+                </a>
                 <h1>Log In</h1>
                 <p class="auth-subtitle">Welcome back to <?php echo h(APP_NAME); ?></p>
             </div>
