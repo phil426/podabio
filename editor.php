@@ -4226,6 +4226,17 @@ $csrfToken = generateCSRFToken();
             
             requestData.append('config_data', JSON.stringify(configData));
             
+            // Handle featured widget fields
+            const featuredCheckbox = document.getElementById('widget_config_is_featured');
+            if (featuredCheckbox) {
+                requestData.append('is_featured', featuredCheckbox.checked ? '1' : '0');
+                
+                const featuredEffectSelect = document.getElementById('widget_config_featured_effect');
+                if (featuredEffectSelect) {
+                    requestData.append('featured_effect', featuredEffectSelect.value || '');
+                }
+            }
+            
             if (action === 'update' && widgetId) {
                 requestData.append('widget_id', widgetId);
             }
