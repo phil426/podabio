@@ -353,6 +353,7 @@ $csrfToken = generateCSRFToken();
             background: white;
             transition: box-shadow 0.2s;
             position: relative;
+            overflow: hidden;
         }
         
         .widget-accordion-item:hover {
@@ -382,6 +383,7 @@ $csrfToken = generateCSRFToken();
             color: #111827;
             transition: all 0.2s;
             text-align: left;
+            border-radius: 8px 8px 0 0;
         }
         
         .widget-accordion-header:hover {
@@ -1443,6 +1445,7 @@ $csrfToken = generateCSRFToken();
             transform: translateZ(0);
             will-change: transform;
             isolation: isolate;
+            z-index: 10001;
         }
         
         .user-menu-button {
@@ -1517,7 +1520,7 @@ $csrfToken = generateCSRFToken();
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
+            z-index: 10001;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-8px);
