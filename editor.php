@@ -4109,12 +4109,13 @@ $csrfToken = generateCSRFToken();
                                 return;
                             }
                             console.log('Calling renderWidgetSettings now...');
-                            console.log('renderWidgetSettings function exists:', typeof renderWidgetSettings === 'function');
+                            console.log('renderWidgetSettingsInline function exists:', typeof renderWidgetSettingsInline === 'function');
                             try {
-                                renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
-                                console.log('renderWidgetSettings call completed without error');
+                                renderWidgetSettingsInline(widget, configData, widgetDef, widgetId, contentDiv);
+                                console.log('renderWidgetSettingsInline call completed without error');
                             } catch (error) {
-                                console.error('Error calling renderWidgetSettings:', error);
+                                console.error('Error calling renderWidgetSettingsInline:', error);
+                                console.error('Error stack:', error.stack);
                                 contentDiv.innerHTML = '<p style="color: #dc3545;">Error: ' + error.message + '</p>';
                             }
                         } else {
