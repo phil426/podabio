@@ -2326,10 +2326,14 @@ $csrfToken = generateCSRFToken();
                 <div class="form-group">
                     <label for="page_primary_font">Titles and Headings Font</label>
                     <select id="page_primary_font" name="page_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($pagePrimaryFont == $fontValue) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
+                        <?php foreach ($googleFonts as $category => $fonts): ?>
+                            <optgroup label="<?php echo h($category); ?>">
+                                <?php foreach ($fonts as $fontValue => $fontName): ?>
+                                    <option value="<?php echo h($fontValue); ?>" <?php echo ($pagePrimaryFont == $fontValue) ? 'selected' : ''; ?>>
+                                        <?php echo h($fontName); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         <?php endforeach; ?>
                     </select>
                     <div id="inline-page-primary-preview" class="font-preview" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin-top: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.875rem; color: #374151; border: 1px solid #e5e7eb;">Sample Page Heading Text</div>
@@ -2338,10 +2342,14 @@ $csrfToken = generateCSRFToken();
                 <div class="form-group">
                     <label for="page_secondary_font">Page Body Text and Description Font</label>
                     <select id="page_secondary_font" name="page_secondary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($pageSecondaryFont == $fontValue) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
+                        <?php foreach ($googleFonts as $category => $fonts): ?>
+                            <optgroup label="<?php echo h($category); ?>">
+                                <?php foreach ($fonts as $fontValue => $fontName): ?>
+                                    <option value="<?php echo h($fontValue); ?>" <?php echo ($pageSecondaryFont == $fontValue) ? 'selected' : ''; ?>>
+                                        <?php echo h($fontName); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         <?php endforeach; ?>
                     </select>
                     <div id="inline-page-secondary-preview" class="font-preview" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin-top: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.875rem; color: #374151; border: 1px solid #e5e7eb;">This is a preview of how your page body text will look with the selected font.</div>
@@ -2504,10 +2512,14 @@ $csrfToken = generateCSRFToken();
                     <label for="widget_primary_font">Widget Primary Font</label>
                     <select id="widget_primary_font" name="widget_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <option value="" <?php echo empty($widgetPrimaryFont) || $widgetPrimaryFont === $pagePrimaryFont ? 'selected' : ''; ?>>Default (Page Primary Font)</option>
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetPrimaryFont == $fontValue && !empty($widgetPrimaryFont)) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
+                        <?php foreach ($googleFonts as $category => $fonts): ?>
+                            <optgroup label="<?php echo h($category); ?>">
+                                <?php foreach ($fonts as $fontValue => $fontName): ?>
+                                    <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetPrimaryFont == $fontValue && !empty($widgetPrimaryFont)) ? 'selected' : ''; ?>>
+                                        <?php echo h($fontName); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         <?php endforeach; ?>
                     </select>
                     <small style="display: block; margin-top: 0.5rem;">Used for widget titles and headings</small>
@@ -2517,10 +2529,14 @@ $csrfToken = generateCSRFToken();
                     <label for="widget_secondary_font">Widget Secondary Font</label>
                     <select id="widget_secondary_font" name="widget_secondary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <option value="" <?php echo empty($widgetSecondaryFont) || $widgetSecondaryFont === $pageSecondaryFont ? 'selected' : ''; ?>>Default (Page Secondary Font)</option>
-                        <?php foreach ($googleFonts as $fontValue => $fontName): ?>
-                            <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetSecondaryFont == $fontValue && !empty($widgetSecondaryFont)) ? 'selected' : ''; ?>>
-                                <?php echo h($fontName); ?>
-                            </option>
+                        <?php foreach ($googleFonts as $category => $fonts): ?>
+                            <optgroup label="<?php echo h($category); ?>">
+                                <?php foreach ($fonts as $fontValue => $fontName): ?>
+                                    <option value="<?php echo h($fontValue); ?>" <?php echo ($widgetSecondaryFont == $fontValue && !empty($widgetSecondaryFont)) ? 'selected' : ''; ?>>
+                                        <?php echo h($fontName); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         <?php endforeach; ?>
                     </select>
                     <small style="display: block; margin-top: 0.5rem;">Used for widget body text and descriptions</small>
