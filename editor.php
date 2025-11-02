@@ -3647,6 +3647,27 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
         }
         
+        // Live Preview System
+        let previewUpdateTimeout = null;
+        
+        // Auto-refresh preview when settings change
+        function refreshPreview() {
+            if (previewUpdateTimeout) {
+                clearTimeout(previewUpdateTimeout);
+            }
+            
+            previewUpdateTimeout = setTimeout(() => {
+                const panel = document.getElementById('live-preview-panel');
+                const iframe = document.getElementById('preview-iframe');
+                
+                if (panel && panel.style.display !== 'none' && iframe) {
+                    // Reload iframe with timestamp to bypass cache
+                    const currentSrc = iframe.src.split('?')[0];
+                    iframe.src = currentSrc + '?preview=' + Date.now();
+                }
+            }, 1500); // Debounce: wait 1.5 seconds after last change
+        }
+        
         // Widget Visibility Toggle
         function toggleWidgetVisibility(widgetId, isVisible) {
             const formData = new FormData();
