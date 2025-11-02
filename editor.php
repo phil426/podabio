@@ -7725,11 +7725,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         return { success: false };
                     })
                     .then(result => {
+                        // Clear widget context before checking result
+                        const savedWidgetId = currentCropWidgetId;
+                        currentCropWidgetId = null;
+                        
                         if (result && result.success) {
                             console.log('Widget thumbnail saved successfully');
                             // Also trigger inline save to ensure form state is updated
-                            if (typeof saveWidgetSettingsInline === 'function' && currentCropWidgetId) {
-                                saveWidgetSettingsInline(currentCropWidgetId);
+                            if (typeof saveWidgetSettingsInline === 'function' && savedWidgetId) {
+                                saveWidgetSettingsInline(savedWidgetId);
                             }
                         } else {
                             console.warn('Failed to save widget thumbnail config:', result?.error || 'Unknown error');
@@ -7737,10 +7741,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     })
                     .catch(error => {
                         console.error('Error saving widget thumbnail:', error);
+                        currentCropWidgetId = null;
                     });
                 
-                // Clear widget context
-                currentCropWidgetId = null;
                 return;
             }
             
