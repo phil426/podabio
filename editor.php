@@ -1552,7 +1552,7 @@ $csrfToken = generateCSRFToken();
                                     </div>
                                 </div>
                                 
-                                <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu();">
+                                <a href="javascript:void(0)" class="user-menu-item" onclick="var navItem = document.querySelector('a.nav-item[onclick*=account]'); showSection('account', navItem); closeUserMenu();">
                                     <i class="fas fa-user"></i>
                                     <span>Account Settings</span>
                                 </a>
