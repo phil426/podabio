@@ -1559,15 +1559,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     </a>
                 <?php endforeach;
             endif; ?>
-            
-            <!-- Email Subscribe Widget -->
-            <?php if (!empty($page['email_service_provider'])): ?>
-                <button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">
-                    <div class="widget-content">
-                        <div class="widget-title">📧 Subscribe to Email List</div>
-                    </div>
-                </button>
-            <?php endif; ?>
         </div>
     </div>
     

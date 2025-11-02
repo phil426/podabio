@@ -82,6 +82,18 @@ class WidgetRegistry {
                 'auto_populate_from_rss' => true
             ],
             
+            'email_subscription' => [
+                'widget_id' => 'email_subscription',
+                'name' => 'Email Subscription',
+                'description' => 'Collect email subscriptions from visitors',
+                'thumbnail' => '/assets/widget-thumbnails/email.png',
+                'category' => 'forms',
+                'requires_api' => false,
+                'config_fields' => [
+                    // Uses page-level email service settings, no additional config needed
+                ]
+            ],
+            
             // Additional widgets will be added as they're implemented
         ];
     }

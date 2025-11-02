@@ -451,6 +451,54 @@ $csrfToken = generateCSRFToken();
             border-color: #0066ff;
         }
         
+        /* Widget Visibility Toggle */
+        .widget-visibility-toggle {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 0.5rem;
+            position: relative;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]:checked {
+            background: #0066ff;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
+        
+        .widget-accordion-item.inactive {
+            opacity: 0.6;
+        }
+        
+        .widget-accordion-item.inactive .widget-accordion-header {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        
         .widget-accordion-content {
             position: absolute;
             top: calc(100% + 0.5rem);
@@ -1276,11 +1324,41 @@ $csrfToken = generateCSRFToken();
             }
         }
         
+        /* Mobile Hamburger Menu */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: #f9fafb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .mobile-menu-toggle i {
+            font-size: 1.25rem;
+            color: #111827;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s;
+                transition: transform 0.3s ease;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -1952,10 +2030,6 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-palette"></i>
                         <span>Appearance</span>
                     </a>
-                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('email', this)">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email Subscription</span>
-                    </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('blog', this)">
                         <i class="fas fa-blog"></i>
                         <span>Blog</span>
@@ -1970,6 +2044,11 @@ $csrfToken = generateCSRFToken();
         
         <!-- Center Editor -->
         <main class="editor-main">
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <div class="editor-content">
                 <div class="editor-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
@@ -2104,8 +2183,11 @@ $csrfToken = generateCSRFToken();
                 }
                 
                 // Get widgets (try new method first, fallback to links for compatibility)
+                // Use getAllWidgets() to include inactive widgets in editor
                 $widgets = [];
-                if ($page && method_exists($pageClass, 'getWidgets')) {
+                if ($page && method_exists($pageClass, 'getAllWidgets')) {
+                    $widgets = $pageClass->getAllWidgets($page['id']);
+                } elseif ($page && method_exists($pageClass, 'getWidgets')) {
                     $widgets = $pageClass->getWidgets($page['id']);
                 } elseif (!empty($links)) {
                     // Fallback: convert links to widget format
@@ -2143,13 +2225,20 @@ $csrfToken = generateCSRFToken();
                             $subtitle .= ' • ' . $displayPreview;
                         }
                     ?>
-                        <div class="widget-accordion-item" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
+                        <div class="widget-accordion-item <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
                                 <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
                                 <div class="widget-header-info">
                                     <div class="widget-header-title"><?php echo h($widget['title']); ?></div>
                                     <div class="widget-header-subtitle"><?php echo h($subtitle); ?></div>
+                                </div>
+                                <div class="widget-visibility-toggle" onclick="event.stopPropagation();">
+                                    <input type="checkbox" 
+                                           id="widget-visibility-<?php echo $widget['id']; ?>" 
+                                           <?php echo ($widget['is_active'] ?? 1) ? 'checked' : ''; ?>
+                                           onchange="toggleWidgetVisibility(<?php echo $widget['id']; ?>, this.checked)"
+                                           title="<?php echo ($widget['is_active'] ?? 1) ? 'Visible' : 'Hidden'; ?>">
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
@@ -3433,6 +3522,67 @@ $csrfToken = generateCSRFToken();
                 }
             });
         });
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            if (sidebar && toggle && !sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+        
+        // Widget Visibility Toggle
+        function toggleWidgetVisibility(widgetId, isVisible) {
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('is_active', isVisible ? 1 : 0);
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const widgetItem = document.querySelector(`.widget-accordion-item[data-widget-id="${widgetId}"]`);
+                    if (widgetItem) {
+                        if (isVisible) {
+                            widgetItem.classList.remove('inactive');
+                        } else {
+                            widgetItem.classList.add('inactive');
+                        }
+                    }
+                    showToast(isVisible ? 'Widget is now visible' : 'Widget is now hidden', 'success');
+                } else {
+                    showToast('Failed to update widget visibility: ' + (data.error || 'Unknown error'), 'error');
+                    // Revert checkbox
+                    const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
+                    if (checkbox) {
+                        checkbox.checked = !isVisible;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling widget visibility:', error);
+                showToast('An error occurred while updating widget visibility', 'error');
+                // Revert checkbox
+                const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
+                if (checkbox) {
+                    checkbox.checked = !isVisible;
+                }
+            });
+        }
         
         // On page load, check for tab parameter
         document.addEventListener('DOMContentLoaded', function() {

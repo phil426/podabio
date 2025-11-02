@@ -48,6 +48,9 @@ class WidgetRenderer {
             case 'podcast_player_custom':
                 return self::renderPodcastPlayerCustom($widget, $configData);
                 
+            case 'email_subscription':
+                return self::renderEmailSubscription($widget, $configData);
+                
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
@@ -950,6 +953,30 @@ class WidgetRenderer {
     fetchAndParseRSS();
 })();
 </script>';
+    }
+    
+    /**
+     * Render email subscription widget
+     */
+    private static function renderEmailSubscription($widget, $configData) {
+        $pageId = $widget['page_id'] ?? 0;
+        
+        // Get page to check email service configuration
+        require_once __DIR__ . '/Page.php';
+        $pageClass = new Page();
+        $page = $pageClass->get($pageId);
+        
+        if (!$page || empty($page['email_service_provider'])) {
+            return ''; // Don't render if email service not configured
+        }
+        
+        $html = '<button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">';
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">📧 Subscribe to Email List</div>';
+        $html .= '</div>';
+        $html .= '</button>';
+        
+        return $html;
     }
     
     /**
