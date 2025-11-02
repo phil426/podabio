@@ -7717,8 +7717,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             return fetch('/api/widgets.php', {
                                 method: 'POST',
                                 body: formData
-                            }).then(r => r.json());
+                            }).then(r => r.json()).catch(err => {
+                                console.error('API call error:', err);
+                                return { success: false, error: err.message };
+                            });
                         }
+                        return { success: false };
                     })
                     .then(result => {
                         if (result && result.success) {
@@ -7728,7 +7732,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 saveWidgetSettingsInline(currentCropWidgetId);
                             }
                         } else {
-                            console.warn('Failed to save widget thumbnail config:', result);
+                            console.warn('Failed to save widget thumbnail config:', result?.error || 'Unknown error');
                         }
                     })
                     .catch(error => {
