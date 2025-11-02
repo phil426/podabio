@@ -4133,9 +4133,15 @@ $csrfToken = generateCSRFToken();
             loadSettings();
         };
         
-        window.renderWidgetSettings = function(widget, configData, widgetDef, widgetId, contentDiv) {
-            console.log('=== renderWidgetSettings START ===');
-            console.log('renderWidgetSettings called with:', { widget, configData, widgetDef, widgetId, contentDiv });
+        window.renderWidgetSettingsInline = function(widget, configData, widgetDef, widgetId, contentDiv) {
+            console.log('=== renderWidgetSettingsInline START ===');
+            console.log('renderWidgetSettingsInline called with:', { 
+                widgetId, 
+                widgetType: widget.widget_type,
+                widgetTitle: widget.title,
+                hasConfigFields: !!widgetDef.config_fields,
+                contentDivExists: !!contentDiv
+            });
             
             if (!contentDiv) {
                 console.error('contentDiv is null or undefined!');
@@ -4262,7 +4268,8 @@ $csrfToken = generateCSRFToken();
                     }
                 }, 100);
             } catch (error) {
-                console.error('Error in renderWidgetSettings:', error);
+                console.error('Error in renderWidgetSettingsInline:', error);
+                console.error('Error stack:', error.stack);
                 contentDiv.innerHTML = '<p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p>';
             }
         };
