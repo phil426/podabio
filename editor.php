@@ -1660,7 +1660,7 @@ $csrfToken = generateCSRFToken();
                 ?>
                 
                 <div class="form-group">
-                    <label for="page_primary_font">Page Primary Font</label>
+                    <label for="page_primary_font">Titles and Headings Font</label>
                     <select id="page_primary_font" name="page_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                         <?php foreach ($googleFonts as $fontValue => $fontName): ?>
                             <option value="<?php echo h($fontValue); ?>" <?php echo ($pagePrimaryFont == $fontValue) ? 'selected' : ''; ?>>
@@ -1668,7 +1668,6 @@ $csrfToken = generateCSRFToken();
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for page titles and headings</small>
                 </div>
                 
                 <div class="form-group">
@@ -1680,7 +1679,6 @@ $csrfToken = generateCSRFToken();
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <small style="display: block; margin-top: 0.5rem;">Used for page body text and descriptions</small>
                 </div>
                 
                 <!-- Page Font Preview -->
