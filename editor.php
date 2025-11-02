@@ -4003,23 +4003,39 @@ $csrfToken = generateCSRFToken();
                         method: 'POST',
                         body: loadFormData
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.text().then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                console.error('Invalid JSON response:', text);
+                                throw new Error('Invalid JSON response');
+                            }
+                        });
+                    })
                     .then(widgetData => {
+                        console.log('Widget definitions API response:', widgetData);
                         if (widgetData.success && (widgetData.available_widgets || widgetData.widgets)) {
                             const widgets = widgetData.available_widgets || widgetData.widgets;
+                            console.log('Raw widgets data:', widgets, 'Type:', typeof widgets, 'Is array:', Array.isArray(widgets));
                             // Handle both array and object formats
                             if (Array.isArray(widgets)) {
                                 allWidgets = widgets;
-                            } else if (typeof widgets === 'object') {
+                            } else if (typeof widgets === 'object' && widgets !== null) {
                                 // Convert object to array
                                 allWidgets = Object.values(widgets);
                             } else {
+                                console.error('Invalid widget format:', widgets);
                                 reject(new Error('Invalid widget format'));
                                 return;
                             }
-                            console.log('Widget definitions loaded:', allWidgets.length);
+                            console.log('Widget definitions loaded:', allWidgets.length, 'widgets:', allWidgets.map(w => w.widget_id || w.name));
                             resolve();
                         } else {
+                            console.error('Failed to load widgets:', widgetData);
                             reject(new Error('Failed to load widget definitions: ' + (widgetData.error || 'Unknown error')));
                         }
                     })
@@ -4050,14 +4066,26 @@ $csrfToken = generateCSRFToken();
                         if (!response.ok) {
                             throw new Error('HTTP ' + response.status);
                         }
-                        return response.json();
+                        return response.text().then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                console.error('Invalid JSON response:', text);
+                                throw new Error('Invalid JSON response');
+                            }
+                        });
                     })
                     .then(data => {
+                        console.log('Widget data API response:', data);
                         if (data.success && data.widget) {
                             const widget = data.widget;
+                            console.log('Widget loaded:', widget);
                             const configData = typeof widget.config_data === 'string' 
                                 ? JSON.parse(widget.config_data) 
                                 : (widget.config_data || {});
+                            
+                            console.log('Looking for widget type:', widget.widget_type);
+                            console.log('Available widgets:', allWidgets.map(w => ({ id: w.widget_id, name: w.name })));
                             
                             // Find widget definition
                             const widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
@@ -4069,8 +4097,10 @@ $csrfToken = generateCSRFToken();
                                 return;
                             }
                             
+                            console.log('Widget definition found:', widgetDef);
                             renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
                         } else {
+                            console.error('Failed to load widget:', data);
                             contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p>';
                         }
                     })
