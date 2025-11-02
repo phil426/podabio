@@ -7701,7 +7701,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 // Get current config_data
                 fetch('/api/widgets.php?action=get&widget_id=' + currentCropWidgetId)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success && data.widget) {
                             const currentConfig = typeof data.widget.config_data === 'string' 
@@ -7717,12 +7722,19 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             return fetch('/api/widgets.php', {
                                 method: 'POST',
                                 body: formData
-                            }).then(r => r.json()).catch(err => {
+                            }).then(r => {
+                                if (!r.ok) {
+                                    throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                                }
+                                return r.json();
+                            }).catch(err => {
                                 console.error('API call error:', err);
-                                return { success: false, error: err.message };
+                                return { success: false, error: err.message || 'Network error' };
                             });
+                        } else {
+                            console.error('Failed to get widget data:', data);
+                            return { success: false, error: data?.error || 'Failed to retrieve widget data' };
                         }
-                        return { success: false };
                     })
                     .then(result => {
                         // Clear widget context before checking result
@@ -7736,7 +7748,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 saveWidgetSettingsInline(savedWidgetId);
                             }
                         } else {
-                            console.warn('Failed to save widget thumbnail config:', result?.error || 'Unknown error');
+                            const errorMsg = result?.error || (result ? 'API returned failure without error message' : 'No response from API');
+                            console.warn('Failed to save widget thumbnail config:', errorMsg);
+                            console.warn('Full response:', result);
                         }
                     })
                     .catch(error => {
