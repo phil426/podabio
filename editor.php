@@ -4454,21 +4454,59 @@ $csrfToken = generateCSRFToken();
                                     </div>
                                 `;
                             } else if (fieldDef.type === 'select') {
-                                const options = (fieldDef.options || []).map(opt => {
-                                    const optValue = typeof opt === 'string' ? opt : opt.value;
-                                    const optLabel = typeof opt === 'string' ? opt : opt.label;
-                                    const selected = optValue === value ? ' selected' : '';
-                                    return `<option value="${optValue}"${selected}>${optLabel}</option>`;
-                                }).join('');
-                                fieldsContainer.innerHTML += `
-                                    <div class="form-group">
-                                        <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
-                                        <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
-                                            ${options}
-                                        </select>
-                                        ${helpText}
-                                    </div>
-                                `;
+                                // Handle dynamic category options for blog widgets
+                                if (fieldName === 'category_id' && (widget.widget_type === 'blog_latest_posts' || widget.widget_type === 'blog_category_filter')) {
+                                    // Load categories via AJAX
+                                    fieldsContainer.innerHTML += `
+                                        <div class="form-group">
+                                            <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                            <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                                <option value="">Loading categories...</option>
+                                            </select>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                    
+                                    // Load categories
+                                    fetch('/api/blog_categories.php')
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            const select = document.getElementById(`widget_config_${fieldName}`);
+                                            if (select && data.success && data.categories) {
+                                                let optionsHtml = '<option value="">All Categories</option>';
+                                                data.categories.forEach(cat => {
+                                                    const selected = value == cat.id ? ' selected' : '';
+                                                    const catName = String(cat.name).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                                                    optionsHtml += `<option value="${cat.id}"${selected}>${catName}</option>`;
+                                                });
+                                                select.innerHTML = optionsHtml;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading categories:', error);
+                                            const select = document.getElementById(`widget_config_${fieldName}`);
+                                            if (select) {
+                                                select.innerHTML = '<option value="">Error loading categories</option>';
+                                            }
+                                        });
+                                } else {
+                                    // Regular select with static options
+                                    const options = (fieldDef.options || []).map(opt => {
+                                        const optValue = typeof opt === 'string' ? opt : opt.value;
+                                        const optLabel = typeof opt === 'string' ? opt : opt.label;
+                                        const selected = optValue === value ? ' selected' : '';
+                                        return `<option value="${optValue}"${selected}>${optLabel}</option>`;
+                                    }).join('');
+                                    fieldsContainer.innerHTML += `
+                                        <div class="form-group">
+                                            <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                            <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                                ${options}
+                                            </select>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                }
                             } else if (fieldDef.type === 'checkbox') {
                                 const checked = value === '1' || value === true || value === 'true' ? ' checked' : '';
                                 fieldsContainer.innerHTML += `
