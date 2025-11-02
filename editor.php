@@ -5521,7 +5521,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     </div>
                                     <div style="flex: 1;">
                                         <input type="file" id="${thumbnailInputId}" accept="image/jpeg,image/png,image/gif,image/webp" onchange="uploadWidgetThumbnail(${widgetId})" style="margin-bottom: 10px; width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
-                                        <input type="hidden" id="widget-inline-thumbnail_image-${widgetId}" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
+                                        <input type="hidden" class="widget-setting-input" id="widget-inline-thumbnail_image-${widgetId}" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
                                         <div style="display: flex; gap: 10px; margin-bottom: 5px;">
                                             ${thumbnailValue ? `<button type="button" class="btn btn-danger btn-small" onclick="removeWidgetThumbnail(${widgetId})" style="padding: 0.5rem 1rem; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;">Remove</button>` : ''}
                                         </div>
