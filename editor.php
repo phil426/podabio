@@ -157,7 +157,7 @@ $csrfToken = generateCSRFToken();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" integrity="sha512-zxBiDORGDEEYDdKLuYU9X/JaJo/DPzE42UubfBw9yg8Qvb2YRRIQ8v4KsGHOx2H1/+sdSXyXxLXv5r7tHc9ygg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/croppie@2.6.5/croppie.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
         * {
@@ -2704,7 +2704,7 @@ $csrfToken = generateCSRFToken();
         <?php endif; ?>
     
     <!-- Croppie Image Cropper -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js" integrity="sha512-Gs+PsXsGkmr+15rqObPJbenQ2wB3qYvTHuJO6YJzPe/dTLvhy0fmae2BcnaozxDo5iaF8emzmCZWbQ1XXiX2Ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -4903,11 +4903,171 @@ $csrfToken = generateCSRFToken();
             currentCropInputId = inputId;
             currentCropPreviewId = previewId;
             
-            // Open crop modal with image
-            openCropModal(file);
+            // Auto-crop and upload image
+            autoCropAndUpload(file);
         }
         
-        // Open crop modal with image
+        // Automatically crop image to center square and upload
+        function autoCropAndUpload(file) {
+            // Check if Croppie is loaded
+            if (typeof Croppie === 'undefined') {
+                console.error('Croppie library not loaded');
+                // Fallback: upload without cropping
+                uploadFileDirectly(file);
+                return;
+            }
+            
+            showToast('Processing image...', 'info');
+            
+            try {
+                // Create a temporary container for Croppie (not visible)
+                let tempContainer = document.getElementById('temp-croppie-container');
+                if (!tempContainer) {
+                    tempContainer = document.createElement('div');
+                    tempContainer.id = 'temp-croppie-container';
+                    tempContainer.style.position = 'fixed';
+                    tempContainer.style.top = '-9999px';
+                    tempContainer.style.width = '400px';
+                    tempContainer.style.height = '400px';
+                    document.body.appendChild(tempContainer);
+                }
+                
+                // Initialize Croppie with 1:1 aspect ratio (centered crop)
+                if (croppieInstance) {
+                    croppieInstance.destroy();
+                }
+                
+                croppieInstance = new Croppie(tempContainer, {
+                    viewport: { width: 400, height: 400, type: 'square' },
+                    boundary: { width: 400, height: 400 },
+                    enableOrientation: true,
+                    enforceBoundary: true,
+                    showZoomer: false
+                });
+                
+                // Load image and auto-crop to center
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    croppieInstance.bind({
+                        url: e.target.result,
+                        zoom: 0
+                    }).then(function() {
+                        // Get cropped image as blob (400x400 square from center)
+                        return croppieInstance.result('blob', {
+                            type: 'image/jpeg',
+                            quality: 0.9,
+                            size: { width: 400, height: 400 }
+                        });
+                    }).then(function(blob) {
+                        // Upload the cropped blob
+                        uploadCroppedBlob(blob);
+                    }).catch(function(error) {
+                        console.error('Crop error:', error);
+                        // Fallback: upload original
+                        uploadFileDirectly(file);
+                    });
+                };
+                reader.onerror = function() {
+                    console.error('Error reading file');
+                    showToast('Failed to read image file', 'error');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Error initializing auto-crop:', error);
+                // Fallback: upload original
+                uploadFileDirectly(file);
+            }
+        }
+        
+        // Upload cropped blob to server
+        function uploadCroppedBlob(blob) {
+            showToast('Uploading image...', 'info');
+            
+            const formData = new FormData();
+            formData.append('image', blob, 'profile.jpg');
+            formData.append('type', 'profile');
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/upload.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Upload failed:', text);
+                        try {
+                            const json = JSON.parse(text);
+                            throw new Error(json.error || 'Upload failed');
+                        } catch (e) {
+                            if (e instanceof Error && e.message !== 'Upload failed') {
+                                throw e;
+                            }
+                            throw new Error(text || 'Upload failed');
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    handleImageUploadSuccess(data, currentCropPreviewId);
+                    showToast('Image uploaded successfully!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to upload image', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showToast(error.message || 'An error occurred while uploading', 'error');
+            });
+        }
+        
+        // Fallback: upload file without cropping
+        function uploadFileDirectly(file) {
+            showToast('Uploading image...', 'info');
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'profile');
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/upload.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Upload failed:', text);
+                        try {
+                            const json = JSON.parse(text);
+                            throw new Error(json.error || 'Upload failed');
+                        } catch (e) {
+                            if (e instanceof Error && e.message !== 'Upload failed') {
+                                throw e;
+                            }
+                            throw new Error(text || 'Upload failed');
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    handleImageUploadSuccess(data, currentCropPreviewId);
+                    showToast('Image uploaded successfully!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to upload image', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showToast(error.message || 'An error occurred while uploading', 'error');
+            });
+        }
+        
+        // Open crop modal with image (kept for compatibility, now unused)
         function openCropModal(file) {
             // Check if Croppie is loaded
             if (typeof Croppie === 'undefined') {
