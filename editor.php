@@ -5375,6 +5375,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         return;
                     }
                     
+                    // Declare fieldHTML at the start of each iteration
+                    let fieldHTML = '';
+                    
                     // Special handling for thumbnail_image - show upload interface
                     // Check both widget_id and widget_type for compatibility
                     const isCustomLink = (widgetDef.widget_id === 'custom_link') || (widget.widget_type === 'custom_link');
@@ -5422,7 +5425,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     const helpText = fieldDef.help ? `<small>${fieldDef.help}</small>` : '';
                     
                     const fieldId = `widget-inline-${fieldName}-${widgetId}`;
-                    let fieldHTML = '';
                     
                     if (fieldDef.type === 'textarea') {
                         fieldHTML = `
