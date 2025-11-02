@@ -2253,37 +2253,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             <h2>Manage Widgets</h2>
             <p style="margin-bottom: 20px; color: #666;">Add widgets to your page from the widget gallery. Widgets can display links, podcast players, social feeds, videos, and more.</p>
             
-            <div style="margin-bottom: 20px; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div style="margin-bottom: 20px;">
                 <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
-                <?php
-                // Find currently featured widget
-                $featuredWidget = null;
-                $currentEffect = '';
-                if (!empty($widgets)) {
-                    foreach ($widgets as $w) {
-                        if (!empty($w['is_featured'])) {
-                            $featuredWidget = $w;
-                            $currentEffect = $w['featured_effect'] ?? '';
-                            break;
-                        }
-                    }
-                }
-                ?>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label for="featured-effect-selector" style="font-weight: 600; color: #333; white-space: nowrap;">Featured Widget Effect:</label>
-                    <select id="featured-effect-selector" 
-                            onchange="applyFeaturedEffect(this.value)"
-                            style="padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; min-width: 200px;"
-                            <?php echo !$featuredWidget ? 'disabled' : ''; ?>>
-                        <option value=""><?php echo $featuredWidget ? 'None' : 'No featured widget'; ?></option>
-                        <option value="jiggle" <?php echo $currentEffect === 'jiggle' ? 'selected' : ''; ?>>Jiggle</option>
-                        <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn</option>
-                        <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow</option>
-                        <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
-                        <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse</option>
-                        <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake</option>
-                    </select>
-                </div>
             </div>
             
             <div id="widgets-list" class="widgets-list">
@@ -2693,6 +2664,53 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         <?php endforeach; ?>
                     </div>
                     <small style="display: block; margin-top: 1rem; color: #666;">Select a theme to automatically apply colors and fonts. You can modify individual elements after selection.</small>
+                </div>
+                
+                <!-- ========== FEATURED WIDGET EFFECT SECTION (ACCORDION) ========== -->
+                <div class="accordion-section" id="featured-widget-effect">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('featured-widget-effect')">
+                        <i class="fas fa-star"></i>
+                        <span>Featured Widget Effect</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="form-group">
+                            <label for="featured-effect-selector" style="display: block; margin-bottom: 0.75rem; font-weight: 600;">Effect</label>
+                            <?php
+                            // Find currently featured widget
+                            $featuredWidget = null;
+                            $currentEffect = '';
+                            if (!empty($widgets)) {
+                                foreach ($widgets as $w) {
+                                    if (!empty($w['is_featured'])) {
+                                        $featuredWidget = $w;
+                                        $currentEffect = $w['featured_effect'] ?? '';
+                                        break;
+                                    }
+                                }
+                            }
+                            ?>
+                            <select id="featured-effect-selector" 
+                                    onchange="applyFeaturedEffect(this.value)"
+                                    style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;"
+                                    <?php echo !$featuredWidget ? 'disabled' : ''; ?>>
+                                <option value=""><?php echo $featuredWidget ? 'None' : 'No featured widget'; ?></option>
+                                <option value="jiggle" <?php echo $currentEffect === 'jiggle' ? 'selected' : ''; ?>>Jiggle</option>
+                                <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn</option>
+                                <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow</option>
+                                <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
+                                <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse</option>
+                                <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake</option>
+                            </select>
+                            <small style="display: block; margin-top: 0.75rem; color: #666;">
+                                <?php if ($featuredWidget): ?>
+                                    Apply a special effect to your featured widget to make it stand out. Movement effects (Jiggle, Shake, Pulse, Rotating Glow) animate at random intervals.
+                                <?php else: ?>
+                                    First, mark a widget as featured using the star icon in the Widgets section.
+                                <?php endif; ?>
+                            </small>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- ========== PAGE BACKGROUND SECTION (ACCORDION) ========== -->
