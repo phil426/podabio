@@ -3252,16 +3252,48 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         <div id="tab-blog" class="tab-content">
             <div class="blog-section">
                 <div class="blog-header">
-                    <h2><i class="fas fa-blog"></i> Blog</h2>
-                    <p>Stay updated with the latest news, features, and updates</p>
+                    <h2><i class="fas fa-blog"></i> Blog Management</h2>
+                    <p>Manage your blog posts and content</p>
                 </div>
                 
-                <div class="blog-placeholder">
-                    <div class="blog-placeholder-icon">
-                        <i class="fas fa-newspaper"></i>
+                <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+                    <div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem; color: #111827;">Blog Features</h3>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem;">Use blog widgets on your page to display blog content. Available widgets:</p>
+                        
+                        <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                            <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #0066ff;">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #111827;"><i class="fas fa-list"></i> Latest Posts</h4>
+                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Display your most recent blog posts</p>
+                            </div>
+                            
+                            <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #0066ff;">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #111827;"><i class="fas fa-filter"></i> Category Filter</h4>
+                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Allow visitors to filter posts by category</p>
+                            </div>
+                            
+                            <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #0066ff;">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #111827;"><i class="fas fa-link"></i> Related Posts</h4>
+                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Show related blog posts based on current post</p>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 1.5rem; background: #e0f2fe; border-radius: 8px; border: 1px solid #0066ff;">
+                            <p style="margin: 0; color: #111827; font-weight: 600; margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> How to use blog widgets:</p>
+                            <ol style="margin: 0; padding-left: 1.5rem; color: #374151;">
+                                <li>Go to the <strong>Widgets</strong> section</li>
+                                <li>Click <strong>"Add Widget"</strong></li>
+                                <li>Search for "blog" to find blog widgets</li>
+                                <li>Add and configure the blog widget you want</li>
+                            </ol>
+                        </div>
                     </div>
-                    <h3>Coming Soon</h3>
-                    <p>Our blog section is under development. Check back soon for articles, tutorials, and updates!</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="/admin/blog.php" style="display: inline-block; padding: 0.75rem 2rem; background: #0066ff; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='#0052cc'" onmouseout="this.style.background='#0066ff'">
+                            <i class="fas fa-edit"></i> Manage Blog Posts
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3655,7 +3687,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Handle Featured Widget Toggle
         window.handleFeaturedToggle = function(widgetId, isFeatured) {
-            const effectGroup = document.getElementById('featured-effect-group');
+            const effectGroup = document.getElementById('featured-effect-group-' + widgetId);
             if (effectGroup) {
                 effectGroup.style.display = isFeatured ? 'block' : 'none';
             }
@@ -5064,8 +5096,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 widgetType: widget.widget_type,
                 widgetTitle: widget.title,
                 hasConfigFields: !!widgetDef.config_fields,
-                contentDivExists: !!contentDiv
+                contentDivExists: !!contentDiv,
+                widgetData: widget
             });
+            
+            // Store full widget data for featured widget fields
+            const widgetData = widget;
             
             if (!contentDiv) {
                 console.error('contentDiv is null or undefined!');
@@ -5149,6 +5185,43 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     formHTML += fieldHTML;
                 });
                 }
+                
+                // Add Featured Widget fields
+                const isFeatured = (widgetData && (widgetData.is_featured == 1 || widgetData.is_featured === '1' || widgetData.is_featured === true)) || false;
+                const featuredEffect = (widgetData && widgetData.featured_effect) || '';
+                
+                formHTML += `
+                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" 
+                               id="widget-inline-is_featured-${widgetId}" 
+                               name="is_featured" 
+                               value="1"
+                               ${isFeatured ? 'checked' : ''}
+                               onchange="handleFeaturedToggle(${widgetId}, this.checked); saveWidgetSettingsInline(${widgetId})"
+                               class="widget-setting-input">
+                        <span style="font-weight: 600;">Featured Widget</span>
+                    </label>
+                    <small style="display: block; color: #666; margin-top: 0.25rem;">Highlight this widget with special effects</small>
+                    
+                    <div id="featured-effect-group-${widgetId}" style="display: ${isFeatured ? 'block' : 'none'}; margin-top: 1rem;">
+                        <label for="widget-inline-featured_effect-${widgetId}" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Featured Effect</label>
+                        <select id="widget-inline-featured_effect-${widgetId}" 
+                                name="featured_effect"
+                                onchange="saveWidgetSettingsInline(${widgetId})"
+                                class="widget-setting-input"
+                                style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
+                            <option value="">None</option>
+                            <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle</option>
+                            <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
+                            <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
+                            <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
+                            <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
+                            <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                        </select>
+                    </div>
+                </div>
+                `;
                 
                 // Add action buttons
                 formHTML += `
@@ -5235,7 +5308,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const config = {};
             const inputs = form.querySelectorAll('.widget-setting-input');
             inputs.forEach(input => {
-                if (input.name && input.name !== 'title') {
+                if (input.name && input.name !== 'title' && input.name !== 'is_featured' && input.name !== 'featured_effect') {
                     if (input.type === 'checkbox') {
                         config[input.name] = input.checked;
                     } else {
@@ -5245,6 +5318,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
             
             formData.append('config_data', JSON.stringify(config));
+            
+            // Handle featured widget fields separately (not in config_data)
+            const featuredCheckbox = form.querySelector(`#widget-inline-is_featured-${widgetId}`);
+            if (featuredCheckbox) {
+                formData.append('is_featured', featuredCheckbox.checked ? '1' : '0');
+                
+                const featuredEffectSelect = form.querySelector(`#widget-inline-featured_effect-${widgetId}`);
+                if (featuredEffectSelect) {
+                    formData.append('featured_effect', featuredEffectSelect.value || '');
+                }
+            }
             
             // Debounce the save
             widgetSaveDebounceTimers[widgetId] = setTimeout(() => {
@@ -5284,6 +5368,90 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 });
             }, 500); // 500ms debounce
         };
+        
+        // Load Widget Analytics
+        window.loadWidgetAnalytics = function() {
+            const loadingDiv = document.getElementById('analytics-loading');
+            const contentDiv = document.getElementById('analytics-content');
+            const periodSelect = document.getElementById('analytics-period');
+            
+            if (!loadingDiv || !contentDiv || !periodSelect) return;
+            
+            const period = periodSelect.value;
+            
+            // Show loading
+            loadingDiv.style.display = 'block';
+            contentDiv.style.display = 'none';
+            
+            // Fetch analytics data
+            fetch(`/api/analytics.php?action=widget_analytics&period=${period}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                
+                if (data.success) {
+                    contentDiv.style.display = 'block';
+                    renderAnalytics(data);
+                } else {
+                    showToast('Failed to load analytics: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                console.error('Error loading analytics:', error);
+                showToast('Error loading analytics', 'error');
+            });
+        };
+        
+        function renderAnalytics(data) {
+            const summaryDiv = document.getElementById('analytics-summary');
+            const tableBody = document.getElementById('analytics-table-body');
+            const emptyDiv = document.getElementById('analytics-empty');
+            
+            if (!summaryDiv || !tableBody) return;
+            
+            // Render summary cards
+            summaryDiv.innerHTML = `
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Total Clicks</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #111827;">${data.total_clicks || 0}</div>
+                </div>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Page Views</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #111827;">${data.page_views || 0}</div>
+                </div>
+            `;
+            
+            // Render widget table
+            if (!data.widgets || data.widgets.length === 0) {
+                tableBody.innerHTML = '';
+                if (emptyDiv) emptyDiv.style.display = 'block';
+                return;
+            }
+            
+            if (emptyDiv) emptyDiv.style.display = 'none';
+            
+            tableBody.innerHTML = data.widgets.map(widget => `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 0.75rem;">${escapeHtml(widget.title || 'Untitled')}</td>
+                    <td style="padding: 0.75rem; color: #6b7280; text-transform: capitalize;">${escapeHtml(widget.widget_type || 'N/A')}</td>
+                    <td style="padding: 0.75rem; text-align: right; font-weight: 600;">${widget.click_count || 0}</td>
+                    <td style="padding: 0.75rem; text-align: right;">${widget.views || 0}</td>
+                    <td style="padding: 0.75rem; text-align: right; color: ${(widget.ctr || 0) > 5 ? '#10b981' : '#6b7280'}; font-weight: 600;">${widget.ctr || 0}%</td>
+                </tr>
+            `).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
