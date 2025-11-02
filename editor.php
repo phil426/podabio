@@ -235,7 +235,7 @@ $csrfToken = generateCSRFToken();
         /* Left Sidebar Navigation */
         .sidebar {
             width: 200px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(10px);
             border-right: 1px solid rgba(229, 231, 235, 0.8);
             display: flex;
