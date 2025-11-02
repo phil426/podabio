@@ -1682,10 +1682,16 @@ $csrfToken = generateCSRFToken();
                 </div>
                 
                 <!-- Page Font Preview -->
-                <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
+                <?php
+                // Calculate CSS values for page preview styling
+                $pagePreviewBg = h($pageBackground);
+                $pagePreviewHeadingColor = h($customPrimary);
+                $pagePreviewBodyColor = h($customPrimary);
+                ?>
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: <?php echo $pagePreviewBg; ?>; border-radius: 8px; border: 2px solid #ddd;">
                     <h4 style="margin-top: 0;">Page Font Preview</h4>
-                    <h3 id="page-font-preview-heading" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Page Heading Text</h3>
-                    <p id="page-font-preview-body" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your page body text will look with the selected font.</p>
+                    <h3 id="page-font-preview-heading" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo $pagePreviewHeadingColor; ?>;">Sample Page Heading Text</h3>
+                    <p id="page-font-preview-body" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo $pagePreviewBodyColor; ?>; opacity: 0.8;">This is a preview of how your page body text will look with the selected font.</p>
                 </div>
                 
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
@@ -1874,10 +1880,23 @@ $csrfToken = generateCSRFToken();
                 </div>
                 
                 <!-- Widget Font Preview -->
-                <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border: 2px solid #ddd;">
+                <?php
+                // Calculate CSS values for widget preview styling
+                $widgetPreviewBg = h($widgetBackground);
+                $widgetPreviewBorderColor = h($widgetBorderColor);
+                $widgetPreviewBorderWidth = convertEnumToCSS($widgetStyles['border_width'] ?? 'medium', 'border_width');
+                $widgetPreviewBorderRadius = convertEnumToCSS($widgetStyles['shape'] ?? 'rounded', 'shape');
+                $widgetBorderEffect = $widgetStyles['border_effect'] ?? 'shadow';
+                $widgetPreviewBorderStyle = '';
+                if ($widgetBorderEffect === 'shadow') {
+                    $shadowIntensity = $widgetStyles['border_shadow_intensity'] ?? 'subtle';
+                    $widgetPreviewBorderStyle = 'box-shadow: ' . convertEnumToCSS($shadowIntensity, 'shadow') . ';';
+                }
+                ?>
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: <?php echo $widgetPreviewBg; ?>; border-radius: <?php echo $widgetPreviewBorderRadius; ?>; border: <?php echo $widgetPreviewBorderWidth; ?> solid <?php echo $widgetPreviewBorderColor; ?>; <?php echo $widgetPreviewBorderStyle; ?>">
                     <h4 style="margin-top: 0;">Widget Font Preview</h4>
-                    <h3 id="widget-font-preview-heading" style="font-family: '<?php echo h($widgetPrimaryFont ?: $pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0;">Sample Widget Heading Text</h3>
-                    <p id="widget-font-preview-body" style="font-family: '<?php echo h($widgetSecondaryFont ?: $pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: #666;">This is a preview of how your widget content will look with the selected font.</p>
+                    <h3 id="widget-font-preview-heading" style="font-family: '<?php echo h($widgetPrimaryFont ?: $pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo h($customPrimary); ?>;">Sample Widget Heading Text</h3>
+                    <p id="widget-font-preview-body" style="font-family: '<?php echo h($widgetSecondaryFont ?: $pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo h($customPrimary); ?>; opacity: 0.8;">This is a preview of how your widget content will look with the selected font.</p>
                 </div>
                 
                 <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
@@ -3629,6 +3648,12 @@ $csrfToken = generateCSRFToken();
         function updateColorSwatch(type, color) {
             document.getElementById(type + '-color-swatch').style.background = color;
             document.getElementById('custom_' + type + '_color_hex').value = color;
+            
+            // Update previews if primary color changed
+            if (type === 'primary') {
+                updatePageFontPreview();
+                updateWidgetFontPreview();
+            }
         }
         
         function updateColorFromHex(type, hex) {
@@ -3640,6 +3665,12 @@ $csrfToken = generateCSRFToken();
             if (/^#[0-9A-F]{6}$/i.test(hex)) {
                 document.getElementById('custom_' + type + '_color').value = hex;
                 document.getElementById(type + '-color-swatch').style.background = hex;
+                
+                // Update previews if primary color changed
+                if (type === 'primary') {
+                    updatePageFontPreview();
+                    updateWidgetFontPreview();
+                }
             } else {
                 alert('Please enter a valid hex color (e.g., #000000)');
             }
@@ -3713,12 +3744,28 @@ $csrfToken = generateCSRFToken();
             // Update preview
             const previewHeading = document.getElementById('page-font-preview-heading');
             const previewBody = document.getElementById('page-font-preview-body');
+            const previewContainer = previewHeading?.closest('div[style*="margin-top: 1.5rem"]');
             
             if (previewHeading && pagePrimaryFont) {
                 previewHeading.style.fontFamily = `'${pagePrimaryFont}', sans-serif`;
             }
             if (previewBody && pageSecondaryFont) {
                 previewBody.style.fontFamily = `'${pageSecondaryFont}', sans-serif`;
+            }
+            
+            // Update page styling in preview
+            if (previewContainer) {
+                const pageBackgroundEl = document.getElementById('page_background');
+                const primaryColorEl = document.getElementById('custom_primary_color');
+                
+                if (pageBackgroundEl && pageBackgroundEl.value) {
+                    previewContainer.style.background = pageBackgroundEl.value;
+                }
+                if (primaryColorEl && primaryColorEl.value) {
+                    const headingColor = primaryColorEl.value;
+                    if (previewHeading) previewHeading.style.color = headingColor;
+                    if (previewBody) previewBody.style.color = headingColor;
+                }
             }
             
             saveAppearanceForm();
@@ -3752,12 +3799,60 @@ $csrfToken = generateCSRFToken();
             // Update preview
             const previewHeading = document.getElementById('widget-font-preview-heading');
             const previewBody = document.getElementById('widget-font-preview-body');
+            const previewContainer = previewHeading?.closest('div[style*="margin-top: 1.5rem"]');
             
             if (previewHeading && finalPrimaryFont) {
                 previewHeading.style.fontFamily = `'${finalPrimaryFont}', sans-serif`;
             }
             if (previewBody && finalSecondaryFont) {
                 previewBody.style.fontFamily = `'${finalSecondaryFont}', sans-serif`;
+            }
+            
+            // Update widget styling in preview
+            if (previewContainer) {
+                const widgetBackgroundEl = document.getElementById('widget_background');
+                const widgetBorderColorEl = document.getElementById('widget_border_color');
+                const borderWidthEl = document.getElementById('widget_border_width');
+                const borderEffectEl = document.getElementById('widget_border_effect');
+                const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
+                const shapeEl = document.getElementById('widget_shape');
+                const primaryColorEl = document.getElementById('custom_primary_color');
+                
+                // Update background
+                if (widgetBackgroundEl && widgetBackgroundEl.value) {
+                    previewContainer.style.background = widgetBackgroundEl.value;
+                }
+                
+                // Update border
+                if (widgetBorderColorEl && widgetBorderColorEl.value && borderWidthEl) {
+                    const borderWidth = borderWidthEl.value === 'thin' ? '1px' : (borderWidthEl.value === 'thick' ? '3px' : '2px');
+                    previewContainer.style.border = `${borderWidth} solid ${widgetBorderColorEl.value}`;
+                }
+                
+                // Update border radius
+                if (shapeEl) {
+                    const borderRadius = shapeEl.value === 'square' ? '0px' : (shapeEl.value === 'round' ? '50px' : '8px');
+                    previewContainer.style.borderRadius = borderRadius;
+                }
+                
+                // Update shadow
+                if (borderEffectEl && borderEffectEl.value === 'shadow' && shadowIntensityEl) {
+                    const shadows = {
+                        'none': 'none',
+                        'subtle': '0 2px 4px rgba(0, 0, 0, 0.05)',
+                        'pronounced': '0 4px 12px rgba(0, 0, 0, 0.15)'
+                    };
+                    previewContainer.style.boxShadow = shadows[shadowIntensityEl.value] || 'none';
+                } else if (borderEffectEl && borderEffectEl.value === 'glow') {
+                    previewContainer.style.boxShadow = 'none';
+                }
+                
+                // Update text color
+                if (primaryColorEl && primaryColorEl.value) {
+                    const headingColor = primaryColorEl.value;
+                    if (previewHeading) previewHeading.style.color = headingColor;
+                    if (previewBody) previewBody.style.color = headingColor;
+                }
             }
             
             saveAppearanceForm();
@@ -4660,6 +4755,9 @@ $csrfToken = generateCSRFToken();
             swatch.style.background = color;
             hidden.value = color;
             
+            // Update page preview
+            updatePageFontPreview();
+            
             saveAppearanceForm();
         }
         
@@ -4687,6 +4785,9 @@ $csrfToken = generateCSRFToken();
                 swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
+                
+                // Update page preview
+                updatePageFontPreview();
                 
                 saveAppearanceForm();
             } else {
@@ -4718,6 +4819,9 @@ $csrfToken = generateCSRFToken();
             startSwatch.style.background = startColor;
             endSwatch.style.background = endColor;
             
+            // Update page preview
+            updatePageFontPreview();
+            
             saveAppearanceForm();
         }
         
@@ -4745,6 +4849,9 @@ $csrfToken = generateCSRFToken();
                     btn.style.fontWeight = '500';
                 }
             });
+            
+            // Update widget preview for styling changes
+            updateWidgetFontPreview();
             
             saveAppearanceForm();
         }
@@ -4906,6 +5013,9 @@ $csrfToken = generateCSRFToken();
             swatch.style.background = color;
             hidden.value = color;
             
+            // Update widget preview
+            updateWidgetFontPreview();
+            
             saveAppearanceForm();
         }
         
@@ -4933,6 +5043,9 @@ $csrfToken = generateCSRFToken();
                 swatch.style.background = hex;
                 hidden.value = hex;
                 hexInput.value = hex;
+                
+                // Update widget preview
+                updateWidgetFontPreview();
                 
                 saveAppearanceForm();
             } else {
