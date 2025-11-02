@@ -2490,7 +2490,7 @@ $csrfToken = generateCSRFToken();
                 <!-- Widget Fonts -->
                 <div class="accordion-section" id="widget-fonts">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('widget-fonts')">
-                        <i class="fas fa-typewriter"></i>
+                        <i class="fas fa-text-height"></i>
                         <span>Widget Fonts</span>
                         <i class="fas fa-chevron-down accordion-icon"></i>
                     </button>
