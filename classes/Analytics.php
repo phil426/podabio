@@ -178,22 +178,30 @@ class Analytics {
         }
         
         // Get widget clicks (link_id stores widget_id for widgets)
+        // Use a subquery to handle date filtering properly
         $widgetClicks = fetchAll(
-            "SELECT w.id, w.title, w.widget_type, COUNT(a.id) as click_count
+            "SELECT w.id, w.title, w.widget_type, 
+                    COALESCE((
+                        SELECT COUNT(*) 
+                        FROM analytics a 
+                        WHERE a.link_id = w.id 
+                          AND a.event_type = 'click' 
+                          AND a.page_id = ?
+                          $dateFilter
+                    ), 0) as click_count
              FROM widgets w
-             LEFT JOIN analytics a ON w.id = a.link_id AND a.event_type = 'click' AND a.page_id = ? $dateFilter
              WHERE w.page_id = ? AND w.is_active = 1
-             GROUP BY w.id, w.title, w.widget_type
              ORDER BY click_count DESC",
             [$pageId, $pageId]
         );
         
         // Get page views for CTR calculation
-        $pageViews = (int)fetchOne(
+        $pageViewsResult = fetchOne(
             "SELECT COUNT(*) as count FROM analytics 
              WHERE page_id = ? AND event_type = 'view' $dateFilter",
             [$pageId]
-        )['count'] ?? 1; // Use 1 to avoid division by zero
+        );
+        $pageViews = (int)($pageViewsResult['count'] ?? 1); // Use 1 to avoid division by zero
         
         // Calculate CTR for each widget
         foreach ($widgetClicks as &$widget) {
