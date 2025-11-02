@@ -2038,6 +2038,10 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-life-ring"></i>
                         <span>Support</span>
                     </a>
+                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('analytics', this)">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </a>
                 <?php endif; ?>
             </nav>
         </aside>
@@ -3203,6 +3207,55 @@ $csrfToken = generateCSRFToken();
                     </div>
                     <h3>Coming Soon</h3>
                     <p>Our blog section is under development. Check back soon for articles, tutorials, and updates!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="tab-analytics" class="tab-content">
+            <h2>Widget Analytics</h2>
+            <p style="margin-bottom: 20px; color: #666;">View performance metrics for your widgets.</p>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label for="analytics-period" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Time Period</label>
+                <select id="analytics-period" onchange="loadWidgetAnalytics()" style="width: 200px; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                    <option value="day">Last 24 Hours</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month" selected>Last 30 Days</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+            
+            <div id="analytics-loading" style="display: none; text-align: center; padding: 2rem; color: #666;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                <p>Loading analytics...</p>
+            </div>
+            
+            <div id="analytics-content" style="display: none;">
+                <div id="analytics-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <!-- Summary cards will be inserted here -->
+                </div>
+                
+                <div id="analytics-table-container">
+                    <table id="widget-analytics-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Widget</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Type</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">Clicks</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">Views</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">CTR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body">
+                            <!-- Widget data will be inserted here -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="analytics-empty" style="display: none; text-align: center; padding: 3rem; color: #999;">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>No analytics data available for this period.</p>
+                    </div>
                 </div>
             </div>
         </div>
