@@ -4590,7 +4590,9 @@ $csrfToken = generateCSRFToken();
         }
         
         // Legacy drag and drop (keep for backward compatibility)
-        if (widgetsList && widgetsList.querySelectorAll('.widget-item').length > 0 && widgetsList.querySelectorAll('.widget-accordion-item').length === 0) {
+        document.addEventListener('DOMContentLoaded', function() {
+            const widgetsList = document.getElementById('widgets-list');
+            if (widgetsList && widgetsList.querySelectorAll('.widget-item').length > 0 && widgetsList.querySelectorAll('.widget-accordion-item').length === 0) {
             // Make widgets sortable
             Array.from(widgetsList.children).forEach(item => {
                 if (item.classList.contains('widget-item')) {
@@ -4648,7 +4650,8 @@ $csrfToken = generateCSRFToken();
                     });
                 }
             });
-        }
+            }
+        });
         
         // Domain verification function
         function verifyDomain() {
