@@ -2874,6 +2874,48 @@ $csrfToken = generateCSRFToken();
             </form>
         </div>
                 <?php endif; // End if ($page) ?>
+        
+        <!-- Support Section -->
+        <div class="support-section">
+            <div class="support-header">
+                <h2><i class="fas fa-life-ring"></i> Support & Help</h2>
+                <p>Get assistance, view documentation, or contact our support team</p>
+            </div>
+            
+            <div class="support-grid">
+                <a href="/docs" class="support-card" target="_blank">
+                    <div class="support-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Documentation</h3>
+                    <p>Browse guides and tutorials</p>
+                </a>
+                
+                <a href="/faq" class="support-card" target="_blank">
+                    <div class="support-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3>FAQ</h3>
+                    <p>Find answers to common questions</p>
+                </a>
+                
+                <a href="mailto:support@<?php echo parse_url(APP_URL, PHP_URL_HOST); ?>" class="support-card">
+                    <div class="support-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Contact Support</h3>
+                    <p>Email us for personalized help</p>
+                </a>
+                
+                <a href="https://github.com/phil426/podn-bio" class="support-card" target="_blank" rel="noopener noreferrer">
+                    <div class="support-icon">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3>GitHub</h3>
+                    <p>View source code and contribute</p>
+                </a>
+            </div>
+        </div>
             </div>
         </main>
     </div>
