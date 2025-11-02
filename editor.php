@@ -8834,6 +8834,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     if (removeBtn) {
                         removeBtn.remove();
                     }
+                    
+                    // Save widget settings after clearing thumbnail
+                    if (typeof saveWidgetSettingsInline === 'function') {
+                        saveWidgetSettingsInline(parseInt(widgetId));
+                    }
                 }
                 
                 if (hiddenInput) {
@@ -8852,15 +8857,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 if (dropdown) {
                     dropdown.style.display = 'none';
-                }
-                
-                // Get widget ID from field ID (format: widget-inline-icon-{widgetId})
-                const widgetIdMatch = fieldId.match(/widget-inline-icon-(\d+)/);
-                if (widgetIdMatch && widgetIdMatch[1]) {
-                    const widgetId = parseInt(widgetIdMatch[1]);
-                    if (typeof saveWidgetSettingsInline === 'function') {
-                        saveWidgetSettingsInline(widgetId);
-                    }
                 }
             };
             
