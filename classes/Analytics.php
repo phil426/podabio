@@ -97,37 +97,66 @@ class Analytics {
      */
     public function getSummary($pageId, $period = 'month') {
         $dateFilter = '';
-        switch ($period) {
-            case 'day':
-                $dateFilter = "AND created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)";
-                break;
-            case 'week':
-                $dateFilter = "AND created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
-                break;
-            case 'month':
-                $dateFilter = "AND created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
-                break;
-            default:
-                $dateFilter = '';
+        
+        // Only add date filter if period is not 'all'
+        if ($period !== 'all') {
+            switch ($period) {
+                case 'day':
+                    $dateFilter = "AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+                    break;
+                case 'week':
+                    $dateFilter = "AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)";
+                    break;
+                case 'month':
+                    $dateFilter = "AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)";
+                    break;
+            }
         }
         
-        $views = fetchOne(
-            "SELECT COUNT(*) as count FROM analytics 
-             WHERE page_id = ? AND event_type = 'view' $dateFilter",
-            [$pageId]
-        )['count'] ?? 0;
-        
-        $clicks = fetchOne(
-            "SELECT COUNT(*) as count FROM analytics 
-             WHERE page_id = ? AND event_type = 'click' $dateFilter",
-            [$pageId]
-        )['count'] ?? 0;
-        
-        $subscribers = fetchOne(
-            "SELECT COUNT(*) as count FROM analytics 
-             WHERE page_id = ? AND event_type = 'email_subscribe' $dateFilter",
-            [$pageId]
-        )['count'] ?? 0;
+        // Try with date filter, fallback without if column doesn't exist
+        try {
+            $views = fetchOne(
+                "SELECT COUNT(*) as count FROM analytics 
+                 WHERE page_id = ? AND event_type = 'view' $dateFilter",
+                [$pageId]
+            )['count'] ?? 0;
+            
+            $clicks = fetchOne(
+                "SELECT COUNT(*) as count FROM analytics 
+                 WHERE page_id = ? AND event_type = 'click' $dateFilter",
+                [$pageId]
+            )['count'] ?? 0;
+            
+            $subscribers = fetchOne(
+                "SELECT COUNT(*) as count FROM analytics 
+                 WHERE page_id = ? AND event_type = 'email_subscribe' $dateFilter",
+                [$pageId]
+            )['count'] ?? 0;
+        } catch (Exception $e) {
+            // If created_at column doesn't exist, query without date filter
+            if (strpos($e->getMessage(), 'created_at') !== false || strpos($e->getMessage(), 'Column not found') !== false) {
+                $dateFilter = ''; // Clear date filter
+                $views = fetchOne(
+                    "SELECT COUNT(*) as count FROM analytics 
+                     WHERE page_id = ? AND event_type = 'view'",
+                    [$pageId]
+                )['count'] ?? 0;
+                
+                $clicks = fetchOne(
+                    "SELECT COUNT(*) as count FROM analytics 
+                     WHERE page_id = ? AND event_type = 'click'",
+                    [$pageId]
+                )['count'] ?? 0;
+                
+                $subscribers = fetchOne(
+                    "SELECT COUNT(*) as count FROM analytics 
+                     WHERE page_id = ? AND event_type = 'email_subscribe'",
+                    [$pageId]
+                )['count'] ?? 0;
+            } else {
+                throw $e; // Re-throw if different error
+            }
+        }
         
         return [
             'views' => (int)$views,
