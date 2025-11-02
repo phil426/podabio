@@ -1714,6 +1714,107 @@ $csrfToken = generateCSRFToken();
                 height: 300px;
             }
         }
+        
+        /* Support Section */
+        .support-section {
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 2px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .support-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .support-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .support-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .support-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .support-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: #0066ff;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .support-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+        }
+        
+        .support-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        
+        .support-card p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        @media (max-width: 640px) {
+            .support-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+            
+            .support-card {
+                padding: 1.5rem 1rem;
+            }
+            
+            .support-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+        }
     </style>
 </head>
 <body>
