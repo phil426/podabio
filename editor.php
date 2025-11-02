@@ -122,6 +122,7 @@ $themeClass = new Theme();
 $themes = $themeClass->getAllThemes(true);
 $userThemes = $page ? $themeClass->getUserThemes($userId) : [];
 $allThemes = array_merge($themes, $userThemes); // Combine system and user themes
+$userThemeCount = count($userThemes);
 
 // Get current theme configuration
 $widgetStyles = $page ? getWidgetStyles($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null) : WidgetStyleManager::getDefaults();
@@ -2012,12 +2013,19 @@ $csrfToken = generateCSRFToken();
                 <h3 style="margin-top: 0;">Save as Theme</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Save your current customization as a reusable theme.</small>
                 
+                <?php if ($userThemeCount >= 3): ?>
+                <div style="padding: 1rem; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                    <strong style="display: block; margin-bottom: 0.5rem; color: #856404;">Theme Limit Reached</strong>
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">You've reached the maximum of 3 custom themes. Please delete one before creating a new theme.</p>
+                </div>
+                <?php else: ?>
                 <div class="form-group">
                     <div style="display: flex; gap: 0.5rem;">
                         <input type="text" id="theme_name" placeholder="Enter theme name..." style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" maxlength="100">
                         <button type="button" class="btn btn-secondary" onclick="saveTheme()" style="padding: 0.75rem 1.5rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">Save Theme</button>
                     </div>
                 </div>
+                <?php endif; ?>
                 
                 <?php if (!empty($userThemes)): ?>
                 <div class="form-group">
@@ -5250,7 +5258,13 @@ $csrfToken = generateCSRFToken();
         
         // Save Theme Function
         function saveTheme() {
-            const themeName = document.getElementById('theme_name').value.trim();
+            const themeNameEl = document.getElementById('theme_name');
+            if (!themeNameEl) {
+                alert('Theme name field not found');
+                return;
+            }
+            
+            const themeName = themeNameEl.value.trim();
             
             if (!themeName) {
                 alert('Please enter a theme name');

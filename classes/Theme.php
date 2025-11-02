@@ -671,6 +671,12 @@ class Theme {
             return ['success' => false, 'theme_id' => null, 'error' => 'Theme name must be 1-100 characters'];
         }
         
+        // Check theme limit (max 3 custom themes)
+        $existingThemes = fetchOne("SELECT COUNT(*) as count FROM themes WHERE user_id = ?", [$userId]);
+        if ($existingThemes && $existingThemes['count'] >= 3) {
+            return ['success' => false, 'theme_id' => null, 'error' => 'You can create a maximum of 3 custom themes. Please delete one first.'];
+        }
+        
         // Sanitize widget styles if provided
         if (isset($themeData['widget_styles'])) {
             $themeData['widget_styles'] = WidgetStyleManager::sanitize($themeData['widget_styles']);
