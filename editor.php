@@ -356,7 +356,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: white;
             transition: box-shadow 0.2s;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         
         .widget-accordion-item:hover {
@@ -387,6 +387,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: all 0.2s;
             text-align: left;
             border-radius: 8px 8px 0 0;
+            overflow: hidden;
         }
         
         .widget-accordion-header:hover {
@@ -3650,6 +3651,33 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Live Preview System
         let previewUpdateTimeout = null;
         
+        // Toggle preview panel
+        window.togglePreview = function() {
+            const panel = document.getElementById('live-preview-panel');
+            const btn = document.getElementById('preview-toggle-btn');
+            
+            if (!panel || !btn) return;
+            
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+                btn.style.right = '420px';
+                btn.innerHTML = '<i class="fas fa-times"></i> Close';
+                
+                // Load preview if not loaded
+                const iframe = document.getElementById('preview-iframe');
+                if (iframe) {
+                    const pageUrl = '<?php echo isset($pageUrl) ? h($pageUrl) : ''; ?>';
+                    if (pageUrl && (iframe.src === 'about:blank' || !iframe.src || iframe.src.indexOf('<?php echo h(APP_URL); ?>') === -1)) {
+                        iframe.src = pageUrl;
+                    }
+                }
+            } else {
+                panel.style.display = 'none';
+                btn.style.right = '20px';
+                btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Preview';
+            }
+        };
+        
         // Auto-refresh preview when settings change
         function refreshPreview() {
             if (previewUpdateTimeout) {
@@ -5836,6 +5864,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         function updateFontPreview() {
             const headingFontEl = document.getElementById('custom_heading_font');
             const bodyFontEl = document.getElementById('custom_body_font');
+            
+            if (!headingFontEl || !bodyFontEl) {
+                console.log('Font preview elements not found');
+                return;
+            }
             
             // Add null checks
             if (!headingFontEl || !bodyFontEl) {
