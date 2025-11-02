@@ -3983,7 +3983,12 @@ $csrfToken = generateCSRFToken();
         
         window.loadWidgetSettingsInline = function(widgetId) {
             const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-            if (!contentDiv) return;
+            console.log('loadWidgetSettingsInline called for widgetId:', widgetId, 'contentDiv:', contentDiv);
+            if (!contentDiv) {
+                console.error('contentDiv not found for widgetId:', widgetId);
+                return;
+            }
+            console.log('contentDiv found, current innerHTML length:', contentDiv.innerHTML.length);
             
             // Ensure widget definitions are loaded first
             function ensureWidgetDefinitionsLoaded() {
@@ -4218,8 +4223,34 @@ $csrfToken = generateCSRFToken();
                 
                 formHTML += '</form>';
                 console.log('Setting contentDiv.innerHTML, length:', formHTML.length);
+                console.log('contentDiv before setting:', contentDiv, 'isConnected:', contentDiv.isConnected);
+                
+                // Double-check contentDiv is still in DOM
+                const verifyDiv = document.getElementById(`widget-content-${widgetId}`);
+                if (!verifyDiv || verifyDiv !== contentDiv) {
+                    console.error('contentDiv changed or removed from DOM!');
+                    const newDiv = document.getElementById(`widget-content-${widgetId}`);
+                    if (newDiv) {
+                        newDiv.innerHTML = formHTML;
+                        console.log('Content set to new div');
+                    } else {
+                        console.error('Cannot find contentDiv in DOM!');
+                    }
+                    return;
+                }
+                
                 contentDiv.innerHTML = formHTML;
-                console.log('Content set successfully, contentDiv:', contentDiv);
+                console.log('Content set successfully, new innerHTML length:', contentDiv.innerHTML.length);
+                
+                // Verify it was set
+                setTimeout(() => {
+                    const checkDiv = document.getElementById(`widget-content-${widgetId}`);
+                    if (checkDiv && checkDiv.innerHTML.includes('widget-settings-form')) {
+                        console.log('Content verified - form is in DOM');
+                    } else {
+                        console.error('Content verification failed - form not found in DOM!');
+                    }
+                }, 100);
             } catch (error) {
                 console.error('Error in renderWidgetSettings:', error);
                 contentDiv.innerHTML = '<p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p>';
