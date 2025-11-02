@@ -1059,6 +1059,145 @@ $csrfToken = generateCSRFToken();
                 margin-left: 0;
             }
         }
+        
+        /* Accordion Styles for Appearance Section */
+        .accordion-section {
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .accordion-header {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .accordion-header:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
+        }
+        
+        .accordion-header i.fas {
+            font-size: 1.1rem;
+            color: #0066ff;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .accordion-header .accordion-icon {
+            margin-left: auto;
+            font-size: 0.875rem;
+            transition: transform 0.3s;
+        }
+        
+        .accordion-section.expanded .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .accordion-section.expanded .accordion-content {
+            padding: 1.5rem 1.25rem;
+            max-height: 5000px;
+        }
+        
+        /* Reset Button Styles */
+        .reset-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: auto;
+        }
+        
+        .reset-btn:hover {
+            background: #f3f4f6;
+            color: #0066ff;
+        }
+        
+        /* Compact Button Groups */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .button-group button {
+            flex: 1;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Inline Font Preview */
+        .font-preview {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Segmented Control Style */
+        .segmented-control {
+            display: flex;
+            gap: 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .segmented-control button {
+            flex: 1;
+            padding: 0.625rem 0.75rem;
+            border: none;
+            border-right: 1px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .segmented-control button:last-child {
+            border-right: none;
+        }
+        
+        .segmented-control button.active {
+            background: #0066ff;
+            color: white;
+        }
+        
+        .segmented-control button:not(.active) {
+            color: #666;
+        }
+        
+        .segmented-control button:not(.active):hover {
+            background: #f9fafb;
+        }
     </style>
 </head>
 <body>
@@ -1528,23 +1667,14 @@ $csrfToken = generateCSRFToken();
                     <small style="display: block; margin-top: 1rem; color: #666;">Select a theme to automatically apply colors and fonts. You can modify individual elements after selection.</small>
                 </div>
                 
-                <div class="form-group">
-                    <label for="layout_option">Layout</label>
-                    <select id="layout_option" name="layout_option">
-                        <option value="layout1" <?php echo ($page['layout_option'] == 'layout1') ? 'selected' : ''; ?>>Layout 1</option>
-                        <option value="layout2" <?php echo ($page['layout_option'] == 'layout2') ? 'selected' : ''; ?>>Layout 2</option>
-                    </select>
-                </div>
-                
-                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- ========== PAGE STYLING SECTION ========== -->
-                <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700;">Page Styling</h2>
-                <small style="display: block; margin-bottom: 1.5rem; color: #666;">Customize the overall page appearance including background, colors, and typography.</small>
-                
-                <!-- Page Background -->
-                <h3 style="margin-top: 0;">Page Background</h3>
-                
+                <!-- ========== PAGE BACKGROUND SECTION (ACCORDION) ========== -->
+                <div class="accordion-section" id="page-background">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('page-background')">
+                        <i class="fas fa-fill-drip"></i>
+                        <span>Page Background</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <div class="form-group">
                     <label>Background</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
@@ -1604,10 +1734,17 @@ $csrfToken = generateCSRFToken();
                         </div>
                     </div>
                 </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+                    </div>
+                </div>
                 
                 <!-- Page Colors -->
+                <div class="accordion-section" id="page-colors">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('page-colors')">
+                        <i class="fas fa-palette"></i>
+                        <span>Page Colors</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <?php
                 // Get theme colors with fallbacks using Theme class
                 $colors = getThemeColors($page, $page['theme_id'] ? $themeClass->getTheme($page['theme_id']) : null);
@@ -1639,10 +1776,17 @@ $csrfToken = generateCSRFToken();
                         <input type="text" id="custom_accent_color_hex" value="<?php echo h($customAccent); ?>" placeholder="#0066ff" style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px;" onchange="updateColorFromHex('accent', this.value)">
                     </div>
                 </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+                    </div>
+                </div>
                 
                 <!-- Page Fonts -->
+                <div class="accordion-section" id="page-fonts">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('page-fonts')">
+                        <i class="fas fa-font"></i>
+                        <span>Page Fonts</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <?php
                 // Get Google Fonts list from helper function
                 $googleFonts = getGoogleFontsList();
@@ -1659,6 +1803,7 @@ $csrfToken = generateCSRFToken();
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <div id="inline-page-primary-preview" class="font-preview" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin-top: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.875rem; color: #374151; border: 1px solid #e5e7eb;">Sample Page Heading Text</div>
                 </div>
                 
                 <div class="form-group">
@@ -1670,31 +1815,19 @@ $csrfToken = generateCSRFToken();
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <div id="inline-page-secondary-preview" class="font-preview" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin-top: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.875rem; color: #374151; border: 1px solid #e5e7eb;">This is a preview of how your page body text will look with the selected font.</div>
                 </div>
-                
-                <!-- Page Font Preview -->
-                <?php
-                // Calculate CSS values for page preview styling
-                $pagePreviewBg = h($pageBackground);
-                $pagePreviewHeadingColor = h($customPrimary);
-                $pagePreviewBodyColor = h($customPrimary);
-                ?>
-                <div style="margin-top: 1.5rem; padding: 1.5rem; background: <?php echo $pagePreviewBg; ?>; border-radius: 8px; border: 2px solid #ddd;">
-                    <h4 style="margin-top: 0;">Page Font Preview</h4>
-                    <h3 id="page-font-preview-heading" style="font-family: '<?php echo h($pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo $pagePreviewHeadingColor; ?>;">Sample Page Heading Text</h3>
-                    <p id="page-font-preview-body" style="font-family: '<?php echo h($pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo $pagePreviewBodyColor; ?>; opacity: 0.8;">This is a preview of how your page body text will look with the selected font.</p>
+                    </div>
                 </div>
-                
-                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- ========== WIDGET STYLING SECTION ========== -->
-                <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700;">Widget Styling</h2>
-                <small style="display: block; margin-bottom: 1.5rem; color: #666;">Customize the appearance of widgets (links, podcast player, etc.) independently from page styling.</small>
                 
                 <!-- Widget Background -->
-                <h3 style="margin-top: 0;">Widget Background</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient background for widgets.</small>
-                
+                <div class="accordion-section" id="widget-background">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('widget-background')">
+                        <i class="fas fa-square"></i>
+                        <span>Widget Background</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <div class="form-group">
                     <label>Background Type</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
@@ -1753,13 +1886,17 @@ $csrfToken = generateCSRFToken();
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
                 
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <!-- Widget Border Color -->
-                <h3 style="margin-top: 0;">Widget Border Color</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Set a solid color or create a custom gradient for widget borders.</small>
-                
+                <!-- Widget Border -->
+                <div class="accordion-section" id="widget-border">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('widget-border')">
+                        <i class="fas fa-border-all"></i>
+                        <span>Widget Border</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <div class="form-group">
                     <label>Border Color Type</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
@@ -1818,13 +1955,17 @@ $csrfToken = generateCSRFToken();
                         </div>
                     </div>
                 </div>
-                
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+                    </div>
+                </div>
                 
                 <!-- Widget Fonts -->
-                <h3 style="margin-top: 0;">Widget Fonts</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Choose fonts for widget titles and content. Defaults to page fonts if not specified.</small>
-                
+                <div class="accordion-section" id="widget-fonts">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('widget-fonts')">
+                        <i class="fas fa-typewriter"></i>
+                        <span>Widget Fonts</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <?php
                 $widgetPrimaryFont = $widgetFonts['widget_primary_font'] ?? $pagePrimaryFont;
                 $widgetSecondaryFont = $widgetFonts['widget_secondary_font'] ?? $pageSecondaryFont;
@@ -1855,33 +1996,17 @@ $csrfToken = generateCSRFToken();
                     </select>
                     <small style="display: block; margin-top: 0.5rem;">Used for widget body text and descriptions</small>
                 </div>
-                
-                <!-- Widget Font Preview -->
-                <?php
-                // Calculate CSS values for widget preview styling
-                $widgetPreviewBg = h($widgetBackground);
-                $widgetPreviewBorderColor = h($widgetBorderColor);
-                $widgetPreviewBorderWidth = convertEnumToCSS($widgetStyles['border_width'] ?? 'medium', 'border_width');
-                $widgetPreviewBorderRadius = convertEnumToCSS($widgetStyles['shape'] ?? 'rounded', 'shape');
-                $widgetBorderEffect = $widgetStyles['border_effect'] ?? 'shadow';
-                $widgetPreviewBorderStyle = '';
-                if ($widgetBorderEffect === 'shadow') {
-                    $shadowIntensity = $widgetStyles['border_shadow_intensity'] ?? 'subtle';
-                    $widgetPreviewBorderStyle = 'box-shadow: ' . convertEnumToCSS($shadowIntensity, 'shadow') . ';';
-                }
-                ?>
-                <div style="margin-top: 1.5rem; padding: 1.5rem; background: <?php echo $widgetPreviewBg; ?>; border-radius: <?php echo $widgetPreviewBorderRadius; ?>; border: <?php echo $widgetPreviewBorderWidth; ?> solid <?php echo $widgetPreviewBorderColor; ?>; <?php echo $widgetPreviewBorderStyle; ?>">
-                    <h4 style="margin-top: 0;">Widget Font Preview</h4>
-                    <h3 id="widget-font-preview-heading" style="font-family: '<?php echo h($widgetPrimaryFont ?: $pagePrimaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo h($customPrimary); ?>;">Sample Widget Heading Text</h3>
-                    <p id="widget-font-preview-body" style="font-family: '<?php echo h($widgetSecondaryFont ?: $pageSecondaryFont); ?>', sans-serif; margin: 0.5rem 0; color: <?php echo h($customPrimary); ?>; opacity: 0.8;">This is a preview of how your widget content will look with the selected font.</p>
+                    </div>
                 </div>
                 
-                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
-                
                 <!-- Widget Structure -->
-                <h3 style="margin-top: 0;">Widget Structure</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Customize the appearance of widgets (links, podcast player, etc.)</small>
-                
+                <div class="accordion-section" id="widget-structure">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('widget-structure')">
+                        <i class="fas fa-cube"></i>
+                        <span>Widget Structure</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <div class="form-group">
                     <label>Border Width</label>
                     <div style="display: flex; gap: 0.5rem;">
@@ -1979,12 +2104,17 @@ $csrfToken = generateCSRFToken();
                     </div>
                     <input type="hidden" id="widget_shape" name="widget_shape" value="<?php echo h($currentShape); ?>">
                 </div>
+                    </div>
+                </div>
                 
-                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
-                
-                <h3 style="margin-top: 0;">Spatial Effect</h3>
-                <small style="display: block; margin-bottom: 1rem; color: #666;">Apply a global visual effect to your entire page.</small>
-                
+                <!-- Spatial Effects -->
+                <div class="accordion-section" id="spatial-effects">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('spatial-effects')">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Spatial Effects</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
                 <div class="form-group">
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
                         <?php 
@@ -2007,8 +2137,8 @@ $csrfToken = generateCSRFToken();
                     </div>
                     <input type="hidden" id="spatial_effect" name="spatial_effect" value="<?php echo h($currentSpatialEffect); ?>">
                 </div>
-                
-                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                    </div>
+                </div>
                 
                 <h3 style="margin-top: 0;">Save as Theme</h3>
                 <small style="display: block; margin-bottom: 1rem; color: #666;">Save your current customization as a reusable theme.</small>
@@ -2045,6 +2175,17 @@ $csrfToken = generateCSRFToken();
                     </div>
                 </div>
                 <?php endif; ?>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+                
+                <div class="form-group">
+                    <label for="layout_option">Layout</label>
+                    <select id="layout_option" name="layout_option">
+                        <option value="layout1" <?php echo ($page['layout_option'] == 'layout1') ? 'selected' : ''; ?>>Layout 1</option>
+                        <option value="layout2" <?php echo ($page['layout_option'] == 'layout2') ? 'selected' : ''; ?>>Layout 2</option>
+                    </select>
+                    <small style="display: block; margin-top: 0.5rem; color: #666;">Additional layout options coming soon.</small>
+                </div>
                 
                 <button type="submit" class="btn btn-primary">Save Appearance</button>
             </form>
@@ -2284,6 +2425,53 @@ $csrfToken = generateCSRFToken();
             const navElement = evt ? evt.currentTarget : null;
             showSection(tabName, navElement);
         };
+        
+        // Accordion Functions for Appearance Section
+        window.toggleAccordion = function(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            
+            const isExpanded = section.classList.contains('expanded');
+            
+            // Toggle the expanded state
+            if (isExpanded) {
+                section.classList.remove('expanded');
+                localStorage.setItem(`accordion_${sectionId}`, 'collapsed');
+            } else {
+                section.classList.add('expanded');
+                localStorage.setItem(`accordion_${sectionId}`, 'expanded');
+            }
+        };
+        
+        // Initialize accordion states from localStorage
+        function initializeAccordions() {
+            const sections = ['page-background', 'page-colors', 'page-fonts', 'widget-background', 
+                           'widget-border', 'widget-fonts', 'widget-structure', 'spatial-effects'];
+            
+            sections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (!section) return;
+                
+                const savedState = localStorage.getItem(`accordion_${sectionId}`);
+                
+                // Default to collapsed for most sections, expanded for first one
+                if (savedState === null) {
+                    // First time: collapse all except first
+                    if (sectionId === 'page-background') {
+                        section.classList.add('expanded');
+                        localStorage.setItem(`accordion_${sectionId}`, 'expanded');
+                    } else {
+                        section.classList.remove('expanded');
+                        localStorage.setItem(`accordion_${sectionId}`, 'collapsed');
+                    }
+                } else if (savedState === 'expanded') {
+                    section.classList.add('expanded');
+                } else {
+                    section.classList.remove('expanded');
+                }
+            });
+        }
+        
         // On page load, check for tab parameter
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2297,6 +2485,9 @@ $csrfToken = generateCSRFToken();
                     showSection(tabParam, null);
                 }
             }
+            
+            // Initialize accordion states
+            initializeAccordions();
         });
         
         // Widget Gallery Functions
@@ -4162,6 +4353,19 @@ $csrfToken = generateCSRFToken();
                 if (field) {
                     field.addEventListener('change', function() {
                         saveAppearanceForm();
+                        
+                        // Update inline font previews
+                        if (fieldId === 'page_primary_font') {
+                            const preview = document.getElementById('inline-page-primary-preview');
+                            if (preview) {
+                                preview.style.fontFamily = `'${this.value}', sans-serif`;
+                            }
+                        } else if (fieldId === 'page_secondary_font') {
+                            const preview = document.getElementById('inline-page-secondary-preview');
+                            if (preview) {
+                                preview.style.fontFamily = `'${this.value}', sans-serif`;
+                            }
+                        }
                     });
                 }
             });
