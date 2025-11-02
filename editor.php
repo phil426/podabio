@@ -2684,7 +2684,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 foreach ($widgets as $w) {
                                     if (!empty($w['is_featured'])) {
                                         $featuredWidget = $w;
-                                        $currentEffect = $w['featured_effect'] ?? '';
+                                        // Default to 'jiggle' if no effect is set
+                                        $currentEffect = $w['featured_effect'] ?? 'jiggle';
                                         break;
                                     }
                                 }
@@ -2694,8 +2695,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     onchange="applyFeaturedEffect(this.value)"
                                     style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;"
                                     <?php echo !$featuredWidget ? 'disabled' : ''; ?>>
-                                <option value=""><?php echo $featuredWidget ? 'None' : 'No featured widget'; ?></option>
-                                <option value="jiggle" <?php echo $currentEffect === 'jiggle' ? 'selected' : ''; ?>>Jiggle</option>
+                                <option value="">None</option>
+                                <option value="jiggle" <?php echo ($currentEffect === 'jiggle' || (!$currentEffect && $featuredWidget)) ? 'selected' : ''; ?>>Jiggle</option>
                                 <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn</option>
                                 <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow</option>
                                 <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
@@ -3856,12 +3857,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (!isFeatured) {
                 formData.append('featured_effect', '');
             } else {
-                // If featuring, keep existing effect or use first one
+                // If featuring, keep existing effect or default to 'jiggle'
                 const effectSelect = document.getElementById(`widget-inline-featured_effect-${widgetId}`);
                 if (effectSelect) {
-                    formData.append('featured_effect', effectSelect.value || '');
+                    formData.append('featured_effect', effectSelect.value || 'jiggle');
                 } else {
-                    // Effect selector not loaded yet, will be set when dropdown opens
+                    // Effect selector not loaded yet, default to 'jiggle'
+                    formData.append('featured_effect', 'jiggle');
                 }
             }
             
@@ -3925,12 +3927,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 return;
             }
             
-            // Save the effect
+            // Save the effect (default to 'jiggle' if empty)
             const formData = new FormData();
             formData.append('action', 'update');
             formData.append('widget_id', widgetId);
             formData.append('is_featured', '1');
-            formData.append('featured_effect', effect || '');
+            formData.append('featured_effect', effect || 'jiggle');
             formData.append('csrf_token', csrfToken);
             
             fetch('/api/widgets.php', {
@@ -3941,10 +3943,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(data => {
                 if (data.success) {
                     showToast(effect ? 'Featured effect applied!' : 'Featured effect removed', 'success');
-                    // Update dropdown in widget settings if open
+                    // Update dropdown in widget settings if open (default to 'jiggle' if empty)
                     const effectSelect = document.getElementById(`widget-inline-featured_effect-${widgetId}`);
                     if (effectSelect) {
-                        effectSelect.value = effect || '';
+                        effectSelect.value = effect || 'jiggle';
                     }
                 } else {
                     showToast('Failed to apply effect: ' + (data.error || 'Unknown error'), 'error');
@@ -5711,7 +5713,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 // Add Featured Effect selector (featured toggle is now in header)
                 const isFeatured = (widgetData && (widgetData.is_featured == 1 || widgetData.is_featured === '1' || widgetData.is_featured === true)) || false;
-                const featuredEffect = (widgetData && widgetData.featured_effect) || '';
+                // Default to 'jiggle' if featured but no effect is set
+                const featuredEffect = (widgetData && widgetData.featured_effect) || (isFeatured ? 'jiggle' : '');
                 
                 if (isFeatured) {
                     formHTML += `
@@ -5727,7 +5730,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 class="widget-setting-input"
                                 style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
                             <option value="">None</option>
-                            <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle</option>
+                            <option value="jiggle" ${(featuredEffect === 'jiggle' || (!widgetData.featured_effect && isFeatured)) ? 'selected' : ''}>Jiggle</option>
                             <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
                             <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
                             <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
@@ -5841,7 +5844,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 const featuredEffectSelect = form.querySelector(`#widget-inline-featured_effect-${widgetId}`);
                 if (featuredEffectSelect) {
-                    formData.append('featured_effect', featuredEffectSelect.value || '');
+                    // Default to 'jiggle' if featured widget has no effect selected
+                    const effectValue = featuredEffectSelect.value || '';
+                    // If widget is featured and effect is empty, default to 'jiggle'
+                    const isFeatured = form.querySelector(`#widget-inline-is_featured-${widgetId}`)?.checked;
+                    formData.append('featured_effect', (isFeatured && !effectValue) ? 'jiggle' : effectValue);
                 }
             }
             

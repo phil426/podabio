@@ -170,6 +170,11 @@ switch ($action) {
                 } catch (PDOException $e) {
                     error_log("Error unfeaturing other widgets: " . $e->getMessage());
                 }
+                
+                // If featuring and no effect specified, default to 'jiggle'
+                if (!isset($_POST['featured_effect']) || empty($_POST['featured_effect'])) {
+                    $updateData['featured_effect'] = 'jiggle';
+                }
             }
         }
         
