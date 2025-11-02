@@ -4855,7 +4855,7 @@ $csrfToken = generateCSRFToken();
         let currentCropPreviewId = null;
         
         // Image upload functionality - opens crop modal
-        function uploadImage(type, context = 'appearance') {
+        window.uploadImage = function(type, context = 'appearance') {
             console.log('uploadImage called:', { type, context });
             
             // Only handle profile images
@@ -5290,7 +5290,7 @@ $csrfToken = generateCSRFToken();
             }
         }
         
-        function removeImage(type, context = 'appearance') {
+        window.removeImage = function(type, context = 'appearance') {
             // Only handle profile images
             if (type !== 'profile') {
                 console.error('Invalid image type:', type);
