@@ -235,15 +235,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             z-index: 1;
         }
         
-        /* Jiggle Effect */
+        /* Jiggle Effect - triggered randomly */
         @keyframes jiggle {
-            0%, 100% { transform: translateX(0); }
+            0%, 100% { transform: translateX(0) rotate(0deg); }
             25% { transform: translateX(-3px) rotate(-1deg); }
             75% { transform: translateX(3px) rotate(1deg); }
         }
         
         .featured-effect-jiggle .widget-item {
-            animation: jiggle 0.5s ease-in-out infinite;
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-jiggle.active .widget-item {
+            animation: jiggle 0.5s ease-in-out;
         }
         
         /* Burn Effect - glowing ember-like glow */
@@ -256,7 +260,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             animation: burn 1.5s ease-in-out infinite;
         }
         
-        /* Rotating Glow */
+        /* Rotating Glow - triggered randomly */
         @keyframes rotating-glow {
             0% { box-shadow: 0 0 15px rgba(0, 102, 255, 0.6), 0 0 30px rgba(0, 102, 255, 0.4); filter: hue-rotate(0deg); }
             25% { box-shadow: 0 0 15px rgba(255, 100, 200, 0.6), 0 0 30px rgba(255, 100, 200, 0.4); filter: hue-rotate(90deg); }
@@ -266,7 +270,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .featured-effect-rotating-glow .widget-item {
-            animation: rotating-glow 3s linear infinite;
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-rotating-glow.active .widget-item {
+            animation: rotating-glow 2s linear;
         }
         
         /* Blink Effect */
@@ -279,17 +287,21 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             animation: blink 1.5s ease-in-out infinite;
         }
         
-        /* Pulse Effect */
+        /* Pulse Effect - triggered randomly */
         @keyframes pulse {
             0%, 100% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
             50% { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3); }
         }
         
         .featured-effect-pulse .widget-item {
-            animation: pulse 2s ease-in-out infinite;
+            animation: none; /* Animation triggered via JavaScript */
         }
         
-        /* Shake Effect */
+        .featured-effect-pulse.active .widget-item {
+            animation: pulse 1s ease-in-out;
+        }
+        
+        /* Shake Effect - triggered randomly */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
@@ -297,7 +309,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .featured-effect-shake .widget-item {
-            animation: shake 0.8s ease-in-out infinite;
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-shake.active .widget-item {
+            animation: shake 0.6s ease-in-out;
         }
         
         .widget-thumbnail {
@@ -1774,6 +1790,42 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
         });
     </script>
-</body>
+    <script>
+        // Random timing for movement-based Featured Widget effects
+        // Creates illusion of "something alive" inside occasionally causing movement
+        (function() {
+            const movementEffects = ['jiggle', 'shake', 'pulse', 'rotating-glow'];
+            const featuredWidgets = document.querySelectorAll('.featured-widget');
+            
+            featuredWidgets.forEach(widget => {
+                const effectClass = Array.from(widget.classList).find(cls => cls.startsWith('featured-effect-'));
+                if (!effectClass) return;
+                
+                const effect = effectClass.replace('featured-effect-', '');
+                if (!movementEffects.includes(effect)) return; // Static effects (burn, blink) continue as normal
+                
+                function triggerAnimation() {
+                    widget.classList.add('active');
+                    setTimeout(() => {
+                        widget.classList.remove('active');
+                    }, effect === 'rotating-glow' ? 2000 : (effect === 'pulse' ? 1000 : 600));
+                }
+                
+                // Initial trigger after random delay (0.5-2 seconds)
+                setTimeout(triggerAnimation, 500 + Math.random() * 1500);
+                
+                // Continue triggering at random intervals (2-8 seconds)
+                function scheduleNext() {
+                    const delay = 2000 + Math.random() * 6000; // 2-8 seconds
+                    setTimeout(() => {
+                        triggerAnimation();
+                        scheduleNext();
+                    }, delay);
+                }
+                scheduleNext();
+            });
+        })();
+    </script>
+    </body>
 </html>
 

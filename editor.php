@@ -2253,8 +2253,37 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             <h2>Manage Widgets</h2>
             <p style="margin-bottom: 20px; color: #666;">Add widgets to your page from the widget gallery. Widgets can display links, podcast players, social feeds, videos, and more.</p>
             
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
+                <?php
+                // Find currently featured widget
+                $featuredWidget = null;
+                $currentEffect = '';
+                if (!empty($widgets)) {
+                    foreach ($widgets as $w) {
+                        if (!empty($w['is_featured'])) {
+                            $featuredWidget = $w;
+                            $currentEffect = $w['featured_effect'] ?? '';
+                            break;
+                        }
+                    }
+                }
+                ?>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="featured-effect-selector" style="font-weight: 600; color: #333; white-space: nowrap;">Featured Widget Effect:</label>
+                    <select id="featured-effect-selector" 
+                            onchange="applyFeaturedEffect(this.value)"
+                            style="padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; min-width: 200px;"
+                            <?php echo !$featuredWidget ? 'disabled' : ''; ?>>
+                        <option value=""><?php echo $featuredWidget ? 'None' : 'No featured widget'; ?></option>
+                        <option value="jiggle" <?php echo $currentEffect === 'jiggle' ? 'selected' : ''; ?>>Jiggle</option>
+                        <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn</option>
+                        <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow</option>
+                        <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
+                        <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse</option>
+                        <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake</option>
+                    </select>
+                </div>
             </div>
             
             <div id="widgets-list" class="widgets-list">
@@ -3832,6 +3861,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     }
                     
                     showToast(isFeatured ? 'Widget marked as featured!' : 'Widget unfeatured', 'success');
+                    
+                    // Update Featured Effect selector
+                    if (typeof updateFeaturedEffectSelector === 'function') {
+                        updateFeaturedEffectSelector();
+                    }
                 } else {
                     showToast('Failed to update featured status: ' + (data.error || 'Unknown error'), 'error');
                     // Revert star icon
@@ -3848,6 +3882,94 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 console.error('Error updating featured status:', error);
                 showToast('Error updating featured status', 'error');
             });
+        }
+        
+        // Apply Featured Widget Effect from Manage Widgets dropdown
+        window.applyFeaturedEffect = function(effect) {
+            // Find the currently featured widget
+            const featuredStar = document.querySelector('.widget-featured-toggle .fa-star.featured-active');
+            if (!featuredStar) {
+                showToast('No widget is currently featured', 'error');
+                const selector = document.getElementById('featured-effect-selector');
+                if (selector) selector.value = '';
+                return;
+            }
+            
+            const widgetItem = featuredStar.closest('.widget-accordion-item');
+            if (!widgetItem) {
+                showToast('Could not find featured widget', 'error');
+                return;
+            }
+            
+            const widgetId = parseInt(widgetItem.getAttribute('data-widget-id'));
+            if (!widgetId) {
+                showToast('Invalid widget ID', 'error');
+                return;
+            }
+            
+            // Save the effect
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('is_featured', '1');
+            formData.append('featured_effect', effect || '');
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(effect ? 'Featured effect applied!' : 'Featured effect removed', 'success');
+                    // Update dropdown in widget settings if open
+                    const effectSelect = document.getElementById(`widget-inline-featured_effect-${widgetId}`);
+                    if (effectSelect) {
+                        effectSelect.value = effect || '';
+                    }
+                } else {
+                    showToast('Failed to apply effect: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error applying featured effect:', error);
+                showToast('Error applying featured effect', 'error');
+            });
+        };
+        
+        // Update Featured Effect Selector dropdown
+        function updateFeaturedEffectSelector() {
+            const selector = document.getElementById('featured-effect-selector');
+            if (!selector) return;
+            
+            // Find currently featured widget
+            const featuredStar = document.querySelector('.widget-featured-toggle .fa-star.featured-active');
+            if (!featuredStar) {
+                selector.disabled = true;
+                selector.value = '';
+                return;
+            }
+            
+            selector.disabled = false;
+            
+            // Get current effect from the featured widget
+            const widgetItem = featuredStar.closest('.widget-accordion-item');
+            if (widgetItem) {
+                const widgetId = widgetItem.getAttribute('data-widget-id');
+                // Fetch current widget to get effect
+                fetch('/api/widgets.php?action=get&widget_id=' + widgetId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.widget) {
+                            const effect = data.widget.featured_effect || '';
+                            selector.value = effect;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching featured widget effect:', error);
+                    });
+            }
         }
         
         // Handle Featured Widget Toggle (for dropdown checkbox)
@@ -3874,6 +3996,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (isFeatured) {
                 unfeatureOtherWidgets(widgetId);
             }
+            
+            // Update Featured Effect selector
+            updateFeaturedEffectSelector();
         };
         
         // Unfeature all other widgets (only one featured at a time)
@@ -5503,25 +5628,45 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             { value: 'fab fa-google', label: 'Google', icon: 'fa-google' }
                         ];
                         
-                        let selectOptions = '';
-                        commonIcons.forEach(icon => {
-                            const isSelected = (value === icon.value) ? 'selected' : '';
-                            const iconClass = icon.icon ? `fas ${icon.icon}` : '';
-                            selectOptions += `<option value="${icon.value.replace(/"/g, '&quot;')}" ${isSelected}>
-                                ${icon.label}
-                            </option>`;
-                        });
+                        // Find selected icon
+                        const selectedIcon = commonIcons.find(ic => ic.value === value) || commonIcons[0];
+                        const selectedIconClass = selectedIcon.value || '';
+                        const selectedIconLabel = selectedIcon.label || 'No Icon';
                         
                         fieldHTML = `
                             <div class="form-group">
                                 <label for="${fieldId}">${fieldDef.label}${required}</label>
-                                <select id="${fieldId}" 
-                                        name="${fieldName}"
-                                        onchange="saveWidgetSettingsInline(${widgetId})"
-                                        class="widget-setting-input"
-                                        style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer;">
-                                    ${selectOptions}
-                                </select>
+                                <input type="hidden" id="${fieldId}" name="${fieldName}" value="${safeValue}">
+                                <div class="icon-selector-wrapper" style="position: relative;">
+                                    <button type="button" 
+                                            id="${fieldId}-button"
+                                            class="icon-selector-button"
+                                            onclick="toggleIconSelector('${fieldId}')"
+                                            style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; text-align: left;">
+                                        <i class="${selectedIconClass}" style="width: 20px; text-align: center; flex-shrink: 0;"></i>
+                                        <span style="flex: 1;">${selectedIconLabel}</span>
+                                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #9ca3af;"></i>
+                                    </button>
+                                    <div id="${fieldId}-dropdown" 
+                                         class="icon-selector-dropdown" 
+                                         style="display: none; position: absolute; top: calc(100% + 0.25rem); left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.5rem;">
+                                            ${commonIcons.map(icon => {
+                                                const isSelected = (value === icon.value) ? 'background: #f0f7ff; border-color: #0066ff;' : '';
+                                                return `
+                                                    <button type="button" 
+                                                            class="icon-option-btn"
+                                                            data-value="${icon.value.replace(/"/g, '&quot;')}"
+                                                            onclick="selectIcon('${fieldId}', '${icon.value.replace(/"/g, '&quot;')}', '${icon.label.replace(/"/g, '&quot;')}')"
+                                                            style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; ${isSelected}">
+                                                        <i class="${icon.value || ''}" style="width: 20px; text-align: center; flex-shrink: 0; color: ${icon.value ? '#333' : '#999'}"></i>
+                                                        <span style="font-size: 0.875rem; flex: 1; text-align: left;">${icon.label}</span>
+                                                    </button>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                </div>
                                 ${helpText}
                             </div>
                         `;
@@ -7310,13 +7455,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             container.innerHTML = '';
             
             try {
-                // Initialize Croppie with 1:1 aspect ratio
+                // Initialize Croppie with 1:1 aspect ratio (square crop)
                 croppieInstance = new Croppie(container, {
                     viewport: { width: 300, height: 300, type: 'square' },
                     boundary: { width: '100%', height: 400 },
                     showZoomer: true,
                     enableOrientation: true,
-                    enforceBoundary: true
+                    enforceBoundary: true,
+                    enableResize: false // Disable resize to maintain 1:1 ratio
                 });
                 
                 // Bind image to croppie
@@ -7525,6 +7671,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     .then(result => {
                         if (result && result.success) {
                             console.log('Widget thumbnail saved successfully');
+                            // Also trigger inline save to ensure form state is updated
+                            if (typeof saveWidgetSettingsInline === 'function' && currentCropWidgetId) {
+                                saveWidgetSettingsInline(currentCropWidgetId);
+                            }
                         } else {
                             console.warn('Failed to save widget thumbnail config:', result);
                         }
@@ -8559,6 +8709,86 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             })
             .catch(() => {
                 showMessage('An error occurred', 'error');
+            });
+        }
+        
+        // Icon Selector Functions (for Font Awesome dropdown)
+        if (typeof window.iconSelectorFunctionsAdded === 'undefined') {
+            window.iconSelectorFunctionsAdded = true;
+            
+            // Add CSS for icon selector
+            if (!document.getElementById('icon-selector-styles')) {
+                const style = document.createElement('style');
+                style.id = 'icon-selector-styles';
+                style.textContent = `
+                    .icon-selector-button:hover {
+                        border-color: #0066ff !important;
+                        background: #f0f7ff !important;
+                    }
+                    .icon-option-btn:hover {
+                        border-color: #0066ff !important;
+                        background: #f0f7ff !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Toggle icon selector dropdown
+            window.toggleIconSelector = function(fieldId) {
+                const dropdown = document.getElementById(fieldId + '-dropdown');
+                if (!dropdown) return;
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.icon-selector-dropdown').forEach(dd => {
+                    if (dd !== dropdown) {
+                        dd.style.display = 'none';
+                    }
+                });
+                
+                dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            };
+            
+            // Select icon from dropdown
+            window.selectIcon = function(fieldId, iconValue, iconLabel) {
+                const hiddenInput = document.getElementById(fieldId);
+                const button = document.getElementById(fieldId + '-button');
+                const dropdown = document.getElementById(fieldId + '-dropdown');
+                
+                if (hiddenInput) {
+                    hiddenInput.value = iconValue;
+                }
+                
+                if (button) {
+                    const iconClass = iconValue || '';
+                    const iconHtml = iconClass ? `<i class="${iconClass}" style="width: 20px; text-align: center; flex-shrink: 0;"></i>` : '<span style="width: 20px;"></span>';
+                    button.innerHTML = `
+                        ${iconHtml}
+                        <span style="flex: 1;">${iconLabel}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #9ca3af;"></i>
+                    `;
+                }
+                
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                }
+                
+                // Get widget ID from field ID (format: widget-inline-icon-{widgetId})
+                const widgetIdMatch = fieldId.match(/widget-inline-icon-(\d+)/);
+                if (widgetIdMatch && widgetIdMatch[1]) {
+                    const widgetId = parseInt(widgetIdMatch[1]);
+                    if (typeof saveWidgetSettingsInline === 'function') {
+                        saveWidgetSettingsInline(widgetId);
+                    }
+                }
+            };
+            
+            // Close icon dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.icon-selector-wrapper')) {
+                    document.querySelectorAll('.icon-selector-dropdown').forEach(dd => {
+                        dd.style.display = 'none';
+                    });
+                }
             });
         }
         
