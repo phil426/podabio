@@ -2177,7 +2177,7 @@ $csrfToken = generateCSRFToken();
                             <div class="theme-card-swatch" style="background: <?php echo h($themeBackground); ?>;" onclick="selectTheme(<?php echo $theme['id']; ?>)">
                             </div>
                             <div class="theme-card-body" onclick="selectTheme(<?php echo $theme['id']; ?>)">
-                                <div class="theme-card-name"><?php echo h($theme['name']); ?></div>
+                                <div class="theme-card-name" style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif;"><?php echo h($theme['name']); ?></div>
                                 <!-- Font Preview -->
                                 <div class="theme-card-font-preview">
                                     <div style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">Page: Sample</div>
