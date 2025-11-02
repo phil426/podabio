@@ -4662,6 +4662,11 @@ $csrfToken = generateCSRFToken();
             const swatch = document.getElementById('page-bg-swatch');
             const hidden = document.getElementById('page_background');
             
+            if (!colorPicker || !hexInput || !swatch || !hidden) {
+                console.error('Page background elements not found');
+                return;
+            }
+            
             const color = colorPicker.value;
             hexInput.value = color;
             swatch.style.background = color;
@@ -4702,13 +4707,22 @@ $csrfToken = generateCSRFToken();
         }
         
         function updateGradient() {
-            const startColor = document.getElementById('gradient_start_color').value;
-            const endColor = document.getElementById('gradient_end_color').value;
-            const direction = document.getElementById('gradient_direction').value;
+            const startColorEl = document.getElementById('gradient_start_color');
+            const endColorEl = document.getElementById('gradient_end_color');
+            const directionEl = document.getElementById('gradient_direction');
             const preview = document.getElementById('gradient-preview');
             const hidden = document.getElementById('page_background');
             const startSwatch = document.getElementById('gradient-start-swatch');
             const endSwatch = document.getElementById('gradient-end-swatch');
+            
+            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden || !startSwatch || !endSwatch) {
+                console.error('Gradient elements not found');
+                return;
+            }
+            
+            const startColor = startColorEl.value;
+            const endColor = endColorEl.value;
+            const direction = directionEl.value;
             
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
@@ -4788,6 +4802,11 @@ $csrfToken = generateCSRFToken();
             const swatch = document.getElementById('glow-color-swatch');
             const hidden = document.getElementById('widget_glow_color_hidden');
             
+            if (!colorPicker || !hexInput || !swatch || !hidden) {
+                console.error('Glow color elements not found');
+                return;
+            }
+            
             const color = colorPicker.value;
             hexInput.value = color;
             swatch.style.background = color;
@@ -4798,6 +4817,12 @@ $csrfToken = generateCSRFToken();
         
         function updateGlowColorFromHex() {
             const hexInput = document.getElementById('widget_glow_color_hex');
+            
+            if (!hexInput) {
+                console.error('widget_glow_color_hex element not found');
+                return;
+            }
+            
             let hex = hexInput.value.trim();
             
             if (!hex.startsWith('#')) {
@@ -4808,6 +4833,11 @@ $csrfToken = generateCSRFToken();
                 const colorPicker = document.getElementById('widget_glow_color');
                 const swatch = document.getElementById('glow-color-swatch');
                 const hidden = document.getElementById('widget_glow_color_hidden');
+                
+                if (!colorPicker || !swatch || !hidden) {
+                    console.error('Glow color elements not found');
+                    return;
+                }
                 
                 colorPicker.value = hex;
                 swatch.style.background = hex;
@@ -4878,6 +4908,11 @@ $csrfToken = generateCSRFToken();
             const swatch = document.getElementById('widget-bg-swatch');
             const hidden = document.getElementById('widget_background');
             
+            if (!colorPicker || !hexInput || !swatch || !hidden) {
+                console.error('Widget background elements not found');
+                return;
+            }
+            
             const color = colorPicker.value;
             hexInput.value = color;
             swatch.style.background = color;
@@ -4918,19 +4953,30 @@ $csrfToken = generateCSRFToken();
         }
         
         function updateWidgetGradient() {
-            const startColor = document.getElementById('widget_gradient_start_color').value;
-            const endColor = document.getElementById('widget_gradient_end_color').value;
-            const direction = document.getElementById('widget_gradient_direction').value;
+            const startColorEl = document.getElementById('widget_gradient_start_color');
+            const endColorEl = document.getElementById('widget_gradient_end_color');
+            const directionEl = document.getElementById('widget_gradient_direction');
             const preview = document.getElementById('widget-gradient-preview');
             const hidden = document.getElementById('widget_background');
+            
+            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
+                console.error('Widget gradient elements not found');
+                return;
+            }
+            
+            const startColor = startColorEl.value;
+            const endColor = endColorEl.value;
+            const direction = directionEl.value;
             
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
             hidden.value = gradient;
             
             // Update swatches
-            document.getElementById('widget-gradient-start-swatch').style.background = startColor;
-            document.getElementById('widget-gradient-end-swatch').style.background = endColor;
+            const startSwatch = document.getElementById('widget-gradient-start-swatch');
+            const endSwatch = document.getElementById('widget-gradient-end-swatch');
+            if (startSwatch) startSwatch.style.background = startColor;
+            if (endSwatch) endSwatch.style.background = endColor;
             
             saveAppearanceForm();
         }
@@ -4969,6 +5015,11 @@ $csrfToken = generateCSRFToken();
             const hexInput = document.getElementById('widget_border_color_hex');
             const swatch = document.getElementById('widget-border-swatch');
             const hidden = document.getElementById('widget_border_color');
+            
+            if (!colorPicker || !hexInput || !swatch || !hidden) {
+                console.error('Widget border color elements not found');
+                return;
+            }
             
             const color = colorPicker.value;
             hexInput.value = color;
@@ -5010,19 +5061,30 @@ $csrfToken = generateCSRFToken();
         }
         
         function updateWidgetBorderGradient() {
-            const startColor = document.getElementById('widget_border_gradient_start_color').value;
-            const endColor = document.getElementById('widget_border_gradient_end_color').value;
-            const direction = document.getElementById('widget_border_gradient_direction').value;
+            const startColorEl = document.getElementById('widget_border_gradient_start_color');
+            const endColorEl = document.getElementById('widget_border_gradient_end_color');
+            const directionEl = document.getElementById('widget_border_gradient_direction');
             const preview = document.getElementById('widget-border-gradient-preview');
             const hidden = document.getElementById('widget_border_color');
+            
+            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
+                console.error('Widget border gradient elements not found');
+                return;
+            }
+            
+            const startColor = startColorEl.value;
+            const endColor = endColorEl.value;
+            const direction = directionEl.value;
             
             const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
             preview.style.background = gradient;
             hidden.value = gradient;
             
             // Update swatches
-            document.getElementById('widget-border-gradient-start-swatch').style.background = startColor;
-            document.getElementById('widget-border-gradient-end-swatch').style.background = endColor;
+            const startSwatch = document.getElementById('widget-border-gradient-start-swatch');
+            const endSwatch = document.getElementById('widget-border-gradient-end-swatch');
+            if (startSwatch) startSwatch.style.background = startColor;
+            if (endSwatch) endSwatch.style.background = endColor;
             
             saveAppearanceForm();
         }
