@@ -5268,32 +5268,64 @@ $csrfToken = generateCSRFToken();
             formData.append('theme_name', themeName);
             
             // Get current colors
-            formData.append('custom_primary_color', document.getElementById('custom_primary_color').value);
-            formData.append('custom_secondary_color', document.getElementById('custom_secondary_color').value);
-            formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
+            const primaryColorEl = document.getElementById('custom_primary_color');
+            const secondaryColorEl = document.getElementById('custom_secondary_color');
+            const accentColorEl = document.getElementById('custom_accent_color');
+            if (primaryColorEl) formData.append('custom_primary_color', primaryColorEl.value);
+            if (secondaryColorEl) formData.append('custom_secondary_color', secondaryColorEl.value);
+            if (accentColorEl) formData.append('custom_accent_color', accentColorEl.value);
             
             // Get current fonts
-            formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
-            formData.append('custom_body_font', document.getElementById('custom_body_font').value);
+            const pagePrimaryFontEl = document.getElementById('page_primary_font');
+            const pageSecondaryFontEl = document.getElementById('page_secondary_font');
+            const widgetPrimaryFontEl = document.getElementById('widget_primary_font');
+            const widgetSecondaryFontEl = document.getElementById('widget_secondary_font');
+            if (pagePrimaryFontEl) formData.append('page_primary_font', pagePrimaryFontEl.value);
+            if (pageSecondaryFontEl) formData.append('page_secondary_font', pageSecondaryFontEl.value);
+            if (widgetPrimaryFontEl) formData.append('widget_primary_font', widgetPrimaryFontEl.value);
+            if (widgetSecondaryFontEl) formData.append('widget_secondary_font', widgetSecondaryFontEl.value);
             
             // Get page background
-            const pageBackground = document.getElementById('page_background').value;
-            if (pageBackground) formData.append('page_background', pageBackground);
+            const pageBackgroundEl = document.getElementById('page_background');
+            if (pageBackgroundEl && pageBackgroundEl.value) formData.append('page_background', pageBackgroundEl.value);
+            
+            // Get widget background and border color
+            const widgetBackgroundEl = document.getElementById('widget_background');
+            const widgetBorderColorEl = document.getElementById('widget_border_color');
+            if (widgetBackgroundEl && widgetBackgroundEl.value) formData.append('widget_background', widgetBackgroundEl.value);
+            if (widgetBorderColorEl && widgetBorderColorEl.value) formData.append('widget_border_color', widgetBorderColorEl.value);
             
             // Get spatial effect
-            const spatialEffect = document.getElementById('spatial_effect').value;
-            if (spatialEffect) formData.append('spatial_effect', spatialEffect);
+            const spatialEffectEl = document.getElementById('spatial_effect');
+            if (spatialEffectEl && spatialEffectEl.value) formData.append('spatial_effect', spatialEffectEl.value);
             
             // Get widget styles
             const widgetStyles = {
-                border_width: document.getElementById('widget_border_width').value,
-                border_effect: document.getElementById('widget_border_effect').value,
-                border_shadow_intensity: document.getElementById('widget_border_shadow_intensity').value,
-                border_glow_intensity: document.getElementById('widget_border_glow_intensity').value,
-                glow_color: document.getElementById('widget_glow_color_hidden').value,
-                spacing: document.getElementById('widget_spacing').value,
-                shape: document.getElementById('widget_shape').value
+                border_width: '',
+                border_effect: '',
+                border_shadow_intensity: '',
+                border_glow_intensity: '',
+                glow_color: '',
+                spacing: '',
+                shape: ''
             };
+            
+            const borderWidthEl = document.getElementById('widget_border_width');
+            const borderEffectEl = document.getElementById('widget_border_effect');
+            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
+            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
+            const glowColorEl = document.getElementById('widget_glow_color_hidden');
+            const spacingEl = document.getElementById('widget_spacing');
+            const shapeEl = document.getElementById('widget_shape');
+            
+            if (borderWidthEl) widgetStyles.border_width = borderWidthEl.value;
+            if (borderEffectEl) widgetStyles.border_effect = borderEffectEl.value;
+            if (shadowIntensityEl) widgetStyles.border_shadow_intensity = shadowIntensityEl.value;
+            if (glowIntensityEl) widgetStyles.border_glow_intensity = glowIntensityEl.value;
+            if (glowColorEl) widgetStyles.glow_color = glowColorEl.value;
+            if (spacingEl) widgetStyles.spacing = spacingEl.value;
+            if (shapeEl) widgetStyles.shape = shapeEl.value;
+            
             formData.append('widget_styles', JSON.stringify(widgetStyles));
             
             showMessage('Saving theme...', 'info');
