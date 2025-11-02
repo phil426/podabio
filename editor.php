@@ -1715,6 +1715,72 @@ $csrfToken = generateCSRFToken();
             }
         }
         
+        /* Blog Section */
+        .blog-section {
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 2px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .blog-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .blog-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .blog-placeholder {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px dashed rgba(229, 231, 235, 0.8);
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .blog-placeholder-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+        }
+        
+        .blog-placeholder h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.75rem;
+        }
+        
+        .blog-placeholder p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+        
         /* Support Section */
         .support-section {
             margin-top: 4rem;
@@ -2975,6 +3041,22 @@ $csrfToken = generateCSRFToken();
             </form>
         </div>
                 <?php endif; // End if ($page) ?>
+        
+        <!-- Blog Section -->
+        <div class="blog-section">
+            <div class="blog-header">
+                <h2><i class="fas fa-blog"></i> Blog</h2>
+                <p>Stay updated with the latest news, features, and updates</p>
+            </div>
+            
+            <div class="blog-placeholder">
+                <div class="blog-placeholder-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3>Coming Soon</h3>
+                <p>Our blog section is under development. Check back soon for articles, tutorials, and updates!</p>
+            </div>
+        </div>
         
         <!-- Support Section -->
         <div class="support-section">
