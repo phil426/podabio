@@ -2053,6 +2053,24 @@ $csrfToken = generateCSRFToken();
                 <i class="fas fa-bars"></i>
             </button>
             
+            <!-- Preview Toggle Button -->
+            <button id="preview-toggle-btn" onclick="togglePreview()" class="btn btn-secondary" style="position: fixed; top: 80px; right: 20px; z-index: 999; border-radius: 8px; padding: 0.5rem 1rem; background: white; border: 2px solid #0066ff; color: #0066ff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <i class="fas fa-mobile-alt"></i> Preview
+            </button>
+            
+            <!-- Live Preview Panel -->
+            <div id="live-preview-panel" style="display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; border-left: 2px solid #e5e7eb; z-index: 998; box-shadow: -4px 0 20px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Live Preview</h3>
+                    <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem;">&times;</button>
+                </div>
+                <div style="height: calc(100vh - 60px); overflow-y: auto; background: #f3f4f6; padding: 1rem; display: flex; justify-content: center; align-items: flex-start;">
+                    <div style="width: 100%; max-width: 375px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; transform: scale(0.75); transform-origin: top center; margin-top: 0;">
+                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>" style="width: 100%; height: 667px; border: none; display: block;"></iframe>
+                    </div>
+                </div>
+            </div>
+            
             <div class="editor-content">
                 <div class="editor-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
