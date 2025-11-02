@@ -170,7 +170,7 @@ $csrfToken = generateCSRFToken();
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 12.5%, #f093fb 25%, #4facfe 37.5%, #00f2fe 50%, #87ceeb 62.5%, #ffd700 75%, #ffb366 87.5%, #ffa07a 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             overflow-x: hidden;
@@ -2504,10 +2504,15 @@ $csrfToken = generateCSRFToken();
                                 if ($endMatch) $gradEnd = $endMatch[0];
                             }
                             ?>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; margin-bottom: 1rem; align-items: end;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
                                     <input type="color" id="gradient_start_color" value="<?php echo h($gradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateGradient()">
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 0.5rem;">
+                                    <button type="button" onclick="flipGradientColors('page')" title="Flip Colors" style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; transition: all 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#0066ff'; this.style.color='#0066ff';" onmouseout="this.style.background='white'; this.style.borderColor='#ddd'; this.style.color='#666';">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
@@ -2664,10 +2669,15 @@ $csrfToken = generateCSRFToken();
                                 if ($endMatch) $widgetGradEnd = $endMatch[0];
                             }
                             ?>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; margin-bottom: 1rem; align-items: end;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
                                     <input type="color" id="widget_gradient_start_color" value="<?php echo h($widgetGradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetGradient()">
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 0.5rem;">
+                                    <button type="button" onclick="flipGradientColors('widget')" title="Flip Colors" style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; transition: all 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#0066ff'; this.style.color='#0066ff';" onmouseout="this.style.background='white'; this.style.borderColor='#ddd'; this.style.color='#666';">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
@@ -2733,10 +2743,15 @@ $csrfToken = generateCSRFToken();
                                 if ($endMatch) $widgetBorderGradEnd = $endMatch[0];
                             }
                             ?>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; margin-bottom: 1rem; align-items: end;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Start Color</label>
                                     <input type="color" id="widget_border_gradient_start_color" value="<?php echo h($widgetBorderGradStart); ?>" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;" onchange="updateWidgetBorderGradient()">
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 0.5rem;">
+                                    <button type="button" onclick="flipGradientColors('border')" title="Flip Colors" style="width: 40px; height: 40px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; transition: all 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#0066ff'; this.style.color='#0066ff';" onmouseout="this.style.background='white'; this.style.borderColor='#ddd'; this.style.color='#666';">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
                                 </div>
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">End Color</label>
@@ -7030,6 +7045,40 @@ $csrfToken = generateCSRFToken();
             hidden.value = gradient;
             
             saveAppearanceForm();
+        }
+        
+        // Flip gradient colors (swap start and end)
+        function flipGradientColors(type) {
+            let startColorEl, endColorEl, updateFunction;
+            
+            if (type === 'page') {
+                startColorEl = document.getElementById('gradient_start_color');
+                endColorEl = document.getElementById('gradient_end_color');
+                updateFunction = updateGradient;
+            } else if (type === 'widget') {
+                startColorEl = document.getElementById('widget_gradient_start_color');
+                endColorEl = document.getElementById('widget_gradient_end_color');
+                updateFunction = updateWidgetGradient;
+            } else if (type === 'border') {
+                startColorEl = document.getElementById('widget_border_gradient_start_color');
+                endColorEl = document.getElementById('widget_border_gradient_end_color');
+                updateFunction = updateWidgetBorderGradient;
+            }
+            
+            if (!startColorEl || !endColorEl) {
+                console.error('Gradient color elements not found for type:', type);
+                return;
+            }
+            
+            // Swap the colors
+            const temp = startColorEl.value;
+            startColorEl.value = endColorEl.value;
+            endColorEl.value = temp;
+            
+            // Update the gradient preview
+            if (updateFunction) {
+                updateFunction();
+            }
         }
         
         // Widget Settings Drawer Functions
