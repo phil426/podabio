@@ -429,6 +429,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-shrink: 0;
         }
         
+        .widget-header-thumbnail {
+            flex-shrink: 0;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+        
         .widget-accordion-header .widget-header-info {
             flex: 1;
             display: flex;
@@ -508,6 +515,34 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .widget-visibility-toggle input[type="checkbox"]:checked::before {
             transform: translateX(20px);
+        }
+        
+        .widget-featured-toggle {
+            display: flex;
+            align-items: center;
+            margin-right: 0.5rem;
+            position: relative;
+            padding: 0.25rem;
+        }
+        
+        .widget-featured-toggle .fa-star {
+            transition: all 0.2s ease;
+        }
+        
+        .widget-featured-toggle .fa-star.featured-active {
+            color: #ffd700 !important;
+            filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
+            animation: featuredPulse 2s ease-in-out infinite;
+        }
+        
+        .widget-featured-toggle:hover .fa-star {
+            transform: scale(1.2);
+            color: #ffd700;
+        }
+        
+        @keyframes featuredPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
         
         .widget-accordion-item.inactive {
@@ -2288,6 +2323,18 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
                                 <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
+                                <?php 
+                                // Show thumbnail preview if widget has one
+                                $thumbnailPreview = null;
+                                if (!empty($configData['thumbnail_image'])) {
+                                    $thumbnailPreview = $configData['thumbnail_image'];
+                                }
+                                if ($thumbnailPreview):
+                                ?>
+                                    <div class="widget-header-thumbnail">
+                                        <img src="<?php echo h($thumbnailPreview); ?>" alt="Widget thumbnail" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #ddd;">
+                                    </div>
+                                <?php endif; ?>
                                 <div class="widget-header-info">
                                     <div class="widget-header-title"><?php echo h($widget['title']); ?></div>
                                     <div class="widget-header-subtitle"><?php echo h($subtitle); ?></div>
@@ -2298,6 +2345,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                            <?php echo ($widget['is_active'] ?? 1) ? 'checked' : ''; ?>
                                            onchange="toggleWidgetVisibility(<?php echo $widget['id']; ?>, this.checked)"
                                            title="<?php echo ($widget['is_active'] ?? 1) ? 'Visible' : 'Hidden'; ?>">
+                                </div>
+                                <?php 
+                                $isFeatured = !empty($widget['is_featured']);
+                                $featuredEffect = $widget['featured_effect'] ?? '';
+                                ?>
+                                <div class="widget-featured-toggle" onclick="event.stopPropagation(); toggleFeaturedWidget(<?php echo $widget['id']; ?>, <?php echo $isFeatured ? 'true' : 'false'; ?>)" title="<?php echo $isFeatured ? 'Featured Widget - ' . h($featuredEffect) : 'Make Featured Widget'; ?>">
+                                    <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>" style="color: <?php echo $isFeatured ? '#ffd700' : '#9ca3af'; ?>; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;"></i>
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
@@ -3685,11 +3739,135 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         });
         
-        // Handle Featured Widget Toggle
+        // Toggle Featured Widget from header button
+        window.toggleFeaturedWidget = function(widgetId, currentlyFeatured) {
+            const newFeaturedState = !currentlyFeatured;
+            
+            // Update star icon immediately for visual feedback
+            const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
+            const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+            
+            if (starIcon && featuredToggle) {
+                if (newFeaturedState) {
+                    starIcon.classList.add('featured-active');
+                    starIcon.style.color = '#ffd700';
+                    featuredToggle.title = 'Featured Widget - Select effect below';
+                } else {
+                    starIcon.classList.remove('featured-active');
+                    starIcon.style.color = '#9ca3af';
+                    featuredToggle.title = 'Make Featured Widget';
+                }
+            }
+            
+            // If enabling featured, unfeature other widgets
+            if (newFeaturedState) {
+                unfeatureOtherWidgets(widgetId);
+            }
+            
+            // Open dropdown to show effect selector if featuring
+            if (newFeaturedState) {
+                const contentDiv = document.getElementById(`widget-content-${widgetId}`);
+                const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
+                
+                // Close other widgets first
+                document.querySelectorAll('.widget-accordion-content.show').forEach(openContent => {
+                    if (openContent !== contentDiv) {
+                        openContent.classList.remove('show');
+                        const openWidgetId = openContent.id.replace('widget-content-', '');
+                        const openItem = document.getElementById(`widget-accordion-${openWidgetId}`);
+                        if (openItem) {
+                            openItem.classList.remove('active');
+                        }
+                    }
+                });
+                
+                // Open this widget's dropdown
+                if (contentDiv && accordionItem) {
+                    contentDiv.classList.add('show');
+                    accordionItem.classList.add('active');
+                    
+                    // Ensure settings are loaded
+                    if (contentDiv.querySelector('.fa-spinner')) {
+                        loadWidgetSettingsInline(widgetId);
+                    }
+                }
+            }
+            
+            // Save the change
+            saveFeaturedWidgetState(widgetId, newFeaturedState);
+        };
+        
+        // Save featured widget state
+        function saveFeaturedWidgetState(widgetId, isFeatured) {
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('is_featured', isFeatured ? '1' : '0');
+            formData.append('csrf_token', csrfToken);
+            
+            // Get current featured effect if unfeaturing, clear it
+            if (!isFeatured) {
+                formData.append('featured_effect', '');
+            } else {
+                // If featuring, keep existing effect or use first one
+                const effectSelect = document.getElementById(`widget-inline-featured_effect-${widgetId}`);
+                if (effectSelect) {
+                    formData.append('featured_effect', effectSelect.value || '');
+                } else {
+                    // Effect selector not loaded yet, will be set when dropdown opens
+                }
+            }
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update effect group visibility in dropdown if open
+                    const effectGroup = document.getElementById(`featured-effect-group-${widgetId}`);
+                    if (effectGroup) {
+                        effectGroup.style.display = isFeatured ? 'block' : 'none';
+                    }
+                    
+                    showToast(isFeatured ? 'Widget marked as featured!' : 'Widget unfeatured', 'success');
+                } else {
+                    showToast('Failed to update featured status: ' + (data.error || 'Unknown error'), 'error');
+                    // Revert star icon
+                    const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
+                    const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+                    if (starIcon && featuredToggle) {
+                        starIcon.classList.toggle('featured-active');
+                        starIcon.style.color = isFeatured ? '#9ca3af' : '#ffd700';
+                        featuredToggle.title = isFeatured ? 'Make Featured Widget' : 'Featured Widget';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating featured status:', error);
+                showToast('Error updating featured status', 'error');
+            });
+        }
+        
+        // Handle Featured Widget Toggle (for dropdown checkbox)
         window.handleFeaturedToggle = function(widgetId, isFeatured) {
             const effectGroup = document.getElementById('featured-effect-group-' + widgetId);
             if (effectGroup) {
                 effectGroup.style.display = isFeatured ? 'block' : 'none';
+            }
+            
+            // Update header star icon
+            const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
+            const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+            if (starIcon && featuredToggle) {
+                if (isFeatured) {
+                    starIcon.classList.add('featured-active');
+                    starIcon.style.color = '#ffd700';
+                } else {
+                    starIcon.classList.remove('featured-active');
+                    starIcon.style.color = '#9ca3af';
+                }
             }
             
             // If enabling featured, unfeature other widgets
@@ -3700,8 +3878,27 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Unfeature all other widgets (only one featured at a time)
         function unfeatureOtherWidgets(exceptWidgetId) {
-            // This will be handled on save, but we can update UI immediately
-            const allFeaturedCheckboxes = document.querySelectorAll('#widget-form input[name="is_featured"]');
+            // Update header star icons for all widgets except the one being featured
+            document.querySelectorAll('.widget-featured-toggle').forEach(toggle => {
+                const widgetItem = toggle.closest('.widget-accordion-item');
+                if (widgetItem) {
+                    const currentWidgetId = widgetItem.getAttribute('data-widget-id');
+                    if (currentWidgetId && parseInt(currentWidgetId) !== parseInt(exceptWidgetId)) {
+                        const starIcon = toggle.querySelector('.fa-star');
+                        if (starIcon) {
+                            starIcon.classList.remove('featured-active');
+                            starIcon.style.color = '#9ca3af';
+                            toggle.title = 'Make Featured Widget';
+                        }
+                        
+                        // Also unfeature in database
+                        saveFeaturedWidgetState(parseInt(currentWidgetId), false);
+                    }
+                }
+            });
+            
+            // Update checkboxes in dropdowns if they exist
+            const allFeaturedCheckboxes = document.querySelectorAll('input[name="is_featured"]');
             allFeaturedCheckboxes.forEach(checkbox => {
                 const widgetItem = checkbox.closest('.widget-accordion-item');
                 if (widgetItem) {
@@ -4965,14 +5162,22 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         body: loadFormData
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('HTTP ' + response.status);
-                        }
                         return response.text().then(text => {
                             try {
-                                return JSON.parse(text);
+                                const data = JSON.parse(text);
+                                if (!response.ok) {
+                                    // If we got JSON, use its error message
+                                    throw new Error(data.error || 'HTTP ' + response.status);
+                                }
+                                return data;
                             } catch (e) {
+                                if (e.message && !e.message.includes('JSON')) {
+                                    throw e; // Re-throw if it's our error with message
+                                }
                                 console.error('Invalid JSON response:', text);
+                                if (!response.ok) {
+                                    throw new Error('HTTP ' + response.status + ': ' + (text.substring(0, 100) || 'Unknown error'));
+                                }
                                 throw new Error('Invalid JSON response');
                             }
                         });
@@ -5002,7 +5207,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     })
                     .catch(error => {
                         console.error('Error loading widget definitions:', error);
-                        reject(error);
+                        let errorMessage = error.message || 'Unknown error';
+                        
+                        // Handle CSRF token errors specially
+                        if (errorMessage.includes('CSRF') || errorMessage.includes('403')) {
+                            errorMessage = 'Session expired. Please refresh the page and try again.';
+                        }
+                        
+                        reject(new Error(errorMessage));
                     });
                 });
             }
@@ -5024,14 +5236,22 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         });
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('HTTP ' + response.status);
-                        }
                         return response.text().then(text => {
                             try {
-                                return JSON.parse(text);
+                                const data = JSON.parse(text);
+                                if (!response.ok) {
+                                    // If we got JSON, use its error message
+                                    throw new Error(data.error || 'HTTP ' + response.status);
+                                }
+                                return data;
                             } catch (e) {
+                                if (e.message && !e.message.includes('JSON')) {
+                                    throw e; // Re-throw if it's our error with message
+                                }
                                 console.error('Invalid JSON response:', text);
+                                if (!response.ok) {
+                                    throw new Error('HTTP ' + response.status + ': ' + (text.substring(0, 100) || 'Unknown error'));
+                                }
                                 throw new Error('Invalid JSON response');
                             }
                         });
@@ -5076,12 +5296,34 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             }
                         } else {
                             console.error('Failed to load widget:', data);
-                            contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p></div>';
+                            let errorMessage = data.error || 'Unknown error';
+                            if (errorMessage.includes('CSRF') || errorMessage.includes('403')) {
+                                errorMessage = 'Session expired. Please refresh the page and try again.';
+                                setTimeout(() => {
+                                    if (confirm('Your session may have expired. Would you like to refresh the page?')) {
+                                        window.location.reload();
+                                    }
+                                }, 1000);
+                            }
+                            contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545; padding: 1rem; background: #fee; border-radius: 8px;">Error loading widget: ' + errorMessage + '</p></div>';
                         }
                     })
                     .catch(error => {
                         console.error('Error loading widget settings:', error);
-                        contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error loading widget settings: ' + error.message + '</p></div>';
+                        let errorMessage = error.message || 'Unknown error';
+                        
+                        // Handle CSRF token errors specially
+                        if (errorMessage.includes('CSRF') || errorMessage.includes('403')) {
+                            errorMessage = 'Session expired. Please refresh the page and try again.';
+                            // Suggest page refresh after a delay
+                            setTimeout(() => {
+                                if (confirm('Your session may have expired. Would you like to refresh the page?')) {
+                                    window.location.reload();
+                                }
+                            }, 1000);
+                        }
+                        
+                        contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545; padding: 1rem; background: #fee; border-radius: 8px;">Error loading widget settings: ' + errorMessage + '</p></div>';
                     });
             }
             
@@ -5128,6 +5370,52 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Add widget-specific fields
             if (widgetDef.config_fields) {
                 Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
+                    // Skip disclosure_text field (removed)
+                    if (fieldName === 'disclosure_text') {
+                        return;
+                    }
+                    
+                    // Special handling for thumbnail_image - show upload interface
+                    // Check both widget_id and widget_type for compatibility
+                    const isCustomLink = (widgetDef.widget_id === 'custom_link') || (widget.widget_type === 'custom_link');
+                    if (fieldName === 'thumbnail_image' && isCustomLink) {
+                        const thumbnailValue = configData[fieldName] || '';
+                        const thumbnailId = `widget-thumbnail-${widgetId}`;
+                        const thumbnailInputId = `${thumbnailId}-input`;
+                        const thumbnailPreviewId = `${thumbnailId}-preview`;
+                        
+                        fieldHTML = `
+                            <div class="form-group">
+                                <label for="${thumbnailInputId}">${fieldDef.label}${fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : ''}</label>
+                                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="width: 120px; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f9fafb; flex-shrink: 0; overflow: hidden;">
+                                        <div id="${thumbnailPreviewId}" style="width: 100%; height: 100%;">
+                                            ${thumbnailValue ? `
+                                                <img src="${thumbnailValue.replace(/"/g, '&quot;')}" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
+                                            ` : `
+                                                <div style="text-align: center; color: #9ca3af; padding: 1rem;">
+                                                    <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                                                    <small style="font-size: 0.75rem;">No image</small>
+                                                </div>
+                                            `}
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <input type="file" id="${thumbnailInputId}" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                                        <input type="hidden" id="widget-inline-thumbnail_image-${widgetId}" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
+                                        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                            <button type="button" class="btn btn-primary btn-small" onclick="uploadWidgetThumbnail(${widgetId})" style="padding: 0.5rem 1rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;">Upload & Crop</button>
+                                            ${thumbnailValue ? `<button type="button" class="btn btn-danger btn-small" onclick="removeWidgetThumbnail(${widgetId})" style="padding: 0.5rem 1rem; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;">Remove</button>` : ''}
+                                        </div>
+                                        <small style="display: block; color: #666;">Select an image to upload and crop. Recommended: 400x400px, square image. Max 5MB</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        formHTML += fieldHTML;
+                        return; // Skip default rendering
+                    }
+                    
                     const value = configData[fieldName] || '';
                     const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                     const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
@@ -5165,6 +5453,76 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 ${helpText}
                             </div>
                         `;
+                    } else if (fieldDef.type === 'select' && fieldName === 'icon' && fieldDef.options === 'fontawesome_icons') {
+                        // Icon dropdown selector
+                        const commonIcons = [
+                            { value: '', label: 'No Icon' },
+                            { value: 'fas fa-link', label: 'Link', icon: 'fa-link' },
+                            { value: 'fas fa-home', label: 'Home', icon: 'fa-home' },
+                            { value: 'fas fa-envelope', label: 'Email', icon: 'fa-envelope' },
+                            { value: 'fas fa-phone', label: 'Phone', icon: 'fa-phone' },
+                            { value: 'fas fa-map-marker-alt', label: 'Location', icon: 'fa-map-marker-alt' },
+                            { value: 'fas fa-calendar', label: 'Calendar', icon: 'fa-calendar' },
+                            { value: 'fas fa-heart', label: 'Heart', icon: 'fa-heart' },
+                            { value: 'fas fa-star', label: 'Star', icon: 'fa-star' },
+                            { value: 'fas fa-bookmark', label: 'Bookmark', icon: 'fa-bookmark' },
+                            { value: 'fas fa-share-alt', label: 'Share', icon: 'fa-share-alt' },
+                            { value: 'fas fa-download', label: 'Download', icon: 'fa-download' },
+                            { value: 'fas fa-external-link-alt', label: 'External Link', icon: 'fa-external-link-alt' },
+                            { value: 'fas fa-arrow-right', label: 'Arrow Right', icon: 'fa-arrow-right' },
+                            { value: 'fas fa-play', label: 'Play', icon: 'fa-play' },
+                            { value: 'fas fa-music', label: 'Music', icon: 'fa-music' },
+                            { value: 'fas fa-image', label: 'Image', icon: 'fa-image' },
+                            { value: 'fas fa-video', label: 'Video', icon: 'fa-video' },
+                            { value: 'fas fa-podcast', label: 'Podcast', icon: 'fa-podcast' },
+                            { value: 'fas fa-microphone', label: 'Microphone', icon: 'fa-microphone' },
+                            { value: 'fas fa-headphones', label: 'Headphones', icon: 'fa-headphones' },
+                            { value: 'fas fa-shopping-cart', label: 'Shopping Cart', icon: 'fa-shopping-cart' },
+                            { value: 'fas fa-credit-card', label: 'Credit Card', icon: 'fa-credit-card' },
+                            { value: 'fas fa-dollar-sign', label: 'Dollar', icon: 'fa-dollar-sign' },
+                            { value: 'fas fa-file', label: 'File', icon: 'fa-file' },
+                            { value: 'fas fa-folder', label: 'Folder', icon: 'fa-folder' },
+                            { value: 'fas fa-cog', label: 'Settings', icon: 'fa-cog' },
+                            { value: 'fas fa-info-circle', label: 'Info', icon: 'fa-info-circle' },
+                            { value: 'fas fa-question-circle', label: 'Question', icon: 'fa-question-circle' },
+                            { value: 'fas fa-check-circle', label: 'Check', icon: 'fa-check-circle' },
+                            { value: 'fas fa-times-circle', label: 'Close', icon: 'fa-times-circle' },
+                            { value: 'fas fa-user', label: 'User', icon: 'fa-user' },
+                            { value: 'fas fa-users', label: 'Users', icon: 'fa-users' },
+                            { value: 'fab fa-facebook', label: 'Facebook', icon: 'fa-facebook' },
+                            { value: 'fab fa-twitter', label: 'Twitter', icon: 'fa-twitter' },
+                            { value: 'fab fa-instagram', label: 'Instagram', icon: 'fa-instagram' },
+                            { value: 'fab fa-youtube', label: 'YouTube', icon: 'fa-youtube' },
+                            { value: 'fab fa-tiktok', label: 'TikTok', icon: 'fa-tiktok' },
+                            { value: 'fab fa-linkedin', label: 'LinkedIn', icon: 'fa-linkedin' },
+                            { value: 'fab fa-github', label: 'GitHub', icon: 'fa-github' },
+                            { value: 'fab fa-spotify', label: 'Spotify', icon: 'fa-spotify' },
+                            { value: 'fab fa-apple', label: 'Apple', icon: 'fa-apple' },
+                            { value: 'fab fa-google', label: 'Google', icon: 'fa-google' }
+                        ];
+                        
+                        let selectOptions = '';
+                        commonIcons.forEach(icon => {
+                            const isSelected = (value === icon.value) ? 'selected' : '';
+                            const iconClass = icon.icon ? `fas ${icon.icon}` : '';
+                            selectOptions += `<option value="${icon.value.replace(/"/g, '&quot;')}" ${isSelected}>
+                                ${icon.label}
+                            </option>`;
+                        });
+                        
+                        fieldHTML = `
+                            <div class="form-group">
+                                <label for="${fieldId}">${fieldDef.label}${required}</label>
+                                <select id="${fieldId}" 
+                                        name="${fieldName}"
+                                        onchange="saveWidgetSettingsInline(${widgetId})"
+                                        class="widget-setting-input"
+                                        style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer;">
+                                    ${selectOptions}
+                                </select>
+                                ${helpText}
+                            </div>
+                        `;
                     } else {
                         fieldHTML = `
                             <div class="form-group">
@@ -5186,26 +5544,18 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 });
                 }
                 
-                // Add Featured Widget fields
+                // Add Featured Effect selector (featured toggle is now in header)
                 const isFeatured = (widgetData && (widgetData.is_featured == 1 || widgetData.is_featured === '1' || widgetData.is_featured === true)) || false;
                 const featuredEffect = (widgetData && widgetData.featured_effect) || '';
                 
-                formHTML += `
-                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" 
-                               id="widget-inline-is_featured-${widgetId}" 
-                               name="is_featured" 
-                               value="1"
-                               ${isFeatured ? 'checked' : ''}
-                               onchange="handleFeaturedToggle(${widgetId}, this.checked); saveWidgetSettingsInline(${widgetId})"
-                               class="widget-setting-input">
-                        <span style="font-weight: 600;">Featured Widget</span>
-                    </label>
-                    <small style="display: block; color: #666; margin-top: 0.25rem;">Highlight this widget with special effects</small>
-                    
-                    <div id="featured-effect-group-${widgetId}" style="display: ${isFeatured ? 'block' : 'none'}; margin-top: 1rem;">
-                        <label for="widget-inline-featured_effect-${widgetId}" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Featured Effect</label>
+                if (isFeatured) {
+                    formHTML += `
+                    <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-star" style="color: #ffd700; margin-right: 0.5rem;"></i>
+                            Featured Effect
+                        </label>
+                        <small style="display: block; color: #666; margin-bottom: 0.75rem;">This widget is featured. Choose an effect to make it stand out.</small>
                         <select id="widget-inline-featured_effect-${widgetId}" 
                                 name="featured_effect"
                                 onchange="saveWidgetSettingsInline(${widgetId})"
@@ -5220,8 +5570,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
                         </select>
                     </div>
-                </div>
-                `;
+                    `;
+                }
                 
                 // Add action buttons
                 formHTML += `
@@ -6802,17 +7152,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         window.removeWidgetThumbnail = function(widgetId) {
             const previewId = `widget-thumbnail-${widgetId}-preview`;
             const inputId = `widget-thumbnail-${widgetId}-input`;
-            const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+            // Try both modal and inline hidden inputs
+            const hiddenInputModal = document.getElementById('widget_config_thumbnail_image');
+            const hiddenInputInline = document.getElementById(`widget-inline-thumbnail_image-${widgetId}`);
+            const hiddenInput = hiddenInputInline || hiddenInputModal;
             
             // Reset preview
             const preview = document.getElementById(previewId);
             if (preview) {
-                preview.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>';
-                preview.style.width = '100px';
-                preview.style.height = '100px';
-                preview.style.background = '#f0f0f0';
-                preview.style.borderRadius = '8px';
-                preview.style.border = '2px solid #ddd';
+                preview.innerHTML = `
+                    <div style="text-align: center; color: #9ca3af; padding: 1rem;">
+                        <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <small style="font-size: 0.75rem;">No image</small>
+                    </div>
+                `;
             }
             
             // Clear file input
@@ -6821,9 +7174,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 input.value = '';
             }
             
-            // Clear hidden input
+            // Clear hidden input (both modal and inline)
             if (hiddenInput) {
                 hiddenInput.value = '';
+            }
+            
+            // Remove remove button if it exists (for inline context)
+            const removeBtn = document.querySelector(`button[onclick="removeWidgetThumbnail(${widgetId})"]`);
+            if (removeBtn) {
+                removeBtn.remove();
             }
             
             // Save widget thumbnail removal to config_data
@@ -7089,13 +7448,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Handle widget thumbnail upload
             if (isWidgetThumbnail && currentCropWidgetId) {
-                // Update hidden input
-                const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+                // Update hidden input - try both modal and inline formats
+                const hiddenInputModal = document.getElementById('widget_config_thumbnail_image');
+                const hiddenInputInline = document.getElementById(`widget-inline-thumbnail_image-${currentCropWidgetId}`);
+                const hiddenInput = hiddenInputInline || hiddenInputModal;
+                
                 if (hiddenInput) {
                     hiddenInput.value = imageUrl;
                 }
                 
-                // Update preview
+                // Update preview - try both modal and inline formats
                 const preview = document.getElementById(previewId);
                 if (preview) {
                     if (preview.tagName === 'IMG') {
@@ -7111,26 +7473,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         img.style.width = '100%';
                         img.style.height = '100%';
                         img.style.objectFit = 'cover';
-                        img.style.borderRadius = '8px';
-                        img.style.border = '2px solid #ddd';
+                        img.style.borderRadius = '6px';
                         preview.appendChild(img);
                     }
                 }
                 
                 // Add remove button if it doesn't exist
-                const removeBtnContainer = document.querySelector(`button[onclick="removeWidgetThumbnail(${currentCropWidgetId})"]`);
-                if (!removeBtnContainer && preview) {
-                    const buttonContainer = preview.closest('.form-group').querySelector('.btn-danger');
-                    if (!buttonContainer) {
-                        const uploadBtn = preview.closest('.form-group').querySelector('button[onclick*="uploadWidgetThumbnail"]');
-                        if (uploadBtn && uploadBtn.parentElement) {
-                            const removeBtn = document.createElement('button');
-                            removeBtn.type = 'button';
-                            removeBtn.className = 'btn btn-danger btn-small';
-                            removeBtn.onclick = () => removeWidgetThumbnail(currentCropWidgetId);
-                            removeBtn.textContent = 'Remove';
-                            uploadBtn.parentElement.appendChild(removeBtn);
-                        }
+                const removeBtnExisting = document.querySelector(`button[onclick="removeWidgetThumbnail(${currentCropWidgetId})"]`);
+                if (!removeBtnExisting) {
+                    const uploadBtn = document.querySelector(`button[onclick="uploadWidgetThumbnail(${currentCropWidgetId})"]`);
+                    if (uploadBtn && uploadBtn.parentElement) {
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'btn btn-danger btn-small';
+                        removeBtn.onclick = () => removeWidgetThumbnail(currentCropWidgetId);
+                        removeBtn.style.cssText = 'padding: 0.5rem 1rem; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;';
+                        removeBtn.textContent = 'Remove';
+                        uploadBtn.parentElement.appendChild(removeBtn);
                     }
                 }
                 

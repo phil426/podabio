@@ -23,8 +23,7 @@ class WidgetRegistry {
                 'config_fields' => [
                     'url' => ['type' => 'url', 'label' => 'URL', 'required' => true],
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Thumbnail Image URL', 'required' => false],
-                    'icon' => ['type' => 'text', 'label' => 'Icon (Font Awesome class)', 'required' => false, 'help' => 'e.g., fas fa-link'],
-                    'disclosure_text' => ['type' => 'textarea', 'label' => 'Disclosure Text (for affiliate links)', 'required' => false]
+                    'icon' => ['type' => 'select', 'label' => 'Icon', 'required' => false, 'options' => 'fontawesome_icons']
                 ]
             ],
             

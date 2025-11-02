@@ -166,11 +166,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
         }
         
-        /* Link widgets without thumbnails - full width button style */
-        .widget-link-simple {
-            padding: 0.875rem 1.25rem !important;
-            display: block;
+        /* All widgets use horizontal flexbox layout (Linktree style) */
+        .widget-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             width: 100%;
+            padding: 0.875rem 1rem;
+        }
+        
+        /* Widgets without thumbnails/icons - center text */
+        .widget-link-simple {
+            justify-content: center;
             text-align: center;
         }
         
@@ -184,12 +191,24 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-weight: 600;
         }
         
-        /* Link widgets with thumbnails - full width flex layout */
-        .widget-item:has(.widget-thumbnail) {
+        /* Thumbnail wrapper for consistent sizing */
+        .widget-thumbnail-wrapper {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Icon wrapper for consistent sizing */
+        .widget-icon-wrapper {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Other widgets (podcast, video, etc.) - full width */
@@ -282,11 +301,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .widget-thumbnail {
-            width: 60px;
-            height: 60px;
+            width: 100%;
+            height: 100%;
             border-radius: 8px;
             object-fit: cover;
             flex-shrink: 0;
+        }
+        
+        .widget-icon {
+            font-size: 1.5rem;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .widget-content {

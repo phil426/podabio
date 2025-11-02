@@ -88,16 +88,24 @@ class WidgetRenderer {
         // Use URL if available, otherwise use # as placeholder
         $clickUrl = $url ? "/click.php?link_id={$widgetId}&page_id={$pageId}" : "#";
         
-        // Determine if this is a simple link (no thumbnail) vs full-width link
-        $isSimpleLink = !$thumbnail;
-        $widgetClass = 'widget-item' . ($isSimpleLink ? ' widget-link-simple' : '');
+        // Use horizontal card layout for all widgets (Linktree style)
+        // For widgets with thumbnails, show thumbnail on left; for others, show icon or empty space
+        $widgetClass = 'widget-item';
+        if (!$thumbnail && !$icon) {
+            $widgetClass .= ' widget-link-simple';
+        }
         
         $html = '<a href="' . htmlspecialchars($clickUrl) . '" class="' . $widgetClass . '" target="_blank" rel="noopener noreferrer">';
         
+        // Always show thumbnail/icon section on left (for consistent layout)
         if ($thumbnail) {
+            $html .= '<div class="widget-thumbnail-wrapper">';
             $html .= '<img src="' . htmlspecialchars($thumbnail) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
+            $html .= '</div>';
         } elseif ($icon) {
+            $html .= '<div class="widget-icon-wrapper">';
             $html .= '<div class="widget-icon"><i class="' . htmlspecialchars($icon) . '"></i></div>';
+            $html .= '</div>';
         }
         
         $html .= '<div class="widget-content">';
