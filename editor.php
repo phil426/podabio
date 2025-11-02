@@ -7699,8 +7699,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 formData.append('widget_id', currentCropWidgetId);
                 formData.append('csrf_token', csrfToken);
                 
-                // Get current config_data
-                fetch('/api/widgets.php?action=get&widget_id=' + currentCropWidgetId)
+                // Get current config_data (must use POST, not GET)
+                const getFormData = new FormData();
+                getFormData.append('action', 'get');
+                getFormData.append('widget_id', currentCropWidgetId);
+                getFormData.append('csrf_token', csrfToken);
+                
+                fetch('/api/widgets.php', {
+                    method: 'POST',
+                    body: getFormData
+                })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
