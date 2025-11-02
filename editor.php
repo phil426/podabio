@@ -283,6 +283,115 @@ $csrfToken = generateCSRFToken();
             list-style: none;
             padding: 0;
         }
+        
+        /* Widget Accordion Styles */
+        .widget-accordion-item {
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        
+        .widget-accordion-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .widget-accordion-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+        
+        .widget-accordion-item.drag-over {
+            border-top: 3px solid #0066ff;
+        }
+        
+        .widget-accordion-header {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .widget-accordion-header:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
+        }
+        
+        .widget-accordion-header .drag-handle {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: move;
+            margin-right: 0.25rem;
+        }
+        
+        .widget-accordion-header .widget-type-icon {
+            font-size: 1.1rem;
+            color: #0066ff;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .widget-accordion-header .widget-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .widget-accordion-header .widget-title {
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .widget-accordion-header .widget-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: normal;
+        }
+        
+        .widget-accordion-header .widget-actions-inline {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+        
+        .widget-accordion-header .accordion-icon {
+            margin-left: 0.5rem;
+            font-size: 0.875rem;
+            transition: transform 0.3s;
+            color: #6b7280;
+        }
+        
+        .widget-accordion-item.expanded .accordion-icon {
+            transform: rotate(180deg);
+        }
+        
+        .widget-accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .widget-accordion-item.expanded .widget-accordion-content {
+            padding: 1.5rem 1.25rem;
+            max-height: 5000px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        /* Legacy widget-item styles for compatibility */
         .widget-item {
             background: #f9f9f9;
             border: 1px solid #ddd;
@@ -1623,8 +1732,26 @@ $csrfToken = generateCSRFToken();
                 <button class="btn btn-primary" onclick="showAddWidgetForm()">Add Widget</button>
             </div>
             
-            <ul id="widgets-list" class="widgets-list">
+            <div id="widgets-list" class="widgets-list">
                 <?php 
+                // Helper function to get widget icon
+                function getWidgetTypeIcon($widgetType) {
+                    $icons = [
+                        'podcast' => 'fa-podcast',
+                        'rss_feed' => 'fa-rss',
+                        'youtube' => 'fa-youtube',
+                        'video' => 'fa-video',
+                        'link' => 'fa-link',
+                        'custom_link' => 'fa-link',
+                        'email' => 'fa-envelope',
+                        'calendar' => 'fa-calendar',
+                        'image' => 'fa-image',
+                        'text' => 'fa-text',
+                        'social' => 'fa-share-alt'
+                    ];
+                    return $icons[$widgetType] ?? 'fa-puzzle-piece';
+                }
+                
                 // Get widgets (try new method first, fallback to links for compatibility)
                 $widgets = [];
                 if ($page && method_exists($pageClass, 'getWidgets')) {
@@ -1648,7 +1775,9 @@ $csrfToken = generateCSRFToken();
                 }
                 ?>
                 <?php if (empty($widgets)): ?>
-                    <li>No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.</li>
+                    <div style="padding: 2rem; text-align: center; color: #666;">
+                        No widgets yet. Click "Add Widget" to browse the widget gallery and add content to your page.
+                    </div>
                 <?php else: ?>
                     <?php foreach ($widgets as $widget): 
                         $configData = is_string($widget['config_data'] ?? '') 
@@ -1656,25 +1785,36 @@ $csrfToken = generateCSRFToken();
                             : ($widget['config_data'] ?? []);
                         $widgetType = $widget['widget_type'] ?? 'custom_link';
                         $displayInfo = $configData['url'] ?? $widgetType;
+                        $widgetIcon = getWidgetTypeIcon($widgetType);
                     ?>
-                        <li class="widget-item" data-widget-id="<?php echo $widget['id']; ?>">
-                            <div class="widget-info">
-                                <div class="widget-title">
-                                    <?php echo h($widget['title']); ?>
-                                    <span style="font-size: 0.75rem; color: #999; font-weight: normal; margin-left: 0.5rem;">
-                                        (<?php echo h($widgetType); ?>)
-                                    </span>
+                        <div class="widget-accordion-item" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
+                            <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
+                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
+                                <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
+                                <div class="widget-info">
+                                    <div class="widget-title"><?php echo h($widget['title']); ?></div>
+                                    <div class="widget-subtitle"><?php echo h($widgetType); ?> • <?php echo h(strlen($displayInfo) > 60 ? substr($displayInfo, 0, 60) . '...' : $displayInfo); ?></div>
                                 </div>
-                                <div class="widget-url"><?php echo h($displayInfo); ?></div>
+                                <div class="widget-actions-inline">
+                                    <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editWidget(<?php echo $widget['id']; ?>, this);" title="Edit Widget">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteWidget(<?php echo $widget['id']; ?>);" title="Delete Widget">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </button>
+                            <div class="widget-accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
+                                <div style="text-align: center; padding: 2rem; color: #666;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                                    <p>Loading widget settings...</p>
+                                </div>
                             </div>
-                            <div class="widget-actions">
-                                <button class="btn btn-secondary btn-small" onclick="editWidget(<?php echo $widget['id']; ?>, this)">Edit</button>
-                                <button class="btn btn-danger btn-small" onclick="deleteWidget(<?php echo $widget['id']; ?>)">Delete</button>
-                            </div>
-                        </li>
+                        </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
-            </ul>
+            </div>
         </div>
         
         <!-- Social Icons Tab -->
@@ -2768,6 +2908,108 @@ $csrfToken = generateCSRFToken();
                 localStorage.setItem(`accordion_${sectionId}`, 'expanded');
             }
         };
+        
+        // Widget Accordion Functions
+        window.toggleWidgetAccordion = function(widgetId) {
+            const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
+            if (!accordionItem) return;
+            
+            const contentDiv = document.getElementById(`widget-content-${widgetId}`);
+            if (!contentDiv) return;
+            
+            const isExpanded = accordionItem.classList.contains('expanded');
+            
+            // Toggle the expanded state
+            if (isExpanded) {
+                accordionItem.classList.remove('expanded');
+                localStorage.setItem(`widget_accordion_${widgetId}`, 'collapsed');
+            } else {
+                accordionItem.classList.add('expanded');
+                localStorage.setItem(`widget_accordion_${widgetId}`, 'expanded');
+                
+                // Load widget settings if not already loaded
+                if (contentDiv.querySelector('.loading-placeholder') || contentDiv.innerHTML.includes('Loading widget settings')) {
+                    loadWidgetSettings(widgetId, contentDiv);
+                }
+            }
+        };
+        
+        // Load widget settings into accordion content
+        function loadWidgetSettings(widgetId, contentDiv) {
+            const formData = new FormData();
+            formData.append('action', 'get');
+            formData.append('widget_id', widgetId);
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.widget) {
+                    const widget = data.widget;
+                    const configData = typeof widget.config_data === 'string' 
+                        ? JSON.parse(widget.config_data) 
+                        : (widget.config_data || {});
+                    
+                    // Build settings HTML
+                    let settingsHTML = '<div class="widget-settings-form">';
+                    settingsHTML += '<h4 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; color: #111827;">Widget Settings</h4>';
+                    
+                    // Display widget type and title
+                    settingsHTML += `<div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb;">`;
+                    settingsHTML += `<div style="font-weight: 600; margin-bottom: 0.5rem;">Type: <span style="color: #6b7280; font-weight: normal;">${widget.widget_type || 'Unknown'}</span></div>`;
+                    settingsHTML += `</div>`;
+                    
+                    // Display all config data
+                    if (Object.keys(configData).length > 0) {
+                        settingsHTML += '<div style="margin-bottom: 1rem;">';
+                        settingsHTML += '<label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">Configuration:</label>';
+                        settingsHTML += '<div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem;">';
+                        
+                        for (const [key, value] of Object.entries(configData)) {
+                            if (value !== null && value !== '') {
+                                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                const displayValue = typeof value === 'string' && value.length > 100 
+                                    ? value.substring(0, 100) + '...' 
+                                    : value;
+                                settingsHTML += `<div style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f3f4f6;">`;
+                                settingsHTML += `<div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">${displayKey}:</div>`;
+                                settingsHTML += `<div style="font-weight: 500; color: #111827; word-break: break-word;">${h(displayValue)}</div>`;
+                                settingsHTML += `</div>`;
+                            }
+                        }
+                        
+                        settingsHTML += '</div></div>';
+                    }
+                    
+                    // Action buttons
+                    settingsHTML += '<div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">';
+                    settingsHTML += `<button class="btn btn-primary" onclick="editWidget(${widgetId}, this)" style="flex: 1; padding: 0.75rem;">Edit Settings</button>`;
+                    settingsHTML += `<button class="btn btn-danger" onclick="if(confirm('Are you sure you want to delete this widget?')) { deleteWidget(${widgetId}); }" style="padding: 0.75rem 1.5rem;">Delete</button>`;
+                    settingsHTML += '</div>';
+                    
+                    settingsHTML += '</div>';
+                    
+                    contentDiv.innerHTML = settingsHTML;
+                } else {
+                    contentDiv.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Failed to load widget settings</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading widget settings:', error);
+                contentDiv.innerHTML = '<div style="padding: 1rem; color: #dc3545; text-align: center;">Error loading widget settings</div>';
+            });
+        }
+        
+        // Helper function for escaping HTML (inline version)
+        function h(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
         
         // Initialize accordion states from localStorage
         function initializeAccordions() {
