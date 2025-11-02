@@ -3812,36 +3812,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 unfeatureOtherWidgets(widgetId);
             }
             
-            // Open dropdown to show effect selector if featuring
-            if (newFeaturedState) {
-                const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-                const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
-                
-                // Close other widgets first
-                document.querySelectorAll('.widget-accordion-content.show').forEach(openContent => {
-                    if (openContent !== contentDiv) {
-                        openContent.classList.remove('show');
-                        const openWidgetId = openContent.id.replace('widget-content-', '');
-                        const openItem = document.getElementById(`widget-accordion-${openWidgetId}`);
-                        if (openItem) {
-                            openItem.classList.remove('active');
-                        }
-                    }
-                });
-                
-                // Open this widget's dropdown
-                if (contentDiv && accordionItem) {
-                    contentDiv.classList.add('show');
-                    accordionItem.classList.add('active');
-                    
-                    // Ensure settings are loaded
-                    if (contentDiv.querySelector('.fa-spinner')) {
-                        loadWidgetSettingsInline(widgetId);
-                    }
-                }
-            }
-            
-            // Save the change
+            // Save the change (don't expand dropdown)
             saveFeaturedWidgetState(widgetId, newFeaturedState);
         };
         
@@ -5549,13 +5520,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         </div>
                                     </div>
                                     <div style="flex: 1;">
-                                        <input type="file" id="${thumbnailInputId}" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                                        <input type="file" id="${thumbnailInputId}" accept="image/jpeg,image/png,image/gif,image/webp" onchange="uploadWidgetThumbnail(${widgetId})" style="margin-bottom: 10px; width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
                                         <input type="hidden" id="widget-inline-thumbnail_image-${widgetId}" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
                                         <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                                            <button type="button" class="btn btn-primary btn-small" onclick="uploadWidgetThumbnail(${widgetId})" style="padding: 0.5rem 1rem; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;">Upload & Crop</button>
                                             ${thumbnailValue ? `<button type="button" class="btn btn-danger btn-small" onclick="removeWidgetThumbnail(${widgetId})" style="padding: 0.5rem 1rem; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 600;">Remove</button>` : ''}
                                         </div>
-                                        <small style="display: block; color: #666;">Select an image to upload and crop. Recommended: 400x400px, square image. Max 5MB</small>
+                                        <small style="display: block; color: #666;">Select an image to automatically upload and crop. Recommended: 400x400px, square image. Max 5MB</small>
                                     </div>
                                 </div>
                             </div>
@@ -5836,6 +5806,46 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
             
             formData.append('config_data', JSON.stringify(config));
+            
+            // Enforce thumbnail/icon exclusivity (thumbnail and icon are mutually exclusive)
+            const thumbnailInput = form.querySelector(`#widget-inline-thumbnail_image-${widgetId}`);
+            const iconInput = form.querySelector(`#widget-inline-icon-${widgetId}`);
+            
+            if (thumbnailInput && thumbnailInput.value) {
+                // If thumbnail has value, ensure icon is cleared
+                if (iconInput) {
+                    iconInput.value = '';
+                    // Update icon button display
+                    const iconButton = document.getElementById(`widget-inline-icon-${widgetId}-button`);
+                    if (iconButton) {
+                        iconButton.innerHTML = `
+                            <span style="width: 20px;"></span>
+                            <span style="flex: 1;">No Icon</span>
+                            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: #9ca3af;"></i>
+                        `;
+                    }
+                }
+            } else if (iconInput && iconInput.value) {
+                // If icon has value, ensure thumbnail is cleared
+                if (thumbnailInput) {
+                    thumbnailInput.value = '';
+                    // Reset thumbnail preview
+                    const thumbnailPreview = document.getElementById(`widget-thumbnail-${widgetId}-preview`);
+                    if (thumbnailPreview) {
+                        thumbnailPreview.innerHTML = `
+                            <div style="text-align: center; color: #9ca3af; padding: 1rem;">
+                                <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                                <small style="font-size: 0.75rem;">No image</small>
+                            </div>
+                        `;
+                    }
+                    // Clear file input
+                    const thumbnailFileInput = document.getElementById(`widget-thumbnail-${widgetId}-input`);
+                    if (thumbnailFileInput) {
+                        thumbnailFileInput.value = '';
+                    }
+                }
+            }
             
             // Handle featured widget fields separately (not in config_data)
             const featuredCheckbox = form.querySelector(`#widget-inline-is_featured-${widgetId}`);
@@ -7666,6 +7676,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     }
                 }
                 
+                // Clear icon field when thumbnail is uploaded (thumbnail and icon are mutually exclusive)
+                const iconSelectButton = document.getElementById(`widget-inline-icon-${currentCropWidgetId}-button`);
+                const iconHiddenInput = document.getElementById(`widget-inline-icon-${currentCropWidgetId}`);
+                if (iconSelectButton) {
+                    // Reset button to "None" state
+                    const iconSpan = iconSelectButton.querySelector('span');
+                    const iconI = iconSelectButton.querySelector('i');
+                    if (iconSpan) iconSpan.textContent = 'None';
+                    if (iconI && !iconI.classList.contains('fa-chevron-down')) {
+                        iconI.className = 'fas fa-chevron-down';
+                        iconI.style.color = '#9ca3af';
+                    }
+                }
+                if (iconHiddenInput) {
+                    iconHiddenInput.value = '';
+                }
+                
                 // Save widget thumbnail to config_data
                 const formData = new FormData();
                 formData.append('action', 'update');
@@ -8778,6 +8805,36 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 const hiddenInput = document.getElementById(fieldId);
                 const button = document.getElementById(fieldId + '-button');
                 const dropdown = document.getElementById(fieldId + '-dropdown');
+                
+                // Extract widget ID from fieldId (format: widget-inline-icon-{widgetId})
+                const widgetIdMatch = fieldId.match(/widget-inline-icon-(\d+)/);
+                if (widgetIdMatch && widgetIdMatch[1]) {
+                    const widgetId = widgetIdMatch[1];
+                    // Clear thumbnail when icon is selected (thumbnail and icon are mutually exclusive)
+                    const thumbnailHiddenInput = document.getElementById(`widget-inline-thumbnail_image-${widgetId}`);
+                    const thumbnailPreview = document.getElementById(`widget-thumbnail-${widgetId}-preview`);
+                    const thumbnailFileInput = document.getElementById(`widget-thumbnail-${widgetId}-input`);
+                    
+                    if (thumbnailHiddenInput) {
+                        thumbnailHiddenInput.value = '';
+                    }
+                    if (thumbnailPreview) {
+                        thumbnailPreview.innerHTML = `
+                            <div style="text-align: center; color: #9ca3af; padding: 1rem;">
+                                <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                                <small style="font-size: 0.75rem;">No image</small>
+                            </div>
+                        `;
+                    }
+                    if (thumbnailFileInput) {
+                        thumbnailFileInput.value = '';
+                    }
+                    // Remove remove button if it exists
+                    const removeBtn = document.querySelector(`button[onclick="removeWidgetThumbnail(${widgetId})"]`);
+                    if (removeBtn) {
+                        removeBtn.remove();
+                    }
+                }
                 
                 if (hiddenInput) {
                     hiddenInput.value = iconValue;
