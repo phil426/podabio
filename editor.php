@@ -1717,9 +1717,7 @@ $csrfToken = generateCSRFToken();
         
         /* Blog Section */
         .blog-section {
-            margin-top: 4rem;
-            padding-top: 3rem;
-            border-top: 2px solid rgba(229, 231, 235, 0.5);
+            padding-top: 2rem;
         }
         
         .blog-header {
@@ -1783,9 +1781,7 @@ $csrfToken = generateCSRFToken();
         
         /* Support Section */
         .support-section {
-            margin-top: 4rem;
-            padding-top: 3rem;
-            border-top: 2px solid rgba(229, 231, 235, 0.5);
+            padding-top: 2rem;
         }
         
         .support-header {
@@ -1919,6 +1915,14 @@ $csrfToken = generateCSRFToken();
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('email', this)">
                         <i class="fas fa-envelope"></i>
                         <span>Email Subscription</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('blog', this)">
+                        <i class="fas fa-blog"></i>
+                        <span>Blog</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('support', this)">
+                        <i class="fas fa-life-ring"></i>
+                        <span>Support</span>
                     </a>
                 <?php endif; ?>
             </nav>
@@ -3040,65 +3044,69 @@ $csrfToken = generateCSRFToken();
                 <button type="submit" class="btn btn-primary">Save Email Settings</button>
             </form>
         </div>
-                <?php endif; // End if ($page) ?>
         
-        <!-- Blog Section -->
-        <div class="blog-section">
-            <div class="blog-header">
-                <h2><i class="fas fa-blog"></i> Blog</h2>
-                <p>Stay updated with the latest news, features, and updates</p>
-            </div>
-            
-            <div class="blog-placeholder">
-                <div class="blog-placeholder-icon">
-                    <i class="fas fa-newspaper"></i>
+        <!-- Blog Tab -->
+        <div id="tab-blog" class="tab-content">
+            <div class="blog-section">
+                <div class="blog-header">
+                    <h2><i class="fas fa-blog"></i> Blog</h2>
+                    <p>Stay updated with the latest news, features, and updates</p>
                 </div>
-                <h3>Coming Soon</h3>
-                <p>Our blog section is under development. Check back soon for articles, tutorials, and updates!</p>
+                
+                <div class="blog-placeholder">
+                    <div class="blog-placeholder-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3>Coming Soon</h3>
+                    <p>Our blog section is under development. Check back soon for articles, tutorials, and updates!</p>
+                </div>
             </div>
         </div>
         
-        <!-- Support Section -->
-        <div class="support-section">
-            <div class="support-header">
-                <h2><i class="fas fa-life-ring"></i> Support & Help</h2>
-                <p>Get assistance, view documentation, or contact our support team</p>
-            </div>
-            
-            <div class="support-grid">
-                <a href="/docs" class="support-card" target="_blank">
-                    <div class="support-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <h3>Documentation</h3>
-                    <p>Browse guides and tutorials</p>
-                </a>
+        <!-- Support Tab -->
+        <div id="tab-support" class="tab-content">
+            <div class="support-section">
+                <div class="support-header">
+                    <h2><i class="fas fa-life-ring"></i> Support & Help</h2>
+                    <p>Get assistance, view documentation, or contact our support team</p>
+                </div>
                 
-                <a href="/faq" class="support-card" target="_blank">
-                    <div class="support-icon">
-                        <i class="fas fa-question-circle"></i>
-                    </div>
-                    <h3>FAQ</h3>
-                    <p>Find answers to common questions</p>
-                </a>
-                
-                <a href="mailto:support@<?php echo parse_url(APP_URL, PHP_URL_HOST); ?>" class="support-card">
-                    <div class="support-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <h3>Contact Support</h3>
-                    <p>Email us for personalized help</p>
-                </a>
-                
-                <a href="https://github.com/phil426/podn-bio" class="support-card" target="_blank" rel="noopener noreferrer">
-                    <div class="support-icon">
-                        <i class="fab fa-github"></i>
-                    </div>
-                    <h3>GitHub</h3>
-                    <p>View source code and contribute</p>
-                </a>
+                <div class="support-grid">
+                    <a href="/docs" class="support-card" target="_blank">
+                        <div class="support-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>Documentation</h3>
+                        <p>Browse guides and tutorials</p>
+                    </a>
+                    
+                    <a href="/faq" class="support-card" target="_blank">
+                        <div class="support-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3>FAQ</h3>
+                        <p>Find answers to common questions</p>
+                    </a>
+                    
+                    <a href="mailto:support@<?php echo parse_url(APP_URL, PHP_URL_HOST); ?>" class="support-card">
+                        <div class="support-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Contact Support</h3>
+                        <p>Email us for personalized help</p>
+                    </a>
+                    
+                    <a href="https://github.com/phil426/podn-bio" class="support-card" target="_blank" rel="noopener noreferrer">
+                        <div class="support-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <h3>GitHub</h3>
+                        <p>View source code and contribute</p>
+                    </a>
+                </div>
             </div>
         </div>
+                <?php endif; // End if ($page) ?>
             </div>
         </main>
     </div>
