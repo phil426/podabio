@@ -2161,6 +2161,11 @@ $csrfToken = generateCSRFToken();
                             $accentColor = $themeColors['accent'] ?? '#0066ff';
                             $isSelected = ($page['theme_id'] == $theme['id']);
                             
+                            // Get theme's actual background, fallback to gradient from colors
+                            $themeBackground = !empty($theme['page_background']) 
+                                ? $theme['page_background'] 
+                                : "linear-gradient(135deg, {$primaryColor} 0%, {$accentColor} 100%)";
+                            
                             // Get theme fonts for preview
                             $themeFonts = parseThemeJson($theme['fonts'] ?? '{}', []);
                             $themePagePrimaryFont = $theme['page_primary_font'] ?? $themeFonts['heading'] ?? 'Inter';
@@ -2169,7 +2174,7 @@ $csrfToken = generateCSRFToken();
                             $themeWidgetSecondaryFont = $theme['widget_secondary_font'] ?? $themePageSecondaryFont;
                         ?>
                         <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>">
-                            <div class="theme-card-swatch" style="background: linear-gradient(135deg, <?php echo h($primaryColor); ?> 0%, <?php echo h($accentColor); ?> 100%);" onclick="selectTheme(<?php echo $theme['id']; ?>)">
+                            <div class="theme-card-swatch" style="background: <?php echo h($themeBackground); ?>;" onclick="selectTheme(<?php echo $theme['id']; ?>)">
                             </div>
                             <div class="theme-card-body" onclick="selectTheme(<?php echo $theme['id']; ?>)">
                                 <div class="theme-card-name"><?php echo h($theme['name']); ?></div>
