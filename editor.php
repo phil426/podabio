@@ -4115,8 +4115,16 @@ $csrfToken = generateCSRFToken();
         };
         
         function renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv) {
-            // Generate form HTML
-            let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
+            console.log('renderWidgetSettings called with:', { widget, configData, widgetDef, widgetId, contentDiv });
+            
+            if (!contentDiv) {
+                console.error('contentDiv is null or undefined!');
+                return;
+            }
+            
+            try {
+                // Generate form HTML
+                let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
             
             // Add title field
             formHTML += `
@@ -4201,8 +4209,14 @@ $csrfToken = generateCSRFToken();
                 </div>
             `;
             
-            formHTML += '</form>';
-            contentDiv.innerHTML = formHTML;
+                formHTML += '</form>';
+                console.log('Setting contentDiv.innerHTML, length:', formHTML.length);
+                contentDiv.innerHTML = formHTML;
+                console.log('Content set successfully, contentDiv:', contentDiv);
+            } catch (error) {
+                console.error('Error in renderWidgetSettings:', error);
+                contentDiv.innerHTML = '<p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p>';
+            }
         };
         
         // Debounce helper for auto-save
