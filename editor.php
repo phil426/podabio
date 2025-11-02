@@ -4370,6 +4370,37 @@ $csrfToken = generateCSRFToken();
                             if (widget.widget_type === 'podcast_player_custom' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
                                 return;
                             }
+                            
+                            // Special handling for thumbnail_image on custom_link widgets - show upload interface
+                            if (fieldName === 'thumbnail_image' && widget.widget_type === 'custom_link') {
+                                const thumbnailValue = configData['thumbnail_image'] || '';
+                                const thumbnailId = `widget-thumbnail-${widgetId}`;
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label>Thumbnail Image</label>
+                                        <div style="display: flex; gap: 15px; align-items: flex-start;">
+                                            <div style="flex-shrink: 0;">
+                                                ${thumbnailValue ? `
+                                                    <img id="${thumbnailId}-preview" src="${thumbnailValue.replace(/"/g, '&quot;')}" alt="Thumbnail" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                                                ` : `
+                                                    <div id="${thumbnailId}-preview" style="width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>
+                                                `}
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <input type="file" id="${thumbnailId}-input" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%;">
+                                                <input type="hidden" id="widget_config_thumbnail_image" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
+                                                <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                                    <button type="button" class="btn btn-primary btn-small" onclick="uploadWidgetThumbnail(${widgetId})">Upload & Crop</button>
+                                                    ${thumbnailValue ? `<button type="button" class="btn btn-danger btn-small" onclick="removeWidgetThumbnail(${widgetId})">Remove</button>` : ''}
+                                                </div>
+                                                <small style="display: block; color: #666;">Select an image to upload and crop. Recommended: 400x400px, square image. Max 5MB</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                return;
+                            }
+                            
                             const value = configData[fieldName] || '';
                             const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                             const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
@@ -6223,6 +6254,115 @@ $csrfToken = generateCSRFToken();
         let currentCropContext = null;
         let currentCropInputId = null;
         let currentCropPreviewId = null;
+        let currentCropWidgetId = null;
+        
+        // Widget thumbnail upload - opens crop modal
+        window.uploadWidgetThumbnail = function(widgetId) {
+            const inputId = `widget-thumbnail-${widgetId}-input`;
+            const previewId = `widget-thumbnail-${widgetId}-preview`;
+            const input = document.getElementById(inputId);
+            
+            if (!input) {
+                showToast('File input not found', 'error');
+                return;
+            }
+            
+            const file = input.files[0];
+            
+            if (!file) {
+                showToast('Please select an image file', 'error');
+                return;
+            }
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size must be less than 5MB', 'error');
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showToast('Please select a valid image file (JPEG, PNG, GIF, or WebP)', 'error');
+                return;
+            }
+            
+            // Set context for cropping
+            currentCropContext = 'widget-thumbnail';
+            currentCropInputId = inputId;
+            currentCropPreviewId = previewId;
+            currentCropWidgetId = widgetId;
+            
+            // Open crop modal with image
+            openCropModal(file);
+        };
+        
+        // Remove widget thumbnail
+        window.removeWidgetThumbnail = function(widgetId) {
+            const previewId = `widget-thumbnail-${widgetId}-preview`;
+            const inputId = `widget-thumbnail-${widgetId}-input`;
+            const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+            
+            // Reset preview
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>';
+                preview.style.width = '100px';
+                preview.style.height = '100px';
+                preview.style.background = '#f0f0f0';
+                preview.style.borderRadius = '8px';
+                preview.style.border = '2px solid #ddd';
+            }
+            
+            // Clear file input
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+            }
+            
+            // Clear hidden input
+            if (hiddenInput) {
+                hiddenInput.value = '';
+            }
+            
+            // Save widget thumbnail removal to config_data
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('csrf_token', csrfToken);
+            
+            // Get current config_data and remove thumbnail
+            fetch('/api/widgets.php?action=get&widget_id=' + widgetId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.widget) {
+                        const currentConfig = typeof data.widget.config_data === 'string' 
+                            ? JSON.parse(data.widget.config_data) 
+                            : (data.widget.config_data || {});
+                        
+                        // Remove thumbnail from config
+                        delete currentConfig.thumbnail_image;
+                        
+                        // Save updated config
+                        formData.append('config_data', JSON.stringify(currentConfig));
+                        
+                        return fetch('/api/widgets.php', {
+                            method: 'POST',
+                            body: formData
+                        }).then(r => r.json());
+                    }
+                })
+                .then(result => {
+                    if (result && result.success) {
+                        showToast('Thumbnail removed', 'success');
+                    } else {
+                        console.warn('Failed to remove widget thumbnail:', result);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing widget thumbnail:', error);
+                });
+        };
         
         // Image upload functionality - opens crop modal
         function uploadImage(type, context = 'appearance') {
@@ -6380,6 +6520,11 @@ $csrfToken = generateCSRFToken();
             // Show loading state
             showToast('Uploading image...', 'info');
             
+            // Determine upload type and filename based on context
+            const isWidgetThumbnail = currentCropContext === 'widget-thumbnail';
+            const uploadType = isWidgetThumbnail ? 'thumbnail' : 'profile';
+            const filename = isWidgetThumbnail ? 'widget-thumbnail.jpg' : 'profile.jpg';
+            
             // Get cropped image as blob
             croppieInstance.result('blob', {
                 type: 'image/jpeg',
@@ -6388,8 +6533,8 @@ $csrfToken = generateCSRFToken();
             }).then(function(blob) {
                 // Upload the cropped blob
                 const formData = new FormData();
-                formData.append('image', blob, 'profile.jpg');
-                formData.append('type', 'profile');
+                formData.append('image', blob, filename);
+                formData.append('type', uploadType);
                 formData.append('csrf_token', csrfToken);
                 
                 fetch('/api/upload.php', {
@@ -6415,7 +6560,7 @@ $csrfToken = generateCSRFToken();
                 })
                 .then(data => {
                     if (data.success) {
-                        handleImageUploadSuccess(data, currentCropPreviewId);
+                        handleImageUploadSuccess(data, currentCropPreviewId, isWidgetThumbnail);
                         closeCropModal();
                         showToast('Image uploaded successfully!', 'success');
                     } else {
@@ -6433,7 +6578,7 @@ $csrfToken = generateCSRFToken();
         }
         
         // Handle successful image upload
-        function handleImageUploadSuccess(data, previewId) {
+        function handleImageUploadSuccess(data, previewId, isWidgetThumbnail = false) {
             const imageUrl = data.url || data.path;
             
             if (!imageUrl) {
@@ -6441,7 +6586,97 @@ $csrfToken = generateCSRFToken();
                 return;
             }
             
-            // Update preview
+            // Handle widget thumbnail upload
+            if (isWidgetThumbnail && currentCropWidgetId) {
+                // Update hidden input
+                const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+                if (hiddenInput) {
+                    hiddenInput.value = imageUrl;
+                }
+                
+                // Update preview
+                const preview = document.getElementById(previewId);
+                if (preview) {
+                    if (preview.tagName === 'IMG') {
+                        preview.src = imageUrl + '?t=' + Date.now();
+                    } else {
+                        // Replace placeholder div with image
+                        preview.innerHTML = '';
+                        preview.style.background = 'none';
+                        preview.style.border = 'none';
+                        const img = document.createElement('img');
+                        img.src = imageUrl + '?t=' + Date.now();
+                        img.alt = 'Thumbnail';
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '2px solid #ddd';
+                        preview.appendChild(img);
+                    }
+                }
+                
+                // Add remove button if it doesn't exist
+                const removeBtnContainer = document.querySelector(`button[onclick="removeWidgetThumbnail(${currentCropWidgetId})"]`);
+                if (!removeBtnContainer && preview) {
+                    const buttonContainer = preview.closest('.form-group').querySelector('.btn-danger');
+                    if (!buttonContainer) {
+                        const uploadBtn = preview.closest('.form-group').querySelector('button[onclick*="uploadWidgetThumbnail"]');
+                        if (uploadBtn && uploadBtn.parentElement) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.className = 'btn btn-danger btn-small';
+                            removeBtn.onclick = () => removeWidgetThumbnail(currentCropWidgetId);
+                            removeBtn.textContent = 'Remove';
+                            uploadBtn.parentElement.appendChild(removeBtn);
+                        }
+                    }
+                }
+                
+                // Save widget thumbnail to config_data
+                const formData = new FormData();
+                formData.append('action', 'update');
+                formData.append('widget_id', currentCropWidgetId);
+                formData.append('csrf_token', csrfToken);
+                
+                // Get current config_data
+                fetch('/api/widgets.php?action=get&widget_id=' + currentCropWidgetId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.widget) {
+                            const currentConfig = typeof data.widget.config_data === 'string' 
+                                ? JSON.parse(data.widget.config_data) 
+                                : (data.widget.config_data || {});
+                            
+                            // Update thumbnail in config
+                            currentConfig.thumbnail_image = imageUrl;
+                            
+                            // Save updated config
+                            formData.append('config_data', JSON.stringify(currentConfig));
+                            
+                            return fetch('/api/widgets.php', {
+                                method: 'POST',
+                                body: formData
+                            }).then(r => r.json());
+                        }
+                    })
+                    .then(result => {
+                        if (result && result.success) {
+                            console.log('Widget thumbnail saved successfully');
+                        } else {
+                            console.warn('Failed to save widget thumbnail config:', result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving widget thumbnail:', error);
+                    });
+                
+                // Clear widget context
+                currentCropWidgetId = null;
+                return;
+            }
+            
+            // Update preview (for profile images)
             const preview = document.getElementById(previewId);
             if (preview) {
                 if (preview.tagName === 'IMG') {
