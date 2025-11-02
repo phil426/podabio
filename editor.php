@@ -4546,10 +4546,21 @@ $csrfToken = generateCSRFToken();
                     const formData = new FormData();
                     const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
                     const themeId = selectedRadio ? selectedRadio.value : '';
-                    const layout = document.getElementById('layout_option').value;
-                    const primaryColor = document.getElementById('custom_primary_color').value;
-                    const secondaryColor = document.getElementById('custom_secondary_color').value;
-                    const accentColor = document.getElementById('custom_accent_color').value;
+                    
+                    const layoutEl = document.getElementById('layout_option');
+                    const primaryColorEl = document.getElementById('custom_primary_color');
+                    const secondaryColorEl = document.getElementById('custom_secondary_color');
+                    const accentColorEl = document.getElementById('custom_accent_color');
+                    
+                    if (!layoutEl || !primaryColorEl || !secondaryColorEl || !accentColorEl) {
+                        console.error('Required appearance form elements not found');
+                        return null;
+                    }
+                    
+                    const layout = layoutEl.value;
+                    const primaryColor = primaryColorEl.value;
+                    const secondaryColor = secondaryColorEl.value;
+                    const accentColor = accentColorEl.value;
                     
                     // Legacy fonts (for backward compatibility)
                     const headingFont = document.getElementById('custom_heading_font');
@@ -4591,14 +4602,22 @@ $csrfToken = generateCSRFToken();
                     if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
                     
                     // Widget styles
+                    const borderWidthEl = document.getElementById('widget_border_width');
+                    const borderEffectEl = document.getElementById('widget_border_effect');
+                    const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
+                    const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
+                    const glowColorEl = document.getElementById('widget_glow_color_hidden');
+                    const spacingEl = document.getElementById('widget_spacing');
+                    const shapeEl = document.getElementById('widget_shape');
+                    
                     const widgetStyles = {
-                        border_width: document.getElementById('widget_border_width').value,
-                        border_effect: document.getElementById('widget_border_effect').value,
-                        border_shadow_intensity: document.getElementById('widget_border_shadow_intensity').value,
-                        border_glow_intensity: document.getElementById('widget_border_glow_intensity').value,
-                        glow_color: document.getElementById('widget_glow_color_hidden').value,
-                        spacing: document.getElementById('widget_spacing').value,
-                        shape: document.getElementById('widget_shape').value
+                        border_width: borderWidthEl ? borderWidthEl.value : 'medium',
+                        border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
+                        border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
+                        border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
+                        glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
+                        spacing: spacingEl ? spacingEl.value : 'comfortable',
+                        shape: shapeEl ? shapeEl.value : 'rounded'
                     };
                     formData.append('widget_styles', JSON.stringify(widgetStyles));
                     
