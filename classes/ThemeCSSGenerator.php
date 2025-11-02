@@ -40,6 +40,126 @@ class ThemeCSSGenerator {
     }
     
     /**
+     * Calculate relative luminance of a color (for contrast calculation)
+     * @param string $color Hex color (#RGB or #RRGGBB)
+     * @return float Luminance value between 0 and 1
+     */
+    private function getLuminance($color) {
+        // Remove # if present
+        $color = ltrim($color, '#');
+        
+        // Handle 3-digit hex
+        if (strlen($color) === 3) {
+            $color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
+        }
+        
+        // Convert to RGB
+        $r = hexdec(substr($color, 0, 2));
+        $g = hexdec(substr($color, 2, 2));
+        $b = hexdec(substr($color, 4, 2));
+        
+        // Normalize to 0-1
+        $r = $r / 255;
+        $g = $g / 255;
+        $b = $b / 255;
+        
+        // Apply gamma correction
+        $r = $r <= 0.03928 ? $r / 12.92 : pow(($r + 0.055) / 1.055, 2.4);
+        $g = $g <= 0.03928 ? $g / 12.92 : pow(($g + 0.055) / 1.055, 2.4);
+        $b = $b <= 0.03928 ? $b / 12.92 : pow(($b + 0.055) / 1.055, 2.4);
+        
+        // Calculate luminance
+        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+    }
+    
+    /**
+     * Calculate contrast ratio between two colors
+     * @param string $color1 First color
+     * @param string $color2 Second color
+     * @return float Contrast ratio (1 to 21)
+     */
+    private function getContrastRatio($color1, $color2) {
+        $lum1 = $this->getLuminance($color1);
+        $lum2 = $this->getLuminance($color2);
+        
+        $lighter = max($lum1, $lum2);
+        $darker = min($lum1, $lum2);
+        
+        return ($lighter + 0.05) / ($darker + 0.05);
+    }
+    
+    /**
+     * Get the dominant color from a gradient background
+     * @param string $background Background value (color or gradient)
+     * @return string Hex color of dominant/middle gradient color
+     */
+    private function getDominantBackgroundColor($background) {
+        // If it's a solid color, return it
+        if (preg_match('/^#[0-9a-fA-F]{3,6}$/', $background)) {
+            return $background;
+        }
+        
+        // If it's a gradient, extract colors
+        if (preg_match('/linear-gradient\([^,]+,\s*(#[0-9a-fA-F]{6})\s*\d+%,\s*(#[0-9a-fA-F]{6})\s*\d+%\)/', $background, $matches)) {
+            // Return the average/middle color for gradient
+            // For simplicity, we'll use the lighter color as dominant
+            $color1 = $matches[1];
+            $color2 = $matches[2];
+            
+            $lum1 = $this->getLuminance($color1);
+            $lum2 = $this->getLuminance($color2);
+            
+            // Return the lighter color as it's more likely to be the "background"
+            return $lum1 > $lum2 ? $color1 : $color2;
+        }
+        
+        // Fallback to white if we can't parse
+        return '#ffffff';
+    }
+    
+    /**
+     * Get optimal text color for good contrast against background
+     * @param string $backgroundColor Background color
+     * @param string $defaultColor Default/primary color to use if contrast is good
+     * @return string Hex color that ensures good contrast
+     */
+    private function getOptimalTextColor($backgroundColor, $defaultColor) {
+        $bgColor = $this->getDominantBackgroundColor($backgroundColor);
+        $bgLum = $this->getLuminance($bgColor);
+        
+        // Check contrast with default color
+        $contrast = $this->getContrastRatio($defaultColor, $bgColor);
+        
+        // WCAG AA requires 4.5:1 for normal text, 3:1 for large text
+        // We'll use 4:1 as a reasonable threshold
+        if ($contrast >= 4.0) {
+            return $defaultColor;
+        }
+        
+        // If contrast is poor, choose white or black based on background
+        // If background is dark (luminance < 0.5), use white text
+        // If background is light (luminance >= 0.5), use black/dark text
+        if ($bgLum < 0.5) {
+            // Dark background - use white or light color
+            // Try white first
+            $whiteContrast = $this->getContrastRatio('#ffffff', $bgColor);
+            if ($whiteContrast >= 4.0) {
+                return '#ffffff';
+            }
+            // If white doesn't work, use a very light gray
+            return '#f0f0f0';
+        } else {
+            // Light background - use black or dark color
+            $blackContrast = $this->getContrastRatio('#000000', $bgColor);
+            if ($blackContrast >= 4.0) {
+                return '#000000';
+            }
+            // If black doesn't work, use a very dark gray
+            return '#1a1a1a';
+        }
+    }
+    
+    /**
      * Generate CSS variables block
      * @return string CSS :root block with all variables
      */
@@ -49,10 +169,20 @@ class ThemeCSSGenerator {
         $borderRadius = convertEnumToCSS($this->widgetStyles['shape'] ?? 'rounded', 'shape');
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         
+        // Calculate optimal text colors for good contrast
+        $pageTitleColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
+        $pageDescriptionColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
+        $socialIconColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
+        
         $css = ":root {\n";
         $css .= "    --primary-color: " . h($this->colors['primary']) . ";\n";
         $css .= "    --secondary-color: " . h($this->colors['secondary']) . ";\n";
         $css .= "    --accent-color: " . h($this->colors['accent']) . ";\n";
+        
+        // Text colors with guaranteed contrast
+        $css .= "    --page-title-color: " . h($pageTitleColor) . ";\n";
+        $css .= "    --page-description-color: " . h($pageDescriptionColor) . ";\n";
+        $css .= "    --social-icon-color: " . h($socialIconColor) . ";\n";
         
         // Legacy font variables for backward compatibility
         $css .= "    --heading-font: '" . h($this->pageFonts['page_primary_font']) . "';\n";
@@ -280,17 +410,22 @@ class ThemeCSSGenerator {
         $css .= "    border: 3px solid var(--primary-color);\n";
         $css .= "}\n\n";
         
+        $css .= ".page-title {\n";
+        $css .= "    color: var(--page-title-color);\n";
+        $css .= "}\n\n";
+        
         $css .= ".page-description {\n";
-        $css .= "    color: var(--primary-color);\n";
+        $css .= "    color: var(--page-description-color);\n";
         $css .= "}\n\n";
         
         // Social icons
         $css .= ".social-icon {\n";
-        $css .= "    color: var(--primary-color);\n";
+        $css .= "    color: var(--social-icon-color);\n";
         $css .= "}\n\n";
         
         $css .= ".social-icon:hover {\n";
         $css .= "    color: var(--accent-color);\n";
+        $css .= "    opacity: 0.8;\n";
         $css .= "}\n\n";
         
         $css .= "</style>\n";

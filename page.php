@@ -131,12 +131,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .page-title {
             font-size: 2rem;
             margin: 0.5rem 0;
-            color: var(--primary-color);
+            color: var(--page-title-color, var(--primary-color));
         }
         
         .page-description {
-            color: var(--primary-color);
-            opacity: 0.8;
+            color: var(--page-description-color, var(--primary-color));
+            opacity: 0.9;
             margin-bottom: 2rem;
         }
         
