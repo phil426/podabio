@@ -6970,8 +6970,8 @@ $csrfToken = generateCSRFToken();
             `;
             
             // Show drawer
-            drawer.style.display = 'block';
             overlay.style.display = 'block';
+            drawer.style.display = 'flex';
             setTimeout(() => {
                 drawer.classList.add('active');
                 overlay.classList.add('active');
