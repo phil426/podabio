@@ -4098,7 +4098,14 @@ $csrfToken = generateCSRFToken();
                             }
                             
                             console.log('Widget definition found:', widgetDef);
+                            console.log('About to call renderWidgetSettings, contentDiv exists:', !!contentDiv, 'contentDiv:', contentDiv);
+                            if (!contentDiv) {
+                                console.error('contentDiv is null before renderWidgetSettings call!');
+                                return;
+                            }
+                            console.log('Calling renderWidgetSettings now...');
                             renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
+                            console.log('renderWidgetSettings call completed');
                         } else {
                             console.error('Failed to load widget:', data);
                             contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p>';
