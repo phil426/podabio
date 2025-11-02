@@ -4109,8 +4109,14 @@ $csrfToken = generateCSRFToken();
                                 return;
                             }
                             console.log('Calling renderWidgetSettings now...');
-                            renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
-                            console.log('renderWidgetSettings call completed');
+                            console.log('renderWidgetSettings function exists:', typeof renderWidgetSettings === 'function');
+                            try {
+                                renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
+                                console.log('renderWidgetSettings call completed without error');
+                            } catch (error) {
+                                console.error('Error calling renderWidgetSettings:', error);
+                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: ' + error.message + '</p>';
+                            }
                         } else {
                             console.error('Failed to load widget:', data);
                             contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget: ' + (data.error || 'Unknown error') + '</p>';
@@ -4126,7 +4132,8 @@ $csrfToken = generateCSRFToken();
             loadSettings();
         };
         
-        function renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv) {
+        window.renderWidgetSettings = function(widget, configData, widgetDef, widgetId, contentDiv) {
+            console.log('=== renderWidgetSettings START ===');
             console.log('renderWidgetSettings called with:', { widget, configData, widgetDef, widgetId, contentDiv });
             
             if (!contentDiv) {
