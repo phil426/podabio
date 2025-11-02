@@ -146,6 +146,9 @@ if (!isset($pageFonts['page_primary_font'])) {
 
 $csrfToken = generateCSRFToken();
 
+// Generate page URL for preview
+$pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -353,6 +356,7 @@ $csrfToken = generateCSRFToken();
             background: white;
             transition: box-shadow 0.2s;
             position: relative;
+            overflow: hidden;
         }
         
         .widget-accordion-item:hover {
@@ -382,6 +386,7 @@ $csrfToken = generateCSRFToken();
             color: #111827;
             transition: all 0.2s;
             text-align: left;
+            border-radius: 8px 8px 0 0;
         }
         
         .widget-accordion-header:hover {
@@ -447,6 +452,54 @@ $csrfToken = generateCSRFToken();
         .widget-accordion-item.active .widget-accordion-header {
             background: #f0f7ff;
             border-color: #0066ff;
+        }
+        
+        /* Widget Visibility Toggle */
+        .widget-visibility-toggle {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 0.5rem;
+            position: relative;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]:checked {
+            background: #0066ff;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .widget-visibility-toggle input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
+        
+        .widget-accordion-item.inactive {
+            opacity: 0.6;
+        }
+        
+        .widget-accordion-item.inactive .widget-accordion-header {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
         }
         
         .widget-accordion-content {
@@ -1274,11 +1327,41 @@ $csrfToken = generateCSRFToken();
             }
         }
         
+        /* Mobile Hamburger Menu */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: #f9fafb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .mobile-menu-toggle i {
+            font-size: 1.25rem;
+            color: #111827;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s;
+                transition: transform 0.3s ease;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -1443,6 +1526,7 @@ $csrfToken = generateCSRFToken();
             transform: translateZ(0);
             will-change: transform;
             isolation: isolate;
+            z-index: 10001;
         }
         
         .user-menu-button {
@@ -1517,7 +1601,7 @@ $csrfToken = generateCSRFToken();
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
+            z-index: 10001;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-8px);
@@ -1949,10 +2033,6 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-palette"></i>
                         <span>Appearance</span>
                     </a>
-                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('email', this)">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email Subscription</span>
-                    </a>
                     <a href="javascript:void(0)" class="nav-item" onclick="showSection('blog', this)">
                         <i class="fas fa-blog"></i>
                         <span>Blog</span>
@@ -1961,12 +2041,39 @@ $csrfToken = generateCSRFToken();
                         <i class="fas fa-life-ring"></i>
                         <span>Support</span>
                     </a>
+                    <a href="javascript:void(0)" class="nav-item" onclick="showSection('analytics', this)">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </a>
                 <?php endif; ?>
             </nav>
         </aside>
         
         <!-- Center Editor -->
         <main class="editor-main">
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Preview Toggle Button -->
+            <button id="preview-toggle-btn" onclick="togglePreview()" class="btn btn-secondary" style="position: fixed; top: 80px; right: 20px; z-index: 999; border-radius: 8px; padding: 0.5rem 1rem; background: white; border: 2px solid #0066ff; color: #0066ff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <i class="fas fa-mobile-alt"></i> Preview
+            </button>
+            
+            <!-- Live Preview Panel -->
+            <div id="live-preview-panel" style="display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; border-left: 2px solid #e5e7eb; z-index: 998; box-shadow: -4px 0 20px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Live Preview</h3>
+                    <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem;">&times;</button>
+                </div>
+                <div style="height: calc(100vh - 60px); overflow-y: auto; background: #f3f4f6; padding: 1rem; display: flex; justify-content: center; align-items: flex-start;">
+                    <div style="width: 100%; max-width: 375px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; transform: scale(0.75); transform-origin: top center; margin-top: 0;">
+                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>" style="width: 100%; height: 667px; border: none; display: block;"></iframe>
+                    </div>
+                </div>
+            </div>
+            
             <div class="editor-content">
                 <div class="editor-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
@@ -2101,8 +2208,11 @@ $csrfToken = generateCSRFToken();
                 }
                 
                 // Get widgets (try new method first, fallback to links for compatibility)
+                // Use getAllWidgets() to include inactive widgets in editor
                 $widgets = [];
-                if ($page && method_exists($pageClass, 'getWidgets')) {
+                if ($page && method_exists($pageClass, 'getAllWidgets')) {
+                    $widgets = $pageClass->getAllWidgets($page['id']);
+                } elseif ($page && method_exists($pageClass, 'getWidgets')) {
                     $widgets = $pageClass->getWidgets($page['id']);
                 } elseif (!empty($links)) {
                     // Fallback: convert links to widget format
@@ -2140,13 +2250,20 @@ $csrfToken = generateCSRFToken();
                             $subtitle .= ' • ' . $displayPreview;
                         }
                     ?>
-                        <div class="widget-accordion-item" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
+                        <div class="widget-accordion-item <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
                                 <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
                                 <div class="widget-header-info">
                                     <div class="widget-header-title"><?php echo h($widget['title']); ?></div>
                                     <div class="widget-header-subtitle"><?php echo h($subtitle); ?></div>
+                                </div>
+                                <div class="widget-visibility-toggle" onclick="event.stopPropagation();">
+                                    <input type="checkbox" 
+                                           id="widget-visibility-<?php echo $widget['id']; ?>" 
+                                           <?php echo ($widget['is_active'] ?? 1) ? 'checked' : ''; ?>
+                                           onchange="toggleWidgetVisibility(<?php echo $widget['id']; ?>, this.checked)"
+                                           title="<?php echo ($widget['is_active'] ?? 1) ? 'Visible' : 'Hidden'; ?>">
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
@@ -3115,6 +3232,55 @@ $csrfToken = generateCSRFToken();
             </div>
         </div>
         
+        <!-- Analytics Tab -->
+        <div id="tab-analytics" class="tab-content">
+            <h2>Widget Analytics</h2>
+            <p style="margin-bottom: 20px; color: #666;">View performance metrics for your widgets.</p>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label for="analytics-period" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Time Period</label>
+                <select id="analytics-period" onchange="loadWidgetAnalytics()" style="width: 200px; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px;">
+                    <option value="day">Last 24 Hours</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month" selected>Last 30 Days</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+            
+            <div id="analytics-loading" style="display: none; text-align: center; padding: 2rem; color: #666;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                <p>Loading analytics...</p>
+            </div>
+            
+            <div id="analytics-content" style="display: none;">
+                <div id="analytics-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <!-- Summary cards will be inserted here -->
+                </div>
+                
+                <div id="analytics-table-container">
+                    <table id="widget-analytics-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Widget</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Type</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">Clicks</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">Views</th>
+                                <th style="padding: 0.75rem; text-align: right; font-weight: 600;">CTR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body">
+                            <!-- Widget data will be inserted here -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="analytics-empty" style="display: none; text-align: center; padding: 3rem; color: #999;">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>No analytics data available for this period.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Support Tab -->
         <div id="tab-support" class="tab-content">
             <div class="support-section">
@@ -3311,6 +3477,11 @@ $csrfToken = generateCSRFToken();
                 sectionElement.classList.add('active');
             }
             
+            // Auto-load analytics if analytics tab is opened
+            if (sectionName === 'analytics' && typeof loadWidgetAnalytics === 'function') {
+                loadWidgetAnalytics();
+            }
+            
             // Add active class to clicked nav item
             if (navElement) {
                 navElement.classList.add('active');
@@ -3427,6 +3598,111 @@ $csrfToken = generateCSRFToken();
                     if (widgetId) {
                         localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
                     }
+                }
+            });
+        });
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            if (sidebar && toggle && !sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+        
+        // Handle Featured Widget Toggle
+        window.handleFeaturedToggle = function(widgetId, isFeatured) {
+            const effectGroup = document.getElementById('featured-effect-group');
+            if (effectGroup) {
+                effectGroup.style.display = isFeatured ? 'block' : 'none';
+            }
+            
+            // If enabling featured, unfeature other widgets
+            if (isFeatured) {
+                unfeatureOtherWidgets(widgetId);
+            }
+        };
+        
+        // Unfeature all other widgets (only one featured at a time)
+        function unfeatureOtherWidgets(exceptWidgetId) {
+            // This will be handled on save, but we can update UI immediately
+            const allFeaturedCheckboxes = document.querySelectorAll('#widget-form input[name="is_featured"]');
+            allFeaturedCheckboxes.forEach(checkbox => {
+                const widgetItem = checkbox.closest('.widget-accordion-item');
+                if (widgetItem) {
+                    const currentWidgetId = widgetItem.getAttribute('data-widget-id');
+                    if (currentWidgetId && parseInt(currentWidgetId) !== parseInt(exceptWidgetId)) {
+                        checkbox.checked = false;
+                    }
+                }
+            });
+        }
+        
+        // Widget Visibility Toggle
+        function toggleWidgetVisibility(widgetId, isVisible) {
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('is_active', isVisible ? 1 : 0);
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const widgetItem = document.querySelector(`.widget-accordion-item[data-widget-id="${widgetId}"]`);
+                    if (widgetItem) {
+                        if (isVisible) {
+                            widgetItem.classList.remove('inactive');
+                        } else {
+                            widgetItem.classList.add('inactive');
+                        }
+                    }
+                    showToast(isVisible ? 'Widget is now visible' : 'Widget is now hidden', 'success');
+                } else {
+                    showToast('Failed to update widget visibility: ' + (data.error || 'Unknown error'), 'error');
+                    // Revert checkbox
+                    const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
+                    if (checkbox) {
+                        checkbox.checked = !isVisible;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling widget visibility:', error);
+                showToast('An error occurred while updating widget visibility', 'error');
+                // Revert checkbox
+                const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
+                if (checkbox) {
+                    checkbox.checked = !isVisible;
+                }
+            });
+        }
+        
+        // Listen for appearance changes to refresh preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const appearanceForm = document.getElementById('appearance-form');
+            if (appearanceForm) {
+                appearanceForm.addEventListener('input', refreshPreview);
+                appearanceForm.addEventListener('change', refreshPreview);
+            }
+            
+            // Listen for widget changes
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('.btn-primary') && e.target.closest('.widget-accordion-content')) {
+                    refreshPreview();
                 }
             });
         });
@@ -4045,6 +4321,17 @@ $csrfToken = generateCSRFToken();
             
             requestData.append('config_data', JSON.stringify(configData));
             
+            // Handle featured widget fields
+            const featuredCheckbox = document.getElementById('widget_config_is_featured');
+            if (featuredCheckbox) {
+                requestData.append('is_featured', featuredCheckbox.checked ? '1' : '0');
+                
+                const featuredEffectSelect = document.getElementById('widget_config_featured_effect');
+                if (featuredEffectSelect) {
+                    requestData.append('featured_effect', featuredEffectSelect.value || '');
+                }
+            }
+            
             if (action === 'update' && widgetId) {
                 requestData.append('widget_id', widgetId);
             }
@@ -4217,6 +4504,37 @@ $csrfToken = generateCSRFToken();
                             if (widget.widget_type === 'podcast_player_custom' && (fieldName === 'rss_feed_url' || fieldName === 'thumbnail_image')) {
                                 return;
                             }
+                            
+                            // Special handling for thumbnail_image on custom_link widgets - show upload interface
+                            if (fieldName === 'thumbnail_image' && widget.widget_type === 'custom_link') {
+                                const thumbnailValue = configData['thumbnail_image'] || '';
+                                const thumbnailId = `widget-thumbnail-${widgetId}`;
+                                fieldsContainer.innerHTML += `
+                                    <div class="form-group">
+                                        <label>Thumbnail Image</label>
+                                        <div style="display: flex; gap: 15px; align-items: flex-start;">
+                                            <div style="flex-shrink: 0;">
+                                                ${thumbnailValue ? `
+                                                    <img id="${thumbnailId}-preview" src="${thumbnailValue.replace(/"/g, '&quot;')}" alt="Thumbnail" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
+                                                ` : `
+                                                    <div id="${thumbnailId}-preview" style="width: 100px; height: 100px; background: #f0f0f0; border-radius: 8px; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>
+                                                `}
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <input type="file" id="${thumbnailId}-input" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-bottom: 10px; width: 100%;">
+                                                <input type="hidden" id="widget_config_thumbnail_image" name="thumbnail_image" value="${thumbnailValue.replace(/"/g, '&quot;')}">
+                                                <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                                    <button type="button" class="btn btn-primary btn-small" onclick="uploadWidgetThumbnail(${widgetId})">Upload & Crop</button>
+                                                    ${thumbnailValue ? `<button type="button" class="btn btn-danger btn-small" onclick="removeWidgetThumbnail(${widgetId})">Remove</button>` : ''}
+                                                </div>
+                                                <small style="display: block; color: #666;">Select an image to upload and crop. Recommended: 400x400px, square image. Max 5MB</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                return;
+                            }
+                            
                             const value = configData[fieldName] || '';
                             const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                             const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
@@ -4231,21 +4549,59 @@ $csrfToken = generateCSRFToken();
                                     </div>
                                 `;
                             } else if (fieldDef.type === 'select') {
-                                const options = (fieldDef.options || []).map(opt => {
-                                    const optValue = typeof opt === 'string' ? opt : opt.value;
-                                    const optLabel = typeof opt === 'string' ? opt : opt.label;
-                                    const selected = optValue === value ? ' selected' : '';
-                                    return `<option value="${optValue}"${selected}>${optLabel}</option>`;
-                                }).join('');
-                                fieldsContainer.innerHTML += `
-                                    <div class="form-group">
-                                        <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
-                                        <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
-                                            ${options}
-                                        </select>
-                                        ${helpText}
-                                    </div>
-                                `;
+                                // Handle dynamic category options for blog widgets
+                                if (fieldName === 'category_id' && (widget.widget_type === 'blog_latest_posts' || widget.widget_type === 'blog_category_filter')) {
+                                    // Load categories via AJAX
+                                    fieldsContainer.innerHTML += `
+                                        <div class="form-group">
+                                            <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                            <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                                <option value="">Loading categories...</option>
+                                            </select>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                    
+                                    // Load categories
+                                    fetch('/api/blog_categories.php')
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            const select = document.getElementById(`widget_config_${fieldName}`);
+                                            if (select && data.success && data.categories) {
+                                                let optionsHtml = '<option value="">All Categories</option>';
+                                                data.categories.forEach(cat => {
+                                                    const selected = value == cat.id ? ' selected' : '';
+                                                    const catName = String(cat.name).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                                                    optionsHtml += `<option value="${cat.id}"${selected}>${catName}</option>`;
+                                                });
+                                                select.innerHTML = optionsHtml;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading categories:', error);
+                                            const select = document.getElementById(`widget_config_${fieldName}`);
+                                            if (select) {
+                                                select.innerHTML = '<option value="">Error loading categories</option>';
+                                            }
+                                        });
+                                } else {
+                                    // Regular select with static options
+                                    const options = (fieldDef.options || []).map(opt => {
+                                        const optValue = typeof opt === 'string' ? opt : opt.value;
+                                        const optLabel = typeof opt === 'string' ? opt : opt.label;
+                                        const selected = optValue === value ? ' selected' : '';
+                                        return `<option value="${optValue}"${selected}>${optLabel}</option>`;
+                                    }).join('');
+                                    fieldsContainer.innerHTML += `
+                                        <div class="form-group">
+                                            <label for="widget_config_${fieldName}">${fieldDef.label}${required}</label>
+                                            <select id="widget_config_${fieldName}" name="${fieldName}" ${fieldDef.required ? 'required' : ''}>
+                                                ${options}
+                                            </select>
+                                            ${helpText}
+                                        </div>
+                                    `;
+                                }
                             } else if (fieldDef.type === 'checkbox') {
                                 const checked = value === '1' || value === true || value === 'true' ? ' checked' : '';
                                 fieldsContainer.innerHTML += `
@@ -4267,6 +4623,35 @@ $csrfToken = generateCSRFToken();
                                 `;
                             }
                         });
+                    }
+                    
+                    // Add Featured Widget section (after all config fields)
+                    if (widgetDef && widget.widget_id) {
+                        const isFeatured = widget.is_featured || 0;
+                        const featuredEffect = widget.featured_effect || '';
+                        fieldsContainer.innerHTML += `
+                            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                                    <input type="checkbox" id="widget_config_is_featured" name="is_featured" value="1" ${isFeatured ? 'checked' : ''} onchange="handleFeaturedToggle(${widgetId}, this.checked)">
+                                    <span>Featured Widget</span>
+                                </label>
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Highlight this widget with special effects to draw attention</small>
+                            </div>
+                            <div class="form-group" id="featured-effect-group" style="display: ${isFeatured ? 'block' : 'none'};">
+                                <label for="widget_config_featured_effect">Featured Effect</label>
+                                <select id="widget_config_featured_effect" name="featured_effect">
+                                    <option value="">Select an effect...</option>
+                                    <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle</option>
+                                    <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
+                                    <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
+                                    <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
+                                    <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
+                                    <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                                </select>
+                                <small style="color: #666; display: block; margin-top: 0.25rem;">Choose a special effect for this featured widget</small>
+                            </div>
+                        `;
                     }
                     
                     // Update submit button
@@ -6070,6 +6455,115 @@ $csrfToken = generateCSRFToken();
         let currentCropContext = null;
         let currentCropInputId = null;
         let currentCropPreviewId = null;
+        let currentCropWidgetId = null;
+        
+        // Widget thumbnail upload - opens crop modal
+        window.uploadWidgetThumbnail = function(widgetId) {
+            const inputId = `widget-thumbnail-${widgetId}-input`;
+            const previewId = `widget-thumbnail-${widgetId}-preview`;
+            const input = document.getElementById(inputId);
+            
+            if (!input) {
+                showToast('File input not found', 'error');
+                return;
+            }
+            
+            const file = input.files[0];
+            
+            if (!file) {
+                showToast('Please select an image file', 'error');
+                return;
+            }
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size must be less than 5MB', 'error');
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showToast('Please select a valid image file (JPEG, PNG, GIF, or WebP)', 'error');
+                return;
+            }
+            
+            // Set context for cropping
+            currentCropContext = 'widget-thumbnail';
+            currentCropInputId = inputId;
+            currentCropPreviewId = previewId;
+            currentCropWidgetId = widgetId;
+            
+            // Open crop modal with image
+            openCropModal(file);
+        };
+        
+        // Remove widget thumbnail
+        window.removeWidgetThumbnail = function(widgetId) {
+            const previewId = `widget-thumbnail-${widgetId}-preview`;
+            const inputId = `widget-thumbnail-${widgetId}-input`;
+            const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+            
+            // Reset preview
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">No image</div>';
+                preview.style.width = '100px';
+                preview.style.height = '100px';
+                preview.style.background = '#f0f0f0';
+                preview.style.borderRadius = '8px';
+                preview.style.border = '2px solid #ddd';
+            }
+            
+            // Clear file input
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+            }
+            
+            // Clear hidden input
+            if (hiddenInput) {
+                hiddenInput.value = '';
+            }
+            
+            // Save widget thumbnail removal to config_data
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('widget_id', widgetId);
+            formData.append('csrf_token', csrfToken);
+            
+            // Get current config_data and remove thumbnail
+            fetch('/api/widgets.php?action=get&widget_id=' + widgetId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.widget) {
+                        const currentConfig = typeof data.widget.config_data === 'string' 
+                            ? JSON.parse(data.widget.config_data) 
+                            : (data.widget.config_data || {});
+                        
+                        // Remove thumbnail from config
+                        delete currentConfig.thumbnail_image;
+                        
+                        // Save updated config
+                        formData.append('config_data', JSON.stringify(currentConfig));
+                        
+                        return fetch('/api/widgets.php', {
+                            method: 'POST',
+                            body: formData
+                        }).then(r => r.json());
+                    }
+                })
+                .then(result => {
+                    if (result && result.success) {
+                        showToast('Thumbnail removed', 'success');
+                    } else {
+                        console.warn('Failed to remove widget thumbnail:', result);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing widget thumbnail:', error);
+                });
+        };
         
         // Image upload functionality - opens crop modal
         function uploadImage(type, context = 'appearance') {
@@ -6227,6 +6721,11 @@ $csrfToken = generateCSRFToken();
             // Show loading state
             showToast('Uploading image...', 'info');
             
+            // Determine upload type and filename based on context
+            const isWidgetThumbnail = currentCropContext === 'widget-thumbnail';
+            const uploadType = isWidgetThumbnail ? 'thumbnail' : 'profile';
+            const filename = isWidgetThumbnail ? 'widget-thumbnail.jpg' : 'profile.jpg';
+            
             // Get cropped image as blob
             croppieInstance.result('blob', {
                 type: 'image/jpeg',
@@ -6235,8 +6734,8 @@ $csrfToken = generateCSRFToken();
             }).then(function(blob) {
                 // Upload the cropped blob
                 const formData = new FormData();
-                formData.append('image', blob, 'profile.jpg');
-                formData.append('type', 'profile');
+                formData.append('image', blob, filename);
+                formData.append('type', uploadType);
                 formData.append('csrf_token', csrfToken);
                 
                 fetch('/api/upload.php', {
@@ -6262,7 +6761,7 @@ $csrfToken = generateCSRFToken();
                 })
                 .then(data => {
                     if (data.success) {
-                        handleImageUploadSuccess(data, currentCropPreviewId);
+                        handleImageUploadSuccess(data, currentCropPreviewId, isWidgetThumbnail);
                         closeCropModal();
                         showToast('Image uploaded successfully!', 'success');
                     } else {
@@ -6280,7 +6779,7 @@ $csrfToken = generateCSRFToken();
         }
         
         // Handle successful image upload
-        function handleImageUploadSuccess(data, previewId) {
+        function handleImageUploadSuccess(data, previewId, isWidgetThumbnail = false) {
             const imageUrl = data.url || data.path;
             
             if (!imageUrl) {
@@ -6288,7 +6787,97 @@ $csrfToken = generateCSRFToken();
                 return;
             }
             
-            // Update preview
+            // Handle widget thumbnail upload
+            if (isWidgetThumbnail && currentCropWidgetId) {
+                // Update hidden input
+                const hiddenInput = document.getElementById('widget_config_thumbnail_image');
+                if (hiddenInput) {
+                    hiddenInput.value = imageUrl;
+                }
+                
+                // Update preview
+                const preview = document.getElementById(previewId);
+                if (preview) {
+                    if (preview.tagName === 'IMG') {
+                        preview.src = imageUrl + '?t=' + Date.now();
+                    } else {
+                        // Replace placeholder div with image
+                        preview.innerHTML = '';
+                        preview.style.background = 'none';
+                        preview.style.border = 'none';
+                        const img = document.createElement('img');
+                        img.src = imageUrl + '?t=' + Date.now();
+                        img.alt = 'Thumbnail';
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '2px solid #ddd';
+                        preview.appendChild(img);
+                    }
+                }
+                
+                // Add remove button if it doesn't exist
+                const removeBtnContainer = document.querySelector(`button[onclick="removeWidgetThumbnail(${currentCropWidgetId})"]`);
+                if (!removeBtnContainer && preview) {
+                    const buttonContainer = preview.closest('.form-group').querySelector('.btn-danger');
+                    if (!buttonContainer) {
+                        const uploadBtn = preview.closest('.form-group').querySelector('button[onclick*="uploadWidgetThumbnail"]');
+                        if (uploadBtn && uploadBtn.parentElement) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.className = 'btn btn-danger btn-small';
+                            removeBtn.onclick = () => removeWidgetThumbnail(currentCropWidgetId);
+                            removeBtn.textContent = 'Remove';
+                            uploadBtn.parentElement.appendChild(removeBtn);
+                        }
+                    }
+                }
+                
+                // Save widget thumbnail to config_data
+                const formData = new FormData();
+                formData.append('action', 'update');
+                formData.append('widget_id', currentCropWidgetId);
+                formData.append('csrf_token', csrfToken);
+                
+                // Get current config_data
+                fetch('/api/widgets.php?action=get&widget_id=' + currentCropWidgetId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.widget) {
+                            const currentConfig = typeof data.widget.config_data === 'string' 
+                                ? JSON.parse(data.widget.config_data) 
+                                : (data.widget.config_data || {});
+                            
+                            // Update thumbnail in config
+                            currentConfig.thumbnail_image = imageUrl;
+                            
+                            // Save updated config
+                            formData.append('config_data', JSON.stringify(currentConfig));
+                            
+                            return fetch('/api/widgets.php', {
+                                method: 'POST',
+                                body: formData
+                            }).then(r => r.json());
+                        }
+                    })
+                    .then(result => {
+                        if (result && result.success) {
+                            console.log('Widget thumbnail saved successfully');
+                        } else {
+                            console.warn('Failed to save widget thumbnail config:', result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving widget thumbnail:', error);
+                    });
+                
+                // Clear widget context
+                currentCropWidgetId = null;
+                return;
+            }
+            
+            // Update preview (for profile images)
             const preview = document.getElementById(previewId);
             if (preview) {
                 if (preview.tagName === 'IMG') {

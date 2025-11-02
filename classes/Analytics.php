@@ -154,5 +154,66 @@ class Analytics {
             [$pageId, $limit]
         );
     }
+    
+    /**
+     * Get widget analytics (clicks, views, CTR)
+     * @param int $pageId
+     * @param string $period ('day', 'week', 'month', 'all')
+     * @return array
+     */
+    public function getWidgetAnalytics($pageId, $period = 'month') {
+        $dateFilter = '';
+        switch ($period) {
+            case 'day':
+                $dateFilter = "AND a.created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)";
+                break;
+            case 'week':
+                $dateFilter = "AND a.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+                break;
+            case 'month':
+                $dateFilter = "AND a.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+                break;
+            default:
+                $dateFilter = '';
+        }
+        
+        // Get widget clicks (link_id stores widget_id for widgets)
+        $widgetClicks = fetchAll(
+            "SELECT w.id, w.title, w.widget_type, COUNT(a.id) as click_count
+             FROM widgets w
+             LEFT JOIN analytics a ON w.id = a.link_id AND a.event_type = 'click' AND a.page_id = ? $dateFilter
+             WHERE w.page_id = ? AND w.is_active = 1
+             GROUP BY w.id, w.title, w.widget_type
+             ORDER BY click_count DESC",
+            [$pageId, $pageId]
+        );
+        
+        // Get page views for CTR calculation
+        $pageViews = (int)fetchOne(
+            "SELECT COUNT(*) as count FROM analytics 
+             WHERE page_id = ? AND event_type = 'view' $dateFilter",
+            [$pageId]
+        )['count'] ?? 1; // Use 1 to avoid division by zero
+        
+        // Calculate CTR for each widget
+        foreach ($widgetClicks as &$widget) {
+            $widget['ctr'] = $pageViews > 0 ? round(($widget['click_count'] / $pageViews) * 100, 2) : 0;
+            $widget['views'] = $pageViews; // All widgets get same page views (widgets rendered on page view)
+        }
+        
+        return $widgetClicks;
+    }
+    
+    /**
+     * Track widget view (when widget is rendered)
+     * @param int $pageId
+     * @param int $widgetId
+     * @return bool
+     */
+    public function trackWidgetView($pageId, $widgetId) {
+        // Widget views are tracked as part of page views
+        // This method exists for future use if we want separate widget view tracking
+        return true;
+    }
 }
 

@@ -158,6 +158,25 @@ switch ($action) {
             $updateData['is_active'] = (int)$_POST['is_active'];
         }
         
+        if (isset($_POST['is_featured'])) {
+            $updateData['is_featured'] = (int)$_POST['is_featured'];
+            
+            // If making this widget featured, unfeature all other widgets
+            if ((int)$_POST['is_featured'] === 1) {
+                try {
+                    $pdo = getDB();
+                    $stmt = $pdo->prepare("UPDATE widgets SET is_featured = 0 WHERE page_id = ? AND id != ?");
+                    $stmt->execute([$pageId, $widgetId]);
+                } catch (PDOException $e) {
+                    error_log("Error unfeaturing other widgets: " . $e->getMessage());
+                }
+            }
+        }
+        
+        if (isset($_POST['featured_effect'])) {
+            $updateData['featured_effect'] = sanitizeInput($_POST['featured_effect']);
+        }
+        
         $result = $page->updateWidget($widgetId, $pageId, $updateData);
         echo json_encode($result);
         break;

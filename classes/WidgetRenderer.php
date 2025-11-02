@@ -48,6 +48,18 @@ class WidgetRenderer {
             case 'podcast_player_custom':
                 return self::renderPodcastPlayerCustom($widget, $configData);
                 
+            case 'email_subscription':
+                return self::renderEmailSubscription($widget, $configData);
+                
+            case 'blog_latest_posts':
+                return self::renderBlogLatestPosts($widget, $configData);
+                
+            case 'blog_category_filter':
+                return self::renderBlogCategoryFilter($widget, $configData);
+                
+            case 'blog_related_posts':
+                return self::renderBlogRelatedPosts($widget, $configData);
+                
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
@@ -950,6 +962,245 @@ class WidgetRenderer {
     fetchAndParseRSS();
 })();
 </script>';
+    }
+    
+    /**
+     * Render email subscription widget
+     */
+    private static function renderEmailSubscription($widget, $configData) {
+        $pageId = $widget['page_id'] ?? 0;
+        
+        // Get page to check email service configuration
+        require_once __DIR__ . '/Page.php';
+        $pageClass = new Page();
+        $page = $pageClass->get($pageId);
+        
+        if (!$page || empty($page['email_service_provider'])) {
+            return ''; // Don't render if email service not configured
+        }
+        
+        $html = '<button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">';
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">📧 Subscribe to Email List</div>';
+        $html .= '</div>';
+        $html .= '</button>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render latest blog posts widget
+     */
+    private static function renderBlogLatestPosts($widget, $configData) {
+        require_once __DIR__ . '/../config/database.php';
+        require_once __DIR__ . '/../includes/helpers.php';
+        
+        $postCount = min(max((int)($configData['post_count'] ?? 5), 1), 20);
+        $layout = $configData['layout'] ?? 'list';
+        $showExcerpt = isset($configData['show_excerpt']) ? (bool)$configData['show_excerpt'] : true;
+        $categoryId = !empty($configData['category_id']) ? (int)$configData['category_id'] : null;
+        
+        $whereClause = "WHERE p.published = 1";
+        $params = [];
+        
+        if ($categoryId) {
+            $whereClause .= " AND p.category_id = ?";
+            $params[] = $categoryId;
+        }
+        
+        $posts = fetchAll(
+            "SELECT p.*, c.name as category_name, c.slug as category_slug 
+             FROM blog_posts p 
+             LEFT JOIN blog_categories c ON p.category_id = c.id 
+             $whereClause 
+             ORDER BY p.created_at DESC 
+             LIMIT ?",
+            array_merge($params, [$postCount])
+        );
+        
+        if (empty($posts)) {
+            return '';
+        }
+        
+        $html = '<div class="widget-item blog-widget blog-latest-posts layout-' . h($layout) . '">';
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="blog-posts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">';
+        } else {
+            $html .= '<div class="blog-posts-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($posts as $post) {
+            $excerpt = $showExcerpt && !empty($post['content']) 
+                ? substr(strip_tags($post['content']), 0, 150) . '...' 
+                : '';
+            
+            $html .= '<a href="/blog/post.php?slug=' . h($post['slug']) . '" class="blog-post-item" style="display: block; text-decoration: none; color: inherit;">';
+            
+            if ($layout === 'grid') {
+                $html .= '<div class="blog-post-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
+                if (!empty($post['featured_image'])) {
+                    $html .= '<img src="' . h($post['featured_image']) . '" alt="' . h($post['title']) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                }
+            } else {
+                $html .= '<div class="blog-post-item-content" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
+            }
+            
+            $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . h($post['title']) . '</h3>';
+            
+            if ($showExcerpt && $excerpt) {
+                $html .= '<p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #666;">' . h($excerpt) . '</p>';
+            }
+            
+            $html .= '<div style="font-size: 0.75rem; color: #999;">';
+            if ($post['category_name']) {
+                $html .= '<span>' . h($post['category_name']) . '</span> • ';
+            }
+            $html .= '<span>' . date('M j, Y', strtotime($post['created_at'])) . '</span>';
+            $html .= '</div>';
+            
+            $html .= '</div></a>';
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render blog category filter widget
+     */
+    private static function renderBlogCategoryFilter($widget, $configData) {
+        require_once __DIR__ . '/../config/database.php';
+        require_once __DIR__ . '/../includes/helpers.php';
+        
+        $categoryId = !empty($configData['category_id']) ? (int)$configData['category_id'] : null;
+        $postCount = min(max((int)($configData['post_count'] ?? 5), 1), 10);
+        
+        if ($categoryId) {
+            // Show posts from specific category
+            $posts = fetchAll(
+                "SELECT p.*, c.name as category_name, c.slug as category_slug 
+                 FROM blog_posts p 
+                 LEFT JOIN blog_categories c ON p.category_id = c.id 
+                 WHERE p.published = 1 AND p.category_id = ? 
+                 ORDER BY p.created_at DESC 
+                 LIMIT ?",
+                [$categoryId, $postCount]
+            );
+            
+            if (empty($posts)) {
+                return '';
+            }
+            
+            $html = '<div class="widget-item blog-widget blog-category-filter">';
+            $html .= '<div class="blog-posts-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+            
+            foreach ($posts as $post) {
+                $html .= '<a href="/blog/post.php?slug=' . h($post['slug']) . '" class="blog-post-item" style="display: block; text-decoration: none; color: inherit; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
+                $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . h($post['title']) . '</h3>';
+                $html .= '<div style="font-size: 0.75rem; color: #999;">' . date('M j, Y', strtotime($post['created_at'])) . '</div>';
+                $html .= '</a>';
+            }
+            
+            $html .= '</div></div>';
+            return $html;
+        } else {
+            // Show all categories with posts
+            $categories = fetchAll("SELECT * FROM blog_categories ORDER BY display_order ASC, name ASC");
+            
+            if (empty($categories)) {
+                return '';
+            }
+            
+            $html = '<div class="widget-item blog-widget blog-category-filter">';
+            $html .= '<div class="blog-categories-list" style="display: flex; flex-direction: column; gap: 1.5rem;">';
+            
+            foreach ($categories as $category) {
+                $posts = fetchAll(
+                    "SELECT p.* FROM blog_posts p 
+                     WHERE p.published = 1 AND p.category_id = ? 
+                     ORDER BY p.created_at DESC 
+                     LIMIT ?",
+                    [$category['id'], $postCount]
+                );
+                
+                if (empty($posts)) {
+                    continue;
+                }
+                
+                $html .= '<div class="blog-category-section">';
+                $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 600;">' . h($category['name']) . '</h3>';
+                $html .= '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+                
+                foreach ($posts as $post) {
+                    $html .= '<a href="/blog/post.php?slug=' . h($post['slug']) . '" style="display: block; text-decoration: none; color: inherit; padding: 0.5rem; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background=\'#f9fafb\'" onmouseout="this.style.background=\'transparent\'">';
+                    $html .= '<div style="font-weight: 500; margin-bottom: 0.25rem;">' . h($post['title']) . '</div>';
+                    $html .= '<div style="font-size: 0.75rem; color: #999;">' . date('M j, Y', strtotime($post['created_at'])) . '</div>';
+                    $html .= '</a>';
+                }
+                
+                $html .= '</div></div>';
+            }
+            
+            $html .= '</div></div>';
+            return $html;
+        }
+    }
+    
+    /**
+     * Render related blog posts widget
+     */
+    private static function renderBlogRelatedPosts($widget, $configData) {
+        require_once __DIR__ . '/../config/database.php';
+        require_once __DIR__ . '/../includes/helpers.php';
+        
+        $postSlug = $configData['post_slug'] ?? '';
+        $postCount = min(max((int)($configData['post_count'] ?? 5), 1), 10);
+        
+        if (empty($postSlug)) {
+            return ''; // Can't find related posts without a reference
+        }
+        
+        // Get the reference post
+        $referencePost = fetchOne(
+            "SELECT * FROM blog_posts WHERE slug = ? AND published = 1",
+            [$postSlug]
+        );
+        
+        if (!$referencePost || empty($referencePost['category_id'])) {
+            return '';
+        }
+        
+        // Get related posts from same category
+        $relatedPosts = fetchAll(
+            "SELECT p.*, c.name as category_name 
+             FROM blog_posts p 
+             LEFT JOIN blog_categories c ON p.category_id = c.id 
+             WHERE p.published = 1 AND p.category_id = ? AND p.id != ? 
+             ORDER BY p.created_at DESC 
+             LIMIT ?",
+            [$referencePost['category_id'], $referencePost['id'], $postCount]
+        );
+        
+        if (empty($relatedPosts)) {
+            return '';
+        }
+        
+        $html = '<div class="widget-item blog-widget blog-related-posts">';
+        $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600;">Related Posts</h3>';
+        $html .= '<div class="blog-posts-list" style="display: flex; flex-direction: column; gap: 0.75rem;">';
+        
+        foreach ($relatedPosts as $post) {
+            $html .= '<a href="/blog/post.php?slug=' . h($post['slug']) . '" style="display: block; text-decoration: none; color: inherit; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.borderColor=\'#0066ff\'; this.style.boxShadow=\'0 2px 8px rgba(0,102,255,0.1)\'" onmouseout="this.style.borderColor=\'#e5e7eb\'; this.style.boxShadow=\'none\'">';
+            $html .= '<div style="font-weight: 500; margin-bottom: 0.25rem;">' . h($post['title']) . '</div>';
+            $html .= '<div style="font-size: 0.75rem; color: #999;">' . date('M j, Y', strtotime($post['created_at'])) . '</div>';
+            $html .= '</a>';
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
     }
     
     /**
