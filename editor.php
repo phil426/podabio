@@ -1404,7 +1404,11 @@ $csrfToken = generateCSRFToken();
                         <div class="user-menu">
                             <button type="button" class="user-menu-button" onclick="toggleUserMenu()" id="user-menu-button">
                                 <div class="user-menu-avatar">
-                                    <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                    <?php if ($page && !empty($page['profile_image'])): ?>
+                                        <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                    <?php else: ?>
+                                        <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="user-menu-info">
                                     <div class="user-menu-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
@@ -1415,8 +1419,19 @@ $csrfToken = generateCSRFToken();
                             
                             <div class="user-menu-dropdown" id="user-menu-dropdown">
                                 <div class="user-menu-header">
-                                    <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
-                                    <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                        <div class="user-menu-avatar" style="width: 48px; height: 48px;">
+                                            <?php if ($page && !empty($page['profile_image'])): ?>
+                                                <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                            <?php else: ?>
+                                                <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                                            <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
+                                        </div>
+                                    </div>
                                     <div class="user-menu-status <?php echo $user['email_verified'] ? 'verified' : 'unverified'; ?>">
                                         <i class="fas <?php echo $user['email_verified'] ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
                                         <?php echo $user['email_verified'] ? 'Verified' : 'Unverified'; ?>
@@ -4825,6 +4840,24 @@ $csrfToken = generateCSRFToken();
                         console.error('Preview parent:', preview ? preview.parentNode : 'null');
                     }
                     
+                    // Update user menu avatars
+                    const userMenuAvatars = document.querySelectorAll('.user-menu-avatar');
+                    userMenuAvatars.forEach(avatar => {
+                        // Check if it already has an img tag
+                        const existingImg = avatar.querySelector('img');
+                        if (existingImg) {
+                            existingImg.src = imageUrl + '?t=' + Date.now();
+                        } else {
+                            // Replace initial letter with image
+                            const img = document.createElement('img');
+                            img.src = imageUrl + '?t=' + Date.now();
+                            img.alt = 'Profile';
+                            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;';
+                            avatar.innerHTML = '';
+                            avatar.appendChild(img);
+                        }
+                    });
+                    
                     // Show remove button if not visible
                     let buttonContainer;
                     if (context === 'settings') {
@@ -4914,6 +4947,15 @@ $csrfToken = generateCSRFToken();
                     } else {
                         console.error('Preview element not found:', previewId);
                     }
+                    
+                    // Revert user menu avatars to initial letter
+                    const userMenuAvatars = document.querySelectorAll('.user-menu-avatar');
+                    const userEmailEl = document.querySelector('.user-menu-email');
+                    const userEmail = userEmailEl ? userEmailEl.textContent.trim() : '';
+                    const initial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
+                    userMenuAvatars.forEach(avatar => {
+                        avatar.innerHTML = initial;
+                    });
                     
                     // Remove remove button
                     const inputId = context === 'settings' ? 'profile-image-input-settings' : 'profile-image-input';
