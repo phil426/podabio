@@ -159,7 +159,7 @@ $csrfToken = generateCSRFToken();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" integrity="sha512-zxBiDORGDEEYDdKFuBcWopSKKXMFiFJ6xvEl2g+JNRSzUfwJH6/OPT0VH4C7/hPESj0Qd/etr6vWTYBS9sFJ8w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/croppie@2.6.5/croppie.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
         * {
@@ -2924,7 +2924,7 @@ $csrfToken = generateCSRFToken();
         <?php endif; ?>
     
     <!-- Croppie Image Cropper -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js" integrity="sha512-Gs+PsXsGkmr+15rqObPJnotkwO3T9iTOxvkUEB3DlWGF4VQHK/Mgz62pFGyOpSZLQZtH1T5CpnJdGrGmj7j6Pw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -3074,6 +3074,9 @@ $csrfToken = generateCSRFToken();
             // Initialize widget accordion states
             initializeWidgetAccordions();
             
+            // Preload widget definitions for accordion settings
+            loadWidgetDefinitions();
+            
             // Auto-upload profile images when file is selected (Settings tab only)
             const profileImageInputSettings = document.getElementById('profile-image-input-settings');
             if (profileImageInputSettings) {
@@ -3105,6 +3108,30 @@ $csrfToken = generateCSRFToken();
         let filteredWidgets = [];
         let currentCategory = 'all';
         let currentSearch = '';
+        
+        // Load widget definitions early
+        function loadWidgetDefinitions() {
+            if (allWidgets.length > 0) return; // Already loaded
+            
+            const formData = new FormData();
+            formData.append('action', 'get_available');
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/widgets.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && (data.available_widgets || data.widgets)) {
+                    const widgets = data.available_widgets || data.widgets;
+                    allWidgets = Array.isArray(widgets) ? widgets : Object.values(widgets);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading widget definitions:', error);
+            });
+        }
         
         window.showAddWidgetForm = function() {
             openWidgetGallery();
@@ -3958,127 +3985,170 @@ $csrfToken = generateCSRFToken();
             const contentDiv = document.getElementById(`widget-content-${widgetId}`);
             if (!contentDiv) return;
             
-            // Fetch widget data via POST
-            const formData = new FormData();
-            formData.append('action', 'get');
-            formData.append('widget_id', widgetId);
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/widgets.php', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.widget) {
-                        const widget = data.widget;
-                        const configData = typeof widget.config_data === 'string' 
-                            ? JSON.parse(widget.config_data) 
-                            : (widget.config_data || {});
-                        
-                        // Get widget definition
-                        const widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
-                        if (!widgetDef) {
-                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
-                            return;
+            // Ensure allWidgets is loaded
+            function loadSettings() {
+                // Fetch widget data via POST
+                const formData = new FormData();
+                formData.append('action', 'get');
+                formData.append('widget_id', widgetId);
+                formData.append('csrf_token', csrfToken);
+                
+                fetch('/api/widgets.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.widget) {
+                            const widget = data.widget;
+                            const configData = typeof widget.config_data === 'string' 
+                                ? JSON.parse(widget.config_data) 
+                                : (widget.config_data || {});
+                            
+                            // Get widget definition - load if not already loaded
+                            let widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
+                            
+                            if (!widgetDef && allWidgets.length === 0) {
+                                // Load widget definitions first
+                                const loadFormData = new FormData();
+                                loadFormData.append('action', 'get_available');
+                                loadFormData.append('csrf_token', csrfToken);
+                                
+                                fetch('/api/widgets.php', {
+                                    method: 'POST',
+                                    body: loadFormData
+                                })
+                                .then(response => response.json())
+                                .then(widgetData => {
+                                    if (widgetData.success && (widgetData.available_widgets || widgetData.widgets)) {
+                                        const widgets = widgetData.available_widgets || widgetData.widgets;
+                                        allWidgets = Array.isArray(widgets) ? widgets : Object.values(widgets);
+                                        widgetDef = allWidgets.find(w => w.widget_id === widget.widget_type);
+                                        if (widgetDef) {
+                                            renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
+                                        } else {
+                                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
+                                        }
+                                    } else {
+                                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget definitions</p>';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error loading widget definitions:', error);
+                                    contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget definitions</p>';
+                                });
+                                return;
+                            }
+                            
+                            if (!widgetDef) {
+                                contentDiv.innerHTML = '<p style="color: #dc3545;">Error: Widget type not found</p>';
+                                return;
+                            }
+                            
+                            renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv);
+                        } else {
+                            contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
                         }
-                        
-                        // Generate form HTML
-                        let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
-                        
-                        // Add title field
-                        formHTML += `
+                    })
+                    .catch(error => {
+                        console.error('Error loading widget settings:', error);
+                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                    });
+            }
+            
+            // Load settings
+            loadSettings();
+        };
+        
+        function renderWidgetSettings(widget, configData, widgetDef, widgetId, contentDiv) {
+            // Generate form HTML
+            let formHTML = '<form class="widget-settings-form" data-widget-id="' + widgetId + '">';
+            
+            // Add title field
+            formHTML += `
+                <div class="form-group">
+                    <label for="widget-inline-title-${widgetId}">Title <span style="color: #dc3545;">*</span></label>
+                    <input type="text" id="widget-inline-title-${widgetId}" 
+                           name="title" 
+                           value="${(widget.title || '').replace(/"/g, '&quot;')}" 
+                           required 
+                           onchange="saveWidgetSettingsInline(${widgetId})"
+                           class="widget-setting-input">
+                </div>
+            `;
+            
+            // Add widget-specific fields
+            if (widgetDef.config_fields) {
+                Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
+                    const value = configData[fieldName] || '';
+                    const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
+                    const helpText = fieldDef.help ? `<small>${fieldDef.help}</small>` : '';
+                    
+                    const fieldId = `widget-inline-${fieldName}-${widgetId}`;
+                    let fieldHTML = '';
+                    
+                    if (fieldDef.type === 'textarea') {
+                        fieldHTML = `
                             <div class="form-group">
-                                <label for="widget-inline-title-${widgetId}">Title <span style="color: #dc3545;">*</span></label>
-                                <input type="text" id="widget-inline-title-${widgetId}" 
-                                       name="title" 
-                                       value="${(widget.title || '').replace(/"/g, '&quot;')}" 
-                                       required 
+                                <label for="${fieldId}">${fieldDef.label}${required}</label>
+                                <textarea id="${fieldId}" 
+                                          name="${fieldName}" 
+                                          ${fieldDef.required ? 'required' : ''}
+                                          rows="${fieldDef.rows || 4}"
+                                          onchange="saveWidgetSettingsInline(${widgetId})"
+                                          class="widget-setting-input">${safeValue}</textarea>
+                                ${helpText}
+                            </div>
+                        `;
+                    } else if (fieldDef.type === 'checkbox') {
+                        const checked = value ? 'checked' : '';
+                        fieldHTML = `
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           id="${fieldId}" 
+                                           name="${fieldName}" 
+                                           ${checked}
+                                           onchange="saveWidgetSettingsInline(${widgetId})"
+                                           class="widget-setting-input">
+                                    <span>${fieldDef.label}${required}</span>
+                                </label>
+                                ${helpText}
+                            </div>
+                        `;
+                    } else {
+                        fieldHTML = `
+                            <div class="form-group">
+                                <label for="${fieldId}">${fieldDef.label}${required}</label>
+                                <input type="${fieldDef.type || 'text'}" 
+                                       id="${fieldId}" 
+                                       name="${fieldName}" 
+                                       value="${safeValue}"
+                                       placeholder="${fieldDef.placeholder || ''}"
+                                       ${fieldDef.required ? 'required' : ''}
                                        onchange="saveWidgetSettingsInline(${widgetId})"
                                        class="widget-setting-input">
+                                ${helpText}
                             </div>
                         `;
-                        
-                        // Add widget-specific fields
-                        if (widgetDef.config_fields) {
-                            Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
-                                const value = configData[fieldName] || '';
-                                const safeValue = String(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                                const required = fieldDef.required ? ' <span style="color: #dc3545;">*</span>' : '';
-                                const helpText = fieldDef.help ? `<small>${fieldDef.help}</small>` : '';
-                                
-                                const fieldId = `widget-inline-${fieldName}-${widgetId}`;
-                                let fieldHTML = '';
-                                
-                                if (fieldDef.type === 'textarea') {
-                                    fieldHTML = `
-                                        <div class="form-group">
-                                            <label for="${fieldId}">${fieldDef.label}${required}</label>
-                                            <textarea id="${fieldId}" 
-                                                      name="${fieldName}" 
-                                                      ${fieldDef.required ? 'required' : ''}
-                                                      rows="${fieldDef.rows || 4}"
-                                                      onchange="saveWidgetSettingsInline(${widgetId})"
-                                                      class="widget-setting-input">${safeValue}</textarea>
-                                            ${helpText}
-                                        </div>
-                                    `;
-                                } else if (fieldDef.type === 'checkbox') {
-                                    const checked = value ? 'checked' : '';
-                                    fieldHTML = `
-                                        <div class="form-group">
-                                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                                <input type="checkbox" 
-                                                       id="${fieldId}" 
-                                                       name="${fieldName}" 
-                                                       ${checked}
-                                                       onchange="saveWidgetSettingsInline(${widgetId})"
-                                                       class="widget-setting-input">
-                                                <span>${fieldDef.label}${required}</span>
-                                            </label>
-                                            ${helpText}
-                                        </div>
-                                    `;
-                                } else {
-                                    fieldHTML = `
-                                        <div class="form-group">
-                                            <label for="${fieldId}">${fieldDef.label}${required}</label>
-                                            <input type="${fieldDef.type || 'text'}" 
-                                                   id="${fieldId}" 
-                                                   name="${fieldName}" 
-                                                   value="${safeValue}"
-                                                   placeholder="${fieldDef.placeholder || ''}"
-                                                   ${fieldDef.required ? 'required' : ''}
-                                                   onchange="saveWidgetSettingsInline(${widgetId})"
-                                                   class="widget-setting-input">
-                                            ${helpText}
-                                        </div>
-                                    `;
-                                }
-                                
-                                formHTML += fieldHTML;
-                            });
-                        }
-                        
-                        // Add action buttons
-                        formHTML += `
-                            <div class="widget-accordion-actions">
-                                <button type="button" class="btn btn-secondary" onclick="editWidget(${widgetId}, this)">Edit</button>
-                                <button type="button" class="btn btn-danger" onclick="deleteWidget(${widgetId})">Delete</button>
-                                <div class="widget-save-indicator" id="widget-save-indicator-${widgetId}"></div>
-                            </div>
-                        `;
-                        
-                        formHTML += '</form>';
-                        contentDiv.innerHTML = formHTML;
-                    } else {
-                        contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
                     }
-                })
-                .catch(error => {
-                    console.error('Error loading widget settings:', error);
-                    contentDiv.innerHTML = '<p style="color: #dc3545;">Error loading widget settings</p>';
+                    
+                    formHTML += fieldHTML;
                 });
+            }
+            
+            // Add action buttons
+            formHTML += `
+                <div class="widget-accordion-actions">
+                    <button type="button" class="btn btn-secondary" onclick="editWidget(${widgetId}, this)">Edit</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteWidget(${widgetId})">Delete</button>
+                    <div class="widget-save-indicator" id="widget-save-indicator-${widgetId}"></div>
+                </div>
+            `;
+            
+            formHTML += '</form>';
+            contentDiv.innerHTML = formHTML;
         };
         
         // Debounce helper for auto-save
@@ -4344,9 +4414,9 @@ $csrfToken = generateCSRFToken();
         
         // Drag and drop functionality
         let draggedElement = null;
-        const widgetsList = document.getElementById('widgets-list');
         
         function initWidgetDragAndDrop() {
+            const widgetsList = document.getElementById('widgets-list');
             if (!widgetsList) return;
             
             // Remove old listeners by cloning (clean slate)
@@ -4438,21 +4508,39 @@ $csrfToken = generateCSRFToken();
         }
         
         // Initialize drag and drop on page load and after widget updates
-        if (widgetsList) {
-            initWidgetDragAndDrop();
-            
-            // Reinitialize after dynamic updates (MutationObserver)
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
-                        initWidgetDragAndDrop();
-                    }
+        document.addEventListener('DOMContentLoaded', function() {
+            const widgetsList = document.getElementById('widgets-list');
+            if (widgetsList) {
+                initWidgetDragAndDrop();
+                
+                // Reinitialize after dynamic updates (MutationObserver)
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
+                            // Small delay to ensure DOM is fully updated
+                            setTimeout(function() {
+                                initWidgetDragAndDrop();
+                            }, 100);
+                        }
+                    });
                 });
-            });
-            observer.observe(widgetsList, { childList: true, subtree: false });
+                observer.observe(widgetsList, { childList: true, subtree: false });
+            }
+        });
+        
+        // Also initialize immediately if DOM is already loaded
+        if (document.readyState === 'loading') {
+            // DOM is still loading, wait for DOMContentLoaded
+        } else {
+            // DOM is already loaded, initialize now
+            const widgetsList = document.getElementById('widgets-list');
+            if (widgetsList) {
+                initWidgetDragAndDrop();
+            }
         }
         
         function saveWidgetOrder() {
+            const widgetsList = document.getElementById('widgets-list');
             if (!widgetsList) {
                 console.error('Widgets list not found');
                 return;
