@@ -56,34 +56,91 @@ $googleAuthUrl = getGoogleAuthUrl();
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Auth Page Styles */
+        /* Modern Auth Page Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 50%, #003d99 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem 1rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
         }
         
         .auth-container {
             width: 100%;
             max-width: 440px;
+            position: relative;
+            z-index: 1;
         }
         
         .auth-box {
             background: white;
             border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
         }
         
         .auth-box h1 {
-            font-size: 2rem;
+            font-size: 1.875rem;
             font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 2rem 0;
+            color: #111827;
+            margin: 0 0 0.5rem 0;
             text-align: center;
+        }
+        
+        .auth-subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
         }
         
         .auth-box .form-group {
@@ -106,16 +163,26 @@ $googleAuthUrl = getGoogleAuthUrl();
             font-size: 1rem;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
+            background: #ffffff;
         }
         
         .auth-box .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        
+        .auth-box .form-group input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .form-group-link {
+            text-align: right;
+            margin-bottom: 1.5rem;
         }
         
         .forgot-password {
-            color: #667eea;
+            color: #0066ff;
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 600;
@@ -123,7 +190,8 @@ $googleAuthUrl = getGoogleAuthUrl();
         }
         
         .forgot-password:hover {
-            color: #764ba2;
+            color: #0052cc;
+            text-decoration: underline;
         }
         
         .auth-box .btn {
@@ -136,17 +204,21 @@ $googleAuthUrl = getGoogleAuthUrl();
             cursor: pointer;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
         }
         
         .auth-box .btn-primary {
-            background: #667eea;
+            background: #0066ff;
             color: white;
         }
         
         .auth-box .btn-primary:hover {
-            background: #5568d3;
+            background: #0052cc;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
         }
         
         .auth-box .btn-primary:active {
@@ -175,22 +247,20 @@ $googleAuthUrl = getGoogleAuthUrl();
             padding: 0 1rem;
             color: #9ca3af;
             font-size: 0.875rem;
+            font-weight: 500;
         }
         
         .auth-box .btn-google {
             background: white;
             color: #374151;
             border: 2px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             gap: 0.75rem;
-            text-decoration: none;
         }
         
         .auth-box .btn-google:hover {
             background: #f9fafb;
-            border-color: #667eea;
+            border-color: #0066ff;
+            box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1);
         }
         
         .auth-box .btn-google svg {
@@ -205,33 +275,48 @@ $googleAuthUrl = getGoogleAuthUrl();
         }
         
         .auth-footer a {
-            color: #667eea;
+            color: #0066ff;
             text-decoration: none;
             font-weight: 600;
             transition: color 0.2s;
         }
         
         .auth-footer a:hover {
-            color: #764ba2;
+            color: #0052cc;
+            text-decoration: underline;
         }
         
         .alert-error {
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fecaca;
-            padding: 1rem;
+            padding: 0.875rem 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .alert-error::before {
+            content: '⚠';
+            font-size: 1rem;
         }
         
         @media (max-width: 480px) {
             .auth-box {
-                padding: 2rem 1.5rem;
+                padding: 2.5rem 1.5rem;
             }
             
             .auth-box h1 {
-                font-size: 1.75rem;
+                font-size: 1.625rem;
+            }
+            
+            .auth-logo-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -239,7 +324,13 @@ $googleAuthUrl = getGoogleAuthUrl();
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h1>Log In</h1>
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <i class="fas fa-podcast"></i>
+                </div>
+                <h1>Log In</h1>
+                <p class="auth-subtitle">Welcome back to <?php echo h(APP_NAME); ?></p>
+            </div>
             
             <?php if ($error): ?>
                 <div class="alert alert-error"><?php echo h($error); ?></div>
@@ -250,19 +341,21 @@ $googleAuthUrl = getGoogleAuthUrl();
                 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>">
+                    <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="you@example.com">
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group-link">
                     <a href="/forgot-password.php" class="forgot-password">Forgot password?</a>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Log In</button>
+                <button type="submit" class="btn btn-primary">
+                    <span>Log In</span>
+                </button>
             </form>
             
             <div class="auth-divider">
