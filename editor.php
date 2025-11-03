@@ -411,7 +411,26 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100%;
             overflow-y: auto;
             padding: 2rem;
+            padding-right: 0; /* Remove right padding so scrollbar is at edge */
             position: relative;
+        }
+        
+        /* Ensure scrollbar appears at the far right edge */
+        .editor-content::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .editor-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .editor-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 6px;
+        }
+        
+        .editor-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         
         /* Live Preview Panel - Third Column */
