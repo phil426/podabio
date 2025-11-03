@@ -335,7 +335,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Live Preview Panel - Third Column */
         #live-preview-panel {
-            width: 280px; /* Increased to accommodate larger preview */
+            width: 240px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -415,8 +415,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Wrapper to constrain scaled container's layout width */
         #live-preview-panel .preview-iframe-wrapper {
-            width: 234px; /* Matches scaled visual width (390px * 0.6) */
-            height: 600px; /* Increased height to match Manage Widgets section */
+            width: 195px; /* Matches scaled visual width (390px * 0.5) */
+            height: 422px; /* Matches scaled visual height (844px * 0.5) */
             overflow: hidden;
             position: relative;
         }
@@ -428,8 +428,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             border-radius: 24px;
             overflow: hidden;
-            transform: scale(0.6); /* Slightly larger scale to show more content */
-            transform-origin: top center;
+            transform: scale(0.5);
+            transform-origin: top left;
             margin: 0;
             position: relative;
         }
