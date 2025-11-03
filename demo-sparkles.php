@@ -196,6 +196,42 @@
             display: inline-block;
         }
 
+        /* Sparkles around fizzy button */
+        .fizzy-sparkle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+        }
+
+        .fizzy-sparkle svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+        }
+
+        .fizzy-sparkle.active {
+            opacity: 1;
+            animation: fizzySparkleAnim 1.8s ease-in-out forwards;
+        }
+
+        @keyframes fizzySparkleAnim {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) rotate(360deg);
+            }
+        }
+
         .fizzy-input {
             display: none;
         }
@@ -308,7 +344,7 @@
         </div>
 
         <div class="fizzy-button-container">
-            <div class="fizzy-button-wrapper">
+            <div class="fizzy-button-wrapper" id="fizzy-button-wrapper">
                 <input type="checkbox" id="fizzy-button" class="fizzy-input">
                 <label for="fizzy-button" class="fizzy-label">
                     Click for Fizzy Particles! 🎉
@@ -446,6 +482,98 @@
                 setTimeout(() => {
                     this.checked = false;
                 }, 600); // Reset after animation completes
+            }
+        });
+
+        // Add sparkles around fizzy button
+        const fizzyButtonWrapper = document.getElementById('fizzy-button-wrapper');
+
+        function createFizzySparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'fizzy-sparkle';
+            sparkle.innerHTML = sparkleSVG;
+            
+            // Get button dimensions
+            const buttonRect = fizzyLabel.getBoundingClientRect();
+            const wrapperRect = fizzyButtonWrapper.getBoundingClientRect();
+            
+            // Position sparkle around the button perimeter
+            const buttonWidth = buttonRect.width;
+            const buttonHeight = buttonRect.height;
+            const padding = 30; // Space around button
+            
+            // Random position around button perimeter
+            let x, y;
+            const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+            
+            if (side === 0) { // Top
+                x = Math.random() * buttonWidth;
+                y = -padding - Math.random() * 20;
+            } else if (side === 1) { // Right
+                x = buttonWidth + padding + Math.random() * 20;
+                y = Math.random() * buttonHeight;
+            } else if (side === 2) { // Bottom
+                x = Math.random() * buttonWidth;
+                y = buttonHeight + padding + Math.random() * 20;
+            } else { // Left
+                x = -padding - Math.random() * 20;
+                y = Math.random() * buttonHeight;
+            }
+            
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            
+            // Random delay and duration
+            const delay = Math.random() * 1.5;
+            const duration = 1.5 + Math.random() * 1;
+            sparkle.style.animationDelay = delay + 's';
+            sparkle.style.animationDuration = duration + 's';
+            
+            fizzyButtonWrapper.appendChild(sparkle);
+            
+            // Activate sparkle
+            setTimeout(() => {
+                sparkle.classList.add('active');
+            }, 10);
+            
+            // Remove sparkle after animation
+            setTimeout(() => {
+                if (sparkle.parentNode) {
+                    sparkle.parentNode.removeChild(sparkle);
+                }
+            }, (delay + duration) * 1000);
+        }
+
+        // Create sparkles continuously around the button
+        function startFizzySparkles() {
+            // Create initial sparkles
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    createFizzySparkle();
+                }, i * 500);
+            }
+            
+            // Continue creating sparkles at random intervals
+            setInterval(() => {
+                if (Math.random() > 0.4) { // 60% chance to create a sparkle
+                    createFizzySparkle();
+                }
+            }, 1000 + Math.random() * 1500);
+        }
+
+        // Start sparkles when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startFizzySparkles);
+        } else {
+            startFizzySparkles();
+        }
+
+        // Also create extra sparkles on button hover
+        fizzyLabel.addEventListener('mouseenter', () => {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    createFizzySparkle();
+                }, i * 80);
             }
         });
     </script>
