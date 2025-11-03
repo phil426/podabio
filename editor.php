@@ -313,6 +313,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             position: relative;
             z-index: 1;
             margin-top: 64px; /* Account for navbar */
+            overflow-y: auto; /* Scrollbar at absolute right edge of viewport */
+            overflow-x: hidden;
         }
         
         /* Left Sidebar Navigation */
@@ -402,8 +404,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100%; /* Fill parent flex container */
             position: relative;
             z-index: 1;
-            overflow-y: auto; /* Scrollbar on the column itself */
-            overflow-x: hidden;
+            overflow: hidden; /* No scrollbar on column itself */
             min-width: 0; /* Allow flex shrinking */
         }
         
@@ -414,21 +415,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             position: relative;
         }
         
-        /* Custom scrollbar styling at the very edge */
-        .editor-main::-webkit-scrollbar {
+        /* Custom scrollbar styling at the absolute right edge of viewport */
+        .editor-layout::-webkit-scrollbar {
             width: 12px;
         }
         
-        .editor-main::-webkit-scrollbar-track {
+        .editor-layout::-webkit-scrollbar-track {
             background: transparent;
         }
         
-        .editor-main::-webkit-scrollbar-thumb {
+        .editor-layout::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 6px;
         }
         
-        .editor-main::-webkit-scrollbar-thumb:hover {
+        .editor-layout::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         
