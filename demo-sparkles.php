@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sparkles Effect Demo - Featured Widget</title>
+    <title>Sparkles & Fizzy Effects Demo - Featured Widget</title>
     <style>
         * {
             margin: 0;
@@ -182,13 +182,109 @@
             font-size: 0.95rem;
             line-height: 1.6;
         }
+
+        /* Fizzy Particle Button */
+        .fizzy-button-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .fizzy-button-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .fizzy-input {
+            display: none;
+        }
+
+        .fizzy-label {
+            display: inline-block;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .fizzy-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .fizzy-input:checked + .fizzy-label {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .fizzy-input:checked + .fizzy-label:hover {
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+        }
+
+        .fizzy-particles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+
+        .fizzy-spot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+
+        .fizzy-input:checked ~ .fizzy-particles .fizzy-spot {
+            animation: fizzyPop 0.8s ease-out forwards;
+        }
+
+        @keyframes fizzyPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) translateX(0) translateY(0);
+            }
+            30% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) translateX(0) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3) translateX(var(--move-x)) translateY(var(--move-y));
+            }
+        }
+
+        .fizzy-info {
+            margin-top: 1rem;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="demo-wrapper">
         <div>
-            <h1>✨ Sparkles Effect Demo</h1>
-            <p class="subtitle">This demonstrates how the sparkles effect will appear around featured widgets</p>
+            <h1>✨ Sparkles & Fizzy Effects Demo</h1>
+            <p class="subtitle">Demonstrating sparkles and fizzy particle effects for featured widgets</p>
         </div>
         
         <div class="featured-widget">
@@ -209,6 +305,20 @@
             <p>🌟 Sparkles use golden/yellow colors with glow effects</p>
             <p>✨ Each sparkle has a unique animation timing</p>
             <p>🌟 The widget has a subtle shine animation overlay</p>
+        </div>
+
+        <div class="fizzy-button-container">
+            <div class="fizzy-button-wrapper">
+                <input type="checkbox" id="fizzy-button" class="fizzy-input">
+                <label for="fizzy-button" class="fizzy-label">
+                    Click for Fizzy Particles! 🎉
+                </label>
+                <div class="fizzy-particles" id="fizzy-particles"></div>
+            </div>
+        </div>
+
+        <div class="fizzy-info">
+            <p>💫 Click the button above to see fizzy particles explode outward!</p>
         </div>
     </div>
 
@@ -292,6 +402,50 @@
                 setTimeout(() => {
                     createSparkle();
                 }, i * 100);
+            }
+        });
+
+        // Fizzy Particle Effect
+        const fizzyInput = document.getElementById('fizzy-button');
+        const fizzyParticles = document.getElementById('fizzy-particles');
+        const fizzyLabel = document.querySelector('.fizzy-label');
+
+        // Create 52 particle spots (like the CodePen)
+        for (let i = 1; i <= 52; i++) {
+            const spot = document.createElement('div');
+            spot.className = 'fizzy-spot';
+            
+            // Start from center, explode outward
+            spot.style.left = '50%';
+            spot.style.top = '50%';
+            
+            // Calculate movement direction (outward from center)
+            const angle = (i / 52) * Math.PI * 2;
+            const distance = 100 + Math.random() * 50; // Random distance 100-150px
+            const moveX = Math.cos(angle) * distance;
+            const moveY = Math.sin(angle) * distance;
+            
+            // Set CSS custom properties for the animation
+            spot.style.setProperty('--move-x', moveX + 'px');
+            spot.style.setProperty('--move-y', moveY + 'px');
+            
+            // Random delay for staggered animation
+            spot.style.animationDelay = `${Math.random() * 0.3}s`;
+            
+            // Random size variation
+            const size = 6 + Math.random() * 4;
+            spot.style.width = size + 'px';
+            spot.style.height = size + 'px';
+            
+            fizzyParticles.appendChild(spot);
+        }
+
+        // Reset checkbox after animation completes
+        fizzyInput.addEventListener('change', function() {
+            if (this.checked) {
+                setTimeout(() => {
+                    this.checked = false;
+                }, 600); // Reset after animation completes
             }
         });
     </script>
