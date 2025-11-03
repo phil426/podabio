@@ -1620,7 +1620,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .mobile-menu-toggle {
             display: none;
             position: fixed;
-            top: 1rem;
+            top: 74px; /* Position below navbar (64px + 10px spacing) */
             left: 1rem;
             z-index: 1001;
             background: white;
@@ -1630,6 +1630,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transition: all 0.2s;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .mobile-menu-toggle:hover {
@@ -1645,8 +1650,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-menu-toggle {
-                display: block;
-                top: 74px; /* Position below navbar (64px + 10px spacing) */
+                display: flex !important;
             }
             
             .sidebar {
