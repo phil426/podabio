@@ -408,6 +408,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             align-items: flex-start;
         }
         
+        /* Wrapper to constrain scaled container's layout width */
+        #live-preview-panel .preview-iframe-wrapper {
+            width: 195px; /* Matches scaled visual width (390px * 0.5) */
+            height: 422px; /* Matches scaled visual height (844px * 0.5) */
+            overflow: hidden;
+            position: relative;
+        }
+        
         #live-preview-panel .preview-iframe-container {
             width: 390px;
             height: 844px;
@@ -416,7 +424,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-radius: 24px;
             overflow: hidden;
             transform: scale(0.5);
-            transform-origin: top center;
+            transform-origin: top left;
             margin: 0;
             position: relative;
         }
@@ -3598,8 +3606,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
             </div>
             <div class="preview-content">
-                <div class="preview-iframe-container">
-                    <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
+                <div class="preview-iframe-wrapper">
+                    <div class="preview-iframe-container">
+                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
