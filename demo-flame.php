@@ -206,16 +206,16 @@
                         circle.drawCircle(0, 0, 12 + Math.random() * 12);
                         circle.endFill();
                         
-                        // Start particles at bottom of widget, spread across width
+                        // Start particles at top of widget, spread across width
                         const blob = {
                             circle: circle,
                             position: new Position(
                                 Math.random() * canvasWidth,
-                                canvasHeight - 5 + Math.random() * 15
+                                5 + Math.random() * 15
                             ),
                             velocity: new Position(
                                 (Math.random() - 0.5) * 1.2,
-                                -Math.random() * 2.2 - 0.8
+                                Math.random() * 2.2 + 0.8
                             ),
                             life: 0.7 + Math.random() * 0.3, // Vary starting life
                             decay: Math.random() * 0.012 + 0.006,
@@ -246,21 +246,21 @@
                     
                     // Add turbulence to velocity
                     blob.velocity.x += (Math.random() - 0.5) * 0.15;
-                    blob.velocity.y -= Math.random() * 0.08;
+                    blob.velocity.y += Math.random() * 0.08;
                     
                     // Update visual properties
                     blob.circle.alpha = blob.life;
                     blob.circle.position.set(blob.position.x, blob.position.y);
                     blob.circle.scale.set(blob.size * blob.life);
                     
-                    // Reset particles that fade out or go too high
-                    if (blob.life <= 0 || blob.position.y < -30) {
-                        // Reset to bottom of widget
+                    // Reset particles that fade out or go too low
+                    if (blob.life <= 0 || blob.position.y > this.canvasHeight + 30) {
+                        // Reset to top of widget
                         blob.position.x = Math.random() * this.canvasWidth;
-                        blob.position.y = this.canvasHeight - 10 + Math.random() * 20;
+                        blob.position.y = 5 + Math.random() * 15;
                         blob.life = 1.0;
-                        blob.velocity.x = (Math.random() - 0.5) * 1.5;
-                        blob.velocity.y = -Math.random() * 2.5 - 0.5;
+                        blob.velocity.x = (Math.random() - 0.5) * 1.2;
+                        blob.velocity.y = Math.random() * 2.2 + 0.8;
                         blob.size = Math.random() * 0.4 + 0.6;
                     }
                 });
