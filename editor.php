@@ -7665,12 +7665,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const widgetSecondaryFont = document.getElementById('widget_secondary_font');
             if (widgetPrimaryFont) widgetPrimaryFont.addEventListener('change', updateWidgetFontPreview);
             if (widgetSecondaryFont) widgetSecondaryFont.addEventListener('change', updateWidgetFontPreview);
+            // Load fonts on page load
+            if (customHeadingFont || customBodyFont) updateFontPreview();
+            if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview();
+            if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview();
         });
-        
-        // Load fonts on page load
-        if (customHeadingFont || customBodyFont) updateFontPreview();
-        if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview();
-        if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview();
         
         // Handle appearance form with auto-save
         const appearanceForm = document.getElementById('appearance-form');
