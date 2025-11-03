@@ -410,7 +410,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            padding-top: 1rem; /* Match vertical position of Manage Widgets section */
         }
         
         /* Wrapper to constrain scaled container's layout width */
