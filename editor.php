@@ -408,19 +408,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .editor-content {
-            width: 100%;
+            width: calc(100% + 240px); /* Extend width to include preview panel space */
             min-height: 100%;
             padding: 2rem;
+            padding-right: calc(240px + 2rem + 12px); /* Space for preview (240px) + content padding (2rem) + scrollbar (12px) */
             position: relative;
             overflow-y: scroll; /* Enable scrolling */
             overflow-x: hidden;
             height: 100%;
             max-height: calc(100vh - 64px); /* Constrain to viewport */
             box-sizing: border-box;
-            /* Extend scrollbar to viewport edge */
-            padding-right: 2rem;
-            margin-right: -240px; /* Negative margin to extend scrollbar beyond preview */
-            padding-right: calc(2rem + 240px); /* Add space for preview panel + scrollbar */
+            margin-right: -240px; /* Negative margin to extend scrollbar area beyond preview */
         }
         
         /* Custom scrollbar styling positioned at absolute right edge */
