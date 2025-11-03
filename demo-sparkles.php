@@ -196,11 +196,11 @@
             display: inline-block;
         }
 
-        /* Sparkles around fizzy button */
+        /* Sparkles on fizzy button */
         .fizzy-sparkle {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             pointer-events: none;
             z-index: 10;
             opacity: 0;
@@ -495,30 +495,15 @@
             
             // Get button dimensions
             const buttonRect = fizzyLabel.getBoundingClientRect();
-            const wrapperRect = fizzyButtonWrapper.getBoundingClientRect();
             
-            // Position sparkle around the button perimeter
+            // Position sparkle randomly ON the button surface
             const buttonWidth = buttonRect.width;
             const buttonHeight = buttonRect.height;
-            const padding = 30; // Space around button
             
-            // Random position around button perimeter
-            let x, y;
-            const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-            
-            if (side === 0) { // Top
-                x = Math.random() * buttonWidth;
-                y = -padding - Math.random() * 20;
-            } else if (side === 1) { // Right
-                x = buttonWidth + padding + Math.random() * 20;
-                y = Math.random() * buttonHeight;
-            } else if (side === 2) { // Bottom
-                x = Math.random() * buttonWidth;
-                y = buttonHeight + padding + Math.random() * 20;
-            } else { // Left
-                x = -padding - Math.random() * 20;
-                y = Math.random() * buttonHeight;
-            }
+            // Random position within button bounds (with padding from edges)
+            const padding = 15; // Padding from button edges
+            const x = padding + Math.random() * (buttonWidth - padding * 2);
+            const y = padding + Math.random() * (buttonHeight - padding * 2);
             
             sparkle.style.left = x + 'px';
             sparkle.style.top = y + 'px';
@@ -529,7 +514,7 @@
             sparkle.style.animationDelay = delay + 's';
             sparkle.style.animationDuration = duration + 's';
             
-            fizzyButtonWrapper.appendChild(sparkle);
+            fizzyLabel.appendChild(sparkle);
             
             // Activate sparkle
             setTimeout(() => {
