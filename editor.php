@@ -309,16 +309,114 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             margin-right: 0;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            overflow-y: auto;
             height: 100vh;
             position: relative;
             z-index: 1;
+            display: flex;
+            overflow: hidden;
         }
         
         .editor-content {
-            max-width: 900px;
-            margin: 0 auto;
+            flex: 1;
+            overflow-y: auto;
             padding: 2rem;
+            min-width: 0; /* Allow flex shrinking */
+        }
+        
+        /* Live Preview Panel - Integrated Layout */
+        #live-preview-panel {
+            width: 450px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-left: 2px solid #e5e7eb;
+            overflow: hidden;
+            transition: width 0.3s ease;
+        }
+        
+        #live-preview-panel.collapsed {
+            width: 0;
+            border-left: none;
+            overflow: hidden;
+        }
+        
+        #live-preview-panel.collapsed .preview-header,
+        #live-preview-panel.collapsed .preview-content {
+            display: none;
+        }
+        
+        /* Expand button when collapsed */
+        .preview-expand-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid #e5e7eb;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .preview-expand-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: #0066ff;
+        }
+        
+        #live-preview-panel .preview-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            flex-shrink: 0;
+        }
+        
+        #live-preview-panel .preview-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        #live-preview-panel .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #f3f4f6;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        #live-preview-panel .preview-iframe-container {
+            width: 390px;
+            height: 844px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            transform: scale(0.5);
+            transform-origin: top center;
+            margin-top: 0;
+            position: relative;
+        }
+        
+        #live-preview-panel #preview-iframe {
+            width: 390px;
+            height: 844px;
+            border: none;
+            display: block;
         }
         
         .editor-header {
@@ -2107,23 +2205,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <i class="fas fa-bars"></i>
             </button>
             
-            <!-- Preview Toggle Button -->
-            <button id="preview-toggle-btn" onclick="togglePreview()" class="btn btn-secondary" style="position: fixed; top: 80px; right: 20px; z-index: 999; border-radius: 8px; padding: 0.5rem 1rem; background: white; border: 2px solid #0066ff; color: #0066ff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <i class="fas fa-mobile-alt"></i> Preview
-            </button>
-            
-            <!-- Live Preview Panel -->
-            <div id="live-preview-panel" style="display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; border-left: 2px solid #e5e7eb; z-index: 998; box-shadow: -4px 0 20px rgba(0,0,0,0.1); overflow: hidden;">
-                <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
-                    <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Live Preview</h3>
-                    <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem;">&times;</button>
+            <!-- Live Preview Panel - Always Visible, Integrated Layout -->
+            <div id="live-preview-panel">
+                <div class="preview-header">
+                    <h3>Live Preview</h3>
+                    <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
                 </div>
-                <div style="height: calc(100vh - 60px); overflow-y: auto; background: #f3f4f6; padding: 1rem; display: flex; justify-content: center; align-items: flex-start;">
-                    <div style="width: 100%; max-width: 375px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; transform: scale(0.75); transform-origin: top center; margin-top: 0;">
-                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>" style="width: 100%; height: 667px; border: none; display: block;"></iframe>
+                <div class="preview-content">
+                    <div class="preview-iframe-container">
+                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
                     </div>
                 </div>
             </div>
+            
+            <!-- Expand Preview Button (shown when collapsed) -->
+            <button id="preview-expand-btn" onclick="togglePreview()" class="preview-expand-btn" style="display: none;" title="Expand Preview">
+                <i class="fas fa-chevron-left" style="font-size: 1rem; color: #0066ff;"></i>
+            </button>
             
             <div class="editor-content">
                 <div class="editor-header">
@@ -2702,6 +2800,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
                                 <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse</option>
                                 <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake</option>
+                                <option value="sparkles" <?php echo $currentEffect === 'sparkles' ? 'selected' : ''; ?>>Sparkles ✨</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
                                 <?php if ($featuredWidget): ?>
@@ -4080,19 +4179,27 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             document.body.removeChild(textarea);
         }
         
-        // Toggle preview panel
+        // Toggle preview panel (collapse/expand)
         window.togglePreview = function() {
             const panel = document.getElementById('live-preview-panel');
-            const btn = document.getElementById('preview-toggle-btn');
+            const expandBtn = document.getElementById('preview-expand-btn');
             
-            if (!panel || !btn) return;
+            if (!panel) return;
             
-            if (panel.style.display === 'none' || !panel.style.display) {
-                panel.style.display = 'block';
-                btn.style.right = '420px';
-                btn.innerHTML = '<i class="fas fa-times"></i> Close';
-                
-                // Load preview if not loaded
+            // Toggle collapsed class
+            panel.classList.toggle('collapsed');
+            
+            // Show/hide expand button
+            if (expandBtn) {
+                if (panel.classList.contains('collapsed')) {
+                    expandBtn.style.display = 'flex';
+                } else {
+                    expandBtn.style.display = 'none';
+                }
+            }
+            
+            // Load preview if not loaded when expanding
+            if (!panel.classList.contains('collapsed')) {
                 const iframe = document.getElementById('preview-iframe');
                 if (iframe) {
                     const pageUrl = '<?php echo isset($pageUrl) ? h($pageUrl) : ''; ?>';
@@ -4100,10 +4207,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         iframe.src = pageUrl;
                     }
                 }
-            } else {
-                panel.style.display = 'none';
-                btn.style.right = '20px';
-                btn.innerHTML = '<i class="fas fa-mobile-alt"></i> Preview';
             }
         };
         
@@ -4117,7 +4220,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 const panel = document.getElementById('live-preview-panel');
                 const iframe = document.getElementById('preview-iframe');
                 
-                if (panel && panel.style.display !== 'none' && iframe) {
+                // Only refresh if panel is visible (not collapsed) and iframe exists
+                if (panel && !panel.classList.contains('collapsed') && iframe) {
                     // Reload iframe with timestamp to bypass cache
                     const currentSrc = iframe.src.split('?')[0];
                     iframe.src = currentSrc + '?preview=' + Date.now();
@@ -4137,7 +4241,25 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is ok before parsing JSON
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        // Try to extract error message from HTML or use status
+                        const errorMsg = text.includes('<title>') ? `HTTP ${response.status}` : text.substring(0, 200);
+                        throw new Error(`HTTP ${response.status}: ${errorMsg}`);
+                    });
+                }
+                // Check content type before parsing
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error('Response is not JSON. Received: ' + text.substring(0, 200));
+                    });
+                }
+            })
             .then(data => {
                 if (data.success) {
                     const widgetItem = document.querySelector(`.widget-accordion-item[data-widget-id="${widgetId}"]`);
@@ -4160,7 +4282,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             })
             .catch(error => {
                 console.error('Error toggling widget visibility:', error);
-                showToast('An error occurred while updating widget visibility', 'error');
+                const errorMsg = error.message || 'Unknown error';
+                showToast('Error updating widget visibility: ' + errorMsg, 'error');
                 // Revert checkbox
                 const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
                 if (checkbox) {
@@ -5126,6 +5249,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
                                     <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
                                     <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                                    <option value="sparkles" ${featuredEffect === 'sparkles' ? 'selected' : ''}>Sparkles ✨</option>
                                 </select>
                                 <small style="color: #666; display: block; margin-top: 0.25rem;">Choose a special effect for this featured widget</small>
                             </div>
@@ -5706,6 +5830,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
                             <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
                             <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                            <option value="sparkles" ${featuredEffect === 'sparkles' ? 'selected' : ''}>Sparkles ✨</option>
                         </select>
                     </div>
                     `;
