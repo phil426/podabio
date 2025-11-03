@@ -302,7 +302,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 1rem;
         }
         
-        /* Center Editor Area */
+        /* Three Column Layout: Sidebar | Editor Content | Preview */
+        .editor-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Center Editor Area - Middle Column */
         .editor-main {
             flex: 1;
             margin-left: 200px;
@@ -312,18 +321,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100vh;
             position: relative;
             z-index: 1;
-            display: flex;
             overflow: hidden;
         }
         
         .editor-content {
-            flex: 1;
+            width: 100%;
+            height: 100%;
             overflow-y: auto;
             padding: 2rem;
-            min-width: 0; /* Allow flex shrinking */
         }
         
-        /* Live Preview Panel - Integrated Layout */
+        /* Live Preview Panel - Right Column */
         #live-preview-panel {
             width: 450px;
             flex-shrink: 0;
@@ -333,6 +341,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-left: 2px solid #e5e7eb;
             overflow: hidden;
             transition: width 0.3s ease;
+            height: 100vh;
         }
         
         #live-preview-panel.collapsed {
@@ -348,7 +357,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Expand button when collapsed */
         .preview-expand-btn {
-            position: absolute;
+            position: fixed;
             right: 0;
             top: 50%;
             transform: translateY(-50%);
@@ -1518,6 +1527,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .editor-main {
                 margin-left: 0;
             }
+            
+            /* Hide preview panel on mobile */
+            #live-preview-panel {
+                display: none;
+            }
         }
         
         /* Accordion Styles for Appearance Section */
@@ -2198,29 +2212,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             </nav>
         </aside>
         
-        <!-- Center Editor -->
+        <!-- Center Editor - Middle Column -->
         <main class="editor-main">
             <!-- Mobile Menu Toggle -->
             <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
                 <i class="fas fa-bars"></i>
-            </button>
-            
-            <!-- Live Preview Panel - Always Visible, Integrated Layout -->
-            <div id="live-preview-panel">
-                <div class="preview-header">
-                    <h3>Live Preview</h3>
-                    <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
-                </div>
-                <div class="preview-content">
-                    <div class="preview-iframe-container">
-                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Expand Preview Button (shown when collapsed) -->
-            <button id="preview-expand-btn" onclick="togglePreview()" class="preview-expand-btn" style="display: none;" title="Expand Preview">
-                <i class="fas fa-chevron-left" style="font-size: 1rem; color: #0066ff;"></i>
             </button>
             
             <div class="editor-content">
@@ -3594,6 +3590,24 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <?php endif; // End if ($page) ?>
             </div>
         </main>
+        
+        <!-- Live Preview Panel - Right Column -->
+        <div id="live-preview-panel">
+            <div class="preview-header">
+                <h3>Live Preview</h3>
+                <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
+            </div>
+            <div class="preview-content">
+                <div class="preview-iframe-container">
+                    <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expand Preview Button (shown when collapsed) -->
+        <button id="preview-expand-btn" onclick="togglePreview()" class="preview-expand-btn" style="display: none;" title="Expand Preview">
+            <i class="fas fa-chevron-left" style="font-size: 1rem; color: #0066ff;"></i>
+        </button>
     </div>
     
     <?php if ($page): ?>
