@@ -246,8 +246,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow-y: auto;
             position: fixed;
             left: 0;
-            top: 0;
-            height: 100vh;
+            top: 64px; /* Below navbar */
+            height: calc(100vh - 64px); /* Account for navbar */
             z-index: 100;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         }
@@ -255,6 +255,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .sidebar-header {
             padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
+            display: none; /* Hide since logo is now in navbar */
         }
         
         .sidebar-logo {
@@ -318,7 +319,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             margin-right: 0;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            height: 100vh;
+            height: calc(100vh - 64px); /* Account for navbar */
             position: relative;
             z-index: 1;
             overflow: hidden;
@@ -343,7 +344,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-left: 1px solid #e5e7eb;
             overflow: hidden;
             transition: width 0.3s ease, opacity 0.3s ease;
-            height: 100vh;
+            height: calc(100vh - 64px); /* Account for navbar */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
         
@@ -2178,16 +2179,96 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     </style>
 </head>
 <body>
+    <!-- Top Navbar -->
+    <nav class="editor-navbar">
+        <!-- Logo -->
+        <a href="/editor.php" class="navbar-logo">
+            <i class="fas fa-podcast"></i>
+            <?php echo h(APP_NAME); ?>
+        </a>
+        
+        <!-- URL Field and Copy Button -->
+        <div class="navbar-center">
+            <?php if ($page && !empty($pageUrl)): ?>
+            <div class="navbar-url-field">
+                <span><?php echo h($pageUrl); ?></span>
+                <button 
+                    type="button" 
+                    onclick="copyPageUrl()" 
+                    id="copy-url-btn"
+                    class="navbar-copy-btn"
+                    title="Copy page URL">
+                    <i class="fas fa-copy" id="copy-url-icon"></i>
+                </button>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <!-- User Menu -->
+        <div class="navbar-right">
+            <div class="user-menu">
+                <button type="button" class="user-menu-button" onclick="toggleUserMenu()" id="user-menu-button">
+                    <div class="user-menu-avatar">
+                        <?php if ($page && !empty($page['profile_image'])): ?>
+                            <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                        <?php endif; ?>
+                    </div>
+                    <div class="user-menu-info">
+                        <div class="user-menu-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                        <div class="user-menu-email"><?php echo h($user['email']); ?></div>
+                    </div>
+                    <i class="fas fa-chevron-down user-menu-icon"></i>
+                </button>
+                
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <div class="user-menu-header">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <div class="user-menu-avatar" style="width: 48px; height: 48px;">
+                                <?php if ($page && !empty($page['profile_image'])): ?>
+                                    <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                <?php else: ?>
+                                    <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                <?php endif; ?>
+                            </div>
+                            <div style="flex: 1;">
+                                <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                                <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
+                            </div>
+                        </div>
+                        <div class="user-menu-status <?php echo $user['email_verified'] ? 'verified' : 'unverified'; ?>">
+                            <i class="fas <?php echo $user['email_verified'] ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+                            <?php echo $user['email_verified'] ? 'Verified' : 'Unverified'; ?>
+                        </div>
+                    </div>
+                    
+                    <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu();">
+                        <i class="fas fa-user"></i>
+                        <span>Account Settings</span>
+                    </a>
+                    
+                    <?php if ($page): ?>
+                    <a href="/<?php echo h($page['username']); ?>" target="_blank" class="user-menu-item">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>View Page</span>
+                    </a>
+                    <?php endif; ?>
+                    
+                    <div class="user-menu-divider"></div>
+                    
+                    <a href="/logout.php" class="user-menu-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
     <div class="editor-layout">
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <a href="/editor.php" class="sidebar-logo">
-                    <i class="fas fa-podcast"></i>
-                    <?php echo h(APP_NAME); ?>
-                </a>
-            </div>
-            
             <nav class="sidebar-nav">
                 <?php if ($page): ?>
                     <a href="javascript:void(0)" class="nav-item active" onclick="showSection('widgets', this)">
@@ -2235,86 +2316,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             <div class="editor-content">
                 <div class="editor-header">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                            <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
-                            
-                            <?php if ($page && !empty($pageUrl)): ?>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.875rem;">
-                                <span style="color: #6b7280; font-weight: 500;"><?php echo h($pageUrl); ?></span>
-                                <button 
-                                    type="button" 
-                                    onclick="copyPageUrl()" 
-                                    id="copy-url-btn"
-                                    style="background: none; border: none; color: #0066ff; cursor: pointer; padding: 0.25rem 0.5rem; display: flex; align-items: center; gap: 0.25rem; border-radius: 4px; transition: background 0.2s;"
-                                    onmouseover="this.style.background='#e0f2fe'"
-                                    onmouseout="this.style.background='none'"
-                                    title="Copy page URL">
-                                    <i class="fas fa-copy" id="copy-url-icon"></i>
-                                </button>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- User Menu Dropdown -->
-                        <div class="user-menu">
-                            <button type="button" class="user-menu-button" onclick="toggleUserMenu()" id="user-menu-button">
-                                <div class="user-menu-avatar">
-                                    <?php if ($page && !empty($page['profile_image'])): ?>
-                                        <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                                    <?php else: ?>
-                                        <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="user-menu-info">
-                                    <div class="user-menu-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
-                                    <div class="user-menu-email"><?php echo h($user['email']); ?></div>
-                                </div>
-                                <i class="fas fa-chevron-down user-menu-icon"></i>
-                            </button>
-                            
-                            <div class="user-menu-dropdown" id="user-menu-dropdown">
-                                <div class="user-menu-header">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                        <div class="user-menu-avatar" style="width: 48px; height: 48px;">
-                                            <?php if ($page && !empty($page['profile_image'])): ?>
-                                                <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                                            <?php else: ?>
-                                                <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div style="flex: 1;">
-                                            <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
-                                            <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
-                                        </div>
-                                    </div>
-                                    <div class="user-menu-status <?php echo $user['email_verified'] ? 'verified' : 'unverified'; ?>">
-                                        <i class="fas <?php echo $user['email_verified'] ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
-                                        <?php echo $user['email_verified'] ? 'Verified' : 'Unverified'; ?>
-                                    </div>
-                                </div>
-                                
-                                <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu();">
-                                    <i class="fas fa-user"></i>
-                                    <span>Account Settings</span>
-                                </a>
-                                
-                                <?php if ($page): ?>
-                                <a href="/<?php echo h($page['username']); ?>" target="_blank" class="user-menu-item">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    <span>View Page</span>
-                                </a>
-                                <?php endif; ?>
-                                
-                                <div class="user-menu-divider"></div>
-                                
-                                <a href="/logout.php" class="user-menu-item">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    <span>Logout</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
                 </div>
         
         <!-- Toast Container -->
