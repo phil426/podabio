@@ -490,6 +490,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         #live-preview-panel .preview-content {
             flex: 1;
+            min-height: 0; /* Allow flex shrinking */
             overflow: hidden;
             background: #f3f4f6;
             padding: 0;
@@ -501,7 +502,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         #live-preview-panel .preview-refresh-btn {
-            margin: 1rem;
+            margin: 1rem 1rem 0.5rem 1rem; /* Reduced bottom margin */
             padding: 0.625rem 1rem;
             background: #0066ff;
             color: white;
@@ -514,6 +515,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            flex-shrink: 0; /* Prevent button compression */
         }
         
         #live-preview-panel .preview-refresh-btn:hover {
