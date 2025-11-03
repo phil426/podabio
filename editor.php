@@ -329,25 +329,33 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100%;
             overflow-y: auto;
             padding: 2rem;
+            position: relative;
         }
         
-        /* Live Preview Panel - Right Column */
+        /* Live Preview Panel - Positioned in Editor Content */
         #live-preview-panel {
-            width: 200px; /* Minimum: scaled iframe width (195px) + minimal header space */
-            flex-shrink: 0;
+            width: 200px;
+            position: fixed;
+            top: calc(2rem + 80px); /* Below header + user-menu height */
+            right: 2rem;
             display: flex;
             flex-direction: column;
             background: white;
-            border-left: 2px solid #e5e7eb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
             overflow: hidden;
-            transition: width 0.3s ease;
-            height: 100vh;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            max-height: calc(100vh - 120px);
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
         #live-preview-panel.collapsed {
             width: 0;
-            border-left: none;
+            opacity: 0;
+            border: none;
             overflow: hidden;
+            pointer-events: none;
         }
         
         #live-preview-panel.collapsed .preview-header,
@@ -358,22 +366,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         /* Expand button when collapsed */
         .preview-expand-btn {
             position: fixed;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
+            right: 2rem;
+            top: calc(2rem + 80px);
             width: 40px;
             height: 80px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 2px solid #e5e7eb;
-            border-right: none;
-            border-radius: 8px 0 0 8px;
+            border-radius: 8px;
             display: none;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 100;
-            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             transition: all 0.2s;
         }
         
@@ -3596,23 +3602,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             </div>
         </div>
                 <?php endif; // End if ($page) ?>
-            </div>
-        </main>
-        
-        <!-- Live Preview Panel - Right Column -->
-        <div id="live-preview-panel">
-            <div class="preview-header">
-                <h3>Live Preview</h3>
-                <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
-            </div>
-            <div class="preview-content">
-                <div class="preview-iframe-wrapper">
-                    <div class="preview-iframe-container">
-                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
+                
+                <!-- Live Preview Panel - Positioned in Editor Content, Far Right -->
+                <div id="live-preview-panel">
+                    <div class="preview-header">
+                        <h3>Live Preview</h3>
+                        <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-iframe-wrapper">
+                            <div class="preview-iframe-container">
+                                <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
         
         <!-- Expand Preview Button (shown when collapsed) -->
         <button id="preview-expand-btn" onclick="togglePreview()" class="preview-expand-btn" style="display: none;" title="Expand Preview">
