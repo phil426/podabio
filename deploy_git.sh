@@ -51,8 +51,9 @@ sshpass -p "$SSH_PASS" ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_HOST <<
     export GIT_ASKPASS=/bin/echo
     export GIT_TERMINAL_PROMPT=0
     
-    # Try pull with token
-    git -c credential.helper='!f() { echo "username=phil426"; echo "password=$GITHUB_TOKEN"; }; f' pull origin main
+    # Try pull with token (force reset to match remote)
+    git fetch origin main
+    git reset --hard origin/main
     
     if [ \$? -eq 0 ]; then
         echo "✅ Code updated successfully"
