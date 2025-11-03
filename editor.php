@@ -6826,6 +6826,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (widgetsList) {
                 initWidgetDragAndDrop();
             }
+            const directoriesList = document.getElementById('directories-list');
+            if (directoriesList) {
+                initSocialIconDragAndDrop();
+            }
         }
         
         function saveWidgetOrder() {
