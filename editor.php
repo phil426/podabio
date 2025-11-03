@@ -333,7 +333,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Live Preview Panel - Right Column */
         #live-preview-panel {
-            width: calc(390px + 36px); /* Content width (390px) + 18px padding each side */
+            width: 450px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -342,13 +342,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow: hidden;
             transition: width 0.3s ease;
             height: 100vh;
-            padding: 0 18px;
-            box-sizing: border-box;
         }
         
         #live-preview-panel.collapsed {
             width: 0;
-            padding: 0;
             border-left: none;
             overflow: hidden;
         }
@@ -386,7 +383,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         #live-preview-panel .preview-header {
-            padding: 1rem 0;
+            padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -405,7 +402,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex: 1;
             overflow-y: auto;
             background: #f3f4f6;
-            padding: 1rem 0;
+            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: flex-start;
