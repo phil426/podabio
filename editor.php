@@ -1621,7 +1621,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             display: none;
             position: fixed;
             top: 74px; /* Position below navbar (64px + 10px spacing) */
-            left: 1rem;
+            right: 1rem;
             z-index: 1001;
             background: white;
             border: 1px solid #e5e7eb;
