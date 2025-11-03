@@ -336,6 +336,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             display: none; /* Hide since logo is now in navbar */
         }
         
+        /* Hide mobile-specific sidebar elements on desktop */
+        .sidebar-mobile-url,
+        .sidebar-mobile-user {
+            display: none;
+        }
+        
         .sidebar-logo {
             font-size: 1.25rem;
             font-weight: 700;
@@ -1646,6 +1652,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             /* Hide preview panel on mobile */
             #live-preview-panel {
                 display: none;
+            }
+            
+            /* Show mobile-specific sidebar elements on mobile */
+            .sidebar-mobile-url,
+            .sidebar-mobile-user {
+                display: block;
+                padding: 1rem;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            /* Hide desktop navbar elements on mobile */
+            .navbar-center,
+            .navbar-right {
+                display: none !important;
             }
         }
         
