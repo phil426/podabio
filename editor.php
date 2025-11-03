@@ -1646,6 +1646,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         @media (max-width: 768px) {
             .mobile-menu-toggle {
                 display: block;
+                top: 74px; /* Position below navbar (64px + 10px spacing) */
             }
             
             .sidebar {
