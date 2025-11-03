@@ -1094,7 +1094,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .toast-container {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 10000;
             display: flex;
             flex-direction: column;
@@ -1103,70 +1104,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .toast {
-            min-width: 320px;
-            max-width: 420px;
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
-            padding: 16px 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 1rem 1.5rem;
             pointer-events: auto;
-            transform: translateX(calc(100% + 40px));
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: opacity 0.3s ease;
         }
         
         .toast.show {
-            transform: translateX(0);
             opacity: 1;
-        }
-        
-        .toast.success {
-            border-left: 4px solid #10b981;
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-        }
-        
-        .toast.error {
-            border-left: 4px solid #ef4444;
-            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
-        }
-        
-        .toast.info {
-            border-left: 4px solid #3b82f6;
-            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
-        }
-        
-        .toast-icon {
-            flex-shrink: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 14px;
-        }
-        
-        .toast.success .toast-icon {
-            background: #10b981;
-            color: #ffffff;
-        }
-        
-        .toast.error .toast-icon {
-            background: #ef4444;
-            color: #ffffff;
-        }
-        
-        .toast.info .toast-icon {
-            background: #3b82f6;
-            color: #ffffff;
-        }
-        
-        .toast-content {
-            flex: 1;
-            min-width: 0;
         }
         
         .toast-message {
@@ -1175,24 +1123,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             line-height: 1.5;
             color: #1f2937;
             margin: 0;
-        }
-        
-        .toast-close {
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            padding: 4px;
-            line-height: 1;
-            font-size: 18px;
-            transition: color 0.2s;
-            opacity: 0.7;
-        }
-        
-        .toast-close:hover {
-            color: #374151;
-            opacity: 1;
+            text-align: center;
         }
         
         /* Legacy alert styles (for backward compatibility) */
@@ -6431,27 +6362,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             
-            // Choose icon based on type
-            let icon = 'fa-check-circle';
-            if (type === 'error') {
-                icon = 'fa-exclamation-circle';
-            } else if (type === 'info') {
-                icon = 'fa-info-circle';
-            } else {
-                icon = 'fa-check-circle';
-            }
-            
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div class="toast-content">
-                    <p class="toast-message">${message}</p>
-                </div>
-                <button class="toast-close" onclick="this.closest('.toast').remove()" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+            toast.innerHTML = `<p class="toast-message">${message}</p>`;
             
             container.appendChild(toast);
             
