@@ -6564,6 +6564,126 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Drag and drop functionality
         let draggedElement = null;
+        let draggedSocialIconElement = null;
+        
+        function initSocialIconDragAndDrop() {
+            const directoriesList = document.getElementById('directories-list');
+            if (!directoriesList) return;
+            
+            // Remove old listeners by cloning (clean slate)
+            const items = directoriesList.querySelectorAll('.widget-accordion-item');
+            items.forEach(item => {
+                const dragHandle = item.querySelector('.drag-handle');
+                if (dragHandle) {
+                    dragHandle.setAttribute('draggable', 'true');
+                    dragHandle.style.cursor = 'move';
+                    
+                    dragHandle.addEventListener('dragstart', function(e) {
+                        draggedSocialIconElement = item;
+                        item.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/html', item.innerHTML);
+                        e.stopPropagation();
+                    });
+                    
+                    dragHandle.addEventListener('dragend', function() {
+                        item.classList.remove('dragging');
+                        directoriesList.querySelectorAll('.widget-accordion-item').forEach(el => {
+                            el.classList.remove('drag-over');
+                        });
+                        draggedSocialIconElement = null;
+                    });
+                }
+                
+                // Enable drop zones
+                item.addEventListener('dragover', function(e) {
+                    if (draggedSocialIconElement && draggedSocialIconElement !== this) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        this.classList.add('drag-over');
+                    }
+                });
+                
+                item.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                item.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (draggedSocialIconElement && draggedSocialIconElement !== this) {
+                        const allItems = Array.from(directoriesList.querySelectorAll('.widget-accordion-item'));
+                        const draggedIndex = allItems.indexOf(draggedSocialIconElement);
+                        const targetIndex = allItems.indexOf(this);
+                        
+                        if (draggedIndex < targetIndex) {
+                            directoriesList.insertBefore(draggedSocialIconElement, this.nextSibling);
+                        } else {
+                            directoriesList.insertBefore(draggedSocialIconElement, this);
+                        }
+                        
+                        // Save new order
+                        saveSocialIconOrder();
+                    }
+                    
+                    this.classList.remove('drag-over');
+                    return false;
+                });
+            });
+        }
+        
+        function saveSocialIconOrder() {
+            const directoriesList = document.getElementById('directories-list');
+            if (!directoriesList) {
+                console.error('Directories list not found');
+                return;
+            }
+            
+            const items = Array.from(directoriesList.querySelectorAll('.widget-accordion-item'));
+            if (items.length === 0) {
+                console.warn('No social icons found to reorder');
+                return;
+            }
+            
+            const iconOrders = items.map((item, index) => {
+                const iconId = item.getAttribute('data-directory-id');
+                if (!iconId) {
+                    console.warn('Social icon item missing data-directory-id:', item);
+                    return null;
+                }
+                return {
+                    icon_id: parseInt(iconId),
+                    display_order: index + 1
+                };
+            }).filter(order => order !== null);
+            
+            if (iconOrders.length === 0) {
+                console.warn('No valid social icon orders to save');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'reorder_social_icons');
+            formData.append('icon_orders', JSON.stringify(iconOrders));
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Failed to save social icon order:', data.error);
+                    showToast('Failed to save order: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving social icon order:', error);
+                showToast('Error saving order', 'error');
+            });
+        }
         
         function initWidgetDragAndDrop() {
             const widgetsList = document.getElementById('widgets-list');
@@ -6675,6 +6795,25 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     });
                 });
                 observer.observe(widgetsList, { childList: true, subtree: false });
+            }
+            
+            // Initialize social icon drag and drop
+            const directoriesList = document.getElementById('directories-list');
+            if (directoriesList) {
+                initSocialIconDragAndDrop();
+                
+                // Reinitialize after dynamic updates (MutationObserver)
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
+                            // Small delay to ensure DOM is fully updated
+                            setTimeout(function() {
+                                initSocialIconDragAndDrop();
+                            }, 100);
+                        }
+                    });
+                });
+                observer.observe(directoriesList, { childList: true, subtree: false });
             }
         });
         
