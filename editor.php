@@ -402,34 +402,33 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100%; /* Fill parent flex container */
             position: relative;
             z-index: 1;
-            overflow: hidden;
+            overflow-y: auto; /* Scrollbar on the column itself */
+            overflow-x: hidden;
             min-width: 0; /* Allow flex shrinking */
         }
         
         .editor-content {
             width: 100%;
-            height: 100%;
-            overflow-y: auto;
+            min-height: 100%;
             padding: 2rem;
-            padding-right: 0; /* Remove right padding so scrollbar is at edge */
             position: relative;
         }
         
-        /* Ensure scrollbar appears at the far right edge */
-        .editor-content::-webkit-scrollbar {
+        /* Custom scrollbar styling at the very edge */
+        .editor-main::-webkit-scrollbar {
             width: 12px;
         }
         
-        .editor-content::-webkit-scrollbar-track {
+        .editor-main::-webkit-scrollbar-track {
             background: transparent;
         }
         
-        .editor-content::-webkit-scrollbar-thumb {
+        .editor-main::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 6px;
         }
         
-        .editor-content::-webkit-scrollbar-thumb:hover {
+        .editor-main::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         
