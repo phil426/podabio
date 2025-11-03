@@ -335,7 +335,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Live Preview Panel - Third Column */
         #live-preview-panel {
-            width: 240px;
+            width: 280px; /* Increased to accommodate larger preview */
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -415,7 +415,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Wrapper to constrain scaled container's layout width */
         #live-preview-panel .preview-iframe-wrapper {
-            width: 195px; /* Matches scaled visual width (390px * 0.5) */
+            width: 234px; /* Matches scaled visual width (390px * 0.6) */
             height: 600px; /* Increased height to match Manage Widgets section */
             overflow: hidden;
             position: relative;
