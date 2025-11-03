@@ -264,6 +264,12 @@ class ThemeCSSGenerator {
             $css .= "    max-width: 1200px;\n";
             $css .= "    margin: 0 auto;\n";
             $css .= "}\n\n";
+        } elseif ($this->spatialEffect === 'tilt') {
+            $css .= "body.spatial-tilt .widget-item {\n";
+            $css .= "    will-change: transform;\n";
+            $css .= "    transition: transform 0.1s ease-out;\n";
+            $css .= "    transform-style: preserve-3d;\n";
+            $css .= "}\n\n";
         }
         
         return $css;

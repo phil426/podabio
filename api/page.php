@@ -224,7 +224,7 @@ switch ($action) {
         // Handle spatial effect
         if (isset($_POST['spatial_effect'])) {
             $spatialEffect = sanitizeInput($_POST['spatial_effect']);
-            $validEffects = ['none', 'glass', 'depth', 'floating'];
+            $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
             if (in_array($spatialEffect, $validEffects, true)) {
                 $updateData['spatial_effect'] = $spatialEffect;
             }

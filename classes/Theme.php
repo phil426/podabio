@@ -573,7 +573,7 @@ class Theme {
     public function getSpatialEffect($page, $theme = null) {
         // First, try page-specific spatial effect
         if (!empty($page['spatial_effect'])) {
-            $validEffects = ['none', 'glass', 'depth', 'floating'];
+            $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
             if (in_array($page['spatial_effect'], $validEffects, true)) {
                 return $page['spatial_effect'];
             }
@@ -581,7 +581,7 @@ class Theme {
         
         // If no page effect and theme is provided, use theme effect
         if ($theme && !empty($theme['spatial_effect'])) {
-            $validEffects = ['none', 'glass', 'depth', 'floating'];
+            $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
             if (in_array($theme['spatial_effect'], $validEffects, true)) {
                 return $theme['spatial_effect'];
             }
@@ -591,7 +591,7 @@ class Theme {
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
             if ($theme && !empty($theme['spatial_effect'])) {
-                $validEffects = ['none', 'glass', 'depth', 'floating'];
+                $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
                 if (in_array($theme['spatial_effect'], $validEffects, true)) {
                     return $theme['spatial_effect'];
                 }

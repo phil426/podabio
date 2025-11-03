@@ -3518,7 +3518,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             'none' => ['label' => 'None', 'icon' => 'fa-square', 'desc' => 'Standard layout'],
                             'glass' => ['label' => 'Glass', 'icon' => 'fa-image', 'desc' => 'Glassmorphism effect'],
                             'depth' => ['label' => 'Depth', 'icon' => 'fa-cube', 'desc' => '3D perspective'],
-                            'floating' => ['label' => 'Floating', 'icon' => 'fa-window-maximize', 'desc' => 'Floating container']
+                            'floating' => ['label' => 'Floating', 'icon' => 'fa-window-maximize', 'desc' => 'Floating container'],
+                            'tilt' => ['label' => 'Tilt', 'icon' => 'fa-mobile-screen-button', 'desc' => 'Device tilt parallax']
                         ];
                         $currentSpatialEffect = $spatialEffect;
                         foreach ($spatialEffects as $value => $info): 
