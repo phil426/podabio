@@ -2794,12 +2794,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;"
                                     <?php echo !$featuredWidget ? 'disabled' : ''; ?>>
                                 <option value="">None</option>
-                                <option value="jiggle" <?php echo ($currentEffect === 'jiggle' || (!$currentEffect && $featuredWidget)) ? 'selected' : ''; ?>>Jiggle</option>
-                                <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn</option>
-                                <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow</option>
-                                <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink</option>
-                                <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse</option>
-                                <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake</option>
+                                <option value="jiggle" <?php echo ($currentEffect === 'jiggle' || (!$currentEffect && $featuredWidget)) ? 'selected' : ''; ?>>Jiggle 🎯</option>
+                                <option value="burn" <?php echo $currentEffect === 'burn' ? 'selected' : ''; ?>>Burn 🔥</option>
+                                <option value="rotating-glow" <?php echo $currentEffect === 'rotating-glow' ? 'selected' : ''; ?>>Rotating Glow 💫</option>
+                                <option value="blink" <?php echo $currentEffect === 'blink' ? 'selected' : ''; ?>>Blink 👁️</option>
+                                <option value="pulse" <?php echo $currentEffect === 'pulse' ? 'selected' : ''; ?>>Pulse 💓</option>
+                                <option value="shake" <?php echo $currentEffect === 'shake' ? 'selected' : ''; ?>>Shake 📳</option>
                                 <option value="sparkles" <?php echo $currentEffect === 'sparkles' ? 'selected' : ''; ?>>Sparkles ✨</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
@@ -5243,12 +5243,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <label for="widget_config_featured_effect">Featured Effect</label>
                                 <select id="widget_config_featured_effect" name="featured_effect">
                                     <option value="">Select an effect...</option>
-                                    <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle</option>
-                                    <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
-                                    <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
-                                    <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
-                                    <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
-                                    <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                                    <option value="jiggle" ${featuredEffect === 'jiggle' ? 'selected' : ''}>Jiggle 🎯</option>
+                                    <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn 🔥</option>
+                                    <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow 💫</option>
+                                    <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink 👁️</option>
+                                    <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse 💓</option>
+                                    <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake 📳</option>
                                     <option value="sparkles" ${featuredEffect === 'sparkles' ? 'selected' : ''}>Sparkles ✨</option>
                                 </select>
                                 <small style="color: #666; display: block; margin-top: 0.25rem;">Choose a special effect for this featured widget</small>
@@ -5824,12 +5824,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 class="widget-setting-input"
                                 style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
                             <option value="">None</option>
-                            <option value="jiggle" ${(featuredEffect === 'jiggle' || (!widgetData.featured_effect && isFeatured)) ? 'selected' : ''}>Jiggle</option>
-                            <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn</option>
-                            <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow</option>
-                            <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink</option>
-                            <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse</option>
-                            <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake</option>
+                            <option value="jiggle" ${(featuredEffect === 'jiggle' || (!widgetData.featured_effect && isFeatured)) ? 'selected' : ''}>Jiggle 🎯</option>
+                            <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn 🔥</option>
+                            <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow 💫</option>
+                            <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink 👁️</option>
+                            <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse 💓</option>
+                            <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake 📳</option>
                             <option value="sparkles" ${featuredEffect === 'sparkles' ? 'selected' : ''}>Sparkles ✨</option>
                         </select>
                     </div>
