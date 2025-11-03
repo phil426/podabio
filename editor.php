@@ -2933,7 +2933,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         <!-- Appearance Tab -->
         <div id="tab-appearance" class="tab-content">
-            <h2>Appearance</h2>
+            <h2 style="margin-bottom: 1.5rem;">Appearance</h2>
             <form id="appearance-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 
