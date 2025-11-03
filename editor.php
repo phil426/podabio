@@ -337,7 +337,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: 200px;
             position: fixed;
             top: calc(2rem + 80px); /* Below header + user-menu height */
-            right: 2rem;
+            right: 20px;
+            margin-left: 20px; /* Padding from content on the left */
             display: flex;
             flex-direction: column;
             background: white;
@@ -366,7 +367,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         /* Expand button when collapsed */
         .preview-expand-btn {
             position: fixed;
-            right: 2rem;
+            right: 20px;
             top: calc(2rem + 80px);
             width: 40px;
             height: 80px;
