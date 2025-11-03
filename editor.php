@@ -2318,6 +2318,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
 <body>
     <!-- Top Navbar -->
     <nav class="editor-navbar">
+        <!-- Mobile Menu Toggle (only visible on mobile) -->
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <!-- Logo -->
         <a href="/editor.php" class="navbar-logo">
             <i class="fas fa-podcast"></i>
