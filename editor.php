@@ -504,7 +504,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding-top: calc(1.875rem + 1.5rem + 1px); /* Match editor-header h1 height + padding-bottom + border */
+            padding-top: 40px;
         }
         
         #live-preview-panel .preview-refresh-btn {
