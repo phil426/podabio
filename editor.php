@@ -387,7 +387,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         #live-preview-panel .preview-header {
-            padding: 0.5rem 0.25rem;
+            padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -3599,25 +3599,25 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     </a>
                 </div>
             </div>
-        </div>
+                </div>
                 <?php endif; // End if ($page) ?>
-                
-                <!-- Live Preview Panel - Positioned in Editor Content, Far Right -->
-                <div id="live-preview-panel">
-                    <div class="preview-header">
-                        <h3>Live Preview</h3>
-                        <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
-                    </div>
-                    <div class="preview-content">
-                        <div class="preview-iframe-wrapper">
-                            <div class="preview-iframe-container">
-                                <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
-                            </div>
-                        </div>
+            </div>
+        </main>
+        
+        <!-- Live Preview Panel - Third Column -->
+        <div id="live-preview-panel">
+            <div class="preview-header">
+                <h3>Live Preview</h3>
+                <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
+            </div>
+            <div class="preview-content">
+                <div class="preview-iframe-wrapper">
+                    <div class="preview-iframe-container">
+                        <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
         
         <!-- Expand Preview Button (shown when collapsed) -->
         <button id="preview-expand-btn" onclick="togglePreview()" class="preview-expand-btn" style="display: none;" title="Expand Preview">
