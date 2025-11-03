@@ -177,8 +177,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             overflow-x: hidden;
+            overflow-y: hidden; /* Prevent body from extending beyond viewport */
             position: relative;
-            min-height: 100vh;
+            height: 100vh; /* Constrain to exactly viewport height */
         }
         
         @keyframes gradientShift {
@@ -397,7 +398,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             margin-left: 200px;
             margin-right: 0;
             background: #f3f4f6;
-            height: calc(100vh - 64px); /* Account for navbar */
+            min-height: calc(100vh - 64px); /* Account for navbar - use min-height to cover rounding issues */
+            height: 100%; /* Fill parent flex container */
             position: relative;
             z-index: 1;
             overflow: hidden;
