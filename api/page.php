@@ -276,6 +276,26 @@ switch ($action) {
         echo json_encode($result);
         break;
         
+    case 'update_directory':
+        $iconId = (int)($_POST['directory_id'] ?? 0);
+        $platformName = sanitizeInput($_POST['platform_name'] ?? '');
+        $url = sanitizeUrl($_POST['url'] ?? '');
+        
+        if (!$iconId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
+            exit;
+        }
+        
+        if (empty($platformName) || empty($url)) {
+            echo json_encode(['success' => false, 'error' => 'Platform name and URL are required']);
+            exit;
+        }
+        
+        $result = $page->updateSocialIcon($iconId, $pageId, $platformName, $url);
+        echo json_encode($result);
+        break;
+        
     case 'delete_directory':
         $iconId = (int)($_POST['directory_id'] ?? 0);
         if (!$iconId) {

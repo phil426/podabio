@@ -2662,13 +2662,64 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     <li>No social icons yet. Click "Add Social Icon" to get started.</li>
                 <?php else: ?>
                     <?php foreach ($socialIcons as $icon): ?>
-                        <li class="widget-item" data-directory-id="<?php echo $icon['id']; ?>">
-                            <div class="widget-info">
-                                <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
-                                <div class="widget-url"><?php echo h($icon['url']); ?></div>
-                            </div>
-                            <div class="widget-actions">
-                                <button class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
+                        <li class="widget-accordion-item" data-directory-id="<?php echo $icon['id']; ?>">
+                            <button type="button" class="widget-accordion-header" onclick="toggleSocialIconAccordion(<?php echo $icon['id']; ?>)">
+                                <div class="widget-info" style="flex: 1; text-align: left;">
+                                    <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
+                                    <div class="widget-url"><?php echo h($icon['url']); ?></div>
+                                </div>
+                                <i class="fas fa-chevron-down accordion-icon" id="social-icon-chevron-<?php echo $icon['id']; ?>"></i>
+                            </button>
+                            <div class="widget-accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>" style="display: none; position: relative; top: auto; left: auto; right: auto; border: none; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; box-shadow: none; z-index: auto; opacity: 1; visibility: visible; transform: none;">
+                                <div class="widget-content-inner" style="padding: 1.5rem;">
+                                    <form class="social-icon-edit-form" data-directory-id="<?php echo $icon['id']; ?>" onsubmit="saveSocialIcon(event, <?php echo $icon['id']; ?>)">
+                                        <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
+                                        
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="social-icon-platform-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Platform</label>
+                                            <select id="social-icon-platform-<?php echo $icon['id']; ?>" name="platform_name" required style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                                                <option value="">Select Platform</option>
+                                                <?php
+                                                $platforms = [
+                                                    'apple_podcasts' => 'Apple Podcasts',
+                                                    'spotify' => 'Spotify',
+                                                    'youtube_music' => 'YouTube Music',
+                                                    'iheart_radio' => 'iHeart Radio',
+                                                    'amazon_music' => 'Amazon Music',
+                                                    'facebook' => 'Facebook',
+                                                    'twitter' => 'Twitter / X',
+                                                    'instagram' => 'Instagram',
+                                                    'linkedin' => 'LinkedIn',
+                                                    'youtube' => 'YouTube',
+                                                    'tiktok' => 'TikTok',
+                                                    'snapchat' => 'Snapchat',
+                                                    'pinterest' => 'Pinterest',
+                                                    'reddit' => 'Reddit',
+                                                    'discord' => 'Discord',
+                                                    'twitch' => 'Twitch',
+                                                    'github' => 'GitHub',
+                                                    'behance' => 'Behance',
+                                                    'dribbble' => 'Dribbble',
+                                                    'medium' => 'Medium'
+                                                ];
+                                                foreach ($platforms as $key => $name):
+                                                ?>
+                                                    <option value="<?php echo h($key); ?>" <?php echo ($icon['platform_name'] === $key) ? 'selected' : ''; ?>><?php echo h($name); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                                            <label for="social-icon-url-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">URL</label>
+                                            <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" required placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                            <button type="button" class="btn btn-secondary btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
+                                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </li>
                     <?php endforeach; ?>
@@ -8275,11 +8326,76 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Social Icons Management
         function showAddDirectoryForm() {
             document.getElementById('directory-form').reset();
+            document.getElementById('directory-id').value = '';
+            document.getElementById('directory-modal-title').textContent = 'Add Social Icon';
+            document.getElementById('directory-modal').style.display = 'block';
+        }
+        
+        function editDirectory(directoryId, platformName, url) {
+            document.getElementById('directory-id').value = directoryId;
+            document.getElementById('directory_platform').value = platformName;
+            document.getElementById('directory_url').value = url;
+            document.getElementById('directory-modal-title').textContent = 'Edit Social Icon';
             document.getElementById('directory-modal').style.display = 'block';
         }
         
         function closeDirectoryModal() {
             document.getElementById('directory-modal').style.display = 'none';
+            document.getElementById('directory-form').reset();
+            document.getElementById('directory-id').value = '';
+        }
+        
+        function toggleSocialIconAccordion(directoryId) {
+            const content = document.getElementById('social-icon-content-' + directoryId);
+            const chevron = document.getElementById('social-icon-chevron-' + directoryId);
+            const item = content.closest('.widget-accordion-item');
+            
+            // Close all other accordions
+            document.querySelectorAll('.widget-accordion-item').forEach(otherItem => {
+                if (otherItem !== item) {
+                    const otherContent = otherItem.querySelector('.widget-accordion-content');
+                    const otherChevron = otherItem.querySelector('.accordion-icon');
+                    if (otherContent && otherContent.style.display !== 'none') {
+                        otherContent.style.display = 'none';
+                        if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+            
+            // Toggle current accordion
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        function saveSocialIcon(event, directoryId) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            formData.append('action', 'update_directory');
+            formData.append('directory_id', directoryId);
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Social icon updated successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.error || 'Failed to update social icon', 'error');
+                }
+            })
+            .catch(() => {
+                showToast('An error occurred', 'error');
+            });
         }
         
         function deleteDirectory(directoryId) {
@@ -8299,14 +8415,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showMessage('Social icon deleted successfully!', 'success');
+                    showToast('Social icon deleted successfully!', 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage(data.error || 'Failed to delete social icon', 'error');
+                    showToast(data.error || 'Failed to delete social icon', 'error');
                 }
             })
             .catch(() => {
-                showMessage('An error occurred', 'error');
+                showToast('An error occurred', 'error');
             });
         }
         
@@ -8327,14 +8443,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(data => {
                 if (data.success) {
                     closeDirectoryModal();
-                    showMessage('Social icon added successfully!', 'success');
+                    showToast('Social icon added successfully!', 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showMessage(data.error || 'Failed to add social icon', 'error');
+                    showToast(data.error || 'Failed to add social icon', 'error');
                 }
             })
             .catch(() => {
-                showMessage('An error occurred', 'error');
+                showToast('An error occurred', 'error');
             });
             });
         }

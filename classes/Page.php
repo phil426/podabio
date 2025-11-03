@@ -464,6 +464,38 @@ class Page {
     }
     
     /**
+     * Update social icon
+     * @param int $iconId
+     * @param int $pageId
+     * @param string $platformName
+     * @param string $url
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function updateSocialIcon($iconId, $pageId, $platformName, $url) {
+        if (empty($platformName) || empty($url)) {
+            return ['success' => false, 'error' => 'Platform name and URL are required'];
+        }
+        
+        $icon = fetchOne("SELECT id FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
+        if (!$icon) {
+            return ['success' => false, 'error' => 'Social icon not found'];
+        }
+        
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE social_icons 
+                SET platform_name = ?, url = ? 
+                WHERE id = ? AND page_id = ?
+            ");
+            $stmt->execute([$platformName, $url, $iconId, $pageId]);
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Social icon update failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to update social icon'];
+        }
+    }
+    
+    /**
      * Delete social icon
      * @param int $iconId
      * @param int $pageId
