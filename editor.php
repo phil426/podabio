@@ -404,7 +404,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: #f3f4f6;
             padding: 0;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: flex-start;
         }
         
