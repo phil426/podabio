@@ -424,7 +424,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-left: 1px solid #e5e7eb;
             overflow: hidden;
             transition: width 0.3s ease, opacity 0.3s ease;
-            height: calc(100vh - 64px); /* Account for navbar */
+            min-height: calc(100vh - 64px); /* Account for navbar - use min-height to cover rounding issues */
+            height: 100%; /* Fill parent flex container */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
             max-height: calc(100vh - 64px);
         }
