@@ -3000,7 +3000,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <!-- ========== FEATURED WIDGET EFFECT SECTION (ACCORDION) ========== -->
                 <div class="accordion-section" id="featured-widget-effect">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('featured-widget-effect')">
-                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star" style="color: #ffd700;"></i>
                         <span>Featured Widget Effect</span>
                         <i class="fas fa-chevron-down accordion-icon"></i>
                     </button>
