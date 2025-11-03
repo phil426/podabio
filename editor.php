@@ -2937,50 +2937,59 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             <form id="appearance-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 
-                <div class="form-group">
-                    <label style="display: block; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600;">Theme</label>
-                    <div class="theme-cards-container">
-                        <!-- Theme Cards -->
-                        <?php foreach ($allThemes as $theme): 
-                            $themeColors = parseThemeJson($theme['colors'], []);
-                            $primaryColor = $themeColors['primary'] ?? '#000000';
-                            $secondaryColor = $themeColors['secondary'] ?? '#ffffff';
-                            $accentColor = $themeColors['accent'] ?? '#0066ff';
-                            $isSelected = ($page['theme_id'] == $theme['id']);
-                            
-                            // Get theme's actual background, fallback to gradient from colors
-                            $themeBackground = !empty($theme['page_background']) 
-                                ? $theme['page_background'] 
-                                : "linear-gradient(135deg, {$primaryColor} 0%, {$accentColor} 100%)";
-                            
-                            // Get theme fonts for preview
-                            $themeFonts = parseThemeJson($theme['fonts'] ?? '{}', []);
-                            $themePagePrimaryFont = $theme['page_primary_font'] ?? $themeFonts['heading'] ?? 'Inter';
-                            $themePageSecondaryFont = $theme['page_secondary_font'] ?? $themeFonts['body'] ?? 'Inter';
-                            $themeWidgetPrimaryFont = $theme['widget_primary_font'] ?? $themePagePrimaryFont;
-                            $themeWidgetSecondaryFont = $theme['widget_secondary_font'] ?? $themePageSecondaryFont;
-                        ?>
-                        <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>">
-                            <div class="theme-card-swatch" style="background: <?php echo h($themeBackground); ?>;" onclick="selectTheme(<?php echo $theme['id']; ?>)">
-                            </div>
-                            <div class="theme-card-body" onclick="selectTheme(<?php echo $theme['id']; ?>)">
-                                <div class="theme-card-name" style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif;"><?php echo h($theme['name']); ?></div>
-                                <!-- Font Preview -->
-                                <div class="theme-card-font-preview">
-                                    <div style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">Page: Sample</div>
-                                    <div style="font-family: '<?php echo h($themeWidgetPrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; color: #666;">Widget: Sample</div>
+                <!-- Theme Accordion Section -->
+                <div class="accordion-section" id="theme-selection">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('theme-selection')">
+                        <i class="fas fa-palette"></i>
+                        <span>Theme</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="form-group">
+                            <div class="theme-cards-container">
+                                <!-- Theme Cards -->
+                                <?php foreach ($allThemes as $theme): 
+                                    $themeColors = parseThemeJson($theme['colors'], []);
+                                    $primaryColor = $themeColors['primary'] ?? '#000000';
+                                    $secondaryColor = $themeColors['secondary'] ?? '#ffffff';
+                                    $accentColor = $themeColors['accent'] ?? '#0066ff';
+                                    $isSelected = ($page['theme_id'] == $theme['id']);
+                                    
+                                    // Get theme's actual background, fallback to gradient from colors
+                                    $themeBackground = !empty($theme['page_background']) 
+                                        ? $theme['page_background'] 
+                                        : "linear-gradient(135deg, {$primaryColor} 0%, {$accentColor} 100%)";
+                                    
+                                    // Get theme fonts for preview
+                                    $themeFonts = parseThemeJson($theme['fonts'] ?? '{}', []);
+                                    $themePagePrimaryFont = $theme['page_primary_font'] ?? $themeFonts['heading'] ?? 'Inter';
+                                    $themePageSecondaryFont = $theme['page_secondary_font'] ?? $themeFonts['body'] ?? 'Inter';
+                                    $themeWidgetPrimaryFont = $theme['widget_primary_font'] ?? $themePagePrimaryFont;
+                                    $themeWidgetSecondaryFont = $theme['widget_secondary_font'] ?? $themePageSecondaryFont;
+                                ?>
+                                <div class="theme-card <?php echo $isSelected ? 'theme-selected' : ''; ?>" data-theme-id="<?php echo $theme['id']; ?>">
+                                    <div class="theme-card-swatch" style="background: <?php echo h($themeBackground); ?>;" onclick="selectTheme(<?php echo $theme['id']; ?>)">
+                                    </div>
+                                    <div class="theme-card-body" onclick="selectTheme(<?php echo $theme['id']; ?>)">
+                                        <div class="theme-card-name" style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif;"><?php echo h($theme['name']); ?></div>
+                                        <!-- Font Preview -->
+                                        <div class="theme-card-font-preview">
+                                            <div style="font-family: '<?php echo h($themePagePrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">Page: Sample</div>
+                                            <div style="font-family: '<?php echo h($themeWidgetPrimaryFont); ?>', sans-serif; font-size: 0.75rem; font-weight: 600; color: #666;">Widget: Sample</div>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-footer">
+                                        <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange()" onclick="event.stopPropagation();">
+                                        <button type="button" class="theme-widget-settings-btn" onclick="event.stopPropagation(); showWidgetSettingsDrawer(<?php echo $theme['id']; ?>)" title="View Widget Settings" style="background: none; border: 1px solid #ddd; border-radius: 6px; padding: 0.375rem 0.5rem; cursor: pointer; color: #666; font-size: 0.75rem; transition: all 0.2s;">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="theme-card-footer">
-                                <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange()" onclick="event.stopPropagation();">
-                                <button type="button" class="theme-widget-settings-btn" onclick="event.stopPropagation(); showWidgetSettingsDrawer(<?php echo $theme['id']; ?>)" title="View Widget Settings" style="background: none; border: 1px solid #ddd; border-radius: 6px; padding: 0.375rem 0.5rem; cursor: pointer; color: #666; font-size: 0.75rem; transition: all 0.2s;">
-                                    <i class="fas fa-cog"></i>
-                                </button>
-                            </div>
+                            <small style="display: block; margin-top: 1rem; color: #666;">Select a theme to automatically apply colors and fonts. You can modify individual elements after selection.</small>
                         </div>
-                        <?php endforeach; ?>
                     </div>
-                    <small style="display: block; margin-top: 1rem; color: #666;">Select a theme to automatically apply colors and fonts. You can modify individual elements after selection.</small>
                 </div>
                 
                 <!-- ========== FEATURED WIDGET EFFECT SECTION (ACCORDION) ========== -->
@@ -4036,7 +4045,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Initialize accordion states from localStorage
         function initializeAccordions() {
-            const sections = ['page-background', 'page-colors', 'page-fonts', 'widget-background', 
+            const sections = ['theme-selection', 'page-background', 'page-colors', 'page-fonts', 'widget-background', 
                            'widget-border', 'widget-fonts', 'widget-structure', 'spatial-effects'];
             
             sections.forEach(sectionId => {
