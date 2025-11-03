@@ -333,7 +333,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Live Preview Panel - Right Column */
         #live-preview-panel {
-            width: 450px;
+            width: 230px; /* Minimum: scaled iframe width (195px) + padding (35px) */
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -383,7 +383,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         #live-preview-panel .preview-header {
-            padding: 1rem;
+            padding: 0.75rem 0.5rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -394,7 +394,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         #live-preview-panel .preview-header h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 600;
         }
         
@@ -402,7 +402,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex: 1;
             overflow-y: auto;
             background: #f3f4f6;
-            padding: 1rem;
+            padding: 0.5rem;
             display: flex;
             justify-content: center;
             align-items: flex-start;
