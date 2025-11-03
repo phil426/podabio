@@ -1683,6 +1683,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .mobile-menu-toggle {
                 display: flex !important;
             }
+            
+            /* Reorder navbar items for mobile: logo left, hamburger right */
+            .editor-navbar {
+                justify-content: space-between;
+            }
+            
+            .navbar-logo {
+                order: 1;
+            }
+            
+            .mobile-menu-toggle {
+                order: 2;
+                margin-right: 0;
+            }
         }
         
         /* Accordion Styles for Appearance Section */
