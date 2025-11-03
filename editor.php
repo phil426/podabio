@@ -411,24 +411,26 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: 100%;
             min-height: 100%;
             padding: 2rem;
-            padding-right: calc(2rem + 12px); /* Add space for scrollbar at edge */
             position: relative;
             overflow-y: scroll; /* Enable scrolling */
             overflow-x: hidden;
             height: 100%;
             max-height: calc(100vh - 64px); /* Constrain to viewport */
             box-sizing: border-box;
+            /* Extend scrollbar to viewport edge */
+            padding-right: 2rem;
+            margin-right: -240px; /* Negative margin to extend scrollbar beyond preview */
+            padding-right: calc(2rem + 240px); /* Add space for preview panel + scrollbar */
         }
         
-        /* Custom scrollbar styling at the absolute right edge */
+        /* Custom scrollbar styling positioned at absolute right edge */
         .editor-content::-webkit-scrollbar {
             width: 12px;
-            position: absolute;
-            right: 0;
         }
         
         .editor-content::-webkit-scrollbar-track {
             background: transparent;
+            margin-right: 0;
         }
         
         .editor-content::-webkit-scrollbar-thumb {
