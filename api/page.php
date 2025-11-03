@@ -308,6 +308,23 @@ switch ($action) {
         echo json_encode($result);
         break;
         
+    case 'reorder_social_icons':
+        $iconOrdersJson = $_POST['icon_orders'] ?? '';
+        if (empty($iconOrdersJson)) {
+            echo json_encode(['success' => false, 'error' => 'Icon orders required']);
+            exit;
+        }
+        
+        $iconOrders = json_decode($iconOrdersJson, true);
+        if (!is_array($iconOrders)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid icon orders format']);
+            exit;
+        }
+        
+        $result = $page->reorderSocialIcons($pageId, $iconOrders);
+        echo json_encode($result);
+        break;
+        
     case 'remove_image':
         $imageType = sanitizeInput($_POST['type'] ?? '');
         

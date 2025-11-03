@@ -517,6 +517,47 @@ class Page {
     }
     
     /**
+     * Reorder social icons
+     * @param int $pageId
+     * @param array $iconOrders Array of ['icon_id' => int, 'display_order' => int]
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function reorderSocialIcons($pageId, $iconOrders) {
+        if (empty($iconOrders) || !is_array($iconOrders)) {
+            return ['success' => false, 'error' => 'Invalid icon orders'];
+        }
+        
+        try {
+            $this->pdo->beginTransaction();
+            
+            foreach ($iconOrders as $order) {
+                if (!isset($order['icon_id']) || !isset($order['display_order'])) {
+                    continue;
+                }
+                
+                $iconId = (int)$order['icon_id'];
+                $displayOrder = (int)$order['display_order'];
+                
+                // Verify icon belongs to this page
+                $icon = fetchOne("SELECT id FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
+                if (!$icon) {
+                    continue;
+                }
+                
+                $stmt = $this->pdo->prepare("UPDATE social_icons SET display_order = ? WHERE id = ? AND page_id = ?");
+                $stmt->execute([$displayOrder, $iconId, $pageId]);
+            }
+            
+            $this->pdo->commit();
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            error_log("Social icon reorder failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to reorder social icons'];
+        }
+    }
+    
+    /**
      * Legacy method: Add podcast directory link (for backwards compatibility)
      * @deprecated Use addSocialIcon() instead
      */

@@ -2664,6 +2664,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     <?php foreach ($socialIcons as $icon): ?>
                         <li class="widget-accordion-item" data-directory-id="<?php echo $icon['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleSocialIconAccordion(<?php echo $icon['id']; ?>)">
+                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder" onclick="event.stopPropagation();"></i>
                                 <div class="widget-info" style="flex: 1; text-align: left;">
                                     <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
                                     <div class="widget-url"><?php echo h($icon['url']); ?></div>
