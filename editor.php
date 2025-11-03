@@ -4010,26 +4010,44 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         window.toggleUserMenu = function() {
             const dropdown = document.getElementById('user-menu-dropdown');
             const button = document.getElementById('user-menu-button');
+            const dropdownMobile = document.getElementById('user-menu-dropdown-mobile');
+            const buttonMobile = document.getElementById('user-menu-button-mobile');
             
-            if (!dropdown || !button) return;
+            // Handle desktop menu
+            if (dropdown && button) {
+                const isOpen = dropdown.classList.contains('show');
+                if (isOpen) {
+                    dropdown.classList.remove('show');
+                    button.classList.remove('active');
+                } else {
+                    dropdown.classList.add('show');
+                    button.classList.add('active');
+                }
+            }
             
-            const isOpen = dropdown.classList.contains('show');
-            
-            if (isOpen) {
-                dropdown.classList.remove('show');
-                button.classList.remove('active');
-            } else {
-                dropdown.classList.add('show');
-                button.classList.add('active');
+            // Handle mobile menu
+            if (dropdownMobile && buttonMobile) {
+                const isOpen = dropdownMobile.classList.contains('show');
+                if (isOpen) {
+                    dropdownMobile.classList.remove('show');
+                    buttonMobile.classList.remove('active');
+                } else {
+                    dropdownMobile.classList.add('show');
+                    buttonMobile.classList.add('active');
+                }
             }
         };
         
         window.closeUserMenu = function() {
             const dropdown = document.getElementById('user-menu-dropdown');
             const button = document.getElementById('user-menu-button');
+            const dropdownMobile = document.getElementById('user-menu-dropdown-mobile');
+            const buttonMobile = document.getElementById('user-menu-button-mobile');
             
             if (dropdown) dropdown.classList.remove('show');
             if (button) button.classList.remove('active');
+            if (dropdownMobile) dropdownMobile.classList.remove('show');
+            if (buttonMobile) buttonMobile.classList.remove('active');
         };
         
         // Close user menu when clicking outside
