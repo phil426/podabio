@@ -388,13 +388,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         /* Three Column Layout: Sidebar | Editor Content | Preview */
-        .editor-layout {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            position: relative;
-            z-index: 1;
-        }
+        /* Note: .editor-layout styles are defined above at line 307 */
         
         /* Center Editor Area - Middle Column */
         .editor-main {
