@@ -3797,6 +3797,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
                     </div>
                 </div>
+                <button type="button" class="preview-refresh-btn" onclick="refreshPreview()" title="Refresh Preview">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
             </div>
         </div>
         
