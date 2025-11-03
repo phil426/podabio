@@ -447,7 +447,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             pointer-events: none;
         }
         
-        #live-preview-panel.collapsed .preview-header,
         #live-preview-panel.collapsed .preview-content {
             display: none;
         }
@@ -505,7 +504,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding-top: 1rem; /* Match vertical position of Manage Widgets section */
+            padding-top: calc(1.875rem + 1.5rem + 1px); /* Match editor-header h1 height + padding-bottom + border */
         }
         
         #live-preview-panel .preview-refresh-btn {
@@ -3842,10 +3841,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         <!-- Live Preview Panel - Third Column -->
         <div id="live-preview-panel">
-            <div class="preview-header">
-                <h3>Live Preview</h3>
-                <button onclick="togglePreview()" style="background: none; border: none; font-size: 1.25rem; color: #666; cursor: pointer; padding: 0.25rem 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#0066ff'" onmouseout="this.style.color='#666'" title="Collapse Preview">&times;</button>
-            </div>
             <div class="preview-content">
                 <div class="preview-iframe-wrapper">
                     <div class="preview-iframe-container">
