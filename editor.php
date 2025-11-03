@@ -429,6 +429,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: width 0.3s ease, opacity 0.3s ease;
             height: calc(100vh - 64px); /* Account for navbar */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            max-height: calc(100vh - 64px);
         }
         
         #live-preview-panel.collapsed {
@@ -489,7 +490,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         #live-preview-panel .preview-content {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             background: #f3f4f6;
             padding: 0;
             display: flex;
