@@ -488,9 +488,32 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: #f3f4f6;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             padding-top: 1rem; /* Match vertical position of Manage Widgets section */
+        }
+        
+        #live-preview-panel .preview-refresh-btn {
+            margin: 1rem;
+            padding: 0.625rem 1rem;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        #live-preview-panel .preview-refresh-btn:hover {
+            background: #0052cc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
         }
         
         /* Wrapper to constrain scaled container's layout width */
