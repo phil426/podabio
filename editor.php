@@ -421,24 +421,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             margin-right: -240px; /* Negative margin to extend scrollbar area beyond preview */
         }
         
-        /* Custom scrollbar styling positioned at absolute right edge */
-        .editor-content::-webkit-scrollbar {
-            width: 12px;
-        }
-        
-        .editor-content::-webkit-scrollbar-track {
-            background: transparent;
-            margin-right: 0;
-        }
-        
-        .editor-content::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 6px;
-        }
-        
-        .editor-content::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        /* Scrollbar uses browser default styling */
         
         /* Live Preview Panel - Third Column */
         #live-preview-panel {
