@@ -306,6 +306,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .editor-layout {
             display: flex;
+            align-items: stretch; /* Ensure flex children fill parent height */
             height: calc(100vh - 64px);
             width: 100vw;
             position: relative;
@@ -417,7 +418,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            background: white;
+            background: #f3f4f6; /* Match second column background */
             border-left: 1px solid #e5e7eb;
             overflow: hidden;
             transition: width 0.3s ease, opacity 0.3s ease;
