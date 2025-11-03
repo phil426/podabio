@@ -322,6 +322,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             position: relative;
             z-index: 1;
             overflow: hidden;
+            min-width: 0; /* Allow flex shrinking */
         }
         
         .editor-content {
@@ -332,29 +333,24 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             position: relative;
         }
         
-        /* Live Preview Panel - Positioned in Editor Content */
+        /* Live Preview Panel - Third Column */
         #live-preview-panel {
-            width: 200px;
-            position: fixed;
-            top: calc(2rem + 80px); /* Below header + user-menu height */
-            right: 20px;
-            margin-left: 20px; /* Padding from content on the left */
+            width: 240px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border-left: 1px solid #e5e7eb;
             overflow: hidden;
             transition: width 0.3s ease, opacity 0.3s ease;
-            max-height: calc(100vh - 120px);
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            height: 100vh;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
         
         #live-preview-panel.collapsed {
             width: 0;
             opacity: 0;
-            border: none;
+            border-left: none;
             overflow: hidden;
             pointer-events: none;
         }
@@ -368,7 +364,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .preview-expand-btn {
             position: fixed;
             right: 20px;
-            top: calc(2rem + 80px);
+            top: 50%;
+            transform: translateY(-50%);
             width: 40px;
             height: 80px;
             background: rgba(255, 255, 255, 0.95);
@@ -401,8 +398,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         #live-preview-panel .preview-header h3 {
             margin: 0;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             font-weight: 600;
+            color: #111827;
         }
         
         #live-preview-panel .preview-content {
