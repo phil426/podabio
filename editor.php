@@ -1628,7 +1628,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: all 0.2s;
             width: 40px;
             height: 40px;
-            display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 0.5rem;
