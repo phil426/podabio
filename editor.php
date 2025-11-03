@@ -313,8 +313,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             position: relative;
             z-index: 1;
             margin-top: 64px; /* Account for navbar */
-            overflow-y: auto; /* Scrollbar at absolute right edge of viewport */
-            overflow-x: hidden;
+            overflow: visible; /* Allow children to handle scrolling */
         }
         
         /* Left Sidebar Navigation */
@@ -404,7 +403,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             height: 100%; /* Fill parent flex container */
             position: relative;
             z-index: 1;
-            overflow: hidden; /* No scrollbar on column itself */
+            overflow: visible; /* Allow content to extend for scrolling */
             min-width: 0; /* Allow flex shrinking */
         }
         
@@ -412,24 +411,32 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: 100%;
             min-height: 100%;
             padding: 2rem;
+            padding-right: calc(2rem + 12px); /* Add space for scrollbar at edge */
             position: relative;
+            overflow-y: scroll; /* Enable scrolling */
+            overflow-x: hidden;
+            height: 100%;
+            max-height: calc(100vh - 64px); /* Constrain to viewport */
+            box-sizing: border-box;
         }
         
-        /* Custom scrollbar styling at the absolute right edge of viewport */
-        .editor-layout::-webkit-scrollbar {
+        /* Custom scrollbar styling at the absolute right edge */
+        .editor-content::-webkit-scrollbar {
             width: 12px;
+            position: absolute;
+            right: 0;
         }
         
-        .editor-layout::-webkit-scrollbar-track {
+        .editor-content::-webkit-scrollbar-track {
             background: transparent;
         }
         
-        .editor-layout::-webkit-scrollbar-thumb {
+        .editor-content::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 6px;
         }
         
-        .editor-layout::-webkit-scrollbar-thumb:hover {
+        .editor-content::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         
