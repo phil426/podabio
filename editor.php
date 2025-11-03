@@ -7646,24 +7646,26 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         }
         
-        // Update font preview on font change
-        // Font preview event listeners
-        const customHeadingFont = document.getElementById('custom_heading_font');
-        const customBodyFont = document.getElementById('custom_body_font');
-        if (customHeadingFont) customHeadingFont.addEventListener('change', updateFontPreview);
-        if (customBodyFont) customBodyFont.addEventListener('change', updateFontPreview);
-        
-        // Page font preview event listeners
-        const pagePrimaryFont = document.getElementById('page_primary_font');
-        const pageSecondaryFont = document.getElementById('page_secondary_font');
-        if (pagePrimaryFont) pagePrimaryFont.addEventListener('change', updatePageFontPreview);
-        if (pageSecondaryFont) pageSecondaryFont.addEventListener('change', updatePageFontPreview);
-        
-        // Widget font preview event listeners
-        const widgetPrimaryFont = document.getElementById('widget_primary_font');
-        const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-        if (widgetPrimaryFont) widgetPrimaryFont.addEventListener('change', updateWidgetFontPreview);
-        if (widgetSecondaryFont) widgetSecondaryFont.addEventListener('change', updateWidgetFontPreview);
+        // Update font preview on font change - wrapped in DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Font preview event listeners
+            const customHeadingFont = document.getElementById('custom_heading_font');
+            const customBodyFont = document.getElementById('custom_body_font');
+            if (customHeadingFont) customHeadingFont.addEventListener('change', updateFontPreview);
+            if (customBodyFont) customBodyFont.addEventListener('change', updateFontPreview);
+            
+            // Page font preview event listeners
+            const pagePrimaryFont = document.getElementById('page_primary_font');
+            const pageSecondaryFont = document.getElementById('page_secondary_font');
+            if (pagePrimaryFont) pagePrimaryFont.addEventListener('change', updatePageFontPreview);
+            if (pageSecondaryFont) pageSecondaryFont.addEventListener('change', updatePageFontPreview);
+            
+            // Widget font preview event listeners
+            const widgetPrimaryFont = document.getElementById('widget_primary_font');
+            const widgetSecondaryFont = document.getElementById('widget_secondary_font');
+            if (widgetPrimaryFont) widgetPrimaryFont.addEventListener('change', updateWidgetFontPreview);
+            if (widgetSecondaryFont) widgetSecondaryFont.addEventListener('change', updateWidgetFontPreview);
+        });
         
         // Load fonts on page load
         if (customHeadingFont || customBodyFont) updateFontPreview();
