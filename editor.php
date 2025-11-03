@@ -2347,6 +2347,83 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     <div class="editor-layout">
         <!-- Left Sidebar -->
         <aside class="sidebar">
+            <!-- Mobile URL Field -->
+            <?php if ($page && !empty($pageUrl)): ?>
+            <div class="sidebar-mobile-url">
+                <div class="sidebar-mobile-url-field">
+                    <span><?php echo h($pageUrl); ?></span>
+                    <button 
+                        type="button" 
+                        onclick="copyPageUrl()" 
+                        class="sidebar-mobile-copy-btn"
+                        title="Copy page URL">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Mobile User Menu -->
+            <div class="sidebar-mobile-user">
+                <div class="user-menu">
+                    <button type="button" class="user-menu-button" onclick="toggleUserMenu(); toggleMobileMenu();" id="user-menu-button-mobile" style="width: 100%; justify-content: flex-start;">
+                        <div class="user-menu-avatar">
+                            <?php if ($page && !empty($page['profile_image'])): ?>
+                                <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <?php else: ?>
+                                <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="user-menu-info">
+                            <div class="user-menu-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                            <div class="user-menu-email"><?php echo h($user['email']); ?></div>
+                        </div>
+                        <i class="fas fa-chevron-down user-menu-icon" style="margin-left: auto;"></i>
+                    </button>
+                    
+                    <div class="user-menu-dropdown" id="user-menu-dropdown-mobile">
+                        <div class="user-menu-header">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                <div class="user-menu-avatar" style="width: 48px; height: 48px;">
+                                    <?php if ($page && !empty($page['profile_image'])): ?>
+                                        <img src="<?php echo h($page['profile_image']); ?>" alt="<?php echo h($page['username'] ?? 'User'); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                    <?php else: ?>
+                                        <?php echo strtoupper(substr($user['email'], 0, 1)); ?>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="user-menu-header-name"><?php echo h($page['username'] ?? 'New User'); ?></div>
+                                    <div class="user-menu-header-email"><?php echo h($user['email']); ?></div>
+                                </div>
+                            </div>
+                            <div class="user-menu-status <?php echo $user['email_verified'] ? 'verified' : 'unverified'; ?>">
+                                <i class="fas <?php echo $user['email_verified'] ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+                                <?php echo $user['email_verified'] ? 'Verified' : 'Unverified'; ?>
+                            </div>
+                        </div>
+                        
+                        <a href="javascript:void(0)" class="user-menu-item" onclick="showSection('account', document.querySelector('.nav-item[onclick*=\"account\"]')); closeUserMenu(); toggleMobileMenu();">
+                            <i class="fas fa-user"></i>
+                            <span>Account Settings</span>
+                        </a>
+                        
+                        <?php if ($page): ?>
+                        <a href="/<?php echo h($page['username']); ?>" target="_blank" class="user-menu-item">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>View Page</span>
+                        </a>
+                        <?php endif; ?>
+                        
+                        <div class="user-menu-divider"></div>
+                        
+                        <a href="/logout.php" class="user-menu-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
             <nav class="sidebar-nav">
                 <?php if ($page): ?>
                     <a href="javascript:void(0)" class="nav-item active" onclick="showSection('widgets', this)">
@@ -3957,11 +4034,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Close user menu when clicking outside
         document.addEventListener('click', function(event) {
-            const userMenu = document.querySelector('.user-menu');
+            const userMenus = document.querySelectorAll('.user-menu');
             const dropdown = document.getElementById('user-menu-dropdown');
+            const dropdownMobile = document.getElementById('user-menu-dropdown-mobile');
             
-            if (userMenu && dropdown && !userMenu.contains(event.target)) {
-                closeUserMenu();
+            let shouldClose = true;
+            userMenus.forEach(userMenu => {
+                if (userMenu.contains(event.target)) {
+                    shouldClose = false;
+                }
+            });
+            
+            if (shouldClose) {
+                if (dropdown) dropdown.classList.remove('show');
+                if (dropdownMobile) dropdownMobile.classList.remove('show');
+                document.querySelectorAll('.user-menu-button').forEach(btn => btn.classList.remove('active'));
             }
             
             // Close widget dropdowns when clicking outside
