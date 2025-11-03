@@ -395,8 +395,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex: 1;
             margin-left: 200px;
             margin-right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: #f3f4f6;
             height: calc(100vh - 64px); /* Account for navbar */
             position: relative;
             z-index: 1;
