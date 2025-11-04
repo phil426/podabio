@@ -815,6 +815,36 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             padding: 4px 8px;
             font-size: 12px;
         }
+        
+        /* SortableJS drag and drop styles */
+        .drag-handle {
+            cursor: grab;
+            color: #9ca3af;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f3f4f6;
+        }
+        
+        .sortable-chosen {
+            background: #f0f7ff;
+            border-color: #0066ff;
+        }
+        
+        .sortable-drag {
+            opacity: 0.8;
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -2453,6 +2483,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <div class="accordion-section <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-<?php echo $widget['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
+                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();" style="cursor: grab; color: #9ca3af; margin-right: 0.5rem; flex-shrink: 0;"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -2546,6 +2577,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <li class="accordion-section" data-directory-id="<?php echo $icon['id']; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
+                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();" style="cursor: grab; color: #9ca3af; margin-right: 0.5rem; flex-shrink: 0;"></i>
                                 <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
@@ -3866,6 +3898,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     
     <!-- Croppie Image Cropper -->
     <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -6397,127 +6430,35 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Drag and drop functionality removed per user request
         
+        // SortableJS instances for widgets and social icons
+        let widgetsSortable = null;
+        let socialIconsSortable = null;
+        
         function initSocialIconDragAndDrop() {
-            // Drag and drop disabled per user request
-            return;
+            const directoriesList = document.getElementById('directories-list');
+            if (!directoriesList) {
+                return;
+            }
             
-            // Remove old listeners by cloning (clean slate)
-            const items = directoriesList.querySelectorAll('.widget-accordion-item');
-            items.forEach(item => {
-                const dragHandle = item.querySelector('.drag-handle');
-                if (dragHandle) {
-                    // Clone and replace to remove old event listeners
-                    const newDragHandle = dragHandle.cloneNode(true);
-                    dragHandle.parentNode.replaceChild(newDragHandle, dragHandle);
-                    
-                    newDragHandle.setAttribute('draggable', 'true');
-                    newDragHandle.style.cursor = 'move';
-                    
-                    newDragHandle.addEventListener('dragstart', function(e) {
-                        console.log('Social icon drag started');
-                        draggedSocialIconElement = item;
-                        item.classList.add('dragging');
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('text/html', item.innerHTML);
-                        e.stopPropagation();
-                        
-                        // Prevent parent button's onclick from firing
-                        const parentButton = this.closest('button');
-                        if (parentButton) {
-                            parentButton.style.pointerEvents = 'none';
-                            setTimeout(() => {
-                                parentButton.style.pointerEvents = '';
-                            }, 0);
-                        }
-                    });
-                    
-                    newDragHandle.addEventListener('dragend', function() {
-                        item.classList.remove('dragging');
-                        directoriesList.querySelectorAll('.widget-accordion-item').forEach(el => {
-                            el.classList.remove('drag-over');
-                        });
-                        draggedSocialIconElement = null;
-                        
-                        // Restore pointer events on parent button
-                        const parentButton = this.closest('button');
-                        if (parentButton) {
-                            parentButton.style.pointerEvents = '';
-                        }
-                    });
+            // Destroy existing instance if it exists
+            if (socialIconsSortable) {
+                socialIconsSortable.destroy();
+                socialIconsSortable = null;
+            }
+            
+            // Initialize SortableJS for social icons
+            socialIconsSortable = new Sortable(directoriesList, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: false,
+                fallbackOnBody: true,
+                onEnd: function(evt) {
+                    // Save new order after drag ends
+                    saveSocialIconOrder();
                 }
-            });
-            
-            // Store drop handlers so we can remove them later
-            const socialDropHandlers = new WeakMap();
-            
-            // Add drop zone listeners to all items
-            directoriesList.querySelectorAll('.widget-accordion-item').forEach(item => {
-                // Remove old handlers if they exist
-                const oldHandlers = socialDropHandlers.get(item);
-                if (oldHandlers) {
-                    item.removeEventListener('dragover', oldHandlers.dragover);
-                    item.removeEventListener('dragleave', oldHandlers.dragleave);
-                    item.removeEventListener('drop', oldHandlers.drop);
-                }
-                
-                // Create new handlers
-                const dragoverHandler = function(e) {
-                    if (!draggedSocialIconElement) return;
-                    if (e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    e.dataTransfer.dropEffect = 'move';
-                    if (this !== draggedSocialIconElement && this !== draggedSocialIconElement.parentNode) {
-                        this.classList.add('drag-over');
-                    }
-                    return false;
-                };
-                
-                const dragleaveHandler = function() {
-                    this.classList.remove('drag-over');
-                };
-                
-                const dropHandler = function(e) {
-                    if (e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    if (e.stopPropagation) {
-                        e.stopPropagation();
-                    }
-                    
-                    if (draggedSocialIconElement && draggedSocialIconElement !== this) {
-                        const allItems = Array.from(directoriesList.querySelectorAll('.widget-accordion-item'));
-                        const draggedIndex = allItems.indexOf(draggedSocialIconElement);
-                        const targetIndex = allItems.indexOf(this);
-                        
-                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                            if (draggedIndex < targetIndex) {
-                                directoriesList.insertBefore(draggedSocialIconElement, this.nextSibling);
-                            } else {
-                                directoriesList.insertBefore(draggedSocialIconElement, this);
-                            }
-                            
-                            // Save new order
-                            saveSocialIconOrder();
-                        }
-                    }
-                    
-                    this.classList.remove('drag-over');
-                    draggedSocialIconElement = null;
-                    return false;
-                };
-                
-                // Store handlers
-                socialDropHandlers.set(item, {
-                    dragover: dragoverHandler,
-                    dragleave: dragleaveHandler,
-                    drop: dropHandler
-                });
-                
-                // Add listeners
-                item.addEventListener('dragover', dragoverHandler);
-                item.addEventListener('dragleave', dragleaveHandler);
-                item.addEventListener('drop', dropHandler);
             });
         }
         
@@ -6528,7 +6469,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 return;
             }
             
-            const items = Array.from(directoriesList.querySelectorAll('.widget-accordion-item'));
+            const items = Array.from(directoriesList.querySelectorAll('.accordion-section'));
             if (items.length === 0) {
                 console.warn('No social icons found to reorder');
                 return;
@@ -6574,175 +6515,30 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function initWidgetDragAndDrop() {
-            // Drag and drop disabled per user request
-            return;
+            const widgetsList = document.getElementById('widgets-list');
+            if (!widgetsList) {
+                return;
+            }
             
-            // Remove old listeners by cloning (clean slate)
-            const items = widgetsList.querySelectorAll('.widget-accordion-item, .widget-item');
-            items.forEach(item => {
-                // Make accordion items sortable via drag handle
-                if (item.classList.contains('widget-accordion-item')) {
-                    const dragHandle = item.querySelector('.drag-handle');
-                    if (dragHandle) {
-                        console.log('Setting up drag handle for widget:', item.getAttribute('data-widget-id'));
-                        
-                        // Remove draggable from handle, make item draggable
-                        dragHandle.removeAttribute('draggable');
-                        item.setAttribute('draggable', 'true');
-                        
-                        let isDraggingFromHandle = false;
-                        
-                        // Track mousedown on handle
-                        dragHandle.addEventListener('mousedown', function(e) {
-                            console.log('Drag handle mousedown detected');
-                            isDraggingFromHandle = true;
-                            // Don't stopPropagation - might interfere with drag
-                        });
-                        
-                        // Don't reset on mouseup - let dragend handle it
-                        // The mouseup happens during normal drag operation
-                        
-                        // Item dragstart - only proceed if dragging from handle
-                        item.addEventListener('dragstart', function(e) {
-                            if (!isDraggingFromHandle) {
-                                e.preventDefault();
-                                return false;
-                            }
-                            
-                            console.log('Widget drag started', item);
-                            isCurrentlyDragging = true;
-                            draggedElement = item;
-                            this.classList.add('dragging');
-                            e.dataTransfer.effectAllowed = 'move';
-                            e.dataTransfer.setData('text/plain', 'widget');
-                            
-                            // Don't prevent default - let browser handle drag
-                            console.log('isDraggingFromHandle:', isDraggingFromHandle);
-                            console.log('draggedElement set:', draggedElement);
-                        });
-                        
-                        item.addEventListener('dragend', function(e) {
-                            console.log('Drag ended');
-                            isCurrentlyDragging = false;
-                            this.classList.remove('dragging');
-                            widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(el => {
-                                el.classList.remove('drag-over');
-                            });
-                            draggedElement = null;
-                            isDraggingFromHandle = false;
-                            
-                            // Restore pointer events
-                            const button = this.querySelector('.widget-accordion-header');
-                            if (button) {
-                                button.style.pointerEvents = '';
-                            }
-                        });
-                    }
-                } else if (item.classList.contains('widget-item')) {
-                    // Legacy widget-item support
-                    item.setAttribute('draggable', 'true');
-                    
-                    item.addEventListener('dragstart', function(e) {
-                        draggedElement = this;
-                        this.classList.add('dragging');
-                        e.dataTransfer.effectAllowed = 'move';
-                    });
-                    
-                    item.addEventListener('dragend', function() {
-                        this.classList.remove('dragging');
-                        widgetsList.querySelectorAll('.widget-item').forEach(el => {
-                            el.classList.remove('drag-over');
-                        });
-                    });
+            // Destroy existing instance if it exists
+            if (widgetsSortable) {
+                widgetsSortable.destroy();
+                widgetsSortable = null;
+            }
+            
+            // Initialize SortableJS for widgets
+            widgetsSortable = new Sortable(widgetsList, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: false,
+                fallbackOnBody: true,
+                onEnd: function(evt) {
+                    // Save new order after drag ends
+                    saveWidgetOrder();
                 }
-            });
-            
-            // Store drop handlers so we can remove them later
-            const dropHandlers = new WeakMap();
-            
-            // Add drop zone listeners to all items
-            widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(item => {
-                // Remove old handlers if they exist
-                const oldHandlers = dropHandlers.get(item);
-                if (oldHandlers) {
-                    item.removeEventListener('dragover', oldHandlers.dragover);
-                    item.removeEventListener('dragleave', oldHandlers.dragleave);
-                    item.removeEventListener('drop', oldHandlers.drop);
-                }
-                
-                // Create new handlers
-                const dragoverHandler = function(e) {
-                    if (!draggedElement) {
-                        console.log('dragover: no draggedElement');
-                        return;
-                    }
-                    if (e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    e.dataTransfer.dropEffect = 'move';
-                    if (this !== draggedElement && this !== draggedElement.parentNode) {
-                        this.classList.add('drag-over');
-                    }
-                    return false;
-                };
-                
-                const dragleaveHandler = function() {
-                    this.classList.remove('drag-over');
-                };
-                
-                const dropHandler = function(e) {
-                    console.log('Drop event fired!', {
-                        draggedElement: draggedElement,
-                        dropTarget: this,
-                        widgetId: this.getAttribute('data-widget-id')
-                    });
-                    
-                    if (e.preventDefault) {
-                        e.preventDefault();
-                    }
-                    if (e.stopPropagation) {
-                        e.stopPropagation();
-                    }
-                    
-                    if (draggedElement && draggedElement !== this) {
-                        console.log('Valid drop, reordering...');
-                        const allItems = Array.from(widgetsList.querySelectorAll('.widget-accordion-item, .widget-item'));
-                        const draggedIndex = allItems.indexOf(draggedElement);
-                        const targetIndex = allItems.indexOf(this);
-                        
-                        console.log('Indices:', {draggedIndex, targetIndex});
-                        
-                        if (draggedIndex !== -1 && targetIndex !== -1) {
-                            if (draggedIndex < targetIndex) {
-                                widgetsList.insertBefore(draggedElement, this.nextSibling);
-                            } else {
-                                widgetsList.insertBefore(draggedElement, this);
-                            }
-                            
-                            console.log('Order changed, saving...');
-                            // Save new order
-                            saveWidgetOrder();
-                        }
-                    } else {
-                        console.log('Invalid drop or same element');
-                    }
-                    
-                    this.classList.remove('drag-over');
-                    draggedElement = null;
-                    return false;
-                };
-                
-                // Store handlers
-                dropHandlers.set(item, {
-                    dragover: dragoverHandler,
-                    dragleave: dragleaveHandler,
-                    drop: dropHandler
-                });
-                
-                // Add listeners
-                item.addEventListener('dragover', dragoverHandler);
-                item.addEventListener('dragleave', dragleaveHandler);
-                item.addEventListener('drop', dropHandler);
             });
         }
         
@@ -6808,7 +6604,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 return;
             }
             
-            const items = Array.from(widgetsList.querySelectorAll('.widget-accordion-item, .widget-item'));
+            const items = Array.from(widgetsList.querySelectorAll('.accordion-section'));
             if (items.length === 0) {
                 console.warn('No widgets found to reorder');
                 return;
