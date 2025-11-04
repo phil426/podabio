@@ -2597,8 +2597,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         </div>
                                         
                                         <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                            <button type="button" class="btn btn-secondary btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
-                                            <button type="submit" class="btn btn-primary btn-small">Save</button>
+                                            <button type="button" class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
+                                            <button type="submit" class="btn btn-secondary btn-small">Save</button>
                                         </div>
                                     </form>
                             </div>
