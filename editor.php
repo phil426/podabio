@@ -1578,7 +1578,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .accordion-header i.fas {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #0066ff;
             width: 20px;
             text-align: center;
