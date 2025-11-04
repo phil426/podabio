@@ -1598,11 +1598,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         /* Widget accordion header content styling - font properties only */
-        .accordion-header > span > div:first-child {
-            font-weight: 600;
-            color: #111827;
-        }
-        
         .accordion-header > span > div:last-child {
             font-size: 0.875rem;
             color: #6b7280;
