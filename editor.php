@@ -6791,12 +6791,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         dragHandle.addEventListener('mousedown', function(e) {
                             console.log('Drag handle mousedown detected');
                             isDraggingFromHandle = true;
-                            e.stopPropagation(); // Prevent button click
+                            // Don't stopPropagation - might interfere with drag
                         });
                         
-                        // Reset on mouseup
+                        // Reset on mouseup and mouseleave
                         dragHandle.addEventListener('mouseup', function(e) {
-                            isDraggingFromHandle = false;
+                            setTimeout(() => {
+                                isDraggingFromHandle = false;
+                            }, 50);
+                        });
+                        
+                        dragHandle.addEventListener('mouseleave', function(e) {
+                            // Don't reset on mouseleave during drag
+                            if (!isCurrentlyDragging) {
+                                setTimeout(() => {
+                                    isDraggingFromHandle = false;
+                                }, 50);
+                            }
                         });
                         
                         // Item dragstart - only proceed if dragging from handle
@@ -6813,21 +6824,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             e.dataTransfer.effectAllowed = 'move';
                             e.dataTransfer.setData('text/plain', 'widget');
                             
-                            // Create custom drag image
-                            const dragImage = this.cloneNode(true);
-                            dragImage.style.opacity = '0.5';
-                            document.body.appendChild(dragImage);
-                            e.dataTransfer.setDragImage(dragImage, 0, 0);
-                            setTimeout(() => document.body.removeChild(dragImage), 0);
-                            
-                            // Prevent parent button's onclick from firing
-                            const button = this.querySelector('.widget-accordion-header');
-                            if (button) {
-                                button.style.pointerEvents = 'none';
-                                setTimeout(() => {
-                                    button.style.pointerEvents = '';
-                                }, 100);
-                            }
+                            // Don't prevent default - let browser handle drag
+                            console.log('isDraggingFromHandle:', isDraggingFromHandle);
+                            console.log('draggedElement set:', draggedElement);
                         });
                         
                         item.addEventListener('dragend', function(e) {
