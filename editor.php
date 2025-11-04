@@ -422,7 +422,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Ensure headers keep their specified font weights (override the 300) */
         .editor-content h1 {
-            font-weight: 700;
+            font-weight: 600;
         }
         
         .editor-content h2,
@@ -430,7 +430,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .editor-content h4,
         .editor-content h5,
         .editor-content h6 {
-            font-weight: 600;
+            font-weight: 500;
         }
         
         /* Scrollbar uses browser default styling */
@@ -580,14 +580,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .editor-header h1 {
             font-size: 1.2rem;
-            font-weight: 700;
+            font-weight: 600;
             color: #111827;
             margin-bottom: 0.5rem;
         }
         
         .editor-content h2 {
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 500;
         }
         
         .tab-content {
