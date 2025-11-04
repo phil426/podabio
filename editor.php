@@ -5578,6 +5578,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
             console.log('contentDiv found, current innerHTML length:', contentDiv.innerHTML.length);
             
+            // Temporarily disable SortableJS to prevent errors during content loading
+            if (widgetsSortable) {
+                try {
+                    widgetsSortable.option('disabled', true);
+                } catch (e) {
+                    console.warn('Error disabling widgets sortable:', e);
+                }
+            }
+            
             // Ensure widget definitions are loaded first
             function ensureWidgetDefinitionsLoaded() {
                 return new Promise((resolve, reject) => {
