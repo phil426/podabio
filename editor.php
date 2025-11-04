@@ -2489,31 +2489,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             ? json_decode($widget['config_data'], true) 
                             : ($widget['config_data'] ?? []);
                         $widgetType = $widget['widget_type'] ?? 'custom_link';
-                        $displayInfo = $configData['url'] ?? $widgetType;
                         $widgetIcon = getWidgetTypeIcon($widgetType);
-                        $subtitle = $widgetType;
-                        if ($displayInfo && $displayInfo !== $widgetType) {
-                            $displayPreview = strlen($displayInfo) > 50 ? substr($displayInfo, 0, 50) . '...' : $displayInfo;
-                            $subtitle .= ' • ' . $displayPreview;
-                        }
                     ?>
                         <div class="accordion-section <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-<?php echo $widget['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
                                 <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
-                                <?php 
-                                // Show thumbnail preview if widget has one
-                                $thumbnailPreview = null;
-                                if (!empty($configData['thumbnail_image'])) {
-                                    $thumbnailPreview = $configData['thumbnail_image'];
-                                }
-                                if ($thumbnailPreview):
-                                ?>
-                                    <img src="<?php echo h($thumbnailPreview); ?>" alt="Widget thumbnail" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0;">
-                                <?php endif; ?>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($widget['title']); ?></div>
-                                    <div style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($subtitle); ?></div>
+                                    <div style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($widgetType); ?></div>
                                 </span>
                                 <div class="widget-visibility-toggle" onclick="event.stopPropagation();">
                                     <input type="checkbox" 
