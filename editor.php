@@ -6570,14 +6570,22 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Drag and drop functionality
         let draggedElement = null;
         let draggedSocialIconElement = null;
+        let isCurrentlyDragging = false;
+        let widgetDragInitialized = false;
+        let socialDragInitialized = false;
         
         function initSocialIconDragAndDrop() {
+            if (socialDragInitialized || isCurrentlyDragging) {
+                console.log('Skipping social icon drag init (already initialized or drag in progress)');
+                return;
+            }
             console.log('Initializing social icon drag and drop');
             const directoriesList = document.getElementById('directories-list');
             if (!directoriesList) {
                 console.error('directories-list element not found');
                 return;
             }
+            socialDragInitialized = true;
             
             // Remove old listeners by cloning (clean slate)
             const items = directoriesList.querySelectorAll('.widget-accordion-item');
@@ -6752,12 +6760,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function initWidgetDragAndDrop() {
+            if (widgetDragInitialized || isCurrentlyDragging) {
+                console.log('Skipping widget drag init (already initialized or drag in progress)');
+                return;
+            }
             console.log('Initializing widget drag and drop');
             const widgetsList = document.getElementById('widgets-list');
             if (!widgetsList) {
                 console.error('widgets-list element not found');
                 return;
             }
+            widgetDragInitialized = true;
             
             // Remove old listeners by cloning (clean slate)
             const items = widgetsList.querySelectorAll('.widget-accordion-item, .widget-item');
@@ -6794,10 +6807,18 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             }
                             
                             console.log('Widget drag started', item);
+                            isCurrentlyDragging = true;
                             draggedElement = item;
                             this.classList.add('dragging');
                             e.dataTransfer.effectAllowed = 'move';
                             e.dataTransfer.setData('text/plain', 'widget');
+                            
+                            // Create custom drag image
+                            const dragImage = this.cloneNode(true);
+                            dragImage.style.opacity = '0.5';
+                            document.body.appendChild(dragImage);
+                            e.dataTransfer.setDragImage(dragImage, 0, 0);
+                            setTimeout(() => document.body.removeChild(dragImage), 0);
                             
                             // Prevent parent button's onclick from firing
                             const button = this.querySelector('.widget-accordion-header');
@@ -6811,6 +6832,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         
                         item.addEventListener('dragend', function(e) {
                             console.log('Drag ended');
+                            isCurrentlyDragging = false;
                             this.classList.remove('dragging');
                             widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(el => {
                                 el.classList.remove('drag-over');
