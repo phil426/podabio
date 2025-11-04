@@ -654,6 +654,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .widget-featured-toggle .fa-star {
             transition: all 0.2s ease;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
         }
         
         .widget-featured-toggle .fa-star.featured-active {
@@ -1595,6 +1598,34 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-shrink: 0;
         }
         
+        /* Widget accordion header content styling */
+        .accordion-header > span {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .accordion-header > span > div:first-child {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .accordion-header > span > div:last-child {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: normal;
+        }
+        
+        /* Widget accordion loading state */
+        .widget-loading-state {
+            text-align: center;
+            color: #666;
+        }
+        
+        .widget-loading-state .fa-spinner {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
         .accordion-section.expanded .accordion-icon {
             transform: rotate(180deg);
         }
@@ -2510,9 +2541,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
                                 <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
-                                <span style="flex: 1; text-align: left;">
-                                    <div style="font-weight: 600; color: #111827;"><?php echo h($widget['title']); ?></div>
-                                    <div style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($widgetType); ?></div>
+                                <span>
+                                    <div><?php echo h($widget['title']); ?></div>
+                                    <div><?php echo h($widgetType); ?></div>
                                 </span>
                                 <div class="widget-visibility-toggle" onclick="event.stopPropagation();">
                                     <input type="checkbox" 
@@ -2526,13 +2557,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 $featuredEffect = $widget['featured_effect'] ?? '';
                                 ?>
                                 <div class="widget-featured-toggle" onclick="event.stopPropagation(); toggleFeaturedWidget(<?php echo $widget['id']; ?>, <?php echo $isFeatured ? 'true' : 'false'; ?>)" title="<?php echo $isFeatured ? 'Featured Widget - ' . h($featuredEffect) : 'Make Featured Widget'; ?>">
-                                    <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>" style="color: <?php echo $isFeatured ? '#ffd700' : '#9ca3af'; ?>; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;"></i>
+                                    <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>"></i>
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
                             <div class="accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
-                                <div style="text-align: center; color: #666;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                                <div class="widget-loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
                                     <p>Loading widget settings...</p>
                                 </div>
                             </div>
