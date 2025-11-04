@@ -6794,21 +6794,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             // Don't stopPropagation - might interfere with drag
                         });
                         
-                        // Reset on mouseup and mouseleave
-                        dragHandle.addEventListener('mouseup', function(e) {
-                            setTimeout(() => {
-                                isDraggingFromHandle = false;
-                            }, 50);
-                        });
-                        
-                        dragHandle.addEventListener('mouseleave', function(e) {
-                            // Don't reset on mouseleave during drag
-                            if (!isCurrentlyDragging) {
-                                setTimeout(() => {
-                                    isDraggingFromHandle = false;
-                                }, 50);
-                            }
-                        });
+                        // Don't reset on mouseup - let dragend handle it
+                        // The mouseup happens during normal drag operation
                         
                         // Item dragstart - only proceed if dragging from handle
                         item.addEventListener('dragstart', function(e) {
