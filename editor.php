@@ -6570,61 +6570,117 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             items.forEach(item => {
                 const dragHandle = item.querySelector('.drag-handle');
                 if (dragHandle) {
-                    dragHandle.setAttribute('draggable', 'true');
-                    dragHandle.style.cursor = 'move';
+                    // Clone and replace to remove old event listeners
+                    const newDragHandle = dragHandle.cloneNode(true);
+                    dragHandle.parentNode.replaceChild(newDragHandle, dragHandle);
                     
-                    dragHandle.addEventListener('dragstart', function(e) {
+                    newDragHandle.setAttribute('draggable', 'true');
+                    newDragHandle.style.cursor = 'move';
+                    
+                    newDragHandle.addEventListener('dragstart', function(e) {
                         draggedSocialIconElement = item;
                         item.classList.add('dragging');
                         e.dataTransfer.effectAllowed = 'move';
                         e.dataTransfer.setData('text/html', item.innerHTML);
                         e.stopPropagation();
+                        
+                        // Prevent parent button's onclick from firing
+                        const parentButton = this.closest('button');
+                        if (parentButton) {
+                            parentButton.style.pointerEvents = 'none';
+                            setTimeout(() => {
+                                parentButton.style.pointerEvents = '';
+                            }, 0);
+                        }
                     });
                     
-                    dragHandle.addEventListener('dragend', function() {
+                    newDragHandle.addEventListener('dragend', function() {
                         item.classList.remove('dragging');
                         directoriesList.querySelectorAll('.widget-accordion-item').forEach(el => {
                             el.classList.remove('drag-over');
                         });
                         draggedSocialIconElement = null;
+                        
+                        // Restore pointer events on parent button
+                        const parentButton = this.closest('button');
+                        if (parentButton) {
+                            parentButton.style.pointerEvents = '';
+                        }
                     });
                 }
+            });
+            
+            // Store drop handlers so we can remove them later
+            const socialDropHandlers = new WeakMap();
+            
+            // Add drop zone listeners to all items
+            directoriesList.querySelectorAll('.widget-accordion-item').forEach(item => {
+                // Remove old handlers if they exist
+                const oldHandlers = socialDropHandlers.get(item);
+                if (oldHandlers) {
+                    item.removeEventListener('dragover', oldHandlers.dragover);
+                    item.removeEventListener('dragleave', oldHandlers.dragleave);
+                    item.removeEventListener('drop', oldHandlers.drop);
+                }
                 
-                // Enable drop zones
-                item.addEventListener('dragover', function(e) {
-                    if (draggedSocialIconElement && draggedSocialIconElement !== this) {
+                // Create new handlers
+                const dragoverHandler = function(e) {
+                    if (!draggedSocialIconElement) return;
+                    if (e.preventDefault) {
                         e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
+                    }
+                    e.dataTransfer.dropEffect = 'move';
+                    if (this !== draggedSocialIconElement && this !== draggedSocialIconElement.parentNode) {
                         this.classList.add('drag-over');
                     }
-                });
+                    return false;
+                };
                 
-                item.addEventListener('dragleave', function() {
+                const dragleaveHandler = function() {
                     this.classList.remove('drag-over');
-                });
+                };
                 
-                item.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                const dropHandler = function(e) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                    }
+                    if (e.stopPropagation) {
+                        e.stopPropagation();
+                    }
                     
                     if (draggedSocialIconElement && draggedSocialIconElement !== this) {
                         const allItems = Array.from(directoriesList.querySelectorAll('.widget-accordion-item'));
                         const draggedIndex = allItems.indexOf(draggedSocialIconElement);
                         const targetIndex = allItems.indexOf(this);
                         
-                        if (draggedIndex < targetIndex) {
-                            directoriesList.insertBefore(draggedSocialIconElement, this.nextSibling);
-                        } else {
-                            directoriesList.insertBefore(draggedSocialIconElement, this);
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                            if (draggedIndex < targetIndex) {
+                                directoriesList.insertBefore(draggedSocialIconElement, this.nextSibling);
+                            } else {
+                                directoriesList.insertBefore(draggedSocialIconElement, this);
+                            }
+                            
+                            // Save new order
+                            saveSocialIconOrder();
                         }
-                        
-                        // Save new order
-                        saveSocialIconOrder();
                     }
                     
                     this.classList.remove('drag-over');
+                    draggedSocialIconElement = null;
                     return false;
+                };
+                
+                // Store handlers
+                socialDropHandlers.set(item, {
+                    dragover: dragoverHandler,
+                    dragleave: dragleaveHandler,
+                    drop: dropHandler
                 });
+                
+                // Add listeners
+                item.addEventListener('dragover', dragoverHandler);
+                item.addEventListener('dragleave', dragleaveHandler);
+                item.addEventListener('drop', dropHandler);
             });
         }
         
@@ -6748,9 +6804,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }
             });
             
+            // Store drop handlers so we can remove them later
+            const dropHandlers = new WeakMap();
+            
             // Add drop zone listeners to all items
             widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(item => {
-                item.addEventListener('dragover', function(e) {
+                // Remove old handlers if they exist
+                const oldHandlers = dropHandlers.get(item);
+                if (oldHandlers) {
+                    item.removeEventListener('dragover', oldHandlers.dragover);
+                    item.removeEventListener('dragleave', oldHandlers.dragleave);
+                    item.removeEventListener('drop', oldHandlers.drop);
+                }
+                
+                // Create new handlers
+                const dragoverHandler = function(e) {
                     if (!draggedElement) return;
                     if (e.preventDefault) {
                         e.preventDefault();
@@ -6760,13 +6828,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         this.classList.add('drag-over');
                     }
                     return false;
-                });
+                };
                 
-                item.addEventListener('dragleave', function() {
+                const dragleaveHandler = function() {
                     this.classList.remove('drag-over');
-                });
+                };
                 
-                item.addEventListener('drop', function(e) {
+                const dropHandler = function(e) {
                     if (e.preventDefault) {
                         e.preventDefault();
                     }
@@ -6794,7 +6862,19 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     this.classList.remove('drag-over');
                     draggedElement = null;
                     return false;
+                };
+                
+                // Store handlers
+                dropHandlers.set(item, {
+                    dragover: dragoverHandler,
+                    dragleave: dragleaveHandler,
+                    drop: dropHandler
                 });
+                
+                // Add listeners
+                item.addEventListener('dragover', dragoverHandler);
+                item.addEventListener('dragleave', dragleaveHandler);
+                item.addEventListener('drop', dropHandler);
             });
         }
         
