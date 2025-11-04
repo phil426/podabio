@@ -5970,7 +5970,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 formHTML += `
                 <div class="widget-accordion-actions">
                     <button type="button" class="btn btn-secondary" onclick="editWidget(${widgetId}, this)">Edit</button>
-                    <button type="button" class="btn btn-secondary" onclick="deleteWidget(${widgetId})">Delete</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteWidget(${widgetId})">Delete</button>
                     <div class="widget-save-indicator" id="widget-save-indicator-${widgetId}"></div>
                 </div>
                 `;
