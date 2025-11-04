@@ -5733,10 +5733,28 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             try {
                                 renderWidgetSettingsInline(widget, configData, widgetDef, widgetId, contentDiv);
                                 console.log('renderWidgetSettingsInline call completed without error');
+                                
+                                // Re-enable SortableJS after content has loaded
+                                if (widgetsSortable) {
+                                    try {
+                                        widgetsSortable.option('disabled', false);
+                                    } catch (e) {
+                                        console.warn('Error re-enabling widgets sortable:', e);
+                                    }
+                                }
                             } catch (error) {
                                 console.error('Error calling renderWidgetSettingsInline:', error);
                                 console.error('Error stack:', error.stack);
                                 contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error: ' + error.message + '</p></div>';
+                                
+                                // Re-enable SortableJS even on error
+                                if (widgetsSortable) {
+                                    try {
+                                        widgetsSortable.option('disabled', false);
+                                    } catch (e) {
+                                        console.warn('Error re-enabling widgets sortable after error:', e);
+                                    }
+                                }
                             }
                         } else {
                             console.error('Failed to load widget:', data);
