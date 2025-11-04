@@ -1565,7 +1565,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             align-items: center;
             gap: 0.75rem;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 300;
             color: #111827;
             transition: all 0.2s;
             text-align: left;
