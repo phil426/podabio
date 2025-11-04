@@ -4543,11 +4543,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Initialize accordion states
             initializeAccordions();
             
-            // Initialize widget accordion states
-            initializeWidgetAccordions();
-            
             // Preload widget definitions for accordion settings
             loadWidgetDefinitions();
+            
+            // Initialize widget accordion states AFTER SortableJS is initialized
+            // Delay to ensure SortableJS is fully set up before content loading
+            setTimeout(function() {
+                initializeWidgetAccordions();
+            }, 100);
             
             // Auto-upload profile images when file is selected (Settings tab only)
             const profileImageInputSettings = document.getElementById('profile-image-input-settings');
