@@ -411,7 +411,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: calc(100% + 240px); /* Extend width to include preview panel space */
             min-height: 100%;
             padding: 1rem;
-            padding-right: calc(240px + 1rem + 12px); /* Space for preview (240px) + content padding (1rem) + scrollbar (12px) */
+            padding-right: calc(240px + 0rem + 6px); /* Space for preview (240px) + content padding (0rem) + scrollbar (6px) */
             position: relative;
             overflow-y: scroll; /* Enable scrolling */
             overflow-x: hidden;
