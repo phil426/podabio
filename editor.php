@@ -2512,7 +2512,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     <?php foreach ($socialIcons as $icon): 
                         // Get platform-specific icon
                         $platformName = $icon['platform_name'] ?? '';
-                        $platformIcon = 'fa-share-alt'; // Default fallback
+                        $platformIcon = 'fas fa-share-alt'; // Default fallback
                         
                         // Map platform names to Font Awesome icons
                         $iconMap = [
