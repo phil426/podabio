@@ -6466,6 +6466,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     dragClass: 'sortable-drag',
                     forceFallback: false,
                     fallbackOnBody: true,
+                    filter: '.accordion-content, .accordion-content *',
+                    preventOnFilter: false,
                     onEnd: function(evt) {
                         // Save new order after drag ends
                         saveSocialIconOrder();
@@ -6560,6 +6562,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     dragClass: 'sortable-drag',
                     forceFallback: false,
                     fallbackOnBody: true,
+                    filter: '.accordion-content, .accordion-content *',
+                    preventOnFilter: false,
                     onEnd: function(evt) {
                         // Save new order after drag ends
                         saveWidgetOrder();
