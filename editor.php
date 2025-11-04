@@ -242,7 +242,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             justify-content: space-between;
             padding: 0 1.5rem;
             z-index: 1000;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            
         }
         
         .navbar-logo {
@@ -330,7 +330,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             top: 64px; /* Below navbar */
             height: calc(100vh - 64px); /* Account for navbar */
             z-index: 100;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            
         }
         
         .sidebar-header {
@@ -435,7 +435,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: width 0.3s ease, opacity 0.3s ease;
             min-height: calc(100vh - 64px); /* Account for navbar - use min-height to cover rounding issues */
             height: 100%; /* Fill parent flex container */
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            
             max-height: calc(100vh - 64px);
         }
         
@@ -468,7 +468,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             justify-content: center;
             cursor: pointer;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            
             transition: all 0.2s;
         }
         
@@ -527,7 +527,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         #live-preview-panel .preview-refresh-btn:hover {
             background: #0052cc;
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+            
         }
         
         /* Wrapper to constrain scaled container's layout width */
@@ -542,7 +542,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: 390px;
             height: 844px;
             background: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            
             border-radius: 24px;
             overflow: hidden;
             transform: scale(0.5);
@@ -691,7 +691,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 0.875rem;
             box-sizing: border-box;
             transition: border-color 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            
         }
         
         .accordion-content .form-group input:focus,
@@ -767,7 +767,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: white;
             border: 2px dashed #0066ff;
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            
             cursor: grabbing;
         }
         
@@ -797,7 +797,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         .widget-item:hover {
             background: #f0f0f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            
         }
         .widget-item.dragging {
             opacity: 0.5;
@@ -835,7 +835,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             cursor: pointer;
             font-size: 0.875rem;
             transition: background 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            
         }
         .btn:hover {
             opacity: 0.9;
@@ -897,13 +897,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            
             position: relative;
         }
         
         .theme-card:hover {
             border-color: #9ca3af;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            
         }
         
         .theme-card.theme-selected {
@@ -990,7 +990,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .toast {
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            
             padding: 1rem 1.5rem;
             pointer-events: auto;
             opacity: 0;
@@ -1074,7 +1074,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             right: 0;
             background: #ffffff;
             border-radius: 8px 8px 0 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            
             z-index: 2001;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1175,7 +1175,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-radius: 8px;
             width: 100%;
             box-sizing: border-box;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s;
             background: #ffffff;
         }
         
@@ -1184,7 +1184,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .drawer .form-group textarea:focus {
             outline: none;
             border-color: #0066ff;
-            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            
         }
         
         .drawer .form-group textarea {
@@ -1238,7 +1238,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .modal {
             background: #ffffff;
             border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            
             max-width: 500px;
             width: 90%;
             max-height: 90vh;
@@ -1284,7 +1284,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .widget-card:hover {
             border-color: #0066ff;
             transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 102, 255, 0.15);
+            
         }
         
         .widget-card.coming-soon {
@@ -1349,7 +1349,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 0.875rem;
             transition: all 0.2s;
             color: #666;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            
         }
         
         .category-btn:hover {
@@ -1428,7 +1428,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .widget-item.editing {
             border: 2px solid #0066ff;
-            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            
         }
         
         .widget-item.new {
@@ -1454,7 +1454,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-radius: 8px;
             padding: 0.75rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            
             transition: all 0.2s;
             width: 40px;
             height: 40px;
@@ -1465,7 +1465,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .mobile-menu-toggle:hover {
             background: #f9fafb;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            
         }
         
         .mobile-menu-toggle i {
@@ -1535,7 +1535,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border: 1px solid #e5e7eb;
             border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            
         }
         
         .accordion-header {
@@ -1655,7 +1655,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             border-radius: 4px;
             overflow: hidden;
             background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            
         }
         
         .segmented-control button {
@@ -1767,7 +1767,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            
             z-index: 10001;
             opacity: 0;
             visibility: hidden;
@@ -1917,7 +1917,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            
         }
         
         .crop-modal-header {
@@ -2051,7 +2051,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: white;
             font-size: 2.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+            
         }
         
         .blog-placeholder h3 {
@@ -2117,7 +2117,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .support-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            
             border-color: #0066ff;
             background: rgba(255, 255, 255, 0.95);
         }
@@ -2133,7 +2133,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: white;
             font-size: 1.5rem;
             margin-bottom: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+            
         }
         
         .support-card h3 {
@@ -3629,7 +3629,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 </div>
                 
                 <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
-                    <div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                    <div style="background: white; border-radius: 8px; padding: 2rem;  margin-bottom: 2rem;">
                         <h3 style="margin-top: 0; margin-bottom: 1rem; color: #111827;">Blog Features</h3>
                         <p style="color: #6b7280; margin-bottom: 1.5rem;">Use blog widgets on your page to display blog content. Available widgets:</p>
                         
@@ -5976,7 +5976,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     </button>
                                     <div id="${fieldId}-dropdown" 
                                          class="icon-selector-dropdown" 
-                                         style="display: none; position: absolute; top: calc(100% + 0.25rem); left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                         style="display: none; position: absolute; top: calc(100% + 0.25rem); left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px;  z-index: 1000; max-height: 300px; overflow-y: auto;">
                                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.5rem;">
                                             ${commonIcons.map(icon => {
                                                 const isSelected = (value === icon.value) ? 'background: #f0f7ff; border-color: #0066ff;' : '';
@@ -6258,11 +6258,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Render summary cards
             summaryDiv.innerHTML = `
-                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; ">
                     <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Total Clicks</div>
                     <div style="font-size: 2rem; font-weight: 700; color: #111827;">${data.total_clicks || 0}</div>
                 </div>
-                <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; ">
                     <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Page Views</div>
                     <div style="font-size: 2rem; font-weight: 700; color: #111827;">${data.page_views || 0}</div>
                 </div>
@@ -6988,17 +6988,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     previewContainer.style.borderRadius = borderRadius;
                 }
                 
-                // Update shadow
-                if (borderEffectEl && borderEffectEl.value === 'shadow' && shadowIntensityEl) {
-                    const shadows = {
-                        'none': 'none',
-                        'subtle': '0 2px 4px rgba(0, 0, 0, 0.05)',
-                        'pronounced': '0 4px 12px rgba(0, 0, 0, 0.15)'
-                    };
-                    previewContainer.style.boxShadow = shadows[shadowIntensityEl.value] || 'none';
-                } else if (borderEffectEl && borderEffectEl.value === 'glow') {
-                    previewContainer.style.boxShadow = 'none';
-                }
+                // Shadow removed - no box-shadow styling
                 
                 // Update text color
                 if (primaryColorEl && primaryColorEl.value) {
