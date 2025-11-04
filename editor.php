@@ -6442,24 +6442,38 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Destroy existing instance if it exists
             if (socialIconsSortable) {
-                socialIconsSortable.destroy();
+                try {
+                    socialIconsSortable.destroy();
+                } catch (e) {
+                    console.warn('Error destroying social icons sortable:', e);
+                }
                 socialIconsSortable = null;
             }
             
+            // Check if there are any items to sort
+            const items = directoriesList.querySelectorAll('.accordion-section');
+            if (items.length === 0) {
+                return;
+            }
+            
             // Initialize SortableJS for social icons
-            socialIconsSortable = new Sortable(directoriesList, {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                dragClass: 'sortable-drag',
-                forceFallback: false,
-                fallbackOnBody: true,
-                onEnd: function(evt) {
-                    // Save new order after drag ends
-                    saveSocialIconOrder();
-                }
-            });
+            try {
+                socialIconsSortable = new Sortable(directoriesList, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    forceFallback: false,
+                    fallbackOnBody: true,
+                    onEnd: function(evt) {
+                        // Save new order after drag ends
+                        saveSocialIconOrder();
+                    }
+                });
+            } catch (e) {
+                console.error('Error initializing social icons sortable:', e);
+            }
         }
         
         function saveSocialIconOrder() {
@@ -6522,24 +6536,38 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Destroy existing instance if it exists
             if (widgetsSortable) {
-                widgetsSortable.destroy();
+                try {
+                    widgetsSortable.destroy();
+                } catch (e) {
+                    console.warn('Error destroying widgets sortable:', e);
+                }
                 widgetsSortable = null;
             }
             
+            // Check if there are any items to sort
+            const items = widgetsList.querySelectorAll('.accordion-section');
+            if (items.length === 0) {
+                return;
+            }
+            
             // Initialize SortableJS for widgets
-            widgetsSortable = new Sortable(widgetsList, {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                dragClass: 'sortable-drag',
-                forceFallback: false,
-                fallbackOnBody: true,
-                onEnd: function(evt) {
-                    // Save new order after drag ends
-                    saveWidgetOrder();
-                }
-            });
+            try {
+                widgetsSortable = new Sortable(widgetsList, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    forceFallback: false,
+                    fallbackOnBody: true,
+                    onEnd: function(evt) {
+                        // Save new order after drag ends
+                        saveWidgetOrder();
+                    }
+                });
+            } catch (e) {
+                console.error('Error initializing widgets sortable:', e);
+            }
         }
         
         // Initialize drag and drop on page load and after widget updates
@@ -6549,15 +6577,29 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 initWidgetDragAndDrop();
                 
                 // Reinitialize after dynamic updates (MutationObserver)
+                // Only observe top-level children, not accordion content changes
                 const observer = new MutationObserver(function(mutations) {
+                    let shouldReinit = false;
                     mutations.forEach(function(mutation) {
-                        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
-                            // Small delay to ensure DOM is fully updated
-                            setTimeout(function() {
-                                initWidgetDragAndDrop();
-                            }, 100);
-                        }
+                        // Only reinit if accordion-section items are added/removed, not content changes
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
+                                shouldReinit = true;
+                            }
+                        });
+                        mutation.removedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
+                                shouldReinit = true;
+                            }
+                        });
                     });
+                    
+                    if (shouldReinit) {
+                        // Small delay to ensure DOM is fully updated
+                        setTimeout(function() {
+                            initWidgetDragAndDrop();
+                        }, 200);
+                    }
                 });
                 observer.observe(widgetsList, { childList: true, subtree: false });
             }
@@ -6568,15 +6610,29 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 initSocialIconDragAndDrop();
                 
                 // Reinitialize after dynamic updates (MutationObserver)
+                // Only observe top-level children, not accordion content changes
                 const observer = new MutationObserver(function(mutations) {
+                    let shouldReinit = false;
                     mutations.forEach(function(mutation) {
-                        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
-                            // Small delay to ensure DOM is fully updated
-                            setTimeout(function() {
-                                initSocialIconDragAndDrop();
-                            }, 100);
-                        }
+                        // Only reinit if accordion-section items are added/removed, not content changes
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
+                                shouldReinit = true;
+                            }
+                        });
+                        mutation.removedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
+                                shouldReinit = true;
+                            }
+                        });
                     });
+                    
+                    if (shouldReinit) {
+                        // Small delay to ensure DOM is fully updated
+                        setTimeout(function() {
+                            initSocialIconDragAndDrop();
+                        }, 200);
+                    }
                 });
                 observer.observe(directoriesList, { childList: true, subtree: false });
             }
