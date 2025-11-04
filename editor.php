@@ -2601,7 +2601,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <div class="widget-accordion-item <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
-                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder"></i>
+                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -6562,8 +6562,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         let draggedSocialIconElement = null;
         
         function initSocialIconDragAndDrop() {
+            console.log('Initializing social icon drag and drop');
             const directoriesList = document.getElementById('directories-list');
-            if (!directoriesList) return;
+            if (!directoriesList) {
+                console.error('directories-list element not found');
+                return;
+            }
             
             // Remove old listeners by cloning (clean slate)
             const items = directoriesList.querySelectorAll('.widget-accordion-item');
@@ -6578,6 +6582,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     newDragHandle.style.cursor = 'move';
                     
                     newDragHandle.addEventListener('dragstart', function(e) {
+                        console.log('Social icon drag started');
                         draggedSocialIconElement = item;
                         item.classList.add('dragging');
                         e.dataTransfer.effectAllowed = 'move';
@@ -6737,8 +6742,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function initWidgetDragAndDrop() {
+            console.log('Initializing widget drag and drop');
             const widgetsList = document.getElementById('widgets-list');
-            if (!widgetsList) return;
+            if (!widgetsList) {
+                console.error('widgets-list element not found');
+                return;
+            }
             
             // Remove old listeners by cloning (clean slate)
             const items = widgetsList.querySelectorAll('.widget-accordion-item, .widget-item');
@@ -6747,6 +6756,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 if (item.classList.contains('widget-accordion-item')) {
                     const dragHandle = item.querySelector('.drag-handle');
                     if (dragHandle) {
+                        console.log('Setting up drag handle for widget:', item.getAttribute('data-widget-id'));
                         // Clone and replace to remove old event listeners
                         const newDragHandle = dragHandle.cloneNode(true);
                         dragHandle.parentNode.replaceChild(newDragHandle, dragHandle);
@@ -6754,7 +6764,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         newDragHandle.setAttribute('draggable', 'true');
                         newDragHandle.style.cursor = 'move';
                         
+                        // Verify draggable attribute was set
+                        console.log('Drag handle draggable:', newDragHandle.getAttribute('draggable'));
+                        
                         newDragHandle.addEventListener('dragstart', function(e) {
+                            console.log('Widget drag started', item);
                             draggedElement = item;
                             item.classList.add('dragging');
                             e.dataTransfer.effectAllowed = 'move';
