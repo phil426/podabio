@@ -2611,7 +2611,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <div class="widget-accordion-item <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
-                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -2673,7 +2672,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     <?php foreach ($socialIcons as $icon): ?>
                         <li class="widget-accordion-item" data-directory-id="<?php echo $icon['id']; ?>">
                             <button type="button" class="widget-accordion-header" onclick="toggleSocialIconAccordion(<?php echo $icon['id']; ?>)">
-                                <i class="fas fa-grip-vertical drag-handle" title="Drag to reorder" onclick="event.stopPropagation();"></i>
                                 <div class="widget-info" style="flex: 1; text-align: left;">
                                     <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
                                     <div class="widget-url"><?php echo h($icon['url']); ?></div>
@@ -6567,25 +6565,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         });
         
-        // Drag and drop functionality
-        let draggedElement = null;
-        let draggedSocialIconElement = null;
-        let isCurrentlyDragging = false;
-        let widgetDragInitialized = false;
-        let socialDragInitialized = false;
+        // Drag and drop functionality removed per user request
         
         function initSocialIconDragAndDrop() {
-            if (socialDragInitialized || isCurrentlyDragging) {
-                console.log('Skipping social icon drag init (already initialized or drag in progress)');
-                return;
-            }
-            console.log('Initializing social icon drag and drop');
-            const directoriesList = document.getElementById('directories-list');
-            if (!directoriesList) {
-                console.error('directories-list element not found');
-                return;
-            }
-            socialDragInitialized = true;
+            // Drag and drop disabled per user request
+            return;
             
             // Remove old listeners by cloning (clean slate)
             const items = directoriesList.querySelectorAll('.widget-accordion-item');
@@ -6760,17 +6744,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function initWidgetDragAndDrop() {
-            if (widgetDragInitialized || isCurrentlyDragging) {
-                console.log('Skipping widget drag init (already initialized or drag in progress)');
-                return;
-            }
-            console.log('Initializing widget drag and drop');
-            const widgetsList = document.getElementById('widgets-list');
-            if (!widgetsList) {
-                console.error('widgets-list element not found');
-                return;
-            }
-            widgetDragInitialized = true;
+            // Drag and drop disabled per user request
+            return;
             
             // Remove old listeners by cloning (clean slate)
             const items = widgetsList.querySelectorAll('.widget-accordion-item, .widget-item');
