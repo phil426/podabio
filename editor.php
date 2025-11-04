@@ -656,7 +656,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: all 0.2s ease;
             color: #9ca3af;
             font-size: 1.1rem;
-            cursor: pointer;
         }
         
         .widget-featured-toggle .fa-star.featured-active {
@@ -1598,12 +1597,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-shrink: 0;
         }
         
-        /* Widget accordion header content styling */
-        .accordion-header > span {
-            flex: 1;
-            text-align: left;
-        }
-        
+        /* Widget accordion header content styling - font properties only */
         .accordion-header > span > div:first-child {
             font-weight: 600;
             color: #111827;
@@ -1615,15 +1609,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-weight: normal;
         }
         
-        /* Widget accordion loading state */
-        .widget-loading-state {
-            text-align: center;
-            color: #666;
-        }
-        
-        .widget-loading-state .fa-spinner {
+        /* Widget accordion loading spinner font size */
+        .accordion-content .fa-spinner {
             font-size: 1.5rem;
-            margin-bottom: 1rem;
         }
         
         .accordion-section.expanded .accordion-icon {
@@ -2541,7 +2529,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
                                 <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
-                                <span>
+                                <span style="flex: 1; text-align: left;">
                                     <div><?php echo h($widget['title']); ?></div>
                                     <div><?php echo h($widgetType); ?></div>
                                 </span>
@@ -2557,13 +2545,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 $featuredEffect = $widget['featured_effect'] ?? '';
                                 ?>
                                 <div class="widget-featured-toggle" onclick="event.stopPropagation(); toggleFeaturedWidget(<?php echo $widget['id']; ?>, <?php echo $isFeatured ? 'true' : 'false'; ?>)" title="<?php echo $isFeatured ? 'Featured Widget - ' . h($featuredEffect) : 'Make Featured Widget'; ?>">
-                                    <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>"></i>
+                                    <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>" style="cursor: pointer;"></i>
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
                             <div class="accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
-                                <div class="widget-loading-state">
-                                    <i class="fas fa-spinner fa-spin"></i>
+                                <div style="text-align: center; color: #666;">
+                                    <i class="fas fa-spinner fa-spin" style="margin-bottom: 1rem;"></i>
                                     <p>Loading widget settings...</p>
                                 </div>
                             </div>
