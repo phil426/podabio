@@ -5646,13 +5646,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Widget Accordion Functions
         window.toggleWidgetAccordion = function(widgetId) {
-            console.log('toggleWidgetAccordion called for widgetId:', widgetId);
             const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
             const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-            console.log('accordionItem:', accordionItem, 'contentDiv:', contentDiv);
             
             if (!accordionItem || !contentDiv) {
-                console.error('Could not find accordion elements for widget', widgetId);
                 return;
             }
             
