@@ -696,22 +696,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             white-space: nowrap;
         }
         
-        .widget-accordion-header .accordion-icon {
-            margin-left: 0.5rem;
-            font-size: 0.875rem;
-            transition: transform 0.3s linear;
-            color: #6b7280;
-            flex-shrink: 0;
-        }
-        
-        .widget-accordion-item.active .accordion-icon {
-            transform: rotate(180deg);
-        }
-        
-        .widget-accordion-item.active .widget-accordion-header {
-            background: #f0f7ff;
-            border-color: #0066ff;
-        }
+        /* Accordion icon styles removed - content always visible */
         
         /* Widget Visibility Toggle */
         .widget-visibility-toggle {
