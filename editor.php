@@ -2517,10 +2517,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         // Map platform names to Font Awesome icons
                         $iconMap = [
                             // Podcast Platforms
-                            'apple_podcasts' => 'fa-podcast',
+                            'apple_podcasts' => 'fas fa-podcast',
                             'spotify' => 'fab fa-spotify',
                             'youtube_music' => 'fab fa-youtube',
-                            'iheart_radio' => 'fa-heart',
+                            'iheart_radio' => 'fas fa-heart',
                             'amazon_music' => 'fab fa-amazon',
                             // Social Media Platforms
                             'facebook' => 'fab fa-facebook',
