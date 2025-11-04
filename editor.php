@@ -2596,9 +2596,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                             <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" required placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
                                         </div>
                                         
-                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                            <button type="button" class="btn btn-danger btn-small" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
-                                            <button type="submit" class="btn btn-secondary btn-small">Save</button>
+                                        <div class="widget-accordion-actions">
+                                            <button type="button" class="btn btn-secondary" onclick="editWidget(<?php echo $icon['id']; ?>, this)" style="display: none;">Edit</button>
+                                            <button type="button" class="btn btn-danger" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
+                                            <button type="submit" class="btn btn-secondary">Save</button>
                                         </div>
                                     </form>
                             </div>
