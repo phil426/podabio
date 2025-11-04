@@ -6767,50 +6767,61 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     const dragHandle = item.querySelector('.drag-handle');
                     if (dragHandle) {
                         console.log('Setting up drag handle for widget:', item.getAttribute('data-widget-id'));
-                        // Clone and replace to remove old event listeners
-                        const newDragHandle = dragHandle.cloneNode(true);
-                        dragHandle.parentNode.replaceChild(newDragHandle, dragHandle);
                         
-                        newDragHandle.setAttribute('draggable', 'true');
-                        newDragHandle.style.cursor = 'move';
+                        // Remove draggable from handle, make item draggable
+                        dragHandle.removeAttribute('draggable');
+                        item.setAttribute('draggable', 'true');
                         
-                        // Verify draggable attribute was set
-                        console.log('Drag handle draggable:', newDragHandle.getAttribute('draggable'));
+                        let isDraggingFromHandle = false;
                         
-                        // Add mousedown to verify clicks are working
-                        newDragHandle.addEventListener('mousedown', function(e) {
+                        // Track mousedown on handle
+                        dragHandle.addEventListener('mousedown', function(e) {
                             console.log('Drag handle mousedown detected');
+                            isDraggingFromHandle = true;
+                            e.stopPropagation(); // Prevent button click
                         });
                         
-                        newDragHandle.addEventListener('dragstart', function(e) {
+                        // Reset on mouseup
+                        dragHandle.addEventListener('mouseup', function(e) {
+                            isDraggingFromHandle = false;
+                        });
+                        
+                        // Item dragstart - only proceed if dragging from handle
+                        item.addEventListener('dragstart', function(e) {
+                            if (!isDraggingFromHandle) {
+                                e.preventDefault();
+                                return false;
+                            }
+                            
                             console.log('Widget drag started', item);
                             draggedElement = item;
-                            item.classList.add('dragging');
+                            this.classList.add('dragging');
                             e.dataTransfer.effectAllowed = 'move';
-                            e.dataTransfer.setData('text/plain', ''); // Use text/plain instead
-                            e.stopPropagation();
+                            e.dataTransfer.setData('text/plain', 'widget');
                             
                             // Prevent parent button's onclick from firing
-                            const parentButton = this.closest('button');
-                            if (parentButton) {
-                                parentButton.style.pointerEvents = 'none';
+                            const button = this.querySelector('.widget-accordion-header');
+                            if (button) {
+                                button.style.pointerEvents = 'none';
                                 setTimeout(() => {
-                                    parentButton.style.pointerEvents = '';
-                                }, 0);
+                                    button.style.pointerEvents = '';
+                                }, 100);
                             }
                         });
                         
-                        newDragHandle.addEventListener('dragend', function() {
-                            item.classList.remove('dragging');
+                        item.addEventListener('dragend', function(e) {
+                            console.log('Drag ended');
+                            this.classList.remove('dragging');
                             widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(el => {
                                 el.classList.remove('drag-over');
                             });
                             draggedElement = null;
+                            isDraggingFromHandle = false;
                             
-                            // Restore pointer events on parent button
-                            const parentButton = this.closest('button');
-                            if (parentButton) {
-                                parentButton.style.pointerEvents = '';
+                            // Restore pointer events
+                            const button = this.querySelector('.widget-accordion-header');
+                            if (button) {
+                                button.style.pointerEvents = '';
                             }
                         });
                     }
