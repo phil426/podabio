@@ -980,7 +980,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 10001; /* Above navbar (1000) */
+            z-index: 99999; /* Highest z-index - appears in front of everything */
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -2256,6 +2256,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         </div>
     </nav>
     
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
     <div class="editor-layout">
         <!-- Left Sidebar -->
         <aside class="sidebar">
@@ -2380,9 +2383,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <div class="editor-header">
                     <h1 style="margin: 0;"><?php echo $page ? 'Edit Your Page' : 'Create Your Page'; ?></h1>
                 </div>
-        
-        <!-- Toast Container -->
-        <div id="toast-container" class="toast-container"></div>
         
         <!-- Legacy alerts (will be converted to toasts via JavaScript) -->
         <?php if ($success): ?>
