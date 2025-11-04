@@ -6691,22 +6691,42 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 if (item.classList.contains('widget-accordion-item')) {
                     const dragHandle = item.querySelector('.drag-handle');
                     if (dragHandle) {
-                        dragHandle.setAttribute('draggable', 'true');
-                        dragHandle.style.cursor = 'move';
+                        // Clone and replace to remove old event listeners
+                        const newDragHandle = dragHandle.cloneNode(true);
+                        dragHandle.parentNode.replaceChild(newDragHandle, dragHandle);
                         
-                        dragHandle.addEventListener('dragstart', function(e) {
+                        newDragHandle.setAttribute('draggable', 'true');
+                        newDragHandle.style.cursor = 'move';
+                        
+                        newDragHandle.addEventListener('dragstart', function(e) {
                             draggedElement = item;
                             item.classList.add('dragging');
                             e.dataTransfer.effectAllowed = 'move';
                             e.dataTransfer.setData('text/html', item.innerHTML);
+                            e.stopPropagation();
+                            
+                            // Prevent parent button's onclick from firing
+                            const parentButton = this.closest('button');
+                            if (parentButton) {
+                                parentButton.style.pointerEvents = 'none';
+                                setTimeout(() => {
+                                    parentButton.style.pointerEvents = '';
+                                }, 0);
+                            }
                         });
                         
-                        dragHandle.addEventListener('dragend', function() {
+                        newDragHandle.addEventListener('dragend', function() {
                             item.classList.remove('dragging');
                             widgetsList.querySelectorAll('.widget-accordion-item, .widget-item').forEach(el => {
                                 el.classList.remove('drag-over');
                             });
                             draggedElement = null;
+                            
+                            // Restore pointer events on parent button
+                            const parentButton = this.closest('button');
+                            if (parentButton) {
+                                parentButton.style.pointerEvents = '';
+                            }
                         });
                     }
                 } else if (item.classList.contains('widget-item')) {
@@ -6747,6 +6767,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 });
                 
                 item.addEventListener('drop', function(e) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                    }
                     if (e.stopPropagation) {
                         e.stopPropagation();
                     }
@@ -6756,17 +6779,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         const draggedIndex = allItems.indexOf(draggedElement);
                         const targetIndex = allItems.indexOf(this);
                         
-                        if (draggedIndex < targetIndex) {
-                            widgetsList.insertBefore(draggedElement, this.nextSibling);
-                        } else {
-                            widgetsList.insertBefore(draggedElement, this);
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                            if (draggedIndex < targetIndex) {
+                                widgetsList.insertBefore(draggedElement, this.nextSibling);
+                            } else {
+                                widgetsList.insertBefore(draggedElement, this);
+                            }
+                            
+                            // Save new order
+                            saveWidgetOrder();
                         }
-                        
-                        // Save new order
-                        saveWidgetOrder();
                     }
                     
                     this.classList.remove('drag-over');
+                    draggedElement = null;
                     return false;
                 });
             });
