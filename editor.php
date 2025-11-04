@@ -368,7 +368,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
-            border-left: 3px solid transparent;
             font-size: 0.875rem;
         }
         
@@ -378,9 +377,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .nav-item.active {
-            background: #f0f7ff;
+            background: #ffffff;
             color: #0066ff;
-            border-left-color: #0066ff;
             font-weight: 600;
         }
         
