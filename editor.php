@@ -2678,7 +2678,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon" id="social-icon-chevron-<?php echo $icon['id']; ?>"></i>
                             </button>
-                            <div class="widget-accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>" style="display: none; position: relative; top: auto; left: auto; right: auto; border: none; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; box-shadow: none; z-index: auto; opacity: 1; visibility: visible; transform: none;">
+                            <div class="widget-accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>" style="position: relative; top: auto; left: auto; right: auto; border: none; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; box-shadow: none; z-index: auto; opacity: 1; visibility: visible; transform: none;">
                                 <div class="widget-content-inner" style="padding: 1.5rem;">
                                     <form class="social-icon-edit-form" data-directory-id="<?php echo $icon['id']; ?>" onsubmit="saveSocialIcon(event, <?php echo $icon['id']; ?>)">
                                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
@@ -4015,6 +4015,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (sectionElement) {
                 sectionElement.classList.add('active');
             }
+            
+            // Clear any inline display styles from accordion content when switching tabs
+            // This prevents conflicts between CSS classes and inline styles
+            setTimeout(() => {
+                document.querySelectorAll('.widget-accordion-content.show').forEach(content => {
+                    // Only clear if it has the show class (should be visible)
+                    if (content.classList.contains('show')) {
+                        content.style.display = '';
+                    }
+                });
+            }, 50);
             
             // Auto-load analytics if analytics tab is opened
             if (sectionName === 'analytics' && typeof loadWidgetAnalytics === 'function') {
@@ -5650,6 +5661,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (isOpen) {
                 // Close this dropdown
                 contentDiv.classList.remove('show');
+                contentDiv.style.display = ''; // Clear any inline display styles
                 accordionItem.classList.remove('active');
                 localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
             } else {
@@ -5657,6 +5669,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 document.querySelectorAll('.widget-accordion-content.show').forEach(openContent => {
                     if (openContent !== contentDiv) {
                         openContent.classList.remove('show');
+                        openContent.style.display = ''; // Clear any inline display styles
                         const openWidgetId = openContent.id.replace('widget-content-', '');
                         const openItem = document.getElementById(`widget-accordion-${openWidgetId}`);
                         if (openItem) {
@@ -5666,7 +5679,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     }
                 });
                 
-                // Open this dropdown
+                // Open this dropdown - clear any inline display styles first
+                contentDiv.style.display = ''; // Clear inline display styles
                 contentDiv.classList.add('show');
                 accordionItem.classList.add('active');
                 
@@ -8637,27 +8651,42 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         function toggleSocialIconAccordion(directoryId) {
             const content = document.getElementById('social-icon-content-' + directoryId);
             const chevron = document.getElementById('social-icon-chevron-' + directoryId);
-            const item = content.closest('.widget-accordion-item');
+            const item = content ? content.closest('.widget-accordion-item') : null;
             
-            // Close all other accordions
-            document.querySelectorAll('.widget-accordion-item').forEach(otherItem => {
-                if (otherItem !== item) {
-                    const otherContent = otherItem.querySelector('.widget-accordion-content');
-                    const otherChevron = otherItem.querySelector('.accordion-icon');
-                    if (otherContent && otherContent.style.display !== 'none') {
-                        otherContent.style.display = 'none';
-                        if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
-                    }
-                }
-            });
+            if (!content || !item) return;
             
-            // Toggle current accordion
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
-            } else {
-                content.style.display = 'none';
+            const isOpen = content.classList.contains('show');
+            
+            if (isOpen) {
+                // Close this dropdown
+                content.classList.remove('show');
+                content.style.display = ''; // Clear any inline display styles
+                item.classList.remove('active');
                 if (chevron) chevron.style.transform = 'rotate(0deg)';
+                localStorage.setItem(`social_icon_accordion_${directoryId}`, 'closed');
+            } else {
+                // Close all other social icon accordions first (only one open at a time)
+                document.querySelectorAll('#directories-list .widget-accordion-content.show').forEach(openContent => {
+                    if (openContent !== content) {
+                        openContent.classList.remove('show');
+                        openContent.style.display = ''; // Clear any inline display styles
+                        const openItem = openContent.closest('.widget-accordion-item');
+                        if (openItem) {
+                            openItem.classList.remove('active');
+                            const openChevron = openItem.querySelector('.accordion-icon');
+                            if (openChevron) openChevron.style.transform = 'rotate(0deg)';
+                            const openId = openItem.getAttribute('data-directory-id');
+                            if (openId) localStorage.setItem(`social_icon_accordion_${openId}`, 'closed');
+                        }
+                    }
+                });
+                
+                // Open this dropdown - clear any inline display styles first
+                content.style.display = ''; // Clear inline display styles
+                content.classList.add('show');
+                item.classList.add('active');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                localStorage.setItem(`social_icon_accordion_${directoryId}`, 'open');
             }
         }
         
