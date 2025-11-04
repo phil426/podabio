@@ -6833,7 +6833,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 // Create new handlers
                 const dragoverHandler = function(e) {
-                    if (!draggedElement) return;
+                    if (!draggedElement) {
+                        console.log('dragover: no draggedElement');
+                        return;
+                    }
                     if (e.preventDefault) {
                         e.preventDefault();
                     }
@@ -6849,6 +6852,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 };
                 
                 const dropHandler = function(e) {
+                    console.log('Drop event fired!', {
+                        draggedElement: draggedElement,
+                        dropTarget: this,
+                        widgetId: this.getAttribute('data-widget-id')
+                    });
+                    
                     if (e.preventDefault) {
                         e.preventDefault();
                     }
@@ -6857,9 +6866,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     }
                     
                     if (draggedElement && draggedElement !== this) {
+                        console.log('Valid drop, reordering...');
                         const allItems = Array.from(widgetsList.querySelectorAll('.widget-accordion-item, .widget-item'));
                         const draggedIndex = allItems.indexOf(draggedElement);
                         const targetIndex = allItems.indexOf(this);
+                        
+                        console.log('Indices:', {draggedIndex, targetIndex});
                         
                         if (draggedIndex !== -1 && targetIndex !== -1) {
                             if (draggedIndex < targetIndex) {
@@ -6868,9 +6880,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 widgetsList.insertBefore(draggedElement, this);
                             }
                             
+                            console.log('Order changed, saving...');
                             // Save new order
                             saveWidgetOrder();
                         }
+                    } else {
+                        console.log('Invalid drop or same element');
                     }
                     
                     this.classList.remove('drag-over');
