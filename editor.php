@@ -652,10 +652,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             cursor: move;
             margin-right: 0.25rem;
             flex-shrink: 0;
+            user-select: none;
+            -webkit-user-drag: element;
         }
         
         .widget-accordion-header .drag-handle:hover {
             color: #6b7280;
+        }
+        
+        .widget-accordion-header .drag-handle[draggable="true"] {
+            cursor: grab;
+        }
+        
+        .widget-accordion-header .drag-handle[draggable="true"]:active {
+            cursor: grabbing;
         }
         
         .widget-accordion-header .widget-type-icon {
@@ -6767,12 +6777,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         // Verify draggable attribute was set
                         console.log('Drag handle draggable:', newDragHandle.getAttribute('draggable'));
                         
+                        // Add mousedown to verify clicks are working
+                        newDragHandle.addEventListener('mousedown', function(e) {
+                            console.log('Drag handle mousedown detected');
+                        });
+                        
                         newDragHandle.addEventListener('dragstart', function(e) {
                             console.log('Widget drag started', item);
                             draggedElement = item;
                             item.classList.add('dragging');
                             e.dataTransfer.effectAllowed = 'move';
-                            e.dataTransfer.setData('text/html', item.innerHTML);
+                            e.dataTransfer.setData('text/plain', ''); // Use text/plain instead
                             e.stopPropagation();
                             
                             // Prevent parent button's onclick from firing
