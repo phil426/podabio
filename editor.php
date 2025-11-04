@@ -596,13 +596,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow: visible;
         }
         
-        /* Ensure bottom corners are rounded when dropdown is closed */
-        .widget-accordion-item:not(.active) {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .widget-accordion-item.active {
+        /* Content always visible */
+        .widget-accordion-item {
             overflow: visible;
         }
         
@@ -624,7 +619,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             padding: 1rem 1.25rem;
             background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
             border: none;
-            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -633,13 +627,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: #111827;
             transition: all 0.2s;
             text-align: left;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        /* When item is active (dropdown open), header only has top rounded corners */
-        .widget-accordion-item.active .widget-accordion-header {
             border-radius: 8px 8px 0 0;
+            overflow: hidden;
         }
         
         .widget-accordion-header:hover {
@@ -801,28 +790,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .widget-accordion-content {
-            position: absolute;
-            top: calc(100% + 0.5rem);
-            left: 0;
-            right: 0;
+            position: relative;
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: all 0.2s ease;
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 8px 8px;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
             overflow: hidden;
-            max-height: 80vh;
-            overflow-y: auto;
         }
         
         .widget-accordion-content.show {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
+            transform: none;
         }
         
         .widget-content-inner {
@@ -2610,7 +2592,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         }
                     ?>
                         <div class="widget-accordion-item <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-accordion-<?php echo $widget['id']; ?>">
-                            <button type="button" class="widget-accordion-header" onclick="toggleWidgetAccordion(<?php echo $widget['id']; ?>)">
+                            <div class="widget-accordion-header">
                                 <i class="fas <?php echo $widgetIcon; ?> widget-type-icon"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -2628,7 +2610,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     <div class="widget-header-title"><?php echo h($widget['title']); ?></div>
                                     <div class="widget-header-subtitle"><?php echo h($subtitle); ?></div>
                                 </div>
-                                <div class="widget-visibility-toggle" onclick="event.stopPropagation();">
+                                <div class="widget-visibility-toggle">
                                     <input type="checkbox" 
                                            id="widget-visibility-<?php echo $widget['id']; ?>" 
                                            <?php echo ($widget['is_active'] ?? 1) ? 'checked' : ''; ?>
@@ -2639,12 +2621,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 $isFeatured = !empty($widget['is_featured']);
                                 $featuredEffect = $widget['featured_effect'] ?? '';
                                 ?>
-                                <div class="widget-featured-toggle" onclick="event.stopPropagation(); toggleFeaturedWidget(<?php echo $widget['id']; ?>, <?php echo $isFeatured ? 'true' : 'false'; ?>)" title="<?php echo $isFeatured ? 'Featured Widget - ' . h($featuredEffect) : 'Make Featured Widget'; ?>">
+                                <div class="widget-featured-toggle" onclick="toggleFeaturedWidget(<?php echo $widget['id']; ?>, <?php echo $isFeatured ? 'true' : 'false'; ?>)" title="<?php echo $isFeatured ? 'Featured Widget - ' . h($featuredEffect) : 'Make Featured Widget'; ?>">
                                     <i class="fas fa-star <?php echo $isFeatured ? 'featured-active' : ''; ?>" style="color: <?php echo $isFeatured ? '#ffd700' : '#9ca3af'; ?>; font-size: 1.1rem; cursor: pointer; transition: all 0.2s;"></i>
                                 </div>
-                                <i class="fas fa-chevron-down accordion-icon"></i>
-                            </button>
-                            <div class="widget-accordion-content" id="widget-content-<?php echo $widget['id']; ?>">
+                            </div>
+                            <div class="widget-accordion-content show" id="widget-content-<?php echo $widget['id']; ?>">
                                 <div class="widget-content-inner" style="text-align: center; color: #666;">
                                     <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
                                     <p>Loading widget settings...</p>
@@ -2671,14 +2652,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <?php else: ?>
                     <?php foreach ($socialIcons as $icon): ?>
                         <li class="widget-accordion-item" data-directory-id="<?php echo $icon['id']; ?>">
-                            <button type="button" class="widget-accordion-header" onclick="toggleSocialIconAccordion(<?php echo $icon['id']; ?>)">
+                            <div class="widget-accordion-header">
                                 <div class="widget-info" style="flex: 1; text-align: left;">
                                     <div class="widget-title"><?php echo h($icon['platform_name']); ?></div>
                                     <div class="widget-url"><?php echo h($icon['url']); ?></div>
                                 </div>
-                                <i class="fas fa-chevron-down accordion-icon" id="social-icon-chevron-<?php echo $icon['id']; ?>"></i>
-                            </button>
-                            <div class="widget-accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>" style="position: relative; top: auto; left: auto; right: auto; border: none; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; box-shadow: none; z-index: auto; opacity: 1; visibility: visible; transform: none;">
+                            </div>
+                            <div class="widget-accordion-content show" id="social-icon-content-<?php echo $icon['id']; ?>" style="border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px;">
                                 <div class="widget-content-inner" style="padding: 1.5rem;">
                                     <form class="social-icon-edit-form" data-directory-id="<?php echo $icon['id']; ?>" onsubmit="saveSocialIcon(event, <?php echo $icon['id']; ?>)">
                                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
@@ -4016,14 +3996,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 sectionElement.classList.add('active');
             }
             
-            // Clear any inline display styles from accordion content when switching tabs
-            // This prevents conflicts between CSS classes and inline styles
+            // Ensure all accordion content is visible when switching tabs
             setTimeout(() => {
-                document.querySelectorAll('.widget-accordion-content.show').forEach(content => {
-                    // Only clear if it has the show class (should be visible)
-                    if (content.classList.contains('show')) {
-                        content.style.display = '';
-                    }
+                document.querySelectorAll('.widget-accordion-content').forEach(content => {
+                    content.classList.add('show');
+                    content.style.display = '';
                 });
             }, 50);
             
@@ -4656,27 +4633,18 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         function initializeWidgetAccordions() {
             const widgetAccordions = document.querySelectorAll('.widget-accordion-item');
             
-            // Pre-load all widget settings so content is ready before dropdown opens
+            // Pre-load all widget settings - content is always visible now
             widgetAccordions.forEach(accordion => {
                 const widgetId = accordion.getAttribute('data-widget-id');
                 if (!widgetId) return;
                 
-                // Pre-load content for all widgets (keep hidden until dropdown opens)
+                // Pre-load content for all widgets (always visible)
                 loadWidgetSettingsInline(parseInt(widgetId));
                 
-                // Restore open state from localStorage (using new 'open'/'closed' format)
-                const savedState = localStorage.getItem(`widget_accordion_${widgetId}`);
+                // Ensure content is always visible
                 const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-                if (contentDiv && (savedState === 'open' || savedState === 'expanded')) {
-                    // Check if there are any other widgets already open
-                    const alreadyOpen = document.querySelector('.widget-accordion-content.show');
-                    if (!alreadyOpen) {
-                        contentDiv.classList.add('show');
-                        accordion.classList.add('active');
-                    } else {
-                        // If another widget is already open, keep this one closed
-                        localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
-                    }
+                if (contentDiv) {
+                    contentDiv.classList.add('show');
                 }
             });
         }
@@ -5644,50 +5612,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
         }
         
-        // Widget Accordion Functions
+        // Widget Accordion Functions - Disabled (content always visible)
         window.toggleWidgetAccordion = function(widgetId) {
-            const accordionItem = document.getElementById(`widget-accordion-${widgetId}`);
-            const contentDiv = document.getElementById(`widget-content-${widgetId}`);
-            
-            if (!accordionItem || !contentDiv) {
-                return;
-            }
-            
-            const isOpen = contentDiv.classList.contains('show');
-            
-            if (isOpen) {
-                // Close this dropdown
-                contentDiv.classList.remove('show');
-                contentDiv.style.display = ''; // Clear any inline display styles
-                accordionItem.classList.remove('active');
-                localStorage.setItem(`widget_accordion_${widgetId}`, 'closed');
-            } else {
-                // Close all other widgets first (only one open at a time)
-                document.querySelectorAll('.widget-accordion-content.show').forEach(openContent => {
-                    if (openContent !== contentDiv) {
-                        openContent.classList.remove('show');
-                        openContent.style.display = ''; // Clear any inline display styles
-                        const openWidgetId = openContent.id.replace('widget-content-', '');
-                        const openItem = document.getElementById(`widget-accordion-${openWidgetId}`);
-                        if (openItem) {
-                            openItem.classList.remove('active');
-                            localStorage.setItem(`widget_accordion_${openWidgetId}`, 'closed');
-                        }
-                    }
-                });
-                
-                // Open this dropdown - clear any inline display styles first
-                contentDiv.style.display = ''; // Clear inline display styles
-                contentDiv.classList.add('show');
-                accordionItem.classList.add('active');
-                
-                // Load widget settings if not already loaded
-                if (contentDiv.querySelector('.fa-spinner')) {
-                    loadWidgetSettingsInline(widgetId);
-                }
-                
-                localStorage.setItem(`widget_accordion_${widgetId}`, 'open');
-            }
+            // Accordion functionality removed - content is always visible
+            return;
         };
         
         window.loadWidgetSettingsInline = function(widgetId) {
@@ -8646,45 +8574,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function toggleSocialIconAccordion(directoryId) {
-            const content = document.getElementById('social-icon-content-' + directoryId);
-            const chevron = document.getElementById('social-icon-chevron-' + directoryId);
-            const item = content ? content.closest('.widget-accordion-item') : null;
-            
-            if (!content || !item) return;
-            
-            const isOpen = content.classList.contains('show');
-            
-            if (isOpen) {
-                // Close this dropdown
-                content.classList.remove('show');
-                content.style.display = ''; // Clear any inline display styles
-                item.classList.remove('active');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-                localStorage.setItem(`social_icon_accordion_${directoryId}`, 'closed');
-            } else {
-                // Close all other social icon accordions first (only one open at a time)
-                document.querySelectorAll('#directories-list .widget-accordion-content.show').forEach(openContent => {
-                    if (openContent !== content) {
-                        openContent.classList.remove('show');
-                        openContent.style.display = ''; // Clear any inline display styles
-                        const openItem = openContent.closest('.widget-accordion-item');
-                        if (openItem) {
-                            openItem.classList.remove('active');
-                            const openChevron = openItem.querySelector('.accordion-icon');
-                            if (openChevron) openChevron.style.transform = 'rotate(0deg)';
-                            const openId = openItem.getAttribute('data-directory-id');
-                            if (openId) localStorage.setItem(`social_icon_accordion_${openId}`, 'closed');
-                        }
-                    }
-                });
-                
-                // Open this dropdown - clear any inline display styles first
-                content.style.display = ''; // Clear inline display styles
-                content.classList.add('show');
-                item.classList.add('active');
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
-                localStorage.setItem(`social_icon_accordion_${directoryId}`, 'open');
-            }
+            // Accordion functionality removed - content is always visible
+            return;
         }
         
         function saveSocialIcon(event, directoryId) {
