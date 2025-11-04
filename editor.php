@@ -741,6 +741,45 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: #059669;
         }
         
+        /* ========================================
+           DRAG AND DROP STYLES MODULE
+           Can be extracted to: /css/editor-drag-drop.css
+           ======================================== */
+        .drag-handle {
+            cursor: grab;
+            color: #9ca3af;
+            font-size: 1rem;
+            margin-right: 0.75rem;
+            transition: color 0.2s;
+        }
+        
+        .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        .draggable-mirror {
+            opacity: 0.8;
+            background: white;
+            border: 2px dashed #0066ff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            cursor: grabbing;
+        }
+        
+        .draggable-source--is-dragging {
+            opacity: 0.3;
+            border: 2px dashed #cbd5e1;
+        }
+        
+        .draggable--over {
+            background-color: #f0f9ff;
+            border-color: #0066ff;
+        }
+        
         /* Legacy widget-item styles for backward compatibility */
         .widget-item {
             background: #f9f9f9;
@@ -2454,6 +2493,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <div class="accordion-section <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-<?php echo $widget['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
+                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -2547,6 +2587,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <li class="accordion-section" data-directory-id="<?php echo $icon['id']; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
+                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
                                 <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
@@ -3868,6 +3909,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     <!-- Croppie Image Cropper -->
     <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
+    <!-- Draggable Library for Drag-and-Drop Sorting -->
+    <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.12/lib/draggable.bundle.js"></script>
+    
     <script>
         // Ensure functions are in global scope
         window.csrfToken = '<?php echo h($csrfToken); ?>';
@@ -4516,6 +4560,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Initialize widget accordion states
             initializeWidgetAccordions();
+            
+            // Initialize drag-and-drop for widgets and social icons
+            if (typeof EditorDragDrop !== 'undefined') {
+                EditorDragDrop.init();
+            }
             
             // Auto-upload profile images when file is selected (Settings tab only)
             const profileImageInputSettings = document.getElementById('profile-image-input-settings');
@@ -6396,72 +6445,143 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         });
         
-        // Drag and drop functionality removed per user request
-        
-        
-        // Legacy drag and drop (keep for backward compatibility)
-        document.addEventListener('DOMContentLoaded', function() {
-            const widgetsList = document.getElementById('widgets-list');
-            if (widgetsList && widgetsList.querySelectorAll('.widget-item').length > 0 && widgetsList.querySelectorAll('.widget-accordion-item').length === 0) {
-            // Make widgets sortable
-            Array.from(widgetsList.children).forEach(item => {
-                if (item.classList.contains('widget-item')) {
-                    item.setAttribute('draggable', 'true');
-                    
-                    item.addEventListener('dragstart', function(e) {
-                        draggedElement = this;
-                        this.classList.add('dragging');
-                        e.dataTransfer.effectAllowed = 'move';
-                    });
-                    
-                    item.addEventListener('dragend', function() {
-                        this.classList.remove('dragging');
-                        document.querySelectorAll('.widget-item').forEach(el => {
-                            el.classList.remove('drag-over');
-                        });
-                    });
-                    
-                    item.addEventListener('dragover', function(e) {
-                        if (e.preventDefault) {
-                            e.preventDefault();
-                        }
-                        e.dataTransfer.dropEffect = 'move';
-                        if (this !== draggedElement) {
-                            this.classList.add('drag-over');
-                        }
-                        return false;
-                    });
-                    
-                    item.addEventListener('dragleave', function() {
-                        this.classList.remove('drag-over');
-                    });
-                    
-                    item.addEventListener('drop', function(e) {
-                        if (e.stopPropagation) {
-                            e.stopPropagation();
-                        }
-                        
-                        if (draggedElement !== this) {
-                            const allItems = Array.from(widgetsList.querySelectorAll('.widget-item'));
-                            const draggedIndex = allItems.indexOf(draggedElement);
-                            const targetIndex = allItems.indexOf(this);
-                            
-                            if (draggedIndex < targetIndex) {
-                                widgetsList.insertBefore(draggedElement, this.nextSibling);
-                            } else {
-                                widgetsList.insertBefore(draggedElement, this);
-                            }
-                            
-                            // Save new order
-                            saveWidgetOrder();
-                        }
-                        
-                        return false;
-                    });
-                }
-            });
+        /* ========================================
+           DRAG AND DROP MODULE
+           Can be extracted to: /js/editor/drag-drop.js
+           ======================================== */
+        const EditorDragDrop = (function() {
+            'use strict';
+            
+            let widgetsSortable = null;
+            let socialIconsSortable = null;
+            
+            function saveWidgetOrder() {
+                const widgetsContainer = document.getElementById('widgets-list');
+                if (!widgetsContainer) return;
+                
+                const widgets = Array.from(widgetsContainer.querySelectorAll('.accordion-section[data-widget-id]'));
+                const widgetOrders = widgets.map((widget, index) => ({
+                    widget_id: parseInt(widget.dataset.widgetId),
+                    display_order: index + 1
+                }));
+                
+                const formData = new FormData();
+                formData.append('action', 'reorder');
+                formData.append('widget_orders', JSON.stringify(widgetOrders));
+                formData.append('csrf_token', csrfToken);
+                
+                fetch('/api/widgets.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && typeof refreshPreview === 'function') {
+                        refreshPreview();
+                    } else if (!data.success && typeof showToast === 'function') {
+                        showToast('Failed to save widget order', 'error');
+                    }
+                })
+                .catch(error => console.error('Error saving widget order:', error));
             }
-        });
+            
+            function saveSocialIconOrder() {
+                const iconsContainer = document.getElementById('directories-list');
+                if (!iconsContainer) return;
+                
+                const icons = Array.from(iconsContainer.querySelectorAll('.accordion-section[data-directory-id]'));
+                const iconOrders = icons.map((icon, index) => ({
+                    icon_id: parseInt(icon.dataset.directoryId),
+                    display_order: index + 1
+                }));
+                
+                const formData = new FormData();
+                formData.append('action', 'reorder_social_icons');
+                formData.append('icon_orders', JSON.stringify(iconOrders));
+                formData.append('csrf_token', csrfToken);
+                
+                fetch('/api/page.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && typeof refreshPreview === 'function') {
+                        refreshPreview();
+                    }
+                })
+                .catch(error => console.error('Error saving social icon order:', error));
+            }
+            
+            function initWidgetsDragAndDrop() {
+                const widgetsContainer = document.getElementById('widgets-list');
+                if (!widgetsContainer || typeof Draggable === 'undefined') return;
+                
+                if (widgetsSortable) widgetsSortable.destroy();
+                
+                widgetsSortable = new Draggable.Sortable(widgetsContainer, {
+                    draggable: '.accordion-section[data-widget-id]',
+                    handle: '.drag-handle',
+                    mirror: { constrainDimensions: true, xAxis: false },
+                    delay: 100
+                });
+                
+                widgetsSortable.on('sortable:stop', saveWidgetOrder);
+            }
+            
+            function initSocialIconsDragAndDrop() {
+                const iconsContainer = document.getElementById('directories-list');
+                if (!iconsContainer || typeof Draggable === 'undefined') return;
+                
+                if (socialIconsSortable) socialIconsSortable.destroy();
+                
+                socialIconsSortable = new Draggable.Sortable(iconsContainer, {
+                    draggable: '.accordion-section[data-directory-id]',
+                    handle: '.drag-handle',
+                    mirror: { constrainDimensions: true, xAxis: false },
+                    delay: 100
+                });
+                
+                socialIconsSortable.on('sortable:stop', saveSocialIconOrder);
+            }
+            
+            function init() {
+                initWidgetsDragAndDrop();
+                initSocialIconsDragAndDrop();
+            }
+            
+            function destroy() {
+                if (widgetsSortable) { widgetsSortable.destroy(); widgetsSortable = null; }
+                if (socialIconsSortable) { socialIconsSortable.destroy(); socialIconsSortable = null; }
+            }
+            
+            return {
+                init: init,
+                initWidgets: initWidgetsDragAndDrop,
+                initSocialIcons: initSocialIconsDragAndDrop,
+                destroy: destroy
+            };
+        })();
+        
+        // Global reference for backward compatibility
+        window.saveWidgetOrder = function() {
+            const widgetsContainer = document.getElementById('widgets-list');
+            if (!widgetsContainer) return;
+            const widgets = Array.from(widgetsContainer.querySelectorAll('.accordion-section[data-widget-id]'));
+            const widgetOrders = widgets.map((widget, index) => ({
+                widget_id: parseInt(widget.dataset.widgetId),
+                display_order: index + 1
+            }));
+            const formData = new FormData();
+            formData.append('action', 'reorder');
+            formData.append('widget_orders', JSON.stringify(widgetOrders));
+            formData.append('csrf_token', csrfToken);
+            fetch('/api/widgets.php', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => { if (data.success && typeof refreshPreview === 'function') refreshPreview(); });
+        };
+        
+        // Legacy drag and drop removed - replaced by EditorDragDrop module above
         
         // Domain verification function
         function verifyDomain() {
