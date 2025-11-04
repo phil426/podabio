@@ -410,8 +410,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .editor-content {
             width: calc(100% + 240px); /* Extend width to include preview panel space */
             min-height: 100%;
-            padding: 2rem;
-            padding-right: calc(240px + 2rem + 12px); /* Space for preview (240px) + content padding (2rem) + scrollbar (12px) */
+            padding: 1rem;
+            padding-right: calc(240px + 1rem + 12px); /* Space for preview (240px) + content padding (1rem) + scrollbar (12px) */
             position: relative;
             overflow-y: scroll; /* Enable scrolling */
             overflow-x: hidden;
@@ -559,15 +559,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .editor-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid #e5e7eb;
             transform: translateZ(0);
             will-change: transform;
         }
         
         .editor-header h1 {
-            font-size: 1.875rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #111827;
             margin-bottom: 0.5rem;
@@ -661,12 +661,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .accordion-section.inactive .accordion-header {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            background: #e5e7eb;
         }
         
         /* Form styles for accordion content */
         .accordion-content .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.75rem;
         }
         
         .accordion-content .form-group:last-child {
@@ -675,7 +675,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .accordion-content .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
             font-weight: 600;
             color: #374151;
             font-size: 0.875rem;
@@ -685,12 +685,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .accordion-content .form-group textarea,
         .accordion-content .form-group select {
             width: 100%;
-            padding: 0.625rem 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            padding: 0.5rem 0.625rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
             font-size: 0.875rem;
             box-sizing: border-box;
             transition: border-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .accordion-content .form-group input:focus,
@@ -828,12 +829,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             gap: 10px;
         }
         .btn {
-            padding: 8px 16px;
+            padding: 0.5rem 0.75rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.875rem;
             transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn:hover {
             opacity: 0.9;
@@ -884,30 +886,29 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .theme-cards-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
         }
         
         .theme-card {
             background: #ffffff;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             position: relative;
         }
         
         .theme-card:hover {
             border-color: #9ca3af;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         
         .theme-card.theme-selected {
             border-color: #0066ff;
-            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            border-width: 2px;
         }
         
         .theme-card-swatch {
@@ -1072,8 +1073,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             left: 0;
             right: 0;
             background: #ffffff;
-            border-radius: 16px 16px 0 0;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             z-index: 2001;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1105,7 +1106,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .drawer-content {
             flex: 1;
             overflow-y: auto;
-            padding: 0 1.25rem 1.25rem;
+            padding: 0 1rem 1rem;
             -webkit-overflow-scrolling: touch;
         }
         
@@ -1113,14 +1114,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid #f3f4f6;
             flex-shrink: 0;
         }
         
         .drawer-header h2 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #111827;
             letter-spacing: -0.01em;
@@ -1194,9 +1195,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .drawer-actions {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.5rem;
             justify-content: flex-end;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 1rem;
             border-top: 1px solid #f3f4f6;
             flex-shrink: 0;
             background: #ffffff;
@@ -1236,8 +1237,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .modal {
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             max-width: 500px;
             width: 90%;
             max-height: 90vh;
@@ -1340,14 +1341,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .category-btn {
-            padding: 0.5rem 1rem;
-            border: 2px solid #ddd;
+            padding: 0.5rem 0.875rem;
+            border: 1px solid #ddd;
             background: #fff;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 0.875rem;
             transition: all 0.2s;
             color: #666;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .category-btn:hover {
@@ -1373,7 +1375,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .modal-header {
-            padding: 1.25rem 1.5rem;
+            padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -1382,7 +1384,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .modal-header h2 {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
             margin: 0;
             color: #111827;
@@ -1410,13 +1412,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .modal-content {
-            padding: 1.5rem;
+            padding: 1rem;
             overflow-y: auto;
             flex: 1;
         }
         
         .modal-actions {
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             border-top: 1px solid #e5e7eb;
             display: flex;
             gap: 0.75rem;
@@ -1529,22 +1531,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         /* Accordion Styles for Appearance Section */
         .accordion-section {
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 4px;
             overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .accordion-header {
             width: 100%;
-            padding: 1rem 1.25rem;
-            background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #111827;
             transition: all 0.2s;
@@ -1552,7 +1555,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .accordion-header:hover {
-            background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
+            background: #f3f4f6;
         }
         
         .accordion-header i.fas {
@@ -1586,7 +1589,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .accordion-content > * {
-            padding: 1.5rem 1.25rem;
+            padding: 1rem;
         }
         
         .accordion-section.expanded .accordion-content {
@@ -1629,7 +1632,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .button-group button {
             flex: 1;
-            padding: 0.625rem 0.75rem;
+            padding: 0.5rem 0.625rem;
             font-size: 0.875rem;
         }
         
@@ -1648,15 +1651,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .segmented-control {
             display: flex;
             gap: 0;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
             overflow: hidden;
             background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .segmented-control button {
             flex: 1;
-            padding: 0.625rem 0.75rem;
+            padding: 0.5rem 0.625rem;
             border: none;
             border-right: 1px solid #e5e7eb;
             background: white;
@@ -2051,7 +2055,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .blog-placeholder h3 {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
             color: #111827;
             margin-bottom: 0.75rem;
@@ -2074,7 +2078,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .support-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #111827;
             margin-bottom: 0.5rem;
