@@ -565,10 +565,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .editor-header h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #111827;
             margin-bottom: 0.5rem;
+        }
+        
+        .editor-content h2 {
+            font-size: 1.1rem;
         }
         
         .tab-content {
