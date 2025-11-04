@@ -2509,10 +2509,44 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <?php if (empty($socialIcons)): ?>
                     <li>No social icons yet. Click "Add Social Icon" to get started.</li>
                 <?php else: ?>
-                    <?php foreach ($socialIcons as $icon): ?>
+                    <?php foreach ($socialIcons as $icon): 
+                        // Get platform-specific icon
+                        $platformName = $icon['platform_name'] ?? '';
+                        $platformIcon = 'fa-share-alt'; // Default fallback
+                        
+                        // Map platform names to Font Awesome icons
+                        $iconMap = [
+                            // Podcast Platforms
+                            'apple_podcasts' => 'fa-podcast',
+                            'spotify' => 'fab fa-spotify',
+                            'youtube_music' => 'fab fa-youtube',
+                            'iheart_radio' => 'fa-heart',
+                            'amazon_music' => 'fab fa-amazon',
+                            // Social Media Platforms
+                            'facebook' => 'fab fa-facebook',
+                            'twitter' => 'fab fa-twitter',
+                            'instagram' => 'fab fa-instagram',
+                            'linkedin' => 'fab fa-linkedin',
+                            'youtube' => 'fab fa-youtube',
+                            'tiktok' => 'fab fa-tiktok',
+                            'snapchat' => 'fab fa-snapchat',
+                            'pinterest' => 'fab fa-pinterest',
+                            'reddit' => 'fab fa-reddit',
+                            'discord' => 'fab fa-discord',
+                            'twitch' => 'fab fa-twitch',
+                            'github' => 'fab fa-github',
+                            'behance' => 'fab fa-behance',
+                            'dribbble' => 'fab fa-dribbble',
+                            'medium' => 'fab fa-medium'
+                        ];
+                        
+                        if (!empty($iconMap[$platformName])) {
+                            $platformIcon = $iconMap[$platformName];
+                        }
+                    ?>
                         <li class="accordion-section" data-directory-id="<?php echo $icon['id']; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
-                                <i class="fas fa-share-alt"></i>
+                                <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
                                     <div style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($icon['url']); ?></div>
@@ -5930,36 +5964,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 });
                 }
                 
-                // Add Featured Effect selector (featured toggle is now in header)
-                const isFeatured = (widgetData && (widgetData.is_featured == 1 || widgetData.is_featured === '1' || widgetData.is_featured === true)) || false;
-                // Default to 'jiggle' if featured but no effect is set
-                const featuredEffect = (widgetData && widgetData.featured_effect) || (isFeatured ? 'jiggle' : '');
-                
-                if (isFeatured) {
-                    formHTML += `
-                    <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                            <i class="fas fa-star" style="color: #ffd700; margin-right: 0.5rem;"></i>
-                            Featured Effect
-                        </label>
-                        <small style="display: block; color: #666; margin-bottom: 0.75rem;">This widget is featured. Choose an effect to make it stand out.</small>
-                        <select id="widget-inline-featured_effect-${widgetId}" 
-                                name="featured_effect"
-                                onchange="saveWidgetSettingsInline(${widgetId})"
-                                class="widget-setting-input"
-                                style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px;">
-                            <option value="">None</option>
-                            <option value="jiggle" ${(featuredEffect === 'jiggle' || (!widgetData.featured_effect && isFeatured)) ? 'selected' : ''}>Jiggle 🎯</option>
-                            <option value="burn" ${featuredEffect === 'burn' ? 'selected' : ''}>Burn 🔥</option>
-                            <option value="rotating-glow" ${featuredEffect === 'rotating-glow' ? 'selected' : ''}>Rotating Glow 💫</option>
-                            <option value="blink" ${featuredEffect === 'blink' ? 'selected' : ''}>Blink 👁️</option>
-                            <option value="pulse" ${featuredEffect === 'pulse' ? 'selected' : ''}>Pulse 💓</option>
-                            <option value="shake" ${featuredEffect === 'shake' ? 'selected' : ''}>Shake 📳</option>
-                            <option value="sparkles" ${featuredEffect === 'sparkles' ? 'selected' : ''}>Sparkles ✨</option>
-                        </select>
-                    </div>
-                    `;
-                }
+                // Featured Effect form removed - effects are managed in Appearance tab
                 
                 // Add action buttons
                 formHTML += `
