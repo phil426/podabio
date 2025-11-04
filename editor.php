@@ -2597,7 +2597,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         </div>
                                         
                                         <div class="widget-accordion-actions">
-                                            <button type="button" class="btn btn-secondary" onclick="editWidget(<?php echo $icon['id']; ?>, this)" style="display: none;">Edit</button>
                                             <button type="button" class="btn btn-danger" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
                                             <button type="submit" class="btn btn-secondary">Save</button>
                                         </div>
