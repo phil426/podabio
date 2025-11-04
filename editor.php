@@ -816,35 +816,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 12px;
         }
         
-        /* SortableJS drag and drop styles */
-        .drag-handle {
-            cursor: grab;
-            color: #9ca3af;
-            transition: color 0.2s;
-            flex-shrink: 0;
-        }
-        
-        .drag-handle:hover {
-            color: #6b7280;
-        }
-        
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-        
-        .sortable-ghost {
-            opacity: 0.4;
-            background: #f3f4f6;
-        }
-        
-        .sortable-chosen {
-            background: #f0f7ff;
-            border-color: #0066ff;
-        }
-        
-        .sortable-drag {
-            opacity: 0.8;
-        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -2483,7 +2454,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <div class="accordion-section <?php echo !($widget['is_active'] ?? 1) ? 'inactive' : ''; ?>" data-widget-id="<?php echo $widget['id']; ?>" id="widget-<?php echo $widget['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('widget-<?php echo $widget['id']; ?>')">
-                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();" style="cursor: grab; color: #9ca3af; margin-right: 0.5rem; flex-shrink: 0;"></i>
                                 <i class="fas <?php echo $widgetIcon; ?>"></i>
                                 <?php 
                                 // Show thumbnail preview if widget has one
@@ -2577,7 +2547,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <li class="accordion-section" data-directory-id="<?php echo $icon['id']; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
-                                <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();" style="cursor: grab; color: #9ca3af; margin-right: 0.5rem; flex-shrink: 0;"></i>
                                 <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
@@ -3898,7 +3867,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     
     <!-- Croppie Image Cropper -->
     <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script>
         // Ensure functions are in global scope
@@ -4546,11 +4514,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Preload widget definitions for accordion settings
             loadWidgetDefinitions();
             
-            // Initialize widget accordion states AFTER SortableJS is initialized
-            // Delay to ensure SortableJS is fully set up before content loading
-            setTimeout(function() {
-                initializeWidgetAccordions();
-            }, 100);
+            // Initialize widget accordion states
+            initializeWidgetAccordions();
             
             // Auto-upload profile images when file is selected (Settings tab only)
             const profileImageInputSettings = document.getElementById('profile-image-input-settings');
@@ -5578,15 +5543,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
             console.log('contentDiv found, current innerHTML length:', contentDiv.innerHTML.length);
             
-            // Temporarily disable SortableJS to prevent errors during content loading
-            if (widgetsSortable) {
-                try {
-                    widgetsSortable.option('disabled', true);
-                } catch (e) {
-                    console.warn('Error disabling widgets sortable:', e);
-                }
-            }
-            
             // Ensure widget definitions are loaded first
             function ensureWidgetDefinitionsLoaded() {
                 return new Promise((resolve, reject) => {
@@ -5733,28 +5689,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             try {
                                 renderWidgetSettingsInline(widget, configData, widgetDef, widgetId, contentDiv);
                                 console.log('renderWidgetSettingsInline call completed without error');
-                                
-                                // Re-enable SortableJS after content has loaded
-                                if (widgetsSortable) {
-                                    try {
-                                        widgetsSortable.option('disabled', false);
-                                    } catch (e) {
-                                        console.warn('Error re-enabling widgets sortable:', e);
-                                    }
-                                }
                             } catch (error) {
                                 console.error('Error calling renderWidgetSettingsInline:', error);
                                 console.error('Error stack:', error.stack);
                                 contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error: ' + error.message + '</p></div>';
-                                
-                                // Re-enable SortableJS even on error
-                                if (widgetsSortable) {
-                                    try {
-                                        widgetsSortable.option('disabled', false);
-                                    } catch (e) {
-                                        console.warn('Error re-enabling widgets sortable after error:', e);
-                                    }
-                                }
                             }
                         } else {
                             console.error('Failed to load widget:', data);
@@ -6460,282 +6398,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Drag and drop functionality removed per user request
         
-        // SortableJS instances for widgets and social icons
-        let widgetsSortable = null;
-        let socialIconsSortable = null;
-        
-        function initSocialIconDragAndDrop() {
-            const directoriesList = document.getElementById('directories-list');
-            if (!directoriesList) {
-                return;
-            }
-            
-            // Destroy existing instance if it exists
-            if (socialIconsSortable) {
-                try {
-                    socialIconsSortable.destroy();
-                } catch (e) {
-                    console.warn('Error destroying social icons sortable:', e);
-                }
-                socialIconsSortable = null;
-            }
-            
-            // Check if there are any items to sort
-            const items = directoriesList.querySelectorAll('.accordion-section');
-            if (items.length === 0) {
-                return;
-            }
-            
-            // Initialize SortableJS for social icons
-            try {
-                socialIconsSortable = new Sortable(directoriesList, {
-                    animation: 150,
-                    handle: '.drag-handle',
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    dragClass: 'sortable-drag',
-                    forceFallback: false,
-                    fallbackOnBody: true,
-                    filter: '.accordion-content, .accordion-content *',
-                    preventOnFilter: false,
-                    onEnd: function(evt) {
-                        // Save new order after drag ends
-                        saveSocialIconOrder();
-                    }
-                });
-            } catch (e) {
-                console.error('Error initializing social icons sortable:', e);
-            }
-        }
-        
-        function saveSocialIconOrder() {
-            const directoriesList = document.getElementById('directories-list');
-            if (!directoriesList) {
-                console.error('Directories list not found');
-                return;
-            }
-            
-            const items = Array.from(directoriesList.querySelectorAll('.accordion-section'));
-            if (items.length === 0) {
-                console.warn('No social icons found to reorder');
-                return;
-            }
-            
-            const iconOrders = items.map((item, index) => {
-                const iconId = item.getAttribute('data-directory-id');
-                if (!iconId) {
-                    console.warn('Social icon item missing data-directory-id:', item);
-                    return null;
-                }
-                return {
-                    icon_id: parseInt(iconId),
-                    display_order: index + 1
-                };
-            }).filter(order => order !== null);
-            
-            if (iconOrders.length === 0) {
-                console.warn('No valid social icon orders to save');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('action', 'reorder_social_icons');
-            formData.append('icon_orders', JSON.stringify(iconOrders));
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/page.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    console.error('Failed to save social icon order:', data.error);
-                    showToast('Failed to save order: ' + (data.error || 'Unknown error'), 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving social icon order:', error);
-                showToast('Error saving order', 'error');
-            });
-        }
-        
-        function initWidgetDragAndDrop() {
-            const widgetsList = document.getElementById('widgets-list');
-            if (!widgetsList) {
-                return;
-            }
-            
-            // Destroy existing instance if it exists
-            if (widgetsSortable) {
-                try {
-                    widgetsSortable.destroy();
-                } catch (e) {
-                    console.warn('Error destroying widgets sortable:', e);
-                }
-                widgetsSortable = null;
-            }
-            
-            // Check if there are any items to sort
-            const items = widgetsList.querySelectorAll('.accordion-section');
-            if (items.length === 0) {
-                return;
-            }
-            
-            // Initialize SortableJS for widgets
-            try {
-                widgetsSortable = new Sortable(widgetsList, {
-                    animation: 150,
-                    handle: '.drag-handle',
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    dragClass: 'sortable-drag',
-                    forceFallback: false,
-                    fallbackOnBody: true,
-                    filter: '.accordion-content, .accordion-content *',
-                    preventOnFilter: false,
-                    onEnd: function(evt) {
-                        // Save new order after drag ends
-                        saveWidgetOrder();
-                    }
-                });
-            } catch (e) {
-                console.error('Error initializing widgets sortable:', e);
-            }
-        }
-        
-        // Initialize drag and drop on page load and after widget updates
-        document.addEventListener('DOMContentLoaded', function() {
-            const widgetsList = document.getElementById('widgets-list');
-            if (widgetsList) {
-                initWidgetDragAndDrop();
-                
-                // Reinitialize after dynamic updates (MutationObserver)
-                // Only observe top-level children, not accordion content changes
-                const observer = new MutationObserver(function(mutations) {
-                    let shouldReinit = false;
-                    mutations.forEach(function(mutation) {
-                        // Only reinit if accordion-section items are added/removed, not content changes
-                        mutation.addedNodes.forEach(function(node) {
-                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
-                                shouldReinit = true;
-                            }
-                        });
-                        mutation.removedNodes.forEach(function(node) {
-                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
-                                shouldReinit = true;
-                            }
-                        });
-                    });
-                    
-                    if (shouldReinit) {
-                        // Small delay to ensure DOM is fully updated
-                        setTimeout(function() {
-                            initWidgetDragAndDrop();
-                        }, 200);
-                    }
-                });
-                observer.observe(widgetsList, { childList: true, subtree: false });
-            }
-            
-            // Initialize social icon drag and drop
-            const directoriesList = document.getElementById('directories-list');
-            if (directoriesList) {
-                initSocialIconDragAndDrop();
-                
-                // Reinitialize after dynamic updates (MutationObserver)
-                // Only observe top-level children, not accordion content changes
-                const observer = new MutationObserver(function(mutations) {
-                    let shouldReinit = false;
-                    mutations.forEach(function(mutation) {
-                        // Only reinit if accordion-section items are added/removed, not content changes
-                        mutation.addedNodes.forEach(function(node) {
-                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
-                                shouldReinit = true;
-                            }
-                        });
-                        mutation.removedNodes.forEach(function(node) {
-                            if (node.nodeType === 1 && node.classList && node.classList.contains('accordion-section')) {
-                                shouldReinit = true;
-                            }
-                        });
-                    });
-                    
-                    if (shouldReinit) {
-                        // Small delay to ensure DOM is fully updated
-                        setTimeout(function() {
-                            initSocialIconDragAndDrop();
-                        }, 200);
-                    }
-                });
-                observer.observe(directoriesList, { childList: true, subtree: false });
-            }
-        });
-        
-        // Also initialize immediately if DOM is already loaded
-        if (document.readyState === 'loading') {
-            // DOM is still loading, wait for DOMContentLoaded
-        } else {
-            // DOM is already loaded, initialize now
-            const widgetsList = document.getElementById('widgets-list');
-            if (widgetsList) {
-                initWidgetDragAndDrop();
-            }
-            const directoriesList = document.getElementById('directories-list');
-            if (directoriesList) {
-                initSocialIconDragAndDrop();
-            }
-        }
-        
-        function saveWidgetOrder() {
-            const widgetsList = document.getElementById('widgets-list');
-            if (!widgetsList) {
-                console.error('Widgets list not found');
-                return;
-            }
-            
-            const items = Array.from(widgetsList.querySelectorAll('.accordion-section'));
-            if (items.length === 0) {
-                console.warn('No widgets found to reorder');
-                return;
-            }
-            
-            const widgetOrders = items.map((item, index) => {
-                const widgetId = item.getAttribute('data-widget-id');
-                if (!widgetId) {
-                    console.warn('Widget item missing data-widget-id:', item);
-                    return null;
-                }
-                return {
-                    widget_id: parseInt(widgetId),
-                    display_order: index + 1
-                };
-            }).filter(order => order !== null);
-            
-            if (widgetOrders.length === 0) {
-                console.warn('No valid widget orders to save');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('action', 'reorder');
-            formData.append('widget_orders', JSON.stringify(widgetOrders));
-            formData.append('csrf_token', csrfToken);
-            
-            fetch('/api/widgets.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    console.error('Failed to save widget order:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error saving widget order:', error);
-            });
-        }
         
         // Legacy drag and drop (keep for backward compatibility)
         document.addEventListener('DOMContentLoaded', function() {
