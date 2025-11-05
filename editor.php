@@ -1096,7 +1096,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .toast-message {
             font-size: 0.875rem; /* Match btn-primary */
-            font-weight: 500;
+            font-weight: 400; /* Normal weight, not bold */
             line-height: 1.5;
             margin: 0;
             text-align: center;
