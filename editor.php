@@ -137,7 +137,7 @@ if ($page) {
         'discord' => 'Discord',
         'twitch' => 'Twitch',
         'github' => 'GitHub',
-        'behance' => 'Behance',
+        'substack' => 'Substack',
         'dribbble' => 'Dribbble',
         'medium' => 'Medium'
     ];
@@ -2813,7 +2813,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             'discord' => 'fab fa-discord',
                             'twitch' => 'fab fa-twitch',
                             'github' => 'fab fa-github',
-                            'behance' => 'fab fa-behance',
+                            'substack' => 'fas fa-newspaper',
                             'dribbble' => 'fab fa-dribbble',
                             'medium' => 'fab fa-medium'
                         ];
@@ -4058,7 +4058,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             'discord' => 'Discord',
                             'twitch' => 'Twitch',
                             'github' => 'GitHub',
-                            'behance' => 'Behance',
+                            'substack' => 'Substack',
                             'dribbble' => 'Dribbble',
                             'medium' => 'Medium'
                         ];
