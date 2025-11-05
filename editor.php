@@ -1070,7 +1070,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .toast.show {
-            opacity: 0.9; /* 10% transparent */
+            opacity: 0.65; /* 35% transparent */
             transform: translateY(0); /* Slide up to position */
         }
         
