@@ -146,7 +146,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .widgets-container {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: var(--widget-spacing, 1rem);
             position: relative;
         }
         
@@ -159,7 +159,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             text-decoration: none;
             color: var(--text-color);
             transition: all 0.3s ease;
-            box-shadow: var(--widget-box-shadow, 0 2px 4px rgba(0,0,0,0.05));
+            /* Box shadow is set by ThemeCSSGenerator based on border effect */
+            /* For shadow: uses --widget-box-shadow */
+            /* For glow: box-shadow is set to none and glow uses ::before pseudo-element */
             width: 100%;
             box-sizing: border-box;
             position: relative;
@@ -361,7 +363,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .widget-thumbnail {
             width: 100%;
             height: 100%;
-            border-radius: 8px;
+            border-radius: var(--widget-border-radius, 8px);
             object-fit: cover;
             flex-shrink: 0;
         }

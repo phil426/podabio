@@ -8477,6 +8477,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Update widget preview for styling changes
             updateWidgetFontPreview();
             
+            // Refresh preview iframe to show changes
+            if (typeof refreshPreview === 'function') {
+                refreshPreview();
+            }
+            
             saveAppearanceForm();
         }
         
@@ -8510,6 +8515,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             } else {
                 shadowOptions.style.display = 'none';
                 glowOptions.style.display = '';
+            }
+            
+            // Refresh preview iframe to show changes
+            if (typeof refreshPreview === 'function') {
+                refreshPreview();
             }
             
             saveAppearanceForm();
