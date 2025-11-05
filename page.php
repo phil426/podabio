@@ -119,6 +119,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
+            margin-top: 36px;
             margin-bottom: 1rem;
             border: 3px solid var(--primary-color);
         }

@@ -664,7 +664,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             animation: featuredPulse 2s ease-in-out infinite;
         }
         
-        .widget-featured-toggle:hover .fa-star {
+        .widget-featured-toggle:hover .fa-star:not(.featured-active) {
+            transform: scale(1.2);
+            color: #9ca3af;
+        }
+        
+        .widget-featured-toggle:hover .fa-star.featured-active {
             transform: scale(1.2);
             color: #ffd700;
         }
@@ -3309,6 +3314,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         </div>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label>Border Width</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <?php 
+                        $borderWidths = ['thin' => 'Thin', 'medium' => 'Medium', 'thick' => 'Thick'];
+                        $currentBorderWidth = $widgetStyles['border_width'] ?? 'medium';
+                        foreach ($borderWidths as $value => $label): 
+                            $isSelected = ($currentBorderWidth === $value);
+                        ?>
+                        <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="border_width" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('border_width', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" id="widget_border_width" name="widget_border_width" value="<?php echo h($currentBorderWidth); ?>">
+                </div>
                     </div>
                 </div>
                 
@@ -3369,21 +3389,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         <i class="fas fa-chevron-down accordion-icon"></i>
                     </button>
                     <div class="accordion-content">
-                <div class="form-group">
-                    <label>Border Width</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <?php 
-                        $borderWidths = ['thin' => 'Thin', 'medium' => 'Medium', 'thick' => 'Thick'];
-                        $currentBorderWidth = $widgetStyles['border_width'] ?? 'medium';
-                        foreach ($borderWidths as $value => $label): 
-                            $isSelected = ($currentBorderWidth === $value);
-                        ?>
-                        <button type="button" class="widget-style-btn <?php echo $isSelected ? 'active' : ''; ?>" data-field="border_width" data-value="<?php echo h($value); ?>" onclick="updateWidgetStyle('border_width', '<?php echo h($value); ?>')" style="flex: 1; padding: 0.75rem; border: 2px solid <?php echo $isSelected ? '#0066ff' : '#ddd'; ?>; border-radius: 8px; background: <?php echo $isSelected ? '#0066ff' : 'white'; ?>; color: <?php echo $isSelected ? 'white' : '#666'; ?>; cursor: pointer; font-weight: <?php echo $isSelected ? '600' : '500'; ?>;"><?php echo h($label); ?></button>
-                        <?php endforeach; ?>
-                    </div>
-                    <input type="hidden" id="widget_border_width" name="widget_border_width" value="<?php echo h($currentBorderWidth); ?>">
-                </div>
-                
                 <div class="form-group">
                     <label>Border Effect</label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
@@ -4140,8 +4145,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const newFeaturedState = !currentlyFeatured;
             
             // Update star icon immediately for visual feedback
-            const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
-            const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+            const starIcon = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle .fa-star`);
+            const featuredToggle = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle`);
             
             if (starIcon && featuredToggle) {
                 if (newFeaturedState) {
@@ -4208,8 +4213,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 } else {
                     showToast('Failed to update featured status: ' + (data.error || 'Unknown error'), 'error');
                     // Revert star icon
-                    const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
-                    const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+                    const starIcon = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle .fa-star`);
+                    const featuredToggle = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle`);
                     if (starIcon && featuredToggle) {
                         starIcon.classList.toggle('featured-active');
                         starIcon.style.color = isFeatured ? '#9ca3af' : '#ffd700';
@@ -4319,8 +4324,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
             
             // Update header star icon
-            const starIcon = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle .fa-star`);
-            const featuredToggle = document.querySelector(`#widget-accordion-${widgetId} .widget-featured-toggle`);
+            const starIcon = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle .fa-star`);
+            const featuredToggle = document.querySelector(`[data-widget-id="${widgetId}"] .widget-featured-toggle`);
             if (starIcon && featuredToggle) {
                 if (isFeatured) {
                     starIcon.classList.add('featured-active');
@@ -6720,8 +6725,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 clearTimeout(saveTimeouts[formId]);
             }
             
-            // Show saving indicator
-            showSavingIndicator(formId, 'Saving...');
+            // Use toast notifications for appearance-form, saving indicator for others
+            const useToast = (formId === 'appearance-form');
+            
+            if (useToast) {
+                showToast('Saving...', 'info');
+            } else {
+                showSavingIndicator(formId, 'Saving...');
+            }
             
             // Set new timeout (debounce for 1 second)
             saveTimeouts[formId] = setTimeout(() => {
@@ -6736,17 +6747,29 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showSavingIndicator(formId, 'Saved');
-                        setTimeout(() => hideSavingIndicator(formId), 2000);
+                        if (useToast) {
+                            showToast('Appearance saved', 'success');
+                        } else {
+                            showSavingIndicator(formId, 'Saved');
+                            setTimeout(() => hideSavingIndicator(formId), 2000);
+                        }
                     } else {
-                        showSavingIndicator(formId, 'Error saving');
-                        setTimeout(() => hideSavingIndicator(formId), 3000);
+                        if (useToast) {
+                            showToast(data.error || 'Error saving appearance', 'error');
+                        } else {
+                            showSavingIndicator(formId, 'Error saving');
+                            setTimeout(() => hideSavingIndicator(formId), 3000);
+                        }
                         console.error('Auto-save error:', data.error);
                     }
                 })
                 .catch(error => {
-                    showSavingIndicator(formId, 'Error saving');
-                    setTimeout(() => hideSavingIndicator(formId), 3000);
+                    if (useToast) {
+                        showToast('Error saving appearance', 'error');
+                    } else {
+                        showSavingIndicator(formId, 'Error saving');
+                        setTimeout(() => hideSavingIndicator(formId), 3000);
+                    }
                     console.error('Auto-save error:', error);
                 });
             }, 1000);
@@ -7362,27 +7385,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 const hexField = document.getElementById(hexFieldId);
                 if (hexField) {
                     hexField.addEventListener('input', function() {
-                        autoSaveForm('appearance-form', 'update_appearance', () => {
-                            const formData = new FormData();
-                            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
-                            const themeId = selectedRadio ? selectedRadio.value : '';
-                            const layout = document.getElementById('layout_option').value;
-                            const primaryColor = document.getElementById('custom_primary_color').value;
-                            const secondaryColor = document.getElementById('custom_secondary_color').value;
-                            const accentColor = document.getElementById('custom_accent_color').value;
-                            const headingFont = document.getElementById('custom_heading_font').value;
-                            const bodyFont = document.getElementById('custom_body_font').value;
-                            
-                            formData.append('theme_id', themeId);
-                            formData.append('layout_option', layout);
-                            formData.append('custom_primary_color', primaryColor);
-                            formData.append('custom_secondary_color', secondaryColor);
-                            formData.append('custom_accent_color', accentColor);
-                            formData.append('custom_heading_font', headingFont);
-                            formData.append('custom_body_font', bodyFont);
-                            
-                            return formData;
-                        });
+                        // Use saveAppearanceForm() to ensure all widget styles are included
+                        saveAppearanceForm();
                     });
                 }
             });
@@ -7401,7 +7405,27 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
             formData.append('custom_body_font', document.getElementById('custom_body_font').value);
             
-            showSavingIndicator('appearance-form', 'Saving...');
+            // Include widget styles as JSON
+            const borderWidthEl = document.getElementById('widget_border_width');
+            const borderEffectEl = document.getElementById('widget_border_effect');
+            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
+            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
+            const glowColorEl = document.getElementById('widget_glow_color_hidden');
+            const spacingEl = document.getElementById('widget_spacing');
+            const shapeEl = document.getElementById('widget_shape');
+            
+            const widgetStyles = {
+                border_width: borderWidthEl ? borderWidthEl.value : 'medium',
+                border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
+                border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
+                border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
+                glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
+                spacing: spacingEl ? spacingEl.value : 'comfortable',
+                shape: shapeEl ? shapeEl.value : 'rounded'
+            };
+            formData.append('widget_styles', JSON.stringify(widgetStyles));
+            
+            showToast('Saving appearance...', 'info');
             
             fetch('/api/page.php', {
                 method: 'POST',
@@ -7410,16 +7434,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showMessage('Appearance updated successfully!', 'success');
-                    hideSavingIndicator('appearance-form');
+                    showToast('Appearance updated successfully!', 'success');
                 } else {
-                    showMessage(data.error || 'Failed to update appearance', 'error');
-                    hideSavingIndicator('appearance-form');
+                    showToast(data.error || 'Failed to update appearance', 'error');
                 }
             })
             .catch(() => {
-                showMessage('An error occurred', 'error');
-                hideSavingIndicator('appearance-form');
+                showToast('An error occurred', 'error');
             });
             });
         }
