@@ -679,6 +679,48 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             50% { opacity: 0.7; }
         }
         
+        /* Featured Widget Checkbox Styling */
+        #widget_config_is_featured {
+            width: 18px;
+            height: 18px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: #e5e7eb;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        #widget_config_is_featured:checked {
+            background: #0066ff;
+            border-color: #0066ff;
+        }
+        
+        #widget_config_is_featured:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        #widget_config_is_featured:hover {
+            border-color: #9ca3af;
+        }
+        
+        #widget_config_is_featured:checked:hover {
+            background: #0052cc;
+            border-color: #0052cc;
+        }
+        
         /* Accordion section with inactive state */
         .accordion-section.inactive {
             opacity: 0.6;
