@@ -2697,7 +2697,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
-                                    <div style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($icon['url']); ?></div>
+                                    <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($icon['url']); ?></div>
                                 </span>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
@@ -9349,6 +9349,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 '.widget-title',
                 '.widget-card-description',
                 '.widget-url',
+                '.social-icon-url', // Social icon URLs in editor list
                 '#preview-panel .widget-title',
                 '#preview-panel .widget-content',
                 '#preview-panel .page-title',
@@ -9373,7 +9374,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Watch for dynamic content changes (especially in preview panel)
         const observer = new MutationObserver(() => {
             // Reset processed flag for re-evaluation
-            document.querySelectorAll('.widget-title, .widget-card-description, .widget-url, #preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-url').forEach(el => {
+            document.querySelectorAll('.widget-title, .widget-card-description, .widget-url, .social-icon-url, #preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-url').forEach(el => {
                 delete el.dataset.marqueeProcessed;
             });
             applyMarqueeToElements();
@@ -9390,7 +9391,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         if (previewPanel) {
             const previewObserver = new MutationObserver(() => {
                 setTimeout(() => {
-                    document.querySelectorAll('#preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .page-title, #preview-panel .page-description, #preview-panel .widget-url').forEach(el => {
+                    document.querySelectorAll('#preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .page-title, #preview-panel .page-description, #preview-panel .widget-url, .social-icon-url').forEach(el => {
                         delete el.dataset.marqueeProcessed;
                     });
                     applyMarqueeToElements();
