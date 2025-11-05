@@ -9628,12 +9628,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 element.classList.remove('marquee');
             }
             
-            // Check if text overflows
+            // Save original styles
+            const computedStyle = window.getComputedStyle(element);
+            const originalWhiteSpace = computedStyle.whiteSpace;
+            const originalOverflow = computedStyle.overflow;
+            
+            // Temporarily apply styles to prevent wrapping before measuring
+            element.style.whiteSpace = 'nowrap';
+            element.style.overflow = 'hidden';
+            
+            // Check if text overflows with nowrap applied
             const containerWidth = element.clientWidth;
             const textWidth = element.scrollWidth;
             
             if (textWidth > containerWidth && containerWidth > 0) {
-                // Text overflows - apply marquee
+                // Text overflows - apply marquee (styles already applied via .marquee class)
                 element.classList.add('marquee');
                 
                 // Wrap content in marquee-content span
@@ -9651,6 +9660,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
                     newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
                 }
+                // Keep the styles as they're needed for marquee (applied via .marquee class CSS)
+            } else {
+                // No overflow - restore original styles
+                element.style.whiteSpace = originalWhiteSpace;
+                element.style.overflow = originalOverflow;
             }
             
             element.dataset.marqueeProcessed = 'true';
