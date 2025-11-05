@@ -3977,9 +3977,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     <!-- Add Directory Modal -->
     <div id="directory-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:8px; max-width:500px; width:90%;">
-            <h2>Add Social Icon</h2>
+            <h2 id="directory-modal-title">Add Social Icon</h2>
             <form id="directory-form">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
+                <input type="hidden" id="directory-id" name="directory_id" value="">
                 
                 <div class="form-group">
                     <label for="directory_platform">Platform</label>
@@ -8406,24 +8407,39 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Social Icons Management
         function showAddDirectoryForm() {
-            document.getElementById('directory-form').reset();
-            document.getElementById('directory-id').value = '';
-            document.getElementById('directory-modal-title').textContent = 'Add Social Icon';
-            document.getElementById('directory-modal').style.display = 'block';
+            const form = document.getElementById('directory-form');
+            const directoryId = document.getElementById('directory-id');
+            const modalTitle = document.getElementById('directory-modal-title');
+            const modal = document.getElementById('directory-modal');
+            
+            if (form) form.reset();
+            if (directoryId) directoryId.value = '';
+            if (modalTitle) modalTitle.textContent = 'Add Social Icon';
+            if (modal) modal.style.display = 'block';
         }
         
         function editDirectory(directoryId, platformName, url) {
-            document.getElementById('directory-id').value = directoryId;
-            document.getElementById('directory_platform').value = platformName;
-            document.getElementById('directory_url').value = url;
-            document.getElementById('directory-modal-title').textContent = 'Edit Social Icon';
-            document.getElementById('directory-modal').style.display = 'block';
+            const dirIdEl = document.getElementById('directory-id');
+            const platformEl = document.getElementById('directory_platform');
+            const urlEl = document.getElementById('directory_url');
+            const modalTitle = document.getElementById('directory-modal-title');
+            const modal = document.getElementById('directory-modal');
+            
+            if (dirIdEl) dirIdEl.value = directoryId;
+            if (platformEl) platformEl.value = platformName;
+            if (urlEl) urlEl.value = url;
+            if (modalTitle) modalTitle.textContent = 'Edit Social Icon';
+            if (modal) modal.style.display = 'block';
         }
         
         function closeDirectoryModal() {
-            document.getElementById('directory-modal').style.display = 'none';
-            document.getElementById('directory-form').reset();
-            document.getElementById('directory-id').value = '';
+            const modal = document.getElementById('directory-modal');
+            const form = document.getElementById('directory-form');
+            const directoryId = document.getElementById('directory-id');
+            
+            if (modal) modal.style.display = 'none';
+            if (form) form.reset();
+            if (directoryId) directoryId.value = '';
         }
         
         // Social icon accordions now use the same toggleAccordion() function as Appearance tab
