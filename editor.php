@@ -654,7 +654,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .widget-featured-toggle .fa-star {
             transition: all 0.2s ease;
-            color: #9ca3af;
+            color: #9ca3af !important; /* Grey when not selected */
             font-size: 1.1rem;
         }
         
@@ -666,7 +666,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         .widget-featured-toggle:hover .fa-star:not(.featured-active) {
             transform: scale(1.2);
-            color: #9ca3af;
+            color: #9ca3af !important; /* Stay grey on hover when not active */
         }
         
         .widget-featured-toggle:hover .fa-star.featured-active {
