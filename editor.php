@@ -116,30 +116,32 @@ if ($page) {
     $links = $pageClass->getAllLinks($pageId);
     $socialIcons = $pageClass->getSocialIcons($pageId);
     
-    // Define all available platforms
+    // Define all available platforms (ordered by marketing importance for podcasters)
     $allPlatforms = [
-        // Podcast Platforms
+        // High Priority - Podcast Platforms
         'apple_podcasts' => 'Apple Podcasts',
         'spotify' => 'Spotify',
         'youtube_music' => 'YouTube Music',
         'iheart_radio' => 'iHeart Radio',
         'amazon_music' => 'Amazon Music',
-        // Social Media Platforms
-        'facebook' => 'Facebook',
-        'twitter' => 'Twitter / X',
-        'instagram' => 'Instagram',
-        'linkedin' => 'LinkedIn',
+        // Medium-High Priority - Video/Social
         'youtube' => 'YouTube',
+        'instagram' => 'Instagram',
+        'twitter' => 'Twitter / X',
         'tiktok' => 'TikTok',
-        'snapchat' => 'Snapchat',
-        'pinterest' => 'Pinterest',
+        'substack' => 'Substack',
+        // Medium Priority - Social/Professional
+        'facebook' => 'Facebook',
+        'linkedin' => 'LinkedIn',
         'reddit' => 'Reddit',
         'discord' => 'Discord',
+        // Lower Priority - Specialized
         'twitch' => 'Twitch',
         'github' => 'GitHub',
-        'substack' => 'Substack',
         'dribbble' => 'Dribbble',
-        'medium' => 'Medium'
+        'medium' => 'Medium',
+        'snapchat' => 'Snapchat',
+        'pinterest' => 'Pinterest'
     ];
     
     // Get existing platform names
@@ -149,6 +151,8 @@ if ($page) {
     }
     
     // Create placeholder entries for missing platforms with empty URLs
+    // Assign display_order based on position in $allPlatforms array (marketing priority order)
+    $platformKeys = array_keys($allPlatforms);
     $maxDisplayOrder = 0;
     if (!empty($socialIcons)) {
         $maxDisplayOrder = max(array_column($socialIcons, 'display_order'));
@@ -156,6 +160,11 @@ if ($page) {
     
     foreach ($allPlatforms as $platformKey => $platformName) {
         if (!in_array($platformKey, $existingPlatforms)) {
+            // Get position in array (1-based for display_order)
+            $arrayPosition = array_search($platformKey, $platformKeys) + 1;
+            // Use array position as display_order (respects marketing priority)
+            $displayOrder = $arrayPosition;
+            
             // Create placeholder entry (not saved to DB, just for display)
             $placeholderIcon = [
                 'id' => 'placeholder_' . $platformKey, // Temporary ID
@@ -163,7 +172,7 @@ if ($page) {
                 'platform_name' => $platformKey,
                 'url' => '',
                 'icon' => null,
-                'display_order' => ++$maxDisplayOrder,
+                'display_order' => $displayOrder,
                 'is_active' => 0,
                 'created_at' => null,
                 'updated_at' => null,
