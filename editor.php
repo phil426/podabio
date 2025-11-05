@@ -9628,11 +9628,24 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 element.classList.remove('marquee');
             }
             
-            // Check if text overflows
-            const containerWidth = element.clientWidth;
-            const textWidth = element.scrollWidth;
+            // Save current inline styles to check if they exist (don't overwrite user styles)
+            const hadWhiteSpace = element.style.whiteSpace !== '';
+            const hadOverflow = element.style.overflow !== '';
+            const hadMaxWidth = element.style.maxWidth !== '';
             
-            if (textWidth > containerWidth && containerWidth > 0) {
+            // Get current container width BEFORE applying any constraints
+            const containerWidth = element.clientWidth;
+            
+            // Temporarily apply styles to prevent wrapping and constrain width
+            element.style.whiteSpace = 'nowrap';
+            element.style.overflow = 'hidden';
+            element.style.maxWidth = containerWidth + 'px';
+            
+            // Now measure overflow with constraints applied
+            const textWidth = element.scrollWidth;
+            const hasOverflow = textWidth > containerWidth && containerWidth > 0;
+            
+            if (hasOverflow) {
                 // Text overflows - apply marquee
                 element.classList.add('marquee');
                 
@@ -9642,7 +9655,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 const newContentSpan = element.querySelector('.marquee-content');
                 if (newContentSpan) {
-                    // Recalculate after wrapping
+                    // Recalculate after wrapping (styles still applied)
                     const newTextWidth = newContentSpan.scrollWidth;
                     const overflow = newTextWidth - containerWidth;
                     const duration = Math.max(8, Math.min(15, (newTextWidth / 50))); // 8-15 seconds based on length
@@ -9651,6 +9664,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
                     newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
                 }
+                
+                // Remove temporary inline styles (CSS .marquee class handles these)
+                element.style.whiteSpace = '';
+                element.style.overflow = '';
+                element.style.maxWidth = '';
+            } else {
+                // No overflow - remove all temporary inline styles we added
+                if (!hadWhiteSpace) element.style.whiteSpace = '';
+                if (!hadOverflow) element.style.overflow = '';
+                if (!hadMaxWidth) element.style.maxWidth = '';
             }
             
             element.dataset.marqueeProcessed = 'true';
