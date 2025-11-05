@@ -190,7 +190,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .widget-link-simple .widget-title {
             margin: 0 !important;
-            font-size: 0.95rem;
+            font-size: 1rem; /* 16px - consistent with widget title hierarchy */
             font-weight: 600;
         }
         
@@ -379,6 +379,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .widget-content {
             flex: 1;
             font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
+            font-size: 0.9375rem; /* 15px - optimal for widget content readability */
         }
         
         .widget-title {
@@ -386,6 +387,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             margin: 0 0 0.25rem 0;
             font-family: var(--widget-primary-font, var(--page-primary-font, var(--heading-font)), sans-serif);
             color: var(--text-color);
+            font-size: 1.0625rem; /* 17px - optimal for widget titles, clear hierarchy */
         }
         
         /* Video widget styles */
