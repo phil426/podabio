@@ -152,34 +152,51 @@ if ($page) {
     
     // Create placeholder entries for missing platforms with empty URLs
     // Assign display_order based on position in $allPlatforms array (marketing priority order)
+    // Placeholders get display_order AFTER existing icons to maintain marketing priority initially
     $platformKeys = array_keys($allPlatforms);
     $maxDisplayOrder = 0;
     if (!empty($socialIcons)) {
         $maxDisplayOrder = max(array_column($socialIcons, 'display_order'));
     }
     
+    // Collect placeholders first to assign correct display_order
+    $placeholdersToAdd = [];
     foreach ($allPlatforms as $platformKey => $platformName) {
         if (!in_array($platformKey, $existingPlatforms)) {
-            // Get position in array (1-based for display_order)
+            // Get position in array (for maintaining marketing priority order)
             $arrayPosition = array_search($platformKey, $platformKeys) + 1;
-            // Use array position as display_order (respects marketing priority)
-            $displayOrder = $arrayPosition;
-            
-            // Create placeholder entry (not saved to DB, just for display)
-            $placeholderIcon = [
-                'id' => 'placeholder_' . $platformKey, // Temporary ID
-                'page_id' => $pageId,
-                'platform_name' => $platformKey,
-                'url' => '',
-                'icon' => null,
-                'display_order' => $displayOrder,
-                'is_active' => 0,
-                'created_at' => null,
-                'updated_at' => null,
-                'is_placeholder' => true // Flag to identify placeholders
+            $placeholdersToAdd[] = [
+                'platformKey' => $platformKey,
+                'platformName' => $platformName,
+                'arrayPosition' => $arrayPosition
             ];
-            $socialIcons[] = $placeholderIcon;
         }
+    }
+    
+    // Sort placeholders by array position to maintain marketing priority
+    usort($placeholdersToAdd, function($a, $b) {
+        return $a['arrayPosition'] <=> $b['arrayPosition'];
+    });
+    
+    // Assign display_order starting after maxDisplayOrder, maintaining marketing priority
+    foreach ($placeholdersToAdd as $index => $placeholder) {
+        // Display order starts after existing icons, maintaining relative marketing priority
+        $displayOrder = $maxDisplayOrder + $index + 1;
+        
+        // Create placeholder entry (not saved to DB, just for display)
+        $placeholderIcon = [
+            'id' => 'placeholder_' . $placeholder['platformKey'], // Temporary ID
+            'page_id' => $pageId,
+            'platform_name' => $placeholder['platformKey'],
+            'url' => '',
+            'icon' => null,
+            'display_order' => $displayOrder,
+            'is_active' => 0,
+            'created_at' => null,
+            'updated_at' => null,
+            'is_placeholder' => true // Flag to identify placeholders
+        ];
+        $socialIcons[] = $placeholderIcon;
     }
     
     // Sort by display_order
@@ -2833,11 +2850,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     ?>
                         <li class="accordion-section <?php echo $isPlaceholder ? 'placeholder-icon' : ''; ?>" data-directory-id="<?php echo $icon['id']; ?>" data-is-placeholder="<?php echo $isPlaceholder ? '1' : '0'; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
-                                <?php if (!$isPlaceholder): ?>
                                 <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
-                                <?php else: ?>
-                                <i class="fas fa-grip-vertical" style="opacity: 0.3; cursor: default;" onclick="event.stopPropagation();"></i>
-                                <?php endif; ?>
                                 <i class="<?php echo $platformIcon; ?>" style="color: #111827;"></i>
                                 <span style="flex: 1; text-align: left;">
                                     <div style="font-weight: 400; color: #111827;"><?php echo h($friendlyPlatformName); ?></div>
@@ -6835,10 +6848,25 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 if (!iconsContainer) return;
                 
                 const icons = Array.from(iconsContainer.querySelectorAll('.accordion-section[data-directory-id]'));
-                const iconOrders = icons.map((icon, index) => ({
-                    icon_id: parseInt(icon.dataset.directoryId),
-                    display_order: index + 1
-                }));
+                // Filter out placeholders (they're not in the database yet, so can't be reordered)
+                const realIcons = icons.filter(icon => {
+                    const isPlaceholder = icon.dataset.isPlaceholder === '1';
+                    const directoryId = icon.dataset.directoryId;
+                    // Also check if ID starts with 'placeholder_' as backup
+                    return !isPlaceholder && !directoryId.startsWith('placeholder_');
+                });
+                
+                const iconOrders = realIcons.map((icon, index) => {
+                    // Get the original index including placeholders for correct display_order
+                    const originalIndex = icons.indexOf(icon);
+                    return {
+                        icon_id: parseInt(icon.dataset.directoryId),
+                        display_order: originalIndex + 1
+                    };
+                });
+                
+                // Only save if there are real icons to reorder
+                if (iconOrders.length === 0) return;
                 
                 const formData = new FormData();
                 formData.append('action', 'reorder_social_icons');
@@ -6881,7 +6909,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 if (socialIconsSortable) socialIconsSortable.destroy();
                 
                 socialIconsSortable = new Draggable.Sortable(iconsContainer, {
-                    draggable: '.accordion-section[data-directory-id]:not([data-is-placeholder="1"])',
+                    draggable: '.accordion-section[data-directory-id]',
                     handle: '.drag-handle',
                     mirror: { constrainDimensions: true, xAxis: false },
                     delay: 100
