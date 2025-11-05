@@ -2230,6 +2230,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     title="Copy page URL">
                     <i class="fas fa-copy" id="copy-url-icon"></i>
                 </button>
+                <button 
+                    type="button" 
+                    onclick="window.open('<?php echo h($pageUrl); ?>', '_blank')" 
+                    class="navbar-copy-btn"
+                    title="Open page in new window">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
             </div>
             <?php endif; ?>
         </div>
