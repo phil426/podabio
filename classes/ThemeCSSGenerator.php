@@ -391,12 +391,13 @@ class ThemeCSSGenerator {
         // Widget typography
         $css .= ".widget-item h1, .widget-item h2, .widget-item h3, .widget-title {\n";
         $css .= "    font-family: var(--widget-primary-font), var(--widget-secondary-font), var(--page-primary-font), sans-serif;\n";
-        $css .= "    font-size: 1.0625rem; /* 17px - optimal for widget titles, clear hierarchy */\n";
+        $css .= "    font-size: 1.125rem; /* 18px - increased one step */\n";
+        $css .= "    font-weight: 400; /* Normal weight, not bold */\n";
         $css .= "}\n\n";
         
         $css .= ".widget-item p, .widget-item span, .widget-content {\n";
         $css .= "    font-family: var(--widget-secondary-font), var(--widget-primary-font), var(--page-secondary-font), sans-serif;\n";
-        $css .= "    font-size: 0.9375rem; /* 15px - optimal for widget content readability */\n";
+        $css .= "    font-size: 1rem; /* 16px - increased one step */\n";
         $css .= "}\n\n";
         
         // Widget hover states
