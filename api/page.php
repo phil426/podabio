@@ -267,9 +267,14 @@ switch ($action) {
         $platformName = sanitizeInput($_POST['platform_name'] ?? '');
         $url = sanitizeUrl($_POST['url'] ?? '');
         
-        if (empty($platformName) || empty($url)) {
-            echo json_encode(['success' => false, 'error' => 'Platform name and URL are required']);
+        if (empty($platformName)) {
+            echo json_encode(['success' => false, 'error' => 'Platform name is required']);
             exit;
+        }
+        
+        // Allow empty URL for placeholder icons (will be created with is_active = 0)
+        if (empty($url)) {
+            $url = ''; // Explicitly set to empty string
         }
         
         $result = $page->addSocialIcon($pageId, $platformName, $url);

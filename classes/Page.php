@@ -422,15 +422,18 @@ class Page {
      * @return array ['success' => bool, 'icon_id' => int|null, 'error' => string|null]
      */
     public function addSocialIcon($pageId, $platformName, $url) {
-        if (empty($platformName) || empty($url)) {
-            return ['success' => false, 'icon_id' => null, 'error' => 'Platform name and URL are required'];
+        if (empty($platformName)) {
+            return ['success' => false, 'icon_id' => null, 'error' => 'Platform name is required'];
         }
         
-        // Validate URL format (must be valid http/https URL)
-        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
+        // Allow empty URL for placeholder icons
+        $url = $url ?? '';
+        
+        // Validate URL format (must be valid http/https URL if provided)
+        $isValidUrl = !empty($url) && filter_var($url, FILTER_VALIDATE_URL) !== false && 
                       (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
         
-        // Set is_active to 0 if URL is invalid, 1 if valid
+        // Set is_active to 0 if URL is empty or invalid, 1 if valid
         $isActive = $isValidUrl ? 1 : 0;
         
         // Get max display order

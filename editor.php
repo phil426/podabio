@@ -115,6 +115,68 @@ if ($page) {
     $pageId = $page['id'];
     $links = $pageClass->getAllLinks($pageId);
     $socialIcons = $pageClass->getSocialIcons($pageId);
+    
+    // Define all available platforms
+    $allPlatforms = [
+        // Podcast Platforms
+        'apple_podcasts' => 'Apple Podcasts',
+        'spotify' => 'Spotify',
+        'youtube_music' => 'YouTube Music',
+        'iheart_radio' => 'iHeart Radio',
+        'amazon_music' => 'Amazon Music',
+        // Social Media Platforms
+        'facebook' => 'Facebook',
+        'twitter' => 'Twitter / X',
+        'instagram' => 'Instagram',
+        'linkedin' => 'LinkedIn',
+        'youtube' => 'YouTube',
+        'tiktok' => 'TikTok',
+        'snapchat' => 'Snapchat',
+        'pinterest' => 'Pinterest',
+        'reddit' => 'Reddit',
+        'discord' => 'Discord',
+        'twitch' => 'Twitch',
+        'github' => 'GitHub',
+        'behance' => 'Behance',
+        'dribbble' => 'Dribbble',
+        'medium' => 'Medium'
+    ];
+    
+    // Get existing platform names
+    $existingPlatforms = [];
+    foreach ($socialIcons as $icon) {
+        $existingPlatforms[] = $icon['platform_name'];
+    }
+    
+    // Create placeholder entries for missing platforms with empty URLs
+    $maxDisplayOrder = 0;
+    if (!empty($socialIcons)) {
+        $maxDisplayOrder = max(array_column($socialIcons, 'display_order'));
+    }
+    
+    foreach ($allPlatforms as $platformKey => $platformName) {
+        if (!in_array($platformKey, $existingPlatforms)) {
+            // Create placeholder entry (not saved to DB, just for display)
+            $placeholderIcon = [
+                'id' => 'placeholder_' . $platformKey, // Temporary ID
+                'page_id' => $pageId,
+                'platform_name' => $platformKey,
+                'url' => '',
+                'icon' => null,
+                'display_order' => ++$maxDisplayOrder,
+                'is_active' => 0,
+                'created_at' => null,
+                'updated_at' => null,
+                'is_placeholder' => true // Flag to identify placeholders
+            ];
+            $socialIcons[] = $placeholderIcon;
+        }
+    }
+    
+    // Sort by display_order
+    usort($socialIcons, function($a, $b) {
+        return ($a['display_order'] ?? 0) <=> ($b['display_order'] ?? 0);
+    });
 }
 
 // Get themes using Theme class
@@ -2715,20 +2777,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         <!-- Social Icons Tab -->
         <div id="tab-social-icons" class="tab-content">
             <h2>Social Icons</h2>
-            <p style="margin-bottom: 20px; color: #666;">Add links to your social media profiles and platforms.</p>
-            
-            <div style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="showAddDirectoryForm()">Add Social Icon</button>
-            </div>
+            <p style="margin-bottom: 20px; color: #666;">Add links to your social media profiles and platforms. Each platform is pre-configured - just add your URL to get started.</p>
             
             <ul id="directories-list" class="widgets-list">
                 <?php if (empty($socialIcons)): ?>
-                    <li>No social icons yet. Click "Add Social Icon" to get started.</li>
+                    <li>Loading social icons...</li>
                 <?php else: ?>
                     <?php foreach ($socialIcons as $icon): 
                         // Get platform-specific icon
                         $platformName = $icon['platform_name'] ?? '';
                         $platformIcon = 'fas fa-share-alt'; // Default fallback
+                        $isPlaceholder = isset($icon['is_placeholder']) && $icon['is_placeholder'];
+                        
+                        // Get friendly platform name
+                        $friendlyPlatformName = $allPlatforms[$platformName] ?? $platformName;
                         
                         // Map platform names to Font Awesome icons
                         $iconMap = [
@@ -2760,77 +2822,66 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             $platformIcon = $iconMap[$platformName];
                         }
                     ?>
-                        <li class="accordion-section" data-directory-id="<?php echo $icon['id']; ?>" id="social-icon-<?php echo $icon['id']; ?>">
+                        <li class="accordion-section <?php echo $isPlaceholder ? 'placeholder-icon' : ''; ?>" data-directory-id="<?php echo $icon['id']; ?>" data-is-placeholder="<?php echo $isPlaceholder ? '1' : '0'; ?>" id="social-icon-<?php echo $icon['id']; ?>">
                             <button type="button" class="accordion-header" onclick="toggleAccordion('social-icon-<?php echo $icon['id']; ?>')">
+                                <?php if (!$isPlaceholder): ?>
                                 <i class="fas fa-grip-vertical drag-handle" onclick="event.stopPropagation();"></i>
+                                <?php else: ?>
+                                <i class="fas fa-grip-vertical" style="opacity: 0.3; cursor: default;" onclick="event.stopPropagation();"></i>
+                                <?php endif; ?>
                                 <i class="<?php echo $platformIcon; ?>"></i>
                                 <span style="flex: 1; text-align: left;">
-                                    <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
-                                    <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($icon['url']); ?></div>
+                                    <div style="font-weight: 600; color: #111827;"><?php echo h($friendlyPlatformName); ?></div>
+                                    <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo $icon['url'] ? h($icon['url']) : '<em style="color: #9ca3af;">No URL added</em>'; ?></div>
                                 </span>
                                 <?php 
-                                $isActive = isset($icon['is_active']) ? (int)$icon['is_active'] : 1;
+                                $isActive = isset($icon['is_active']) ? (int)$icon['is_active'] : 0;
                                 $url = $icon['url'] ?? '';
                                 $isValidUrl = !empty($url) && filter_var($url, FILTER_VALIDATE_URL) !== false && 
                                              (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
-                                $toggleDisabled = !$isValidUrl;
+                                $toggleDisabled = !$isValidUrl || $isPlaceholder;
                                 ?>
                                 <div class="social-icon-visibility-toggle" onclick="event.stopPropagation();">
                                     <input type="checkbox" 
                                            id="social-icon-visibility-<?php echo $icon['id']; ?>" 
                                            <?php echo $isActive ? 'checked' : ''; ?>
                                            <?php echo $toggleDisabled ? 'disabled' : ''; ?>
+                                           <?php if (!$isPlaceholder): ?>
                                            onchange="toggleSocialIconVisibility(<?php echo $icon['id']; ?>, this.checked)"
-                                           title="<?php echo $toggleDisabled ? 'Add a valid URL to enable visibility' : ($isActive ? 'Visible' : 'Hidden'); ?>">
+                                           <?php endif; ?>
+                                           title="<?php echo $isPlaceholder ? 'Add a URL and save to enable visibility' : ($toggleDisabled ? 'Add a valid URL to enable visibility' : ($isActive ? 'Visible' : 'Hidden')); ?>">
                                 </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
                             <div class="accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>">
-                                    <form class="social-icon-edit-form" data-directory-id="<?php echo $icon['id']; ?>" onsubmit="saveSocialIcon(event, <?php echo $icon['id']; ?>)">
+                                    <form class="social-icon-edit-form" data-directory-id="<?php echo $icon['id']; ?>" data-is-placeholder="<?php echo $isPlaceholder ? '1' : '0'; ?>" onsubmit="saveSocialIcon(event, <?php echo $icon['id']; ?>, <?php echo $isPlaceholder ? 'true' : 'false'; ?>)">
                                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                                         
                                         <div class="form-group" style="margin-bottom: 1rem;">
                                             <label for="social-icon-platform-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Platform</label>
-                                            <select id="social-icon-platform-<?php echo $icon['id']; ?>" name="platform_name" required style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                                            <select id="social-icon-platform-<?php echo $icon['id']; ?>" name="platform_name" required style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" <?php echo $isPlaceholder ? 'disabled' : ''; ?>>
                                                 <option value="">Select Platform</option>
                                                 <?php
-                                                $platforms = [
-                                                    'apple_podcasts' => 'Apple Podcasts',
-                                                    'spotify' => 'Spotify',
-                                                    'youtube_music' => 'YouTube Music',
-                                                    'iheart_radio' => 'iHeart Radio',
-                                                    'amazon_music' => 'Amazon Music',
-                                                    'facebook' => 'Facebook',
-                                                    'twitter' => 'Twitter / X',
-                                                    'instagram' => 'Instagram',
-                                                    'linkedin' => 'LinkedIn',
-                                                    'youtube' => 'YouTube',
-                                                    'tiktok' => 'TikTok',
-                                                    'snapchat' => 'Snapchat',
-                                                    'pinterest' => 'Pinterest',
-                                                    'reddit' => 'Reddit',
-                                                    'discord' => 'Discord',
-                                                    'twitch' => 'Twitch',
-                                                    'github' => 'GitHub',
-                                                    'behance' => 'Behance',
-                                                    'dribbble' => 'Dribbble',
-                                                    'medium' => 'Medium'
-                                                ];
-                                                foreach ($platforms as $key => $name):
+                                                foreach ($allPlatforms as $key => $name):
                                                 ?>
                                                     <option value="<?php echo h($key); ?>" <?php echo ($icon['platform_name'] === $key) ? 'selected' : ''; ?>><?php echo h($name); ?></option>
                                                 <?php endforeach; ?>
                                             </select>
+                                            <?php if ($isPlaceholder): ?>
+                                            <input type="hidden" name="platform_name" value="<?php echo h($platformName); ?>">
+                                            <?php endif; ?>
                                         </div>
                                         
                                         <div class="form-group" style="margin-bottom: 1.5rem;">
                                             <label for="social-icon-url-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">URL</label>
-                                            <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" required placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" oninput="updateSocialIconToggleState(<?php echo $icon['id']; ?>, this.value)">
+                                            <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" <?php echo $isPlaceholder ? '' : 'required'; ?> placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" oninput="updateSocialIconToggleState(<?php echo $icon['id']; ?>, this.value)">
                                         </div>
                                         
                                         <div class="widget-accordion-actions">
+                                            <?php if (!$isPlaceholder): ?>
                                             <button type="button" class="btn btn-danger" onclick="deleteDirectory(<?php echo $icon['id']; ?>)">Delete</button>
-                                            <button type="submit" class="btn btn-secondary">Save</button>
+                                            <?php endif; ?>
+                                            <button type="submit" class="btn btn-secondary"><?php echo $isPlaceholder ? 'Create' : 'Save'; ?></button>
                                         </div>
                                     </form>
                             </div>
@@ -6821,7 +6872,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 if (socialIconsSortable) socialIconsSortable.destroy();
                 
                 socialIconsSortable = new Draggable.Sortable(iconsContainer, {
-                    draggable: '.accordion-section[data-directory-id]',
+                    draggable: '.accordion-section[data-directory-id]:not([data-is-placeholder="1"])',
                     handle: '.drag-handle',
                     mirror: { constrainDimensions: true, xAxis: false },
                     delay: 100
@@ -8444,29 +8495,43 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Social icon accordions now use the same toggleAccordion() function as Appearance tab
         
-        function saveSocialIcon(event, directoryId) {
+        function saveSocialIcon(event, directoryId, isPlaceholder) {
             event.preventDefault();
             
             const form = event.target;
             const formData = new FormData(form);
-            formData.append('action', 'update_directory');
-            formData.append('directory_id', directoryId);
+            
+            // If it's a placeholder, create a new icon; otherwise update existing
+            if (isPlaceholder) {
+                formData.append('action', 'add_directory');
+            } else {
+                formData.append('action', 'update_directory');
+                formData.append('directory_id', directoryId);
+            }
             
             // Get URL from form and validate
             const urlInput = form.querySelector('input[name="url"]');
             const url = urlInput ? urlInput.value.trim() : '';
             const urlIsValid = isValidUrl(url);
             
-            // Update toggle state based on URL validity
-            const toggleCheckbox = document.getElementById(`social-icon-visibility-${directoryId}`);
-            if (toggleCheckbox) {
-                if (!urlIsValid) {
-                    toggleCheckbox.disabled = true;
-                    toggleCheckbox.checked = false;
-                    toggleCheckbox.title = 'Add a valid URL to enable visibility';
-                } else {
-                    toggleCheckbox.disabled = false;
-                    toggleCheckbox.title = toggleCheckbox.checked ? 'Visible' : 'Hidden';
+            // For placeholders, URL is optional; for existing icons, validate
+            if (!isPlaceholder && !urlIsValid && url) {
+                showToast('Please enter a valid URL (must start with http:// or https://)', 'error');
+                return;
+            }
+            
+            // Update toggle state based on URL validity (only for non-placeholders)
+            if (!isPlaceholder) {
+                const toggleCheckbox = document.getElementById(`social-icon-visibility-${directoryId}`);
+                if (toggleCheckbox) {
+                    if (!urlIsValid) {
+                        toggleCheckbox.disabled = true;
+                        toggleCheckbox.checked = false;
+                        toggleCheckbox.title = 'Add a valid URL to enable visibility';
+                    } else {
+                        toggleCheckbox.disabled = false;
+                        toggleCheckbox.title = toggleCheckbox.checked ? 'Visible' : 'Hidden';
+                    }
                 }
             }
             
@@ -8477,11 +8542,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast('Social icon updated successfully!', 'success');
-                    // Reload to get updated is_active state from server
+                    showToast(isPlaceholder ? 'Social icon created successfully!' : 'Social icon updated successfully!', 'success');
+                    // Reload to get updated state from server
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showToast(data.error || 'Failed to update social icon', 'error');
+                    showToast(data.error || (isPlaceholder ? 'Failed to create social icon' : 'Failed to update social icon'), 'error');
                 }
             })
             .catch(() => {
