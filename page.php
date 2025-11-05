@@ -390,6 +390,27 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-size: 1.125rem; /* 18px - increased one step */
         }
         
+        /* Marquee animation for overflowing text */
+        .marquee {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee-scroll linear infinite;
+            animation-duration: var(--marquee-duration, 12s);
+            padding-right: 2em; /* Space at end before looping */
+        }
+        
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            90% { transform: translateX(var(--marquee-distance, -100px)); }
+            100% { transform: translateX(var(--marquee-distance, -100px)); } /* Pause at end */
+        }
+        
         /* Video widget styles */
         .widget-video {
             padding: 0;
@@ -2033,6 +2054,87 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     }
                 });
             }
+        })();
+        
+        // Marquee scrolling for overflowing text
+        (function() {
+            function initMarquee(element) {
+                // Reset processed flag to allow re-evaluation
+                delete element.dataset.marqueeProcessed;
+                
+                // Unwrap content first to get accurate measurements
+                const contentSpan = element.querySelector('.marquee-content');
+                if (contentSpan) {
+                    element.innerHTML = contentSpan.innerHTML;
+                    element.classList.remove('marquee');
+                }
+                
+                // Check if text overflows
+                const containerWidth = element.clientWidth;
+                const textWidth = element.scrollWidth;
+                
+                if (textWidth > containerWidth && containerWidth > 0) {
+                    // Text overflows - apply marquee
+                    element.classList.add('marquee');
+                    
+                    // Wrap content in marquee-content span
+                    const content = element.innerHTML;
+                    element.innerHTML = '<span class="marquee-content">' + content + '</span>';
+                    
+                    const newContentSpan = element.querySelector('.marquee-content');
+                    if (newContentSpan) {
+                        // Recalculate after wrapping
+                        const newTextWidth = newContentSpan.scrollWidth;
+                        const overflow = newTextWidth - containerWidth;
+                        const duration = Math.max(8, Math.min(15, (newTextWidth / 50))); // 8-15 seconds based on length
+                        
+                        // Set CSS variables for animation
+                        newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
+                        newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
+                    }
+                }
+                
+                element.dataset.marqueeProcessed = 'true';
+            }
+            
+            function applyMarqueeToElements() {
+                // Target elements: widget titles, widget content, page title, page description, URLs
+                const selectors = [
+                    '.widget-title',
+                    '.widget-content',
+                    '.page-title',
+                    '.page-description',
+                    '.widget-url'
+                ];
+                
+                selectors.forEach(selector => {
+                    document.querySelectorAll(selector).forEach(element => {
+                        initMarquee(element);
+                    });
+                });
+            }
+            
+            // Run on page load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyMarqueeToElements);
+            } else {
+                applyMarqueeToElements();
+            }
+            
+            // Watch for dynamic content changes
+            const observer = new MutationObserver(() => {
+                // Reset processed flags to allow re-evaluation
+                document.querySelectorAll('.widget-title, .widget-content, .page-title, .page-description, .widget-url').forEach(el => {
+                    delete el.dataset.marqueeProcessed;
+                });
+                applyMarqueeToElements();
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
         })();
     </script>
     </body>
