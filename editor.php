@@ -3316,11 +3316,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 </div>
                 
                 <div class="form-group">
-                    <label>Border Width</label>
+                    <label>Border Thickness</label>
                     <div style="display: flex; gap: 0.5rem;">
                         <?php 
-                        $borderWidths = ['thin' => 'Thin', 'medium' => 'Medium', 'thick' => 'Thick'];
-                        $currentBorderWidth = $widgetStyles['border_width'] ?? 'medium';
+                        $borderWidths = ['none' => 'None', 'thin' => 'Thin (2px)', 'thick' => 'Thick (5px)'];
+                        $currentBorderWidth = $widgetStyles['border_width'] ?? 'none';
                         foreach ($borderWidths as $value => $label): 
                             $isSelected = ($currentBorderWidth === $value);
                         ?>
@@ -7016,8 +7016,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 // Update border
                 if (widgetBorderColorEl && widgetBorderColorEl.value && borderWidthEl) {
-                    const borderWidth = borderWidthEl.value === 'thin' ? '1px' : (borderWidthEl.value === 'thick' ? '3px' : '2px');
+                    let borderWidth = '0px';
+                    if (borderWidthEl.value === 'thin') {
+                        borderWidth = '2px';
+                    } else if (borderWidthEl.value === 'thick') {
+                        borderWidth = '5px';
+                    }
+                    // 'none' defaults to '0px' already set above
                     previewContainer.style.border = `${borderWidth} solid ${widgetBorderColorEl.value}`;
+                } else if (borderWidthEl && borderWidthEl.value === 'none') {
+                    // Handle case where border color might not be set but thickness is none
+                    previewContainer.style.border = '0px solid transparent';
                 }
                 
                 // Update border radius
@@ -7415,7 +7424,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const shapeEl = document.getElementById('widget_shape');
             
             const widgetStyles = {
-                border_width: borderWidthEl ? borderWidthEl.value : 'medium',
+                border_width: borderWidthEl ? borderWidthEl.value : 'none',
                 border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
                 border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
                 border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
@@ -8317,7 +8326,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     const shapeEl = document.getElementById('widget_shape');
                     
                     const widgetStyles = {
-                        border_width: borderWidthEl ? borderWidthEl.value : 'medium',
+                        border_width: borderWidthEl ? borderWidthEl.value : 'none',
                         border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
                         border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
                         border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',

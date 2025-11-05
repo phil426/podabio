@@ -12,7 +12,7 @@ class WidgetStyleManager {
      * @var array
      */
     private static $defaults = [
-        'border_width' => 'medium',
+        'border_width' => 'none',
         'border_effect' => 'shadow',
         'border_shadow_intensity' => 'subtle',
         'border_glow_intensity' => 'none',
@@ -28,7 +28,7 @@ class WidgetStyleManager {
      * @var array
      */
     private static $validEnums = [
-        'border_width' => ['thin', 'medium', 'thick'],
+        'border_width' => ['none', 'thin', 'thick'],
         'border_effect' => ['shadow', 'glow'],
         'border_shadow_intensity' => ['none', 'subtle', 'pronounced'],
         'border_glow_intensity' => ['none', 'subtle', 'pronounced'],

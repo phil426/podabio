@@ -123,9 +123,9 @@ function getPageFonts($page, $theme = null) {
 function convertEnumToCSS($enum, $type) {
     $mappings = [
         'border_width' => [
-            'thin' => '1px',
-            'medium' => '2px',
-            'thick' => '3px'
+            'none' => '0px',
+            'thin' => '2px',
+            'thick' => '5px'
         ],
         'shadow' => [
             'none' => 'none',

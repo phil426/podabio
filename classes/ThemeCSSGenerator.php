@@ -164,7 +164,7 @@ class ThemeCSSGenerator {
      * @return string CSS :root block with all variables
      */
     public function generateCSSVariables() {
-        $borderWidth = convertEnumToCSS($this->widgetStyles['border_width'] ?? 'medium', 'border_width');
+        $borderWidth = convertEnumToCSS($this->widgetStyles['border_width'] ?? 'none', 'border_width');
         $spacing = convertEnumToCSS($this->widgetStyles['spacing'] ?? 'comfortable', 'spacing');
         $borderRadius = convertEnumToCSS($this->widgetStyles['shape'] ?? 'rounded', 'shape');
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
