@@ -1059,8 +1059,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .toast {
-            border-radius: 8px;
-            padding: 0.85rem 1.275rem; /* Reduced by 15% from 1rem 1.5rem */
+            border-radius: 4px; /* Match btn-primary */
+            padding: 0.5rem 0.75rem; /* Match btn-primary */
             pointer-events: auto;
             opacity: 0;
             transform: translateY(-20px); /* Start below, slide up */
@@ -1095,7 +1095,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .toast-message {
-            font-size: 11.9px; /* Reduced by 15% from 14px */
+            font-size: 0.875rem; /* Match btn-primary */
             font-weight: 500;
             line-height: 1.5;
             margin: 0;
