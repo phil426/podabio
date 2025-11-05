@@ -390,6 +390,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-size: 1.125rem; /* 18px - increased one step */
         }
         
+        .widget-description {
+            font-size: 1rem; /* 16px - matches widget-content */
+            color: var(--text-color);
+            opacity: 0.8;
+            margin: 0.25rem 0 0 0;
+            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
+        }
+        
         /* Marquee animation for overflowing text */
         .marquee {
             overflow: hidden;
@@ -2098,10 +2106,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
             
             function applyMarqueeToElements() {
-                // Target elements: widget titles, widget content, page title, page description, URLs
+                // Target elements: widget titles, widget content, widget descriptions, page title, page description, URLs
                 const selectors = [
                     '.widget-title',
                     '.widget-content',
+                    '.widget-description',
                     '.page-title',
                     '.page-description',
                     '.widget-url'
@@ -2124,7 +2133,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             // Watch for dynamic content changes
             const observer = new MutationObserver(() => {
                 // Reset processed flags to allow re-evaluation
-                document.querySelectorAll('.widget-title, .widget-content, .page-title, .page-description, .widget-url').forEach(el => {
+                document.querySelectorAll('.widget-title, .widget-content, .widget-description, .page-title, .page-description, .widget-url').forEach(el => {
                     delete el.dataset.marqueeProcessed;
                 });
                 applyMarqueeToElements();

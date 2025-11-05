@@ -22,6 +22,7 @@ class WidgetRegistry {
                 'requires_api' => false,
                 'config_fields' => [
                     'url' => ['type' => 'url', 'label' => 'URL', 'required' => true],
+                    'description' => ['type' => 'textarea', 'label' => 'Description', 'required' => false, 'help' => 'Optional description text that will scroll if it overflows'],
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Thumbnail Image URL', 'required' => false],
                     'icon' => ['type' => 'select', 'label' => 'Icon', 'required' => false, 'options' => 'fontawesome_icons']
                 ]
@@ -35,7 +36,7 @@ class WidgetRegistry {
                 'category' => 'videos',
                 'requires_api' => false,
                 'config_fields' => [
-                    'video_id' => ['type' => 'text', 'label' => 'YouTube Video ID', 'required' => true, 'help' => 'The video ID from the YouTube URL (e.g., "dQw4w9WgXcQ" from youtube.com/watch?v=dQw4w9WgXcQ)', 'placeholder' => 'dQw4w9WgXcQ'],
+                    'video_url' => ['type' => 'url', 'label' => 'YouTube Video URL', 'required' => true, 'help' => 'Paste the full YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ)', 'placeholder' => 'https://www.youtube.com/watch?v=VIDEO_ID'],
                     'autoplay' => ['type' => 'checkbox', 'label' => 'Autoplay', 'required' => false]
                 ]
             ],

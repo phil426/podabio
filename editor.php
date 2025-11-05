@@ -931,6 +931,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             margin-bottom: 5px;
             font-weight: bold;
         }
+        .form-group label:has(input[type="checkbox"]) {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -1243,6 +1250,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: #374151;
             display: block;
         }
+        .drawer .form-group label:has(input[type="checkbox"]),
+        .form-group label:has(input[type="checkbox"]) {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
         
         .drawer .form-group input,
         .drawer .form-group select,
@@ -1255,6 +1270,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             box-sizing: border-box;
             transition: border-color 0.2s;
             background: #ffffff;
+        }
+        .drawer .form-group input[type="checkbox"],
+        .form-group input[type="checkbox"] {
+            width: auto;
+            padding: 0;
+            margin: 0;
+            flex-shrink: 0;
+            cursor: pointer;
         }
         
         .drawer .form-group input:focus,
@@ -9348,10 +9371,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const selectors = [
                 '.widget-title',
                 '.widget-card-description',
+                '.widget-description',
                 '.widget-url',
                 '.social-icon-url', // Social icon URLs in editor list
                 '#preview-panel .widget-title',
                 '#preview-panel .widget-content',
+                '#preview-panel .widget-description',
                 '#preview-panel .page-title',
                 '#preview-panel .page-description',
                 '#preview-panel .widget-url'
@@ -9374,7 +9399,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Watch for dynamic content changes (especially in preview panel)
         const observer = new MutationObserver(() => {
             // Reset processed flag for re-evaluation
-            document.querySelectorAll('.widget-title, .widget-card-description, .widget-url, .social-icon-url, #preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-url').forEach(el => {
+            document.querySelectorAll('.widget-title, .widget-card-description, .widget-description, .widget-url, .social-icon-url, #preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-description, #preview-panel .widget-url').forEach(el => {
                 delete el.dataset.marqueeProcessed;
             });
             applyMarqueeToElements();
@@ -9391,7 +9416,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         if (previewPanel) {
             const previewObserver = new MutationObserver(() => {
                 setTimeout(() => {
-                    document.querySelectorAll('#preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .page-title, #preview-panel .page-description, #preview-panel .widget-url, .social-icon-url').forEach(el => {
+                    document.querySelectorAll('#preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-description, #preview-panel .page-title, #preview-panel .page-description, #preview-panel .widget-url, .social-icon-url').forEach(el => {
                         delete el.dataset.marqueeProcessed;
                     });
                     applyMarqueeToElements();
