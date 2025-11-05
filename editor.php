@@ -644,6 +644,52 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transform: translateX(20px);
         }
         
+        /* Social Icon Visibility Toggle */
+        .social-icon-visibility-toggle {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 0.5rem;
+            position: relative;
+        }
+        
+        .social-icon-visibility-toggle input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .social-icon-visibility-toggle input[type="checkbox"]:checked {
+            background: #0066ff;
+        }
+        
+        .social-icon-visibility-toggle input[type="checkbox"]:disabled {
+            background: #e5e7eb;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .social-icon-visibility-toggle input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .social-icon-visibility-toggle input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
+        
         .widget-featured-toggle {
             display: flex;
             align-items: center;
@@ -2722,6 +2768,21 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     <div style="font-weight: 600; color: #111827;"><?php echo h($icon['platform_name']); ?></div>
                                     <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo h($icon['url']); ?></div>
                                 </span>
+                                <?php 
+                                $isActive = isset($icon['is_active']) ? (int)$icon['is_active'] : 1;
+                                $url = $icon['url'] ?? '';
+                                $isValidUrl = !empty($url) && filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                                             (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+                                $toggleDisabled = !$isValidUrl;
+                                ?>
+                                <div class="social-icon-visibility-toggle" onclick="event.stopPropagation();">
+                                    <input type="checkbox" 
+                                           id="social-icon-visibility-<?php echo $icon['id']; ?>" 
+                                           <?php echo $isActive ? 'checked' : ''; ?>
+                                           <?php echo $toggleDisabled ? 'disabled' : ''; ?>
+                                           onchange="toggleSocialIconVisibility(<?php echo $icon['id']; ?>, this.checked)"
+                                           title="<?php echo $toggleDisabled ? 'Add a valid URL to enable visibility' : ($isActive ? 'Visible' : 'Hidden'); ?>">
+                                </div>
                                 <i class="fas fa-chevron-down accordion-icon"></i>
                             </button>
                             <div class="accordion-content" id="social-icon-content-<?php echo $icon['id']; ?>">
@@ -2764,7 +2825,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         
                                         <div class="form-group" style="margin-bottom: 1.5rem;">
                                             <label for="social-icon-url-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">URL</label>
-                                            <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" required placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                                            <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" required placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" oninput="updateSocialIconToggleState(<?php echo $icon['id']; ?>, this.value)">
                                         </div>
                                         
                                         <div class="widget-accordion-actions">
@@ -4645,6 +4706,98 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showToast('Error updating widget visibility: ' + errorMsg, 'error');
                 // Revert checkbox
                 const checkbox = document.getElementById(`widget-visibility-${widgetId}`);
+                if (checkbox) {
+                    checkbox.checked = !isVisible;
+                }
+            });
+        }
+        
+        // URL validation helper function
+        function isValidUrl(url) {
+            if (!url || typeof url !== 'string' || url.trim() === '') {
+                return false;
+            }
+            try {
+                const urlObj = new URL(url);
+                return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Update social icon toggle state based on URL validity
+        window.updateSocialIconToggleState = function(iconId, url) {
+            const toggleCheckbox = document.getElementById(`social-icon-visibility-${iconId}`);
+            if (!toggleCheckbox) return;
+            
+            const urlIsValid = isValidUrl(url);
+            
+            if (!urlIsValid) {
+                toggleCheckbox.disabled = true;
+                if (toggleCheckbox.checked) {
+                    toggleCheckbox.checked = false;
+                }
+                toggleCheckbox.title = 'Add a valid URL to enable visibility';
+            } else {
+                toggleCheckbox.disabled = false;
+                toggleCheckbox.title = toggleCheckbox.checked ? 'Visible' : 'Hidden';
+            }
+        };
+        
+        // Social Icon Visibility Toggle
+        window.toggleSocialIconVisibility = function(iconId, isVisible) {
+            const formData = new FormData();
+            formData.append('action', 'update_social_icon_visibility');
+            formData.append('icon_id', iconId);
+            formData.append('is_active', isVisible ? 1 : 0);
+            formData.append('csrf_token', csrfToken);
+            
+            fetch('/api/page.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const errorMsg = text.includes('<title>') ? `HTTP ${response.status}` : text.substring(0, 200);
+                        throw new Error(`HTTP ${response.status}: ${errorMsg}`);
+                    });
+                }
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error('Response is not JSON. Received: ' + text.substring(0, 200));
+                    });
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    const iconItem = document.querySelector(`.accordion-section[data-directory-id="${iconId}"]`);
+                    if (iconItem) {
+                        if (isVisible) {
+                            iconItem.classList.remove('inactive');
+                        } else {
+                            iconItem.classList.add('inactive');
+                        }
+                    }
+                    showToast(isVisible ? 'Social icon is now visible' : 'Social icon is now hidden', 'success');
+                } else {
+                    showToast('Failed to update social icon visibility: ' + (data.error || 'Unknown error'), 'error');
+                    // Revert checkbox
+                    const checkbox = document.getElementById(`social-icon-visibility-${iconId}`);
+                    if (checkbox) {
+                        checkbox.checked = !isVisible;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling social icon visibility:', error);
+                const errorMsg = error.message || 'Unknown error';
+                showToast('Error updating social icon visibility: ' + errorMsg, 'error');
+                // Revert checkbox
+                const checkbox = document.getElementById(`social-icon-visibility-${iconId}`);
                 if (checkbox) {
                     checkbox.checked = !isVisible;
                 }
@@ -8283,6 +8436,24 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             formData.append('action', 'update_directory');
             formData.append('directory_id', directoryId);
             
+            // Get URL from form and validate
+            const urlInput = form.querySelector('input[name="url"]');
+            const url = urlInput ? urlInput.value.trim() : '';
+            const urlIsValid = isValidUrl(url);
+            
+            // Update toggle state based on URL validity
+            const toggleCheckbox = document.getElementById(`social-icon-visibility-${directoryId}`);
+            if (toggleCheckbox) {
+                if (!urlIsValid) {
+                    toggleCheckbox.disabled = true;
+                    toggleCheckbox.checked = false;
+                    toggleCheckbox.title = 'Add a valid URL to enable visibility';
+                } else {
+                    toggleCheckbox.disabled = false;
+                    toggleCheckbox.title = toggleCheckbox.checked ? 'Visible' : 'Hidden';
+                }
+            }
+            
             fetch('/api/page.php', {
                 method: 'POST',
                 body: formData
@@ -8291,6 +8462,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             .then(data => {
                 if (data.success) {
                     showToast('Social icon updated successfully!', 'success');
+                    // Reload to get updated is_active state from server
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     showToast(data.error || 'Failed to update social icon', 'error');

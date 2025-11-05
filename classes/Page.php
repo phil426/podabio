@@ -426,21 +426,29 @@ class Page {
             return ['success' => false, 'icon_id' => null, 'error' => 'Platform name and URL are required'];
         }
         
+        // Validate URL format (must be valid http/https URL)
+        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                      (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+        
+        // Set is_active to 0 if URL is invalid, 1 if valid
+        $isActive = $isValidUrl ? 1 : 0;
+        
         // Get max display order
         $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM social_icons WHERE page_id = ?", [$pageId]);
         $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
         
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO social_icons (page_id, platform_name, url, icon, display_order)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO social_icons (page_id, platform_name, url, icon, display_order, is_active)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $pageId,
                 $platformName,
                 $url,
                 null, // Icon can be determined by platform name
-                $displayOrder
+                $displayOrder,
+                $isActive
             ]);
             
             $iconId = $this->pdo->lastInsertId();
@@ -454,9 +462,16 @@ class Page {
     /**
      * Get social icons for page
      * @param int $pageId
+     * @param bool $activeOnly If true, only return active icons (for front-end rendering)
      * @return array
      */
-    public function getSocialIcons($pageId) {
+    public function getSocialIcons($pageId, $activeOnly = false) {
+        if ($activeOnly) {
+            return fetchAll(
+                "SELECT * FROM social_icons WHERE page_id = ? AND is_active = 1 ORDER BY display_order ASC",
+                [$pageId]
+            );
+        }
         return fetchAll(
             "SELECT * FROM social_icons WHERE page_id = ? ORDER BY display_order ASC",
             [$pageId]
@@ -469,9 +484,10 @@ class Page {
      * @param int $pageId
      * @param string $platformName
      * @param string $url
+     * @param int|null $isActive Optional: set is_active status (if null, validates URL and sets accordingly)
      * @return array ['success' => bool, 'error' => string|null]
      */
-    public function updateSocialIcon($iconId, $pageId, $platformName, $url) {
+    public function updateSocialIcon($iconId, $pageId, $platformName, $url, $isActive = null) {
         if (empty($platformName) || empty($url)) {
             return ['success' => false, 'error' => 'Platform name and URL are required'];
         }
@@ -481,13 +497,28 @@ class Page {
             return ['success' => false, 'error' => 'Social icon not found'];
         }
         
+        // Validate URL format (must be valid http/https URL)
+        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                      (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+        
+        // If isActive is not provided, validate URL and set accordingly
+        // If URL is invalid, force is_active to 0 (cannot be active without valid URL)
+        if ($isActive === null) {
+            $isActive = $isValidUrl ? 1 : 0;
+        } else {
+            // If explicitly setting to active, ensure URL is valid
+            if ($isActive == 1 && !$isValidUrl) {
+                $isActive = 0; // Cannot be active with invalid URL
+            }
+        }
+        
         try {
             $stmt = $this->pdo->prepare("
                 UPDATE social_icons 
-                SET platform_name = ?, url = ? 
+                SET platform_name = ?, url = ?, is_active = ?
                 WHERE id = ? AND page_id = ?
             ");
-            $stmt->execute([$platformName, $url, $iconId, $pageId]);
+            $stmt->execute([$platformName, $url, $isActive, $iconId, $pageId]);
             return ['success' => true, 'error' => null];
         } catch (PDOException $e) {
             error_log("Social icon update failed: " . $e->getMessage());
@@ -513,6 +544,44 @@ class Page {
         } catch (PDOException $e) {
             error_log("Social icon deletion failed: " . $e->getMessage());
             return ['success' => false, 'error' => 'Failed to delete social icon'];
+        }
+    }
+    
+    /**
+     * Toggle social icon visibility
+     * @param int $iconId
+     * @param int $pageId
+     * @param bool $isActive
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function toggleSocialIconVisibility($iconId, $pageId, $isActive) {
+        $icon = fetchOne("SELECT id, url FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
+        if (!$icon) {
+            return ['success' => false, 'error' => 'Social icon not found'];
+        }
+        
+        // If trying to set active, validate URL first
+        if ($isActive) {
+            $url = $icon['url'];
+            $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                          (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+            
+            if (!$isValidUrl || empty($url)) {
+                return ['success' => false, 'error' => 'Cannot make icon visible without a valid URL'];
+            }
+        }
+        
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE social_icons 
+                SET is_active = ?
+                WHERE id = ? AND page_id = ?
+            ");
+            $stmt->execute([$isActive ? 1 : 0, $iconId, $pageId]);
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Social icon visibility toggle failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to toggle social icon visibility'];
         }
     }
     
@@ -747,4 +816,5 @@ class Page {
         }
     }
 }
+
 

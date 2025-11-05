@@ -46,7 +46,7 @@ require_once __DIR__ . '/classes/WidgetRenderer.php';
 $widgets = $pageClass->getWidgets($page['id']);
 $links = $pageClass->getLinks($page['id']); // Legacy support
 // Removed episodes - now handled via Podcast Player widget
-$socialIcons = $pageClass->getSocialIcons($page['id']);
+$socialIcons = $pageClass->getSocialIcons($page['id'], true); // Only get active icons for front-end
 
 // Get theme and extract colors/fonts using Theme class
 $themeClass = new Theme();

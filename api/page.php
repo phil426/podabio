@@ -292,7 +292,31 @@ switch ($action) {
             exit;
         }
         
-        $result = $page->updateSocialIcon($iconId, $pageId, $platformName, $url);
+        // Validate URL format (must be valid http/https URL)
+        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                      (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+        
+        // If URL is invalid, ensure is_active is set to 0
+        $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : null;
+        if ($isActive === 1 && !$isValidUrl) {
+            $isActive = 0; // Cannot be active with invalid URL
+        }
+        
+        $result = $page->updateSocialIcon($iconId, $pageId, $platformName, $url, $isActive);
+        echo json_encode($result);
+        break;
+        
+    case 'update_social_icon_visibility':
+        $iconId = (int)($_POST['icon_id'] ?? 0);
+        $isActive = isset($_POST['is_active']) ? (bool)$_POST['is_active'] : false;
+        
+        if (!$iconId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
+            exit;
+        }
+        
+        $result = $page->toggleSocialIconVisibility($iconId, $pageId, $isActive);
         echo json_encode($result);
         break;
         
