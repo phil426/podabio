@@ -1044,27 +1044,34 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         /* Toast Notification System */
         .toast-container {
             position: fixed;
-            top: 20px;
+            top: 64px; /* Position below navbar */
             left: 50%;
             transform: translateX(-50%);
             z-index: 99999; /* Highest z-index - appears in front of everything */
             display: flex;
-            flex-direction: column;
+            flex-direction: row; /* Horizontal carousel layout */
             gap: 12px;
             pointer-events: none;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 90%;
         }
         
         .toast {
             border-radius: 8px;
-            
-            padding: 1rem 1.5rem;
+            padding: 0.85rem 1.275rem; /* Reduced by 15% from 1rem 1.5rem */
             pointer-events: auto;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transform: translateY(-20px); /* Start below, slide up */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .toast.show {
             opacity: 1;
+            transform: translateY(0); /* Slide up to position */
         }
         
         .toast.success {
@@ -1083,7 +1090,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         .toast-message {
-            font-size: 14px;
+            font-size: 11.9px; /* Reduced by 15% from 14px */
             font-weight: 500;
             line-height: 1.5;
             margin: 0;
