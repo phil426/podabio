@@ -2838,10 +2838,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <?php else: ?>
                                 <i class="fas fa-grip-vertical" style="opacity: 0.3; cursor: default;" onclick="event.stopPropagation();"></i>
                                 <?php endif; ?>
-                                <i class="<?php echo $platformIcon; ?>"></i>
+                                <i class="<?php echo $platformIcon; ?>" style="color: #111827;"></i>
                                 <span style="flex: 1; text-align: left;">
-                                    <div style="font-weight: 600; color: #111827;"><?php echo h($friendlyPlatformName); ?></div>
-                                    <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: normal;"><?php echo $icon['url'] ? h($icon['url']) : '<em style="color: #9ca3af;">No URL added</em>'; ?></div>
+                                    <div style="font-weight: 400; color: #111827;"><?php echo h($friendlyPlatformName); ?></div>
+                                    <div class="social-icon-url" style="font-size: 0.875rem; color: #6b7280; font-weight: 400;"><?php echo $icon['url'] ? h($icon['url']) : '<em style="color: #9ca3af;">No URL added</em>'; ?></div>
                                 </span>
                                 <?php 
                                 $isActive = isset($icon['is_active']) ? (int)$icon['is_active'] : 0;
@@ -2867,7 +2867,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                                         
                                         <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label for="social-icon-platform-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Platform</label>
+                                            <label for="social-icon-platform-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 400;">Platform</label>
                                             <select id="social-icon-platform-<?php echo $icon['id']; ?>" name="platform_name" required style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" <?php echo $isPlaceholder ? 'disabled' : ''; ?>>
                                                 <option value="">Select Platform</option>
                                                 <?php
@@ -2882,7 +2882,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         </div>
                                         
                                         <div class="form-group" style="margin-bottom: 1.5rem;">
-                                            <label for="social-icon-url-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">URL</label>
+                                            <label for="social-icon-url-<?php echo $icon['id']; ?>" style="display: block; margin-bottom: 0.5rem; font-weight: 400;">URL</label>
                                             <input type="url" id="social-icon-url-<?php echo $icon['id']; ?>" name="url" value="<?php echo h($icon['url']); ?>" <?php echo $isPlaceholder ? '' : 'required'; ?> placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" oninput="updateSocialIconToggleState(<?php echo $icon['id']; ?>, this.value)">
                                         </div>
                                         
