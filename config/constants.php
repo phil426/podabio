@@ -44,7 +44,7 @@ define('ALLOWED_IMAGE_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
 define('PROFILE_IMAGE_WIDTH', 400);
 define('PROFILE_IMAGE_HEIGHT', 400);
 define('THUMBNAIL_WIDTH', 400);
-define('THUMBNAIL_HEIGHT', 300);
+define('THUMBNAIL_HEIGHT', 400);
 define('BACKGROUND_IMAGE_MAX_WIDTH', 1920);
 define('BACKGROUND_IMAGE_MAX_HEIGHT', 1080);
 
