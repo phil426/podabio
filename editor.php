@@ -1044,7 +1044,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         /* Toast Notification System */
         .toast-container {
             position: fixed;
-            top: 64px; /* Position below navbar */
+            top: 72px; /* Position below navbar + 8px spacing */
             left: 50%;
             transform: translateX(-50%);
             z-index: 99999; /* Highest z-index - appears in front of everything */
@@ -1072,6 +1072,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .toast.show {
             opacity: 1;
             transform: translateY(0); /* Slide up to position */
+        }
+        
+        .toast.hiding {
+            opacity: 0;
+            transform: translateY(20px); /* Slide down when dismissing */
         }
         
         .toast.success {
@@ -6401,12 +6406,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             // Auto-dismiss after 6 seconds
             setTimeout(() => {
+                // Add hiding class for reverse animation (slides down and fades out)
+                toast.classList.add('hiding');
                 toast.classList.remove('show');
                 setTimeout(() => {
                     if (toast.parentNode) {
                         toast.remove();
                     }
-                }, 400); // Wait for animation to complete
+                }, 300); // Wait for animation to complete (matches transition duration)
             }, 6000);
         }
         
