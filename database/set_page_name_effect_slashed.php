@@ -12,12 +12,11 @@ $pdo = getDB();
 
 echo "<!DOCTYPE html><html><head><title>Set Page Name Effect to Slashed</title>";
 echo "<style>body{font-family:monospace;padding:20px;background:#1a1a1a;color:#0f0;} ";
-echo ".success{color:#0f0;} .error{color:#f00;} .info{color:#0ff;} ";
+echo ".success{color:#0f0;} .error{color:#f00;} .info{color:#0ff;} .warning{color:#ff0;} ";
 echo "</style></head><body>";
 echo "<h1>Set Page Name Effect to 'slashed'</h1>";
 
-// Start session to get current user
-session_start();
+// Session is already started by includes/session.php
 $userId = $_SESSION['user_id'] ?? null;
 
 if (!$userId) {
@@ -28,8 +27,23 @@ if (!$userId) {
 
 echo "<div class='info'>User ID from session: {$userId}</div>";
 
+// First check if column exists
+try {
+    $columns = $pdo->query("SHOW COLUMNS FROM pages LIKE 'page_name_effect'")->fetchAll();
+    if (empty($columns)) {
+        echo "<div class='warning'>⚠ Column 'page_name_effect' does NOT exist.</div>";
+        echo "<div class='info'>→ Please run the migration first: <a href='migrate_add_page_name_effect.php' style='color:#0ff;'>database/migrate_add_page_name_effect.php</a></div>";
+        echo "<div class='info'>→ Or visit: <a href='/database/migrate_add_page_name_effect.php' style='color:#0ff;'>/database/migrate_add_page_name_effect.php</a></div>";
+        exit;
+    }
+    echo "<div class='success'>✓ Column 'page_name_effect' exists</div>";
+} catch (PDOException $e) {
+    echo "<div class='error'>✗ Error checking column: " . htmlspecialchars($e->getMessage()) . "</div>";
+    exit;
+}
+
 // Get page for this user
-$page = $pdo->prepare("SELECT id, username, podcast_name, page_name_effect FROM pages WHERE user_id = ? LIMIT 1");
+$page = $pdo->prepare("SELECT id, username, podcast_name FROM pages WHERE user_id = ? LIMIT 1");
 $page->execute([$userId]);
 $pageData = $page->fetch();
 
@@ -40,7 +54,12 @@ if (!$pageData) {
 
 $pageId = $pageData['id'];
 echo "<div class='info'>Page ID: {$pageId}, Username: {$pageData['username']}</div>";
-echo "<div class='info'>Current page_name_effect: " . ($pageData['page_name_effect'] ?? 'NULL') . "</div>";
+
+// Get the current page_name_effect value
+$currentEffect = $pdo->prepare("SELECT page_name_effect FROM pages WHERE id = ?");
+$currentEffect->execute([$pageId]);
+$currentData = $currentEffect->fetch();
+echo "<div class='info'>Current page_name_effect: " . ($currentData['page_name_effect'] ?? 'NULL') . "</div>";
 
 // Set to 'slashed'
 try {
@@ -60,4 +79,3 @@ try {
 }
 
 echo "</body></html>";
-
