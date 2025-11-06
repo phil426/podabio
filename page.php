@@ -2810,11 +2810,44 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 element.dataset.marqueeProcessed = 'true';
             }
             
+            let isProcessing = false;
+            let debounceTimer = null;
+            
             function applyWidgetMarquee() {
-                // Only target widget descriptions within Custom Link widgets
-                document.querySelectorAll('.widget-item .widget-description').forEach(element => {
-                    initWidgetMarquee(element);
-                });
+                // Prevent infinite loops
+                if (isProcessing) {
+                    return;
+                }
+                
+                isProcessing = true;
+                
+                try {
+                    // Only target widget descriptions within Custom Link widgets
+                    document.querySelectorAll('.widget-item .widget-description').forEach(element => {
+                        // Skip if already processed and hasn't changed
+                        if (element.dataset.marqueeProcessed === 'true' && !element.querySelector('.marquee-content')) {
+                            return;
+                        }
+                        initWidgetMarquee(element);
+                    });
+                } finally {
+                    isProcessing = false;
+                }
+            }
+            
+            // Debounced version for observer
+            function debouncedApplyWidgetMarquee() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    // Only reset flags for elements that actually changed
+                    document.querySelectorAll('.widget-item .widget-description').forEach(el => {
+                        // Only reset if it's not currently being processed
+                        if (!isProcessing) {
+                            delete el.dataset.marqueeProcessed;
+                        }
+                    });
+                    applyWidgetMarquee();
+                }, 100); // 100ms debounce
             }
             
             // Run on page load
@@ -2825,17 +2858,40 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
             
             // Watch for dynamic content changes (only Custom Link widget descriptions)
-            const observer = new MutationObserver(() => {
-                document.querySelectorAll('.widget-item .widget-description').forEach(el => {
-                    delete el.dataset.marqueeProcessed;
-                });
-                applyWidgetMarquee();
+            // Use debounced version to prevent infinite loops
+            const observer = new MutationObserver((mutations) => {
+                // Only process if mutations are not from our own code
+                let shouldProcess = false;
+                for (const mutation of mutations) {
+                    // Skip if the mutation is just attribute changes (like dataset)
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'data-marquee-processed') {
+                        continue;
+                    }
+                    // Skip if mutation is from adding marquee-content (our own changes)
+                    if (mutation.addedNodes.length > 0) {
+                        for (const node of mutation.addedNodes) {
+                            if (node.nodeType === 1 && node.classList && node.classList.contains('marquee-content')) {
+                                continue;
+                            }
+                            shouldProcess = true;
+                            break;
+                        }
+                    } else {
+                        shouldProcess = true;
+                    }
+                    if (shouldProcess) break;
+                }
+                
+                if (shouldProcess) {
+                    debouncedApplyWidgetMarquee();
+                }
             });
             
             observer.observe(document.body, {
                 childList: true,
                 subtree: true,
-                characterData: true
+                characterData: true,
+                attributes: false // Don't watch attributes to avoid our own changes
             });
         })();
     </script>
