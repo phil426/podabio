@@ -87,7 +87,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
     <!-- Additional fonts for page name effects -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&family=Poppins:wght@400;600;700&family=Raleway:wght@900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&family=Poppins:wght@400;600;700&family=Raleway:wght@900&family=Oswald:wght@400;600;700;900&family=Montserrat:wght@900&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -644,6 +644,260 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: #6abc4e;
             height: 80%;
             z-index: 2;
+        }
+        
+        /* Badge Shield Effect */
+        .page-title-effect-badge-shield {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(2rem, 10vw, 5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 3rem;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 -3px 10px rgba(0, 0, 0, 0.2),
+                inset 0 3px 10px rgba(255, 255, 255, 0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* Isometric 3D Effect */
+        .page-title-effect-isometric-3d {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2.5rem, 12vw, 6rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            transform: skewY(-5deg) rotateX(10deg);
+            text-shadow:
+                1px 1px 0 #667eea,
+                2px 2px 0 #667eea,
+                3px 3px 0 #764ba2,
+                4px 4px 0 #764ba2,
+                5px 5px 0 #764ba2,
+                6px 6px 0 #764ba2,
+                7px 7px 0 #764ba2,
+                8px 8px 10px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.05em;
+        }
+        
+        /* Geometric Cutout Effect */
+        .page-title-effect-geometric-cutout {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(3rem, 14vw, 7rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #000;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        .page-title-effect-geometric-cutout::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            background: linear-gradient(45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%);
+            mix-blend-mode: screen;
+            z-index: 10;
+        }
+        
+        /* Layered Badge Effect */
+        .page-title-effect-layered-badge {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(2rem, 10vw, 5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #fff;
+            position: relative;
+            padding: 1.5rem 2.5rem;
+            z-index: 3;
+        }
+        .page-title-effect-layered-badge::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 120%;
+            height: 120%;
+            background: #667eea;
+            z-index: -1;
+            border-radius: 15px;
+        }
+        .page-title-effect-layered-badge::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110%;
+            height: 110%;
+            background: #764ba2;
+            z-index: -2;
+            border-radius: 20px;
+        }
+        
+        /* Stencil Effect */
+        .page-title-effect-stencil {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(3rem, 14vw, 7rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 3px #000;
+            text-stroke: 3px #000;
+            letter-spacing: 0.2em;
+            position: relative;
+        }
+        .page-title-effect-stencil::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, transparent 0%, transparent 45%, #000 45%, #000 55%, transparent 55%, transparent 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Pattern Fill Effect */
+        .page-title-effect-pattern-fill {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(3rem, 14vw, 7rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    #667eea 0px,
+                    #667eea 10px,
+                    #764ba2 10px,
+                    #764ba2 20px
+                );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        
+        /* Corporate Block Effect */
+        .page-title-effect-corporate-block {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2.5rem, 12vw, 6rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #000;
+            position: relative;
+            padding-left: 2rem;
+        }
+        .page-title-effect-corporate-block::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1rem;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .page-title-effect-corporate-block::after {
+            content: '';
+            position: absolute;
+            right: -1rem;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+            width: 2rem;
+            height: 2rem;
+            background: #764ba2;
+        }
+        
+        /* Negative Space Effect */
+        .page-title-effect-negative-space {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(3rem, 14vw, 7rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #000;
+            position: relative;
+        }
+        .page-title-effect-negative-space::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: 70%;
+            background: #fff;
+            clip-path: circle(40% at 50% 50%);
+            z-index: 1;
+        }
+        
+        /* Depth Layers Effect */
+        .page-title-effect-depth-layers {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2.5rem, 12vw, 6rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow:
+                2px 2px 0 #667eea,
+                4px 4px 0 #764ba2,
+                6px 6px 0 #f093fb,
+                8px 8px 0 #4facfe,
+                10px 10px 0 #00f2fe,
+                12px 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Geometric Frame Effect */
+        .page-title-effect-geometric-frame {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(2rem, 10vw, 5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #000;
+            padding: 2rem 3rem;
+            position: relative;
+            display: inline-block;
+        }
+        .page-title-effect-geometric-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 4px solid #667eea;
+            clip-path: polygon(
+                0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%,
+                100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%
+            );
+            z-index: -1;
+        }
+        .page-title-effect-geometric-frame::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border: 2px solid #764ba2;
+            clip-path: polygon(
+                0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%,
+                100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%
+            );
+            z-index: -2;
         }
         
         .widgets-container {
@@ -2206,6 +2460,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 <h1 class="page-title-effect-rainbow" data-heading="<?php echo $pageTitleText; ?>">
                     <span><?php echo $pageTitleText; ?></span>
                 </h1>
+            <?php elseif ($pageNameEffect === 'stencil'): ?>
+                <h1 class="page-title-effect-stencil" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h1>
             <?php else: ?>
                 <h1 class="page-title <?php echo $pageNameEffect ? 'page-title-effect-' . h($pageNameEffect) : ''; ?>"><?php echo $pageTitleText; ?></h1>
             <?php endif; ?>

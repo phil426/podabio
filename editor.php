@@ -3219,6 +3219,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="water" <?php echo $currentPageNameEffect === 'water' ? 'selected' : ''; ?>>Water</option>
                                 <option value="outline" <?php echo $currentPageNameEffect === 'outline' ? 'selected' : ''; ?>>Outline</option>
                                 <option value="rainbow" <?php echo $currentPageNameEffect === 'rainbow' ? 'selected' : ''; ?>>Rainbow</option>
+                                <option value="badge-shield" <?php echo $currentPageNameEffect === 'badge-shield' ? 'selected' : ''; ?>>Badge Shield</option>
+                                <option value="isometric-3d" <?php echo $currentPageNameEffect === 'isometric-3d' ? 'selected' : ''; ?>>Isometric 3D</option>
+                                <option value="geometric-cutout" <?php echo $currentPageNameEffect === 'geometric-cutout' ? 'selected' : ''; ?>>Geometric Cutout</option>
+                                <option value="layered-badge" <?php echo $currentPageNameEffect === 'layered-badge' ? 'selected' : ''; ?>>Layered Badge</option>
+                                <option value="stencil" <?php echo $currentPageNameEffect === 'stencil' ? 'selected' : ''; ?>>Stencil</option>
+                                <option value="pattern-fill" <?php echo $currentPageNameEffect === 'pattern-fill' ? 'selected' : ''; ?>>Pattern Fill</option>
+                                <option value="corporate-block" <?php echo $currentPageNameEffect === 'corporate-block' ? 'selected' : ''; ?>>Corporate Block</option>
+                                <option value="negative-space" <?php echo $currentPageNameEffect === 'negative-space' ? 'selected' : ''; ?>>Negative Space</option>
+                                <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>
+                                <option value="geometric-frame" <?php echo $currentPageNameEffect === 'geometric-frame' ? 'selected' : ''; ?>>Geometric Frame</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
                                 Apply a special text effect to your page name to make it stand out. Effects will be applied to the main page title.
