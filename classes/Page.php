@@ -124,6 +124,13 @@ class Page {
         $updates = [];
         $params = [];
         
+        // Debug logging
+        if (array_key_exists('page_name_effect', $data)) {
+            error_log("Page::update() - page_name_effect in data: " . var_export($data['page_name_effect'], true));
+        } else {
+            error_log("Page::update() - page_name_effect NOT in data. Available keys: " . implode(', ', array_keys($data)));
+        }
+        
         foreach ($allowedFields as $field) {
             // Use array_key_exists to allow null values (for deleting images, etc.)
             if (array_key_exists($field, $data)) {
@@ -135,18 +142,28 @@ class Page {
                     $updates[] = "$field = ?";
                     $params[] = $data[$field];
                 }
+                
+                // Debug logging for page_name_effect specifically
+                if ($field === 'page_name_effect') {
+                    error_log("Page::update() - page_name_effect added to updates. Value: " . var_export($data[$field], true));
+                }
             }
         }
         
         if (empty($updates)) {
+            error_log("Page::update() - No updates to perform");
             return false;
         }
         
         $params[] = $pageId;
         $sql = "UPDATE pages SET " . implode(', ', $updates) . " WHERE id = ?";
         
+        error_log("Page::update() - SQL: " . $sql);
+        error_log("Page::update() - Params: " . var_export($params, true));
+        
         try {
             executeQuery($sql, $params);
+            error_log("Page::update() - Successfully updated page ID: {$pageId}");
             return true;
         } catch (PDOException $e) {
             error_log("Page update failed: " . $e->getMessage());

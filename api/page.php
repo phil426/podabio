@@ -233,10 +233,17 @@ switch ($action) {
         // Handle page name effect
         if (isset($_POST['page_name_effect'])) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
+            error_log("API: page_name_effect received: " . var_export($pageNameEffect, true));
+            error_log("API: POST data contains page_name_effect: " . var_export(isset($_POST['page_name_effect']), true));
             $validEffects = ['', '3d-shadow', 'stroke-shadow', 'slashed', 'sweet-title', 'long-shadow', '3d-extrude', 'dragon-text'];
             if (in_array($pageNameEffect, $validEffects, true)) {
                 $updateData['page_name_effect'] = $pageNameEffect === '' ? null : $pageNameEffect;
+                error_log("API: page_name_effect validated and added to updateData: " . var_export($updateData['page_name_effect'], true));
+            } else {
+                error_log("API: page_name_effect validation FAILED. Value: " . var_export($pageNameEffect, true) . ", Valid effects: " . implode(', ', $validEffects));
             }
+        } else {
+            error_log("API: page_name_effect NOT SET in POST data. Available POST keys: " . implode(', ', array_keys($_POST)));
         }
         
         $result = $page->update($pageId, $updateData);

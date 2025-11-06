@@ -4280,7 +4280,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Initialize accordion states from localStorage
         function initializeAccordions() {
-            const sections = ['theme-selection', 'page-background', 'page-colors', 'page-fonts', 'widget-background', 
+            const sections = ['theme-selection', 'page-name-effect', 'page-background', 'page-colors', 'page-fonts', 'widget-background', 
                            'widget-border', 'widget-fonts', 'widget-structure', 'spatial-effects'];
             
             sections.forEach(sectionId => {
@@ -7118,6 +7118,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Set new timeout (debounce for 1 second)
             saveTimeouts[formId] = setTimeout(() => {
                 const formData = getFormData();
+                if (!formData) {
+                    console.error('getFormData returned null for form:', formId);
+                    if (useToast) {
+                        showToast('Error: Could not prepare form data', 'error');
+                    }
+                    return;
+                }
                 formData.append('action', action);
                 formData.append('csrf_token', csrfToken);
                 
@@ -7735,38 +7742,73 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview();
         });
         
-        // Handle appearance form with auto-save
-        const appearanceForm = document.getElementById('appearance-form');
-        if (appearanceForm) {
-            // Auto-save on changes
-            // Note: theme_id is handled separately via handleThemeChange() for radio buttons
-            const appearanceFields = ['layout_option', 'custom_primary_color', 'custom_secondary_color', 
-                                      'custom_accent_color', 'custom_heading_font', 'custom_body_font',
-                                      'page_primary_font', 'page_secondary_font',
-                                      'page_background', 'widget_background', 'widget_border_color',
-                                      'widget_primary_font', 'widget_secondary_font',
-                                      'widget_border_width', 'widget_border_effect',
-                                      'widget_border_shadow_intensity', 'widget_border_glow_intensity',
-                                      'widget_glow_color_hidden', 'widget_spacing', 'widget_shape', 'spatial_effect'];
-            appearanceFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (field) {
-                    field.addEventListener('change', function() {
-                        saveAppearanceForm();
-                        
-                        // Update inline font previews
-                        if (fieldId === 'page_primary_font') {
-                            const preview = document.getElementById('inline-page-primary-preview');
-                            if (preview) {
-                                preview.style.fontFamily = `'${this.value}', sans-serif`;
-                            }
-                        } else if (fieldId === 'page_secondary_font') {
-                            const preview = document.getElementById('inline-page-secondary-preview');
-                            if (preview) {
-                                preview.style.fontFamily = `'${this.value}', sans-serif`;
-                            }
+        // Handle appearance form with auto-save - wrapped in DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const appearanceForm = document.getElementById('appearance-form');
+            if (!appearanceForm) {
+                console.warn('Appearance form not found on page load');
+                return;
+            }
+            
+            console.log('Appearance form found, setting up event listeners');
+            
+            // Function to attach event listeners to appearance fields
+            function attachAppearanceFieldListeners() {
+                // Auto-save on changes
+                // Note: theme_id is handled separately via handleThemeChange() for radio buttons
+                const appearanceFields = ['layout_option', 'custom_primary_color', 'custom_secondary_color', 
+                                          'custom_accent_color', 'custom_heading_font', 'custom_body_font',
+                                          'page_primary_font', 'page_secondary_font',
+                                          'page_background', 'widget_background', 'widget_border_color',
+                                          'widget_primary_font', 'widget_secondary_font',
+                                          'widget_border_width', 'widget_border_effect',
+                                          'widget_border_shadow_intensity', 'widget_border_glow_intensity',
+                                          'widget_glow_color_hidden', 'widget_spacing', 'widget_shape', 'spatial_effect',
+                                          'page-name-effect-selector'];
+                appearanceFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        // Check if listener already attached to avoid duplicates
+                        if (!field.dataset.listenerAttached) {
+                            field.addEventListener('change', function() {
+                                console.log('Field changed:', fieldId, 'Value:', this.value);
+                                saveAppearanceForm();
+                                
+                                // Update inline font previews
+                                if (fieldId === 'page_primary_font') {
+                                    const preview = document.getElementById('inline-page-primary-preview');
+                                    if (preview) {
+                                        preview.style.fontFamily = `'${this.value}', sans-serif`;
+                                    }
+                                } else if (fieldId === 'page_secondary_font') {
+                                    const preview = document.getElementById('inline-page-secondary-preview');
+                                    if (preview) {
+                                        preview.style.fontFamily = `'${this.value}', sans-serif`;
+                                    }
+                                }
+                            });
+                            field.dataset.listenerAttached = 'true';
+                            console.log('Event listener attached to:', fieldId);
                         }
-                    });
+                    } else {
+                        console.warn('Appearance field not found:', fieldId, '- will retry when accordion opens');
+                    }
+                });
+            }
+            
+            // Attach listeners immediately
+            attachAppearanceFieldListeners();
+            
+            // Also attach listeners when accordions are opened (for fields inside collapsed accordions)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.accordion-header')) {
+                    const accordionSection = e.target.closest('.accordion-section');
+                    if (accordionSection && accordionSection.id === 'page-name-effect') {
+                        // Wait a bit for accordion to expand, then re-attach listeners
+                        setTimeout(() => {
+                            attachAppearanceFieldListeners();
+                        }, 100);
+                    }
                 }
             });
             
@@ -7794,6 +7836,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
             formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
             formData.append('custom_body_font', document.getElementById('custom_body_font').value);
+            
+            // Page name effect
+            const pageNameEffectEl = document.getElementById('page-name-effect-selector');
+            if (pageNameEffectEl) formData.append('page_name_effect', pageNameEffectEl.value);
             
             // Include widget styles as JSON
             const borderWidthEl = document.getElementById('widget_border_width');
@@ -7833,7 +7879,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showToast('An error occurred', 'error');
             });
             });
-        }
+        }); // End DOMContentLoaded wrapper for appearance form
         
         // Handle email settings form with auto-save
         const emailForm = document.getElementById('email-form');
@@ -8684,8 +8730,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         
         // Helper function to build appearance form data (must be global for inline handlers)
         function saveAppearanceForm() {
-            if (!document.getElementById('appearance-form')) return;
+            if (!document.getElementById('appearance-form')) {
+                console.warn('Appearance form not found');
+                return;
+            }
             
+            console.log('saveAppearanceForm called');
             autoSaveForm('appearance-form', 'update_appearance', () => {
                     const formData = new FormData();
                     const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
@@ -8744,6 +8794,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     
                     const spatialEffect = document.getElementById('spatial_effect');
                     if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
+                    
+                    // Page name effect (always append, even if empty)
+                    const pageNameEffect = document.getElementById('page-name-effect-selector');
+                    if (pageNameEffect) {
+                        const effectValue = pageNameEffect.value || '';
+                        formData.append('page_name_effect', effectValue);
+                        console.log('✓ Page name effect added to FormData:', effectValue || '(empty)');
+                        console.log('✓ page-name-effect-selector element found, value:', effectValue);
+                    } else {
+                        console.error('✗ Page name effect selector (page-name-effect-selector) NOT FOUND in DOM');
+                    }
                     
                     // Widget styles
                     const borderWidthEl = document.getElementById('widget_border_width');
