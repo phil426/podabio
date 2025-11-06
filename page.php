@@ -1007,6 +1007,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .widget-content {
             flex: 1;
+            min-width: 0; /* Allow flex item to shrink below content size */
             font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
             font-size: 1rem; /* 16px - increased one step */
         }
@@ -1025,6 +1026,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             opacity: 0.8;
             margin: 0.25rem 0 0 0;
             font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
+            min-width: 0; /* Allow text to be constrained in flex container */
         }
         
         /* Marquee animation for Custom Link widget descriptions only */
