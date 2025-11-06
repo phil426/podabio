@@ -2760,22 +2760,30 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     element.classList.remove('marquee');
                 }
                 
-                // Get container width BEFORE changing white-space (important!)
-                // Measure the parent container width to know the available space
+                // Get container width - measure parent container to know available space
+                // Do this BEFORE any style changes
                 const parentContainer = element.parentElement; // .widget-content
                 const containerWidth = parentContainer ? parentContainer.clientWidth : element.clientWidth;
                 
-                // Create a temporary clone to measure text width without affecting layout
-                const clone = element.cloneNode(true);
-                clone.style.position = 'absolute';
-                clone.style.visibility = 'hidden';
-                clone.style.whiteSpace = 'nowrap';
-                clone.style.width = 'auto';
-                clone.style.maxWidth = 'none';
-                document.body.appendChild(clone);
+                if (containerWidth <= 0) {
+                    // Container not ready yet, skip
+                    return;
+                }
                 
-                const textWidth = clone.scrollWidth;
-                document.body.removeChild(clone);
+                // Use a temporary span to measure text width without affecting layout
+                const tempSpan = document.createElement('span');
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.whiteSpace = 'nowrap';
+                tempSpan.style.fontSize = window.getComputedStyle(element).fontSize;
+                tempSpan.style.fontFamily = window.getComputedStyle(element).fontFamily;
+                tempSpan.style.fontWeight = window.getComputedStyle(element).fontWeight;
+                tempSpan.style.letterSpacing = window.getComputedStyle(element).letterSpacing;
+                tempSpan.textContent = element.textContent;
+                
+                document.body.appendChild(tempSpan);
+                const textWidth = tempSpan.offsetWidth;
+                document.body.removeChild(tempSpan);
                 
                 if (textWidth > containerWidth && containerWidth > 0) {
                     // Text overflows when on single line - apply marquee
