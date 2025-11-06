@@ -8,6 +8,7 @@ class PodcastApp {
         this.podcastData = null;
         this.currentEpisode = null;
         this.activeChapter = null;
+        this.currentTab = 'now-playing';
         
         // Make player and app accessible globally for event handlers
         window.app = this;
@@ -17,11 +18,11 @@ class PodcastApp {
     }
 
     async init() {
+        // Initialize tab navigation
+        this.initTabNavigation();
+        
         // Initialize UI event listeners
         this.initEventListeners();
-        
-        // Initialize drawer tabs
-        this.initDrawerTabs();
         
         // Initialize speed selector
         this.initSpeedSelector();
@@ -37,6 +38,36 @@ class PodcastApp {
         
         // Load RSS feed
         await this.loadFeed();
+    }
+
+    /**
+     * Initialize tab navigation
+     */
+    initTabNavigation() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.dataset.tab;
+                this.switchTab(tabName);
+            });
+        });
+    }
+
+    /**
+     * Switch tab
+     */
+    switchTab(tabName) {
+        this.currentTab = tabName;
+        
+        // Update tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        
+        // Update panels
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.id === `${tabName}-panel`);
+        });
     }
 
     /**
@@ -92,28 +123,13 @@ class PodcastApp {
     renderPodcastData() {
         if (!this.podcastData) return;
         
-        // Update header
-        const podcastCover = document.getElementById('podcast-cover');
-        const podcastName = document.getElementById('podcast-name');
-        const podcastDescription = document.getElementById('podcast-description');
-        
-        if (podcastCover && this.podcastData.coverImage) {
-            podcastCover.src = this.podcastData.coverImage;
-            podcastCover.style.display = 'block';
-            
-            // Extract dominant color for theme
+        // Extract dominant color for theme
+        if (this.podcastData.coverImage) {
             getDominantColor(this.podcastData.coverImage, (color) => {
                 if (color) {
                     document.documentElement.style.setProperty('--primary-color', color);
                 }
             });
-        }
-        
-        if (podcastName) podcastName.textContent = this.podcastData.title || 'Podcast';
-        if (podcastDescription) {
-            podcastDescription.textContent = this.podcastData.description || '';
-            // Add expand functionality
-            this.setupDescriptionExpand(podcastDescription);
         }
         
         // Render episodes
@@ -125,25 +141,6 @@ class PodcastApp {
         
         if (loadingSkeleton) loadingSkeleton.style.display = 'none';
         if (episodesList) episodesList.style.display = 'block';
-    }
-
-    /**
-     * Setup description expand functionality
-     */
-    setupDescriptionExpand(element) {
-        // Check if content is truncated
-        if (element.scrollHeight > element.clientHeight) {
-            const moreLink = document.createElement('a');
-            moreLink.textContent = 'more...';
-            moreLink.style.cssText = 'color: rgba(255,255,255,0.9); text-decoration: underline; cursor: pointer;';
-            moreLink.onclick = (e) => {
-                e.preventDefault();
-                element.classList.add('expanded');
-                moreLink.remove();
-            };
-            element.appendChild(document.createTextNode(' '));
-            element.appendChild(moreLink);
-        }
     }
 
     /**
@@ -215,44 +212,74 @@ class PodcastApp {
         this.currentEpisode = episode;
         this.player.loadEpisode(episode, true);
         
-        // Update full player UI
-        this.updateFullPlayerUI();
+        // Update Now Playing UI
+        this.updateNowPlayingUI();
         
-        // Open full player modal
-        this.openPlayerModal();
+        // Switch to Now Playing tab
+        this.switchTab('now-playing');
         
         // Render show notes, chapters, etc.
         this.renderShowNotes();
         this.renderChapters();
-        this.renderEpisodesPanel();
+        
+        // Update episode list to show active episode
+        this.updateEpisodeListActive();
     }
 
     /**
-     * Update full player UI
+     * Update Now Playing UI
      */
-    updateFullPlayerUI() {
+    updateNowPlayingUI() {
         if (!this.currentEpisode) return;
         
-        const playerTitle = document.getElementById('player-episode-title');
-        const playerPodcastName = document.getElementById('player-podcast-name');
-        const playerArtwork = document.getElementById('player-artwork-large');
-        const durationBadge = document.getElementById('duration-badge');
+        const artwork = document.getElementById('now-playing-artwork');
+        const placeholder = document.getElementById('artwork-placeholder');
+        const title = document.getElementById('now-playing-title');
+        const podcastName = document.getElementById('now-playing-podcast');
+        const durationBadge = document.getElementById('duration-badge-large');
         
-        if (playerTitle) playerTitle.textContent = this.currentEpisode.title;
-        if (playerPodcastName) playerPodcastName.textContent = this.podcastData.title || '';
-        if (playerArtwork) {
-            playerArtwork.src = this.currentEpisode.artwork || this.podcastData.coverImage || '';
+        const episodeArtwork = this.currentEpisode.artwork || this.podcastData.coverImage || '';
+        
+        if (artwork && episodeArtwork) {
+            artwork.src = episodeArtwork;
+            artwork.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+        } else {
+            if (artwork) artwork.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
         }
+        
+        if (title) title.textContent = this.currentEpisode.title;
+        if (podcastName) podcastName.textContent = this.podcastData.title || '';
         if (durationBadge && this.currentEpisode.duration) {
             durationBadge.textContent = formatTime(this.currentEpisode.duration);
+            durationBadge.style.display = 'inline-block';
+        } else if (durationBadge) {
+            durationBadge.style.display = 'none';
         }
+    }
+
+    /**
+     * Update episode list to show active episode
+     */
+    updateEpisodeListActive() {
+        const cards = document.querySelectorAll('.episode-card');
+        cards.forEach(card => {
+            card.classList.remove('active');
+        });
     }
 
     /**
      * Render show notes
      */
     renderShowNotes() {
-        if (!this.currentEpisode) return;
+        if (!this.currentEpisode) {
+            const content = document.getElementById('shownotes-content');
+            if (content) {
+                content.innerHTML = '<p class="empty-message">No episode selected</p>';
+            }
+            return;
+        }
         
         const content = document.getElementById('shownotes-content');
         if (!content) return;
@@ -285,16 +312,23 @@ class PodcastApp {
      * Render chapters
      */
     renderChapters() {
-        if (!this.currentEpisode) return;
-        
-        const content = document.getElementById('chapters-content');
-        if (!content) return;
-        
-        if (!this.currentEpisode.chapters || this.currentEpisode.chapters.length === 0) {
-            content.innerHTML = '<div class="empty-state">No chapters available</div>';
+        if (!this.currentEpisode) {
+            const section = document.getElementById('chapters-section');
+            if (section) section.style.display = 'none';
             return;
         }
         
+        const content = document.getElementById('chapters-list');
+        const section = document.getElementById('chapters-section');
+        if (!content || !section) return;
+        
+        if (!this.currentEpisode.chapters || this.currentEpisode.chapters.length === 0) {
+            content.innerHTML = '<div class="empty-state">No chapters available</div>';
+            section.style.display = 'none';
+            return;
+        }
+        
+        section.style.display = 'block';
         content.innerHTML = '';
         
         this.currentEpisode.chapters.forEach((chapter, index) => {
@@ -337,7 +371,7 @@ class PodcastApp {
     updateActiveChapter(currentTime) {
         if (!this.currentEpisode || !this.currentEpisode.chapters) return;
         
-        const content = document.getElementById('chapters-content');
+        const content = document.getElementById('chapters-list');
         if (!content) return;
         
         // Find active chapter
@@ -366,86 +400,31 @@ class PodcastApp {
     }
 
     /**
-     * Render episodes panel (compact list in drawer)
-     */
-    renderEpisodesPanel() {
-        if (!this.podcastData || !this.podcastData.episodes) return;
-        
-        const content = document.getElementById('episodes-panel-content');
-        if (!content) return;
-        
-        content.innerHTML = '';
-        
-        this.podcastData.episodes.forEach((episode) => {
-            const item = createElement('div', {
-                className: 'episode-panel-item' + (episode.guid === this.currentEpisode?.guid ? ' active' : '')
-            });
-            
-            const artwork = createElement('img', {
-                className: 'episode-panel-artwork',
-                src: episode.artwork || this.podcastData.coverImage || '',
-                alt: episode.title
-            });
-            
-            const info = createElement('div', { className: 'episode-panel-info' });
-            const title = createElement('div', { className: 'episode-panel-title' }, episode.title);
-            const meta = createElement('div', { className: 'episode-panel-meta' });
-            
-            const duration = episode.duration ? formatTime(episode.duration) : '';
-            const date = episode.pubDate ? formatDate(episode.pubDate) : '';
-            meta.textContent = [duration, date].filter(Boolean).join(' · ');
-            
-            info.appendChild(title);
-            info.appendChild(meta);
-            
-            item.appendChild(artwork);
-            item.appendChild(info);
-            
-            item.addEventListener('click', () => {
-                this.loadEpisode(episode);
-            });
-            
-            content.appendChild(item);
-        });
-    }
-
-    /**
      * Initialize event listeners
      */
     initEventListeners() {
-        // Compact player controls
-        const compactPlayBtn = document.getElementById('compact-play-button');
-        if (compactPlayBtn) {
-            compactPlayBtn.addEventListener('click', () => this.player.togglePlayPause());
+        // Now Playing controls
+        const playPauseBtn = document.getElementById('play-pause-large-now');
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', () => this.player.togglePlayPause());
         }
         
-        const expandBtn = document.getElementById('expand-button');
-        if (expandBtn) {
-            expandBtn.addEventListener('click', () => this.openPlayerModal());
-        }
-        
-        // Full player controls
-        const playPauseLarge = document.getElementById('play-pause-large');
-        if (playPauseLarge) {
-            playPauseLarge.addEventListener('click', () => this.player.togglePlayPause());
-        }
-        
-        const skipBackBtn = document.getElementById('skip-back-button');
+        const skipBackBtn = document.getElementById('skip-back-large');
         if (skipBackBtn) {
             skipBackBtn.addEventListener('click', () => this.player.skipBackward(15));
         }
         
-        const skipForwardBtn = document.getElementById('skip-forward-button');
+        const skipForwardBtn = document.getElementById('skip-forward-large');
         if (skipForwardBtn) {
             skipForwardBtn.addEventListener('click', () => this.player.skipForward(30));
         }
         
         // Progress bar scrubbing
-        const progressBarLarge = document.getElementById('progress-bar-large');
-        if (progressBarLarge) {
-            progressBarLarge.addEventListener('click', (e) => {
+        const progressBar = document.getElementById('progress-bar-now-playing');
+        if (progressBar) {
+            progressBar.addEventListener('click', (e) => {
                 if (this.player.audio.duration) {
-                    const rect = progressBarLarge.getBoundingClientRect();
+                    const rect = progressBar.getBoundingClientRect();
                     const percent = (e.clientX - rect.left) / rect.width;
                     const time = percent * this.player.audio.duration;
                     this.player.seekTo(time);
@@ -453,23 +432,20 @@ class PodcastApp {
             });
         }
         
-        // Compact progress bar
-        const compactProgressBar = document.getElementById('compact-progress-bar');
-        if (compactProgressBar) {
-            compactProgressBar.addEventListener('click', (e) => {
-                if (this.player.audio.duration) {
-                    const rect = compactProgressBar.getBoundingClientRect();
-                    const percent = (e.clientX - rect.left) / rect.width;
-                    const time = percent * this.player.audio.duration;
-                    this.player.seekTo(time);
-                }
-            });
+        // Secondary controls
+        const speedBtn = document.getElementById('speed-control-btn');
+        if (speedBtn) {
+            speedBtn.addEventListener('click', () => this.openSpeedModal());
         }
         
-        // Player modal close
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        if (modalBackdrop) {
-            modalBackdrop.addEventListener('click', () => this.closePlayerModal());
+        const timerBtn = document.getElementById('timer-control-btn');
+        if (timerBtn) {
+            timerBtn.addEventListener('click', () => this.openTimerModal());
+        }
+        
+        const shareBtn = document.getElementById('share-control-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => this.openShareDrawer());
         }
         
         // Retry button
@@ -478,138 +454,83 @@ class PodcastApp {
             retryButton.addEventListener('click', () => this.loadFeed());
         }
         
-        // Follow button
-        const followButton = document.getElementById('follow-button');
-        if (followButton) {
-            followButton.addEventListener('click', () => {
-                followButton.classList.toggle('following');
-                const icon = followButton.querySelector('i');
-                const text = followButton.querySelector('span');
-                if (followButton.classList.contains('following')) {
-                    if (icon) icon.className = 'fas fa-check';
-                    if (text) text.textContent = 'Following';
-                    showToast('You\'re now following this podcast', 'success');
-                } else {
-                    if (icon) icon.className = 'fas fa-plus';
-                    if (text) text.textContent = 'Follow';
-                }
-            });
-        }
-        
-        // Swipe down to close modal
-        this.initModalSwipe();
+        // Listen to player events for UI updates
+        this.setupPlayerEventListeners();
     }
 
     /**
-     * Initialize drawer tabs
+     * Setup player event listeners for UI updates
      */
-    initDrawerTabs() {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabName = button.dataset.tab;
-                this.switchTab(tabName);
-            });
-        });
-    }
-
-    /**
-     * Switch drawer tab
-     */
-    switchTab(tabName) {
-        // Update tab buttons
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-        
-        // Update panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === `panel-${tabName}`);
-        });
-    }
-
-    /**
-     * Open player modal
-     */
-    openPlayerModal() {
-        const modal = document.getElementById('player-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            
-            // Switch to show notes tab by default
-            this.switchTab('shownotes');
-        }
-    }
-
-    /**
-     * Close player modal
-     */
-    closePlayerModal() {
-        const modal = document.getElementById('player-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    }
-
-    /**
-     * Initialize modal swipe gesture
-     */
-    initModalSwipe() {
-        const modalContent = document.getElementById('modal-content');
-        if (!modalContent) return;
-        
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
-        
-        const handleStart = (e) => {
-            startY = e.touches ? e.touches[0].clientY : e.clientY;
-            isDragging = true;
-        };
-        
-        const handleMove = (e) => {
-            if (!isDragging) return;
-            currentY = e.touches ? e.touches[0].clientY : e.clientY;
-            const deltaY = currentY - startY;
-            
-            if (deltaY > 0) {
-                modalContent.style.transform = `translateY(${deltaY}px)`;
+    setupPlayerEventListeners() {
+        // Update play/pause button
+        this.player.audio.addEventListener('play', () => {
+            const btn = document.getElementById('play-pause-large-now');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-pause';
             }
-        };
+        });
         
-        const handleEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            const deltaY = currentY - startY;
-            if (deltaY > 100) {
-                this.closePlayerModal();
+        this.player.audio.addEventListener('pause', () => {
+            const btn = document.getElementById('play-pause-large-now');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-play';
             }
-            
-            modalContent.style.transform = '';
-        };
+        });
         
-        modalContent.addEventListener('touchstart', handleStart);
-        modalContent.addEventListener('touchmove', handleMove);
-        modalContent.addEventListener('touchend', handleEnd);
-        modalContent.addEventListener('mousedown', handleStart);
-        modalContent.addEventListener('mousemove', handleMove);
-        modalContent.addEventListener('mouseup', handleEnd);
+        // Update progress
+        this.player.audio.addEventListener('timeupdate', () => {
+            this.updateProgress();
+            if (this.currentTab === 'details') {
+                this.updateActiveChapter(this.player.audio.currentTime);
+            }
+        });
+        
+        // Update time displays
+        this.player.audio.addEventListener('loadedmetadata', () => {
+            this.updateTimeDisplays();
+        });
+    }
+
+    /**
+     * Update progress bar
+     */
+    updateProgress() {
+        const audio = this.player.audio;
+        if (!audio.duration) return;
+        
+        const percent = (audio.currentTime / audio.duration) * 100;
+        const fill = document.getElementById('progress-fill-now-playing');
+        const scrubber = document.getElementById('progress-scrubber-now-playing');
+        
+        if (fill) fill.style.width = percent + '%';
+        if (scrubber) scrubber.style.left = percent + '%';
+        
+        // Update time displays
+        const currentTimeDisplay = document.getElementById('current-time-display');
+        const totalTimeDisplay = document.getElementById('total-time-display');
+        
+        if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audio.duration);
+    }
+
+    /**
+     * Update time displays
+     */
+    updateTimeDisplays() {
+        const audio = this.player.audio;
+        const currentTimeDisplay = document.getElementById('current-time-display');
+        const totalTimeDisplay = document.getElementById('total-time-display');
+        
+        if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime || 0);
+        if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audio.duration || 0);
     }
 
     /**
      * Initialize speed selector
      */
     initSpeedSelector() {
-        const speedButton = document.getElementById('speed-button');
-        if (speedButton) {
-            speedButton.addEventListener('click', () => {
-                this.openSpeedModal();
-            });
-        }
-        
         const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
         const speedOptions = document.getElementById('speed-options');
         
@@ -622,6 +543,7 @@ class PodcastApp {
                 
                 option.addEventListener('click', () => {
                     this.player.setPlaybackSpeed(speed);
+                    this.updateSpeedDisplay();
                     this.closeSpeedModal();
                 });
                 
@@ -633,6 +555,13 @@ class PodcastApp {
         const speedModal = document.getElementById('speed-modal');
         if (speedBackdrop && speedModal) {
             speedBackdrop.addEventListener('click', () => this.closeSpeedModal());
+        }
+    }
+
+    updateSpeedDisplay() {
+        const display = document.getElementById('speed-display');
+        if (display) {
+            display.textContent = this.player.playbackSpeed + 'x';
         }
     }
 
@@ -658,13 +587,6 @@ class PodcastApp {
      * Initialize timer selector
      */
     initTimerSelector() {
-        const timerButton = document.getElementById('timer-button');
-        if (timerButton) {
-            timerButton.addEventListener('click', () => {
-                this.openTimerModal();
-            });
-        }
-        
         const timerOptions = document.getElementById('timer-options');
         const times = [
             { label: '15 minutes', value: 15 },
@@ -683,6 +605,7 @@ class PodcastApp {
                 
                 option.addEventListener('click', () => {
                     this.player.setSleepTimer(time.value);
+                    this.updateTimerDisplay();
                     this.closeTimerModal();
                 });
                 
@@ -694,6 +617,18 @@ class PodcastApp {
         const timerModal = document.getElementById('timer-modal');
         if (timerBackdrop && timerModal) {
             timerBackdrop.addEventListener('click', () => this.closeTimerModal());
+        }
+    }
+
+    updateTimerDisplay() {
+        const display = document.getElementById('timer-display');
+        if (display) {
+            if (this.player.sleepTimerEndTime) {
+                const remaining = Math.ceil((this.player.sleepTimerEndTime - Date.now()) / 1000 / 60);
+                display.textContent = remaining + 'm';
+            } else {
+                display.textContent = 'Off';
+            }
         }
     }
 
@@ -715,13 +650,6 @@ class PodcastApp {
      * Initialize sharing
      */
     initSharing() {
-        const shareButton = document.getElementById('share-button');
-        if (shareButton) {
-            shareButton.addEventListener('click', () => {
-                this.openShareDrawer();
-            });
-        }
-        
         const shareCancel = document.getElementById('share-cancel');
         const shareBackdrop = document.getElementById('share-backdrop');
         if (shareCancel) {
@@ -936,4 +864,3 @@ if (document.readyState === 'loading') {
 } else {
     new PodcastApp();
 }
-

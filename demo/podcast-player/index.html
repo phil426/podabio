@@ -15,163 +15,135 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
-    <!-- Profile Header Section -->
-    <header class="profile-header" id="profile-header">
-        <div class="cover-image-container">
-            <img id="podcast-cover" class="cover-image" src="" alt="Podcast Cover" style="display: none;">
-            <div class="cover-overlay"></div>
-        </div>
-        <div class="profile-info">
-            <h1 class="podcast-name" id="podcast-name">Loading...</h1>
-            <p class="podcast-description" id="podcast-description"></p>
-            <button class="follow-button" id="follow-button">
-                <i class="fas fa-plus"></i>
-                <span>Follow</span>
-            </button>
-        </div>
-    </header>
+    <!-- Tab Navigation -->
+    <nav class="tab-navigation" id="tab-navigation">
+        <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
+        <button class="tab-button" data-tab="details" id="tab-details">Details</button>
+        <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
+    </nav>
 
-    <!-- Episode List Section -->
-    <main class="episode-list-container" id="episode-list-container">
-        <div class="loading-skeleton" id="loading-skeleton">
-            <div class="skeleton-item"></div>
-            <div class="skeleton-item"></div>
-            <div class="skeleton-item"></div>
-            <div class="skeleton-item"></div>
-        </div>
-        
-        <div class="episodes-list" id="episodes-list" style="display: none;">
-            <!-- Episodes will be inserted here -->
-        </div>
-        
-        <div class="error-state" id="error-state" style="display: none;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Failed to load episodes</p>
-            <button class="retry-button" id="retry-button">Retry</button>
-        </div>
-    </main>
+    <!-- Tab Content Container -->
+    <div class="tab-content-container" id="tab-content-container">
+        <!-- Now Playing Tab -->
+        <div class="tab-panel active" id="now-playing-panel">
+            <div class="now-playing-content">
+                <!-- Large Episode Artwork -->
+                <div class="episode-artwork-container">
+                    <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
+                    <div class="artwork-placeholder" id="artwork-placeholder">
+                        <i class="fas fa-music"></i>
+                    </div>
+                </div>
 
-    <!-- Compact Player Bar (Fixed Bottom) -->
-    <div class="compact-player-bar" id="compact-player-bar" style="display: none;">
-        <div class="player-content">
-            <img class="player-artwork" id="compact-artwork" src="" alt="Episode Artwork">
-            <div class="player-info">
-                <div class="player-title" id="compact-title">Episode Title</div>
-                <div class="player-artist" id="compact-artist">Podcast Name</div>
-            </div>
-            <button class="play-button compact-play" id="compact-play-button" aria-label="Play/Pause">
-                <i class="fas fa-play"></i>
-            </button>
-            <button class="expand-button" id="expand-button" aria-label="Expand Player">
-                <i class="fas fa-chevron-up"></i>
-            </button>
-        </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="compact-progress-bar">
-                <div class="progress-fill" id="compact-progress-fill"></div>
-            </div>
-        </div>
-    </div>
+                <!-- Episode Information -->
+                <div class="episode-info-section">
+                    <h1 class="episode-title-large" id="now-playing-title">Select an episode to play</h1>
+                    <p class="podcast-name-large" id="now-playing-podcast">Podcast Name</p>
+                    <div class="duration-badge-large" id="duration-badge-large" style="display: none;">0:00</div>
+                </div>
 
-    <!-- Full Player Modal -->
-    <div class="player-modal" id="player-modal" style="display: none;">
-        <div class="modal-backdrop" id="modal-backdrop"></div>
-        <div class="modal-content" id="modal-content">
-            <!-- Drag Handle -->
-            <div class="drag-handle"></div>
-            
-            <!-- Player Header -->
-            <div class="player-header">
-                <img class="player-artwork-large" id="player-artwork-large" src="" alt="Episode Artwork">
-                <h2 class="player-episode-title" id="player-episode-title">Episode Title</h2>
-                <p class="player-podcast-name" id="player-podcast-name">Podcast Name</p>
-                <div class="duration-badge" id="duration-badge">0:00</div>
-            </div>
+                <!-- Progress Bar -->
+                <div class="progress-section-large">
+                    <div class="time-display">
+                        <span class="current-time-display" id="current-time-display">0:00</span>
+                        <span class="total-time-display" id="total-time-display">0:00</span>
+                    </div>
+                    <div class="progress-bar-now-playing" id="progress-bar-now-playing">
+                        <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
+                        <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                    </div>
+                </div>
 
-            <!-- Playback Controls -->
-            <div class="playback-controls">
-                <div class="control-row">
-                    <button class="control-button skip-back" id="skip-back-button" aria-label="Skip back 15 seconds">
-                        <span class="skip-label">15</span>
+                <!-- Primary Controls -->
+                <div class="primary-controls">
+                    <button class="control-button-large skip-back-large" id="skip-back-large" aria-label="Skip back 15 seconds">
+                        <span class="skip-label-large">15</span>
                         <i class="fas fa-backward"></i>
                     </button>
-                    <button class="control-button play-pause-large" id="play-pause-large" aria-label="Play/Pause">
+                    <button class="control-button-large play-pause-large-now" id="play-pause-large-now" aria-label="Play/Pause">
                         <i class="fas fa-play"></i>
                     </button>
-                    <button class="control-button skip-forward" id="skip-forward-button" aria-label="Skip forward 30 seconds">
-                        <span class="skip-label">30</span>
+                    <button class="control-button-large skip-forward-large" id="skip-forward-large" aria-label="Skip forward 30 seconds">
+                        <span class="skip-label-large">30</span>
                         <i class="fas fa-forward"></i>
                     </button>
                 </div>
-                
-                <div class="progress-section">
-                    <span class="time-indicator current-time" id="current-time">0:00</span>
-                    <div class="progress-bar-large" id="progress-bar-large">
-                        <div class="progress-fill-large" id="progress-fill-large"></div>
-                        <div class="progress-scrubber" id="progress-scrubber"></div>
-                    </div>
-                    <span class="time-indicator total-time" id="total-time">0:00</span>
-                </div>
-                
-                <div class="secondary-controls">
-                    <button class="secondary-button speed-button" id="speed-button" aria-label="Playback Speed">
-                        <span id="speed-value">1x</span>
+
+                <!-- Secondary Controls Bar -->
+                <div class="secondary-controls-bar">
+                    <button class="secondary-control-btn speed-control-btn" id="speed-control-btn" aria-label="Playback Speed">
+                        <span id="speed-display">1x</span>
                     </button>
-                    <button class="secondary-button timer-button" id="timer-button" aria-label="Sleep Timer">
+                    <button class="secondary-control-btn timer-control-btn" id="timer-control-btn" aria-label="Sleep Timer">
                         <i class="fas fa-moon"></i>
-                        <span id="timer-status">Off</span>
+                        <span id="timer-display">Off</span>
                     </button>
-                    <button class="secondary-button share-button" id="share-button" aria-label="Share">
+                    <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
                         <i class="fas fa-share-alt"></i>
                     </button>
-                    <button class="secondary-button more-button" id="more-button" aria-label="More Options">
+                    <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
                         <i class="fas fa-ellipsis-h"></i>
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Drawer Tabs -->
-            <div class="drawer-tabs" id="drawer-tabs">
-                <button class="tab-button active" data-tab="shownotes" id="tab-shownotes">Show Notes</button>
-                <button class="tab-button" data-tab="chapters" id="tab-chapters">Chapters</button>
-                <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
-                <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
-            </div>
-
-            <!-- Tab Content Panels -->
-            <div class="tab-panels">
-                <!-- Show Notes Panel -->
-                <div class="tab-panel active" id="panel-shownotes">
-                    <div class="panel-content" id="shownotes-content">
-                        <!-- Show notes will be inserted here -->
+        <!-- Details Tab -->
+        <div class="tab-panel" id="details-panel">
+            <div class="details-content">
+                <!-- Show Notes Section -->
+                <div class="details-section" id="shownotes-section">
+                    <h2 class="section-title">Show Notes</h2>
+                    <div class="shownotes-content" id="shownotes-content">
+                        <p class="empty-message">No episode selected</p>
                     </div>
                 </div>
 
-                <!-- Chapters Panel -->
-                <div class="tab-panel" id="panel-chapters">
-                    <div class="panel-content" id="chapters-content">
+                <!-- Chapters Section -->
+                <div class="details-section" id="chapters-section" style="display: none;">
+                    <h2 class="section-title">Chapters</h2>
+                    <div class="chapters-list" id="chapters-list">
                         <div class="empty-state">No chapters available</div>
                     </div>
                 </div>
 
-                <!-- Episodes Panel -->
-                <div class="tab-panel" id="panel-episodes">
-                    <div class="panel-content" id="episodes-panel-content">
-                        <!-- Episode list will be inserted here -->
-                    </div>
-                </div>
-
-                <!-- Follow Panel -->
-                <div class="tab-panel" id="panel-follow">
-                    <div class="panel-content" id="follow-content">
+                <!-- Follow & Share Section -->
+                <div class="details-section" id="follow-section">
+                    <h2 class="section-title">Follow & Share</h2>
+                    <div id="follow-content">
                         <!-- Follow content will be inserted here -->
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Episodes Tab -->
+        <div class="tab-panel" id="episodes-panel">
+            <div class="episodes-content">
+                <!-- Loading Skeleton -->
+                <div class="loading-skeleton" id="loading-skeleton">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                </div>
+                
+                <!-- Episodes List -->
+                <div class="episodes-list" id="episodes-list" style="display: none;">
+                    <!-- Episodes will be inserted here -->
+                </div>
+                
+                <!-- Error State -->
+                <div class="error-state" id="error-state" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Failed to load episodes</p>
+                    <button class="retry-button" id="retry-button">Retry</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Share Drawer -->
+    <!-- Share Drawer (Modal) -->
     <div class="share-drawer" id="share-drawer" style="display: none;">
         <div class="drawer-backdrop" id="share-backdrop"></div>
         <div class="drawer-content">
@@ -222,4 +194,3 @@
     <script src="js/app.js"></script>
 </body>
 </html>
-

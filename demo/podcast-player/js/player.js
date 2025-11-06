@@ -260,7 +260,7 @@ class AudioPlayer {
      */
     updatePlayButton() {
         const isPlaying = this.isPlaying();
-        const playButtons = document.querySelectorAll('.play-button, .play-pause-large');
+        const playButtons = document.querySelectorAll('.play-pause-large-now');
         
         playButtons.forEach(btn => {
             const icon = btn.querySelector('i');
@@ -274,7 +274,7 @@ class AudioPlayer {
      * Update speed UI
      */
     updateSpeedUI() {
-        const speedValue = document.getElementById('speed-value');
+        const speedValue = document.getElementById('speed-display');
         if (speedValue) {
             speedValue.textContent = `${this.playbackSpeed}x`;
         }
@@ -284,13 +284,13 @@ class AudioPlayer {
      * Update timer UI
      */
     updateTimerUI(secondsRemaining) {
-        const timerStatus = document.getElementById('timer-status');
+        const timerStatus = document.getElementById('timer-display');
         if (timerStatus) {
             if (secondsRemaining === null) {
                 timerStatus.textContent = 'Off';
             } else {
                 const minutes = Math.floor(secondsRemaining / 60);
-                timerStatus.textContent = minutes > 0 ? `${minutes} min` : 'End';
+                timerStatus.textContent = minutes > 0 ? `${minutes}m` : 'End';
             }
         }
     }
@@ -303,26 +303,18 @@ class AudioPlayer {
         
         const progress = (this.audio.currentTime / this.audio.duration) * 100;
         
-        // Update compact progress
-        const compactProgressFill = document.getElementById('compact-progress-fill');
-        if (compactProgressFill) {
-            compactProgressFill.style.width = `${progress}%`;
-        }
-        
-        // Update full player progress
-        const progressFillLarge = document.getElementById('progress-fill-large');
-        const progressScrubber = document.getElementById('progress-scrubber');
-        if (progressFillLarge) {
-            progressFillLarge.style.width = `${progress}%`;
+        // Update Now Playing progress
+        const progressFill = document.getElementById('progress-fill-now-playing');
+        const progressScrubber = document.getElementById('progress-scrubber-now-playing');
+        if (progressFill) {
+            progressFill.style.width = `${progress}%`;
         }
         if (progressScrubber) {
             progressScrubber.style.left = `${progress}%`;
         }
         
         // Update time displays
-        const currentTimeEl = document.getElementById('current-time');
-        const compactTimeEl = document.querySelector('.player-title + .player-artist');
-        
+        const currentTimeEl = document.getElementById('current-time-display');
         if (currentTimeEl) {
             currentTimeEl.textContent = formatTime(this.audio.currentTime);
         }
@@ -331,7 +323,6 @@ class AudioPlayer {
     // Event handlers
     onPlay() {
         this.updatePlayButton();
-        this.showCompactPlayer();
     }
 
     onPause() {
@@ -356,7 +347,7 @@ class AudioPlayer {
     }
 
     onLoadedMetadata() {
-        const totalTimeEl = document.getElementById('total-time');
+        const totalTimeEl = document.getElementById('total-time-display');
         if (totalTimeEl && this.audio.duration) {
             totalTimeEl.textContent = formatTime(this.audio.duration);
         }
@@ -377,23 +368,17 @@ class AudioPlayer {
     }
 
     /**
-     * Show compact player bar
+     * Show compact player bar (no-op - compact player removed)
      */
     showCompactPlayer() {
-        const compactPlayer = document.getElementById('compact-player-bar');
-        if (compactPlayer) {
-            compactPlayer.style.display = 'flex';
-        }
+        // Compact player removed in tabbed layout redesign
     }
 
     /**
-     * Hide compact player bar
+     * Hide compact player bar (no-op - compact player removed)
      */
     hideCompactPlayer() {
-        const compactPlayer = document.getElementById('compact-player-bar');
-        if (compactPlayer) {
-            compactPlayer.style.display = 'none';
-        }
+        // Compact player removed in tabbed layout redesign
     }
 }
 
