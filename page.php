@@ -2760,16 +2760,22 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     element.classList.remove('marquee');
                 }
                 
-                // Temporarily force single-line to measure true width
-                const originalWhiteSpace = element.style.whiteSpace;
-                element.style.whiteSpace = 'nowrap';
+                // Get container width BEFORE changing white-space (important!)
+                // Measure the parent container width to know the available space
+                const parentContainer = element.parentElement; // .widget-content
+                const containerWidth = parentContainer ? parentContainer.clientWidth : element.clientWidth;
                 
-                // Check if text overflows when forced to single line
-                const containerWidth = element.clientWidth;
-                const textWidth = element.scrollWidth;
+                // Create a temporary clone to measure text width without affecting layout
+                const clone = element.cloneNode(true);
+                clone.style.position = 'absolute';
+                clone.style.visibility = 'hidden';
+                clone.style.whiteSpace = 'nowrap';
+                clone.style.width = 'auto';
+                clone.style.maxWidth = 'none';
+                document.body.appendChild(clone);
                 
-                // Restore original white-space
-                element.style.whiteSpace = originalWhiteSpace;
+                const textWidth = clone.scrollWidth;
+                document.body.removeChild(clone);
                 
                 if (textWidth > containerWidth && containerWidth > 0) {
                     // Text overflows when on single line - apply marquee
