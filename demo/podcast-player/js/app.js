@@ -230,7 +230,21 @@ class PodcastApp {
      * Update Now Playing UI
      */
     updateNowPlayingUI() {
-        if (!this.currentEpisode) return;
+        if (!this.currentEpisode) {
+            // Show empty state
+            const artwork = document.getElementById('now-playing-artwork');
+            const placeholder = document.getElementById('artwork-placeholder');
+            const title = document.getElementById('now-playing-title');
+            const podcastName = document.getElementById('now-playing-podcast');
+            const durationBadge = document.getElementById('duration-badge-large');
+            
+            if (artwork) artwork.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
+            if (title) title.textContent = 'Select an episode to play';
+            if (podcastName) podcastName.textContent = '';
+            if (durationBadge) durationBadge.style.display = 'none';
+            return;
+        }
         
         const artwork = document.getElementById('now-playing-artwork');
         const placeholder = document.getElementById('artwork-placeholder');
