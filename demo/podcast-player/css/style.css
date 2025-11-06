@@ -112,7 +112,6 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
-    padding-bottom: 88px; /* Space for compact player */
 }
 
 /* Ensure now-playing panel is full height */
@@ -536,7 +535,6 @@ body {
 /* Episodes Tab Styles */
 .episodes-content {
     padding: 16px;
-    padding-bottom: calc(16px + 88px); /* Extra padding for compact player */
 }
 
 .episodes-list {
@@ -748,150 +746,20 @@ body {
 
 .glass-control-panel {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px 24px 0 0;
+    border-radius: 24px;
     padding: 32px 24px;
     padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 10;
 }
 
-/* Compact Player Bar Styles */
-.compact-player-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 88px;
-    background-color: var(--card);
-    border-top: 1px solid var(--border);
-    z-index: 2000;
-    padding-bottom: env(safe-area-inset-bottom);
-    animation: slide-up-compact 0.3s ease-out;
-    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
-}
-
-@keyframes slide-up-compact {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.compact-progress-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--border);
-}
-
-.compact-progress-fill {
-    height: 100%;
-    background-color: var(--primary-color);
-    width: 0%;
-    transition: width 0.1s linear;
-}
-
-.compact-player-content {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    padding: 0 16px;
-    gap: 12px;
-}
-
-.compact-artwork {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.compact-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-}
-
-.compact-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.compact-artist {
-    font-size: 14px;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.compact-play-pause {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: #FFFFFF;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-    flex-shrink: 0;
-    min-height: 44px;
-}
-
-.compact-play-pause:active {
-    transform: scale(0.95);
-}
-
-.compact-play-pause i {
-    font-size: 18px;
-}
-
-.compact-expand {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-    flex-shrink: 0;
-    min-height: 44px;
-}
-
-.compact-expand:active {
-    transform: scale(0.95);
-}
-
-.compact-expand i {
-    font-size: 18px;
-}
 
 /* Full Player Modal Styles */
 .full-player-modal {
@@ -1320,9 +1188,5 @@ body {
 @supports (padding: max(0px)) {
     body {
         padding-bottom: max(0px, env(safe-area-inset-bottom));
-    }
-    
-    .compact-player-bar {
-        padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
 }

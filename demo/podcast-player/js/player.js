@@ -226,11 +226,6 @@ class AudioPlayer {
      * Update UI elements
      */
     updateUI() {
-        // Update compact player via app
-        if (window.app) {
-            window.app.updateCompactPlayer();
-        }
-        
         // Update full player modal via app
         if (window.app) {
             window.app.updateFullPlayerModal();
@@ -245,7 +240,7 @@ class AudioPlayer {
      */
     updatePlayButton() {
         const isPlaying = this.isPlaying();
-        const playButtons = document.querySelectorAll('.play-pause-large-now, .compact-play-pause, .modal-play-pause');
+        const playButtons = document.querySelectorAll('.play-pause-large-now, .modal-play-pause');
         
         playButtons.forEach(btn => {
             const icon = btn.querySelector('i');
@@ -253,11 +248,6 @@ class AudioPlayer {
                 icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
             }
         });
-        
-        // Update compact player
-        if (window.app) {
-            window.app.updateCompactPlayer();
-        }
     }
 
     /**
@@ -311,11 +301,6 @@ class AudioPlayer {
         }
         if (modalProgressScrubber) {
             modalProgressScrubber.style.left = `${progress}%`;
-        }
-        
-        // Update compact player progress
-        if (window.app) {
-            window.app.updateCompactProgress();
         }
         
         // Update time displays

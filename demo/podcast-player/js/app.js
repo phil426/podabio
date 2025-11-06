@@ -36,9 +36,6 @@ class PodcastApp {
         // Initialize follow section
         this.initFollowSection();
         
-        // Initialize compact player
-        this.initCompactPlayer();
-        
         // Initialize full player modal
         this.initFullPlayerModal();
         
@@ -225,9 +222,6 @@ class PodcastApp {
         // Update Now Playing UI
         this.updateNowPlayingUI();
         
-        // Update compact player
-        this.updateCompactPlayer();
-        
         // Switch to Now Playing tab
         this.switchTab('now-playing');
         
@@ -248,9 +242,6 @@ class PodcastApp {
         
         // Update Now Playing UI
         this.updateNowPlayingUI();
-        
-        // Update compact player
-        this.updateCompactPlayer();
         
         // Render show notes, chapters, etc.
         this.renderShowNotes();
@@ -943,80 +934,6 @@ class PodcastApp {
     }
 
 
-    /**
-     * Initialize compact player
-     */
-    initCompactPlayer() {
-        const compactBar = document.getElementById('compact-player-bar');
-        const compactPlayPause = document.getElementById('compact-play-pause');
-        const compactExpand = document.getElementById('compact-expand');
-        
-        if (compactPlayPause) {
-            compactPlayPause.addEventListener('click', () => {
-                this.player.togglePlayPause();
-            });
-        }
-        
-        if (compactExpand) {
-            compactExpand.addEventListener('click', () => {
-                this.openFullPlayerModal();
-            });
-        }
-        
-        // Update compact player when episode changes
-        this.updateCompactPlayer();
-    }
-
-    /**
-     * Update compact player UI
-     */
-    updateCompactPlayer() {
-        const compactBar = document.getElementById('compact-player-bar');
-        const compactArtwork = document.getElementById('compact-artwork');
-        const compactTitle = document.getElementById('compact-title');
-        const compactArtist = document.getElementById('compact-artist');
-        const compactPlayPause = document.getElementById('compact-play-pause');
-        
-        if (!this.currentEpisode) {
-            if (compactBar) compactBar.style.display = 'none';
-            return;
-        }
-        
-        if (compactBar) compactBar.style.display = 'block';
-        
-        if (compactTitle) {
-            compactTitle.textContent = this.currentEpisode.title || 'Episode';
-        }
-        
-        if (compactArtist) {
-            compactArtist.textContent = this.podcastData?.name || 'Podcast';
-        }
-        
-        const artworkUrl = this.currentEpisode.artwork || this.podcastData?.coverImage || '';
-        if (compactArtwork && artworkUrl) {
-            compactArtwork.src = getProxiedImageUrl(artworkUrl);
-            compactArtwork.style.display = 'block';
-        }
-        
-        // Update play/pause button
-        if (compactPlayPause && this.player.audio) {
-            const icon = compactPlayPause.querySelector('i');
-            if (icon) {
-                icon.className = this.player.audio.paused ? 'fas fa-play' : 'fas fa-pause';
-            }
-        }
-    }
-
-    /**
-     * Update compact player progress
-     */
-    updateCompactProgress() {
-        const compactProgressFill = document.getElementById('compact-progress-fill');
-        if (compactProgressFill && this.player.audio && this.player.audio.duration) {
-            const progress = (this.player.audio.currentTime / this.player.audio.duration) * 100;
-            compactProgressFill.style.width = progress + '%';
-        }
-    }
 
     /**
      * Initialize full player modal
