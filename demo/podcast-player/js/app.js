@@ -297,23 +297,23 @@ class PodcastApp {
             if (placeholder) placeholder.style.display = 'flex';
         }
         
-        // Update background artwork
-        const artworkBg = document.getElementById('now-playing-artwork-bg');
-        if (artworkBg && episodeArtwork) {
-            const bgImg = artworkBg.querySelector('.episode-artwork-large');
-            if (bgImg) {
-                bgImg.src = getProxiedImageUrl(episodeArtwork);
-                bgImg.style.display = 'block';
+        // Update full-width artwork container
+        const artworkContainer = document.getElementById('now-playing-artwork-container');
+        if (artworkContainer && episodeArtwork) {
+            const containerImg = artworkContainer.querySelector('.episode-artwork-large');
+            if (containerImg) {
+                containerImg.src = getProxiedImageUrl(episodeArtwork);
+                containerImg.style.display = 'block';
             }
-            const bgPlaceholder = artworkBg.querySelector('.artwork-placeholder');
-            if (bgPlaceholder) {
-                bgPlaceholder.style.display = 'none';
+            const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
+            if (containerPlaceholder) {
+                containerPlaceholder.style.display = 'none';
             }
-        } else if (artworkBg) {
-            const bgImg = artworkBg.querySelector('.episode-artwork-large');
-            if (bgImg) bgImg.style.display = 'none';
-            const bgPlaceholder = artworkBg.querySelector('.artwork-placeholder');
-            if (bgPlaceholder) bgPlaceholder.style.display = 'flex';
+        } else if (artworkContainer) {
+            const containerImg = artworkContainer.querySelector('.episode-artwork-large');
+            if (containerImg) containerImg.style.display = 'none';
+            const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
+            if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
         }
         
         if (title) title.textContent = this.currentEpisode.title;
