@@ -255,37 +255,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             justify-content: center;
         }
         
-        .page-title-effect-sweet-title .title-wrapper {
-            display: grid;
-            align-items: center;
-            justify-content: center;
-            transform: skew(0, -10deg);
-        }
-        
-        .page-title-effect-sweet-title .top-title {
-            order: 1;
-            text-align: center;
-            display: block;
-            color: #fff;
-            font-size: clamp(0.75rem, 2vw, 1rem);
-            margin-bottom: 1rem;
-            padding-right: 2rem;
-            font-family: 'Exo 2', sans-serif;
-        }
-        
-        .page-title-effect-sweet-title .bottom-title {
-            order: 3;
-            text-align: center;
-            display: block;
-            color: #fff;
-            font-size: clamp(0.75rem, 2vw, 1rem);
-            margin-top: 2rem;
-            padding-left: 2rem;
-            font-family: 'Exo 2', sans-serif;
-        }
-        
         .page-title-effect-sweet-title .sweet-title {
-            order: 2;
             color: #fde9ff;
             font-weight: 900;
             text-transform: uppercase;
@@ -2012,16 +1982,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 </div>
             <?php elseif ($pageNameEffect === 'sweet-title'): ?>
                 <div class="page-title-effect-sweet-title">
-                    <div class="title-wrapper">
-                        <div class="top-title"><?php echo $pageTitleText; ?></div>
-                        <div class="sweet-title">
-                            <?php
-                            $words = explode(' ', $pageTitleText);
-                            foreach ($words as $index => $word): ?>
-                                <span data-text="<?php echo h($word); ?>"><?php echo h($word); ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="bottom-title"><?php echo $pageTitleText; ?></div>
+                    <div class="sweet-title">
+                        <?php
+                        $words = explode(' ', $pageTitleText);
+                        foreach ($words as $index => $word): ?>
+                            <span data-text="<?php echo h($word); ?>"><?php echo h($word); ?></span>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             <?php elseif ($pageNameEffect === 'dragon-text'): ?>
