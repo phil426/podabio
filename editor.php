@@ -3193,6 +3193,38 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     </div>
                 </div>
                 
+                <!-- ========== PAGE NAME EFFECT SECTION (ACCORDION) ========== -->
+                <div class="accordion-section" id="page-name-effect">
+                    <button type="button" class="accordion-header" onclick="toggleAccordion('page-name-effect')">
+                        <i class="fas fa-text-height" style="color: #0066ff;"></i>
+                        <span>Page Name Effect</span>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="form-group">
+                            <label for="page-name-effect-selector" style="display: block; margin-bottom: 0.75rem; font-weight: 600;">Effect</label>
+                            <?php
+                            $currentPageNameEffect = $page['page_name_effect'] ?? '';
+                            ?>
+                            <select id="page-name-effect-selector" 
+                                    name="page_name_effect"
+                                    style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;">
+                                <option value="" <?php echo $currentPageNameEffect === '' ? 'selected' : ''; ?>>None</option>
+                                <option value="3d-shadow" <?php echo $currentPageNameEffect === '3d-shadow' ? 'selected' : ''; ?>>3D Shadow</option>
+                                <option value="stroke-shadow" <?php echo $currentPageNameEffect === 'stroke-shadow' ? 'selected' : ''; ?>>Stroke Shadow</option>
+                                <option value="slashed" <?php echo $currentPageNameEffect === 'slashed' ? 'selected' : ''; ?>>Slashed</option>
+                                <option value="sweet-title" <?php echo $currentPageNameEffect === 'sweet-title' ? 'selected' : ''; ?>>Sweet Title</option>
+                                <option value="long-shadow" <?php echo $currentPageNameEffect === 'long-shadow' ? 'selected' : ''; ?>>Long Shadow</option>
+                                <option value="3d-extrude" <?php echo $currentPageNameEffect === '3d-extrude' ? 'selected' : ''; ?>>3D Extrude</option>
+                                <option value="dragon-text" <?php echo $currentPageNameEffect === 'dragon-text' ? 'selected' : ''; ?>>Dragon Text</option>
+                            </select>
+                            <small style="display: block; margin-top: 0.75rem; color: #666;">
+                                Apply a special text effect to your page name to make it stand out. Effects will be applied to the main page title.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- ========== FEATURED WIDGET EFFECT SECTION (ACCORDION) ========== -->
                 <div class="accordion-section" id="featured-widget-effect">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('featured-widget-effect')">

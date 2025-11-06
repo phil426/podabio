@@ -86,6 +86,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
+    <!-- Additional fonts for page name effects -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -141,6 +143,342 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: var(--page-description-color, var(--primary-color));
             opacity: 0.9;
             margin-bottom: 2rem;
+        }
+        
+        /* Page Name Effects */
+        .page-title-effect-3d-shadow {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5rem, 8vw, 4rem);
+            letter-spacing: clamp(0.5rem, 2vw, 1rem);
+            color: #fff;
+            text-shadow:
+                2px 2px 0 #f44336,
+                4px 4px 0 #e91e63,
+                6px 6px 0 #9c27b0,
+                8px 8px 0 #673ab7,
+                10px 10px 0 #3f51b5,
+                12px 12px 0 #2196f3,
+                14px 14px 0 #03a9f4,
+                16px 16px 0 #00bcd4;
+        }
+        
+        .page-title-effect-stroke-shadow {
+            font-size: clamp(2rem, calc(1em + 15vmin), 5rem);
+            font-weight: 900;
+            color: tomato;
+            --x-offset: -0.0625em;
+            --y-offset: 0.0625em;
+            --stroke: 0.025em;
+            --background-color: white;
+            --stroke-color: lightblue;
+            text-shadow: 
+                var(--x-offset)
+                var(--y-offset)
+                0px
+                var(--background-color), 
+                calc(var(--x-offset) - var(--stroke))
+                calc(var(--y-offset) + var(--stroke))
+                0px
+                var(--stroke-color);
+        }
+        
+        @supports (text-shadow: 1px 1px 1px 1px black) {
+            .page-title-effect-stroke-shadow {
+                text-shadow:
+                    var(--x-offset)
+                    var(--y-offset)
+                    0px
+                    0px
+                    var(--background-color), 
+                    var(--x-offset) 
+                    var(--y-offset)
+                    var(--stroke)
+                    0px
+                    var(--stroke-color);
+            }
+        }
+        
+        .page-title-effect-slashed {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .page-title-effect-slashed .top,
+        .page-title-effect-slashed .bot {
+            position: absolute;
+            text-align: center;
+            font-size: clamp(2rem, 8vw, 4rem);
+            text-transform: uppercase;
+            overflow: hidden;
+            color: white;
+            text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .page-title-effect-slashed .top {
+            top: 0;
+            left: 5px;
+            right: 0;
+            bottom: 50%;
+        }
+        
+        .page-title-effect-slashed .top::before {
+            content: attr(title);
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            transform: rotate(5deg);
+        }
+        
+        .page-title-effect-slashed .bot {
+            top: 50%;
+            left: 0;
+            right: 5px;
+            bottom: 0;
+        }
+        
+        .page-title-effect-slashed .bot::before {
+            content: attr(title);
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            transform: rotate(5deg);
+        }
+        
+        .page-title-effect-sweet-title {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page-title-effect-sweet-title .title-wrapper {
+            display: grid;
+            align-items: center;
+            justify-content: center;
+            transform: skew(0, -10deg);
+        }
+        
+        .page-title-effect-sweet-title .top-title {
+            order: 1;
+            text-align: center;
+            display: block;
+            color: #fff;
+            font-size: clamp(0.75rem, 2vw, 1rem);
+            margin-bottom: 1rem;
+            padding-right: 2rem;
+            font-family: 'Exo 2', sans-serif;
+        }
+        
+        .page-title-effect-sweet-title .bottom-title {
+            order: 3;
+            text-align: center;
+            display: block;
+            color: #fff;
+            font-size: clamp(0.75rem, 2vw, 1rem);
+            margin-top: 2rem;
+            padding-left: 2rem;
+            font-family: 'Exo 2', sans-serif;
+        }
+        
+        .page-title-effect-sweet-title .sweet-title {
+            order: 2;
+            color: #fde9ff;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: clamp(2rem, 10vw, 4rem);
+            line-height: 0.75em;
+            text-align: center;
+            font-family: 'Exo 2', sans-serif;
+            text-shadow: 3px 1px 1px #4af7ff, 2px 2px 1px #165bfb, 4px 2px 1px #4af7ff,
+                3px 3px 1px #165bfb, 5px 3px 1px #4af7ff, 4px 4px 1px #165bfb,
+                6px 4px 1px #4af7ff, 5px 5px 1px #165bfb, 7px 5px 1px #4af7ff,
+                6px 6px 1px #165bfb, 8px 6px 1px #4af7ff, 7px 7px 1px #165bfb,
+                9px 7px 1px #4af7ff;
+        }
+        
+        .page-title-effect-sweet-title .sweet-title span {
+            display: block;
+            position: relative;
+        }
+        
+        .page-title-effect-sweet-title .sweet-title span::before {
+            content: attr(data-text);
+            position: absolute;
+            text-shadow: 2px 2px 1px #e94aa1, -1px -1px 1px #c736f9,
+                -2px 2px 1px #e94aa1, 1px -1px 1px #f736f9;
+            z-index: 1;
+        }
+        
+        .page-title-effect-sweet-title .sweet-title span:nth-child(1) {
+            padding-right: 2.25rem;
+        }
+        
+        .page-title-effect-sweet-title .sweet-title span:nth-child(2) {
+            padding-left: 2.25rem;
+        }
+        
+        .page-title-effect-long-shadow {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 
+                0px 0px #E13E06,
+                1px 1px #E13E06,
+                2px 2px #E13E06,
+                3px 3px #E13E06,
+                4px 4px #E13E06,
+                5px 5px #E13E06,
+                6px 6px #E13E06,
+                7px 7px #E13E06,
+                8px 8px #E13E06,
+                9px 9px #E13E06,
+                10px 10px #E13E06,
+                11px 11px #E13E06,
+                12px 12px #E13E06,
+                13px 13px #E13E06,
+                14px 14px #E13E06,
+                15px 15px #E13E06,
+                16px 16px #E13E06,
+                17px 17px #E13E06,
+                18px 18px #E13E06,
+                19px 19px #E13E06,
+                20px 20px #E13E06,
+                21px 21px #E13E06,
+                22px 22px #E13E06,
+                23px 23px #E13E06,
+                24px 24px #E13E06,
+                25px 25px #E13E06,
+                26px 26px #E13E06,
+                27px 27px #E13E06,
+                28px 28px #E13E06,
+                29px 29px #E13E06,
+                30px 30px #E13E06,
+                31px 31px #E13E06,
+                32px 32px #E13E06,
+                33px 33px #E13E06,
+                34px 34px #E13E06,
+                35px 35px #E13E06,
+                36px 36px #E13E06,
+                37px 37px #E13E06,
+                38px 38px #E13E06,
+                39px 39px #E13E06,
+                40px 40px #E13E06,
+                41px 41px #E13E06,
+                42px 42px #E13E06,
+                43px 43px #E13E06,
+                44px 44px #E13E06,
+                45px 45px #E13E06,
+                46px 46px #E13E06,
+                47px 47px #E13E06,
+                48px 48px #E13E06,
+                49px 49px #E13E06,
+                50px 50px #E13E06;
+        }
+        
+        .page-title-effect-3d-extrude {
+            font-family: 'Bowlby One SC', sans-serif;
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 400;
+            color: hsl(0, 100%, 55%);
+            text-transform: uppercase;
+            text-shadow: 
+                1px 1px 0 hsl(200, 100%, 15%),
+                2px 2px 0 hsl(200, 100%, 15%),
+                3px 3px 0 hsl(200, 100%, 15%),
+                4px 4px 0 hsl(200, 100%, 15%),
+                5px 5px 0 hsl(200, 100%, 15%),
+                6px 6px 0 hsl(200, 100%, 15%),
+                7px 7px 0 hsl(200, 100%, 15%),
+                8px 8px 0 hsl(200, 100%, 15%),
+                9px 9px 0 hsl(200, 100%, 15%),
+                10px 10px 0 hsl(200, 100%, 15%),
+                11px 11px 0 hsl(200, 100%, 15%),
+                12px 12px 0 hsl(200, 100%, 15%),
+                13px 13px 0 hsl(200, 100%, 15%),
+                14px 14px 0 hsl(200, 100%, 15%),
+                15px 15px 0 hsl(200, 100%, 15%),
+                16px 16px 0 hsl(200, 100%, 15%),
+                17px 17px 0 hsl(200, 100%, 15%),
+                18px 18px 0 hsl(200, 100%, 15%),
+                19px 19px 0 hsl(200, 100%, 15%),
+                20px 20px 0 hsl(200, 100%, 15%),
+                21px 21px 0 hsl(200, 100%, 15%),
+                22px 22px 0 hsl(200, 100%, 15%),
+                23px 23px 0 hsl(200, 100%, 15%),
+                24px 24px 0 hsl(200, 100%, 15%),
+                25px 25px 0 hsl(200, 100%, 15%),
+                26px 26px 0 hsl(200, 100%, 15%),
+                27px 27px 0 hsl(200, 100%, 15%),
+                28px 28px 0 hsl(200, 100%, 15%),
+                29px 29px 0 hsl(200, 100%, 15%),
+                30px 30px 0 hsl(200, 100%, 15%),
+                31px 31px 0 hsl(200, 100%, 15%),
+                32px 32px 0 hsl(200, 100%, 15%),
+                33px 33px 0 hsl(200, 100%, 15%),
+                34px 34px 0 hsl(200, 100%, 15%),
+                35px 35px 0 hsl(200, 100%, 15%),
+                36px 36px 0 hsl(200, 100%, 15%),
+                37px 37px 0 hsl(200, 100%, 15%),
+                38px 38px 0 hsl(200, 100%, 15%),
+                39px 39px 0 hsl(200, 100%, 15%),
+                40px 40px 0 hsl(200, 100%, 15%),
+                41px 41px 0 hsl(200, 100%, 15%),
+                42px 42px 0 hsl(200, 100%, 15%),
+                43px 43px 0 hsl(200, 100%, 15%),
+                44px 44px 0 hsl(200, 100%, 15%),
+                45px 45px 0 hsl(200, 100%, 15%);
+            transform: translate3d(-15px, -15px, 0);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-title-effect-dragon-text {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .page-title-effect-dragon-text .svg-text {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+        }
+        
+        .page-title-effect-dragon-text .svg-text__shaded {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 120px;
+            font-weight: 300;
+            fill: #f0f0f0;
+            text-shadow: 0 1px 1px rgba(33, 33, 33, 0.15),
+                0 3px 10px rgba(33, 33, 33, 0.15),
+                0 3px 20px rgba(33, 33, 33, 0.35);
+        }
+        
+        .page-title-effect-dragon-text .svg-text__shaded__sub {
+            font-size: 6px;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .page-title-effect-dragon-text .svg-text__shaded__stroke {
+            stroke-dasharray: 3em 0.5em;
+            stroke-dashoffset: 0;
+            transition: all 0.6s ease-in-out;
+        }
+        
+        .page-title-effect-dragon-text:hover .svg-text__shaded__stroke {
+            animation: offsetAnim 4.2s ease-in-out infinite;
+        }
+        
+        @keyframes offsetAnim {
+            70%, 100% {
+                stroke-dashoffset: 3.5em;
+            }
         }
         
         .widgets-container {
@@ -1663,7 +2001,47 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 <img src="<?php echo h($page['cover_image_url']); ?>" alt="Cover" class="cover-image">
             <?php endif; ?>
             
-            <h1 class="page-title"><?php echo h($page['podcast_name'] ?: $page['username']); ?></h1>
+            <?php
+            $pageNameEffect = $page['page_name_effect'] ?? '';
+            $pageTitleText = h($page['podcast_name'] ?: $page['username']);
+            
+            if ($pageNameEffect === 'slashed'): ?>
+                <div class="page-title-effect-slashed">
+                    <div class="top" title="<?php echo $pageTitleText; ?>"></div>
+                    <div class="bot" title="<?php echo $pageTitleText; ?>"></div>
+                </div>
+            <?php elseif ($pageNameEffect === 'sweet-title'): ?>
+                <div class="page-title-effect-sweet-title">
+                    <div class="title-wrapper">
+                        <div class="top-title"><?php echo $pageTitleText; ?></div>
+                        <div class="sweet-title">
+                            <?php
+                            $words = explode(' ', $pageTitleText);
+                            foreach ($words as $index => $word): ?>
+                                <span data-text="<?php echo h($word); ?>"><?php echo h($word); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="bottom-title"><?php echo $pageTitleText; ?></div>
+                    </div>
+                </div>
+            <?php elseif ($pageNameEffect === 'dragon-text'): ?>
+                <div class="page-title-effect-dragon-text">
+                    <svg class="svg-text" viewBox="0 0 1000 300">
+                        <defs>
+                            <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#fff;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <text x="500" y="200" text-anchor="middle" class="svg-text__shaded" fill="url(#textGradient)">
+                            <?php echo $pageTitleText; ?>
+                            <tspan class="svg-text__shaded__sub"><?php echo $pageTitleText; ?></tspan>
+                        </text>
+                    </svg>
+                </div>
+            <?php else: ?>
+                <h1 class="page-title <?php echo $pageNameEffect ? 'page-title-effect-' . h($pageNameEffect) : ''; ?>"><?php echo $pageTitleText; ?></h1>
+            <?php endif; ?>
             
             <?php if ($page['podcast_description']): ?>
                 <p class="page-description"><?php echo nl2br(h($page['podcast_description'])); ?></p>

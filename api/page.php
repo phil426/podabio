@@ -230,6 +230,15 @@ switch ($action) {
             }
         }
         
+        // Handle page name effect
+        if (isset($_POST['page_name_effect'])) {
+            $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
+            $validEffects = ['', '3d-shadow', 'stroke-shadow', 'slashed', 'sweet-title', 'long-shadow', '3d-extrude', 'dragon-text'];
+            if (in_array($pageNameEffect, $validEffects, true)) {
+                $updateData['page_name_effect'] = $pageNameEffect === '' ? null : $pageNameEffect;
+            }
+        }
+        
         $result = $page->update($pageId, $updateData);
         if ($result) {
             echo APIResponse::success(null, 'Appearance updated successfully');
