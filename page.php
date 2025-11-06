@@ -87,7 +87,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
     <!-- Additional fonts for page name effects -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&family=Poppins:wght@400;600;700&family=Raleway:wght@900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -449,6 +449,224 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             70%, 100% {
                 stroke-dashoffset: 3.5em;
             }
+        }
+        
+        /* Jello Effect */
+        .page-title-effect-jello {
+            font-family: system-ui, sans-serif;
+            font-size: clamp(1.5rem, 1em + 30vmin, 4rem);
+            font-weight: 900;
+            color: tomato;
+            --x-offset: -0.0625em;
+            --y-offset: 0.0625em;
+            --stroke: 0.025em;
+            --background-color: white;
+            --stroke-color: lightblue;
+            text-shadow:
+                var(--x-offset)
+                var(--y-offset)
+                0px
+                var(--background-color),
+                calc( var(--x-offset) - var(--stroke) )
+                calc( var(--y-offset) + var(--stroke) )
+                0px
+                var(--stroke-color);
+        }
+        @supports ( text-shadow: 1px 1px 1px 1px black ) {
+            .page-title-effect-jello {
+                text-shadow:
+                    var(--x-offset)
+                    var(--y-offset)
+                    0px
+                    0px
+                    var(--background-color),
+                    var(--x-offset)
+                    var(--y-offset)
+                    var(--stroke)
+                    0px
+                    var(--stroke-color);
+            }
+        }
+        
+        /* Neon Effect */
+        .page-title-effect-neon {
+            font-family: 'Exo 2', sans-serif;
+            font-size: clamp(3rem, 13vw, 8rem);
+            font-weight: 200;
+            font-style: italic;
+            color: #fff;
+            padding: 1rem 2rem 1.5rem;
+            border: 0.2rem solid #fff;
+            border-radius: 1rem;
+            text-transform: uppercase;
+            animation: flicker 1.5s infinite alternate;
+            --neon-text-color: #f40;
+            --neon-border-color: #08f;
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow:
+                    -0.1rem -0.1rem 0.5rem #fff,
+                    0.1rem 0.1rem 0.5rem #fff,
+                    0 0 1rem var(--neon-text-color),
+                    0 0 2rem var(--neon-text-color),
+                    0 0 3rem var(--neon-text-color),
+                    0 0 4rem var(--neon-text-color),
+                    0 0 5rem var(--neon-text-color);
+                box-shadow:
+                    0 0 .25rem #fff,
+                    inset 0 0 .25rem #fff,
+                    0 0 1rem var(--neon-border-color),
+                    inset 0 0 1rem var(--neon-border-color),
+                    0 0 2rem var(--neon-border-color),
+                    inset 0 0 2rem var(--neon-border-color);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+                box-shadow: none;
+            }
+        }
+        .page-title-effect-neon::selection {
+            background-color: var(--neon-text-color);
+            text-shadow: none;
+        }
+        
+        /* Gummy Effect */
+        .page-title-effect-gummy {
+            font-family: system-ui, sans-serif;
+            font-size: clamp(3rem, 15vw, 8rem);
+            letter-spacing: -.15ch;
+            line-height: .75;
+            --hue: 320;
+            /* Fallback colors for browsers that don't support oklch */
+            color: #e91e63;
+            text-shadow:
+                0 .15ch 15px rgba(0, 0, 0, 0.3),
+                0 -2px 0 rgba(255, 255, 255, 0.9);
+        }
+        @supports (color: oklch(0% 0 0)) {
+            .page-title-effect-gummy {
+                --bg: oklch(35% .3 var(--hue));
+                --text: oklch(85% .1 var(--hue));
+                --shadow: oklch(25% .2 var(--hue));
+                --highlight: oklch(98% .05 var(--hue));
+                color: var(--text);
+                text-shadow:
+                    0 .15ch 15px var(--shadow),
+                    0 -2px 0 var(--highlight);
+            }
+        }
+        
+        /* Water Effect */
+        .page-title-effect-water {
+            position: relative;
+            font-family: "Poppins", sans-serif;
+            font-size: clamp(3em, 8vw, 8em);
+            color: #fff;
+            -webkit-text-stroke: 2px #03a9f4;
+        }
+        .page-title-effect-water::before {
+            content: attr(data-text);
+            position: absolute;
+            color: #03a9f4;
+            animation: animate-water 4s ease-in-out infinite;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        @keyframes animate-water {
+            0%, 100% {
+                clip-path: polygon(0% 45%, 16% 44%, 33% 50%, 54% 60%, 70% 61%, 84% 59%, 100% 52%, 100% 100%, 0% 100%);
+            }
+            50% {
+                clip-path: polygon(0% 60%, 15% 65%, 34% 66%, 51% 62%, 67% 50%, 84% 45%, 100% 46%, 100% 100%, 0% 100%);
+            }
+        }
+        
+        /* Outline Effect */
+        .page-title-effect-outline {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(3rem, 12vw, 120px);
+            letter-spacing: 0.1em;
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke-width: 3px;
+            -webkit-text-stroke-color: white;
+            text-shadow:
+                8px 8px #ff1f8f,
+                20px 20px #000000;
+        }
+        
+        /* Sliced Effect */
+        .page-title-effect-sliced {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .page-title-effect-sliced .sliced-top {
+            background: linear-gradient(to bottom, transparent 0%, transparent 50%, #000 50%, #000 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+        }
+        .page-title-effect-sliced .sliced-bottom {
+            background: linear-gradient(to bottom, #000 0%, #000 50%, transparent 50%, transparent 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+        }
+        
+        /* Rainbow/Layered Effect */
+        .page-title-effect-rainbow {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            font-size: clamp(5vw, 20vw, 10rem);
+            text-align: center;
+            line-height: 1;
+            margin: 0;
+            position: relative;
+            color: var(--page-title-color, var(--primary-color));
+        }
+        .page-title-effect-rainbow::before,
+        .page-title-effect-rainbow::after,
+        .page-title-effect-rainbow span::before,
+        .page-title-effect-rainbow span::after {
+            content: attr(data-heading);
+            position: absolute;
+            overflow: hidden;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .page-title-effect-rainbow::before {
+            color: #d61c5b;
+            height: 34%;
+            z-index: 5;
+        }
+        .page-title-effect-rainbow::after {
+            color: #f1573f;
+            height: 50%;
+            z-index: 4;
+        }
+        .page-title-effect-rainbow span {
+            position: relative;
+            display: inline-block;
+        }
+        .page-title-effect-rainbow span::before {
+            color: #feb213;
+            height: 66%;
+            z-index: 3;
+        }
+        .page-title-effect-rainbow span::after {
+            color: #6abc4e;
+            height: 80%;
+            z-index: 2;
         }
         
         .widgets-container {
@@ -2005,6 +2223,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         </text>
                     </svg>
                 </div>
+            <?php elseif ($pageNameEffect === 'water'): ?>
+                <h2 class="page-title-effect-water" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h2>
+            <?php elseif ($pageNameEffect === 'sliced'): ?>
+                <div class="page-title-effect-sliced">
+                    <div class="sliced-top"><?php echo $pageTitleText; ?></div>
+                    <div class="sliced-bottom"><?php echo $pageTitleText; ?></div>
+                </div>
+            <?php elseif ($pageNameEffect === 'rainbow'): ?>
+                <h1 class="page-title-effect-rainbow" data-heading="<?php echo $pageTitleText; ?>">
+                    <span><?php echo $pageTitleText; ?></span>
+                </h1>
             <?php else: ?>
                 <h1 class="page-title <?php echo $pageNameEffect ? 'page-title-effect-' . h($pageNameEffect) : ''; ?>"><?php echo $pageTitleText; ?></h1>
             <?php endif; ?>
