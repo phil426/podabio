@@ -2766,8 +2766,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 // Unwrap content first to get accurate measurements
                 const contentSpan = element.querySelector('.marquee-content');
                 if (contentSpan) {
-                    element.innerHTML = contentSpan.innerHTML;
+                    // Extract original content from first marquee-text if it exists
+                    const firstText = contentSpan.querySelector('.marquee-text');
+                    if (firstText) {
+                        element.innerHTML = firstText.innerHTML;
+                    } else {
+                        element.innerHTML = contentSpan.innerHTML;
+                    }
                     element.classList.remove('marquee');
+                }
+                
+                // Skip if already has marquee-text (already processed)
+                if (element.querySelector('.marquee-text')) {
+                    return;
                 }
                 
                 // Get container width - measure parent container to know available space
@@ -2838,8 +2849,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 try {
                     // Only target widget descriptions within Custom Link widgets
                     document.querySelectorAll('.widget-item .widget-description').forEach(element => {
-                        // Skip if already processed and hasn't changed
-                        if (element.dataset.marqueeProcessed === 'true' && !element.querySelector('.marquee-content')) {
+                        // Skip if already has marquee-text (already fully processed)
+                        if (element.querySelector('.marquee-text')) {
+                            return;
+                        }
+                        // Skip if already processed and has marquee-content
+                        if (element.dataset.marqueeProcessed === 'true' && element.querySelector('.marquee-content')) {
                             return;
                         }
                         initWidgetMarquee(element);
@@ -2881,11 +2896,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     if (mutation.type === 'attributes' && mutation.attributeName === 'data-marquee-processed') {
                         continue;
                     }
-                    // Skip if mutation is from adding marquee-content (our own changes)
+                    // Skip if mutation is from adding marquee-content or marquee-text (our own changes)
                     if (mutation.addedNodes.length > 0) {
                         for (const node of mutation.addedNodes) {
-                            if (node.nodeType === 1 && node.classList && node.classList.contains('marquee-content')) {
-                                continue;
+                            if (node.nodeType === 1) {
+                                // Skip our own marquee elements
+                                if (node.classList && (node.classList.contains('marquee-content') || node.classList.contains('marquee-text'))) {
+                                    continue;
+                                }
+                                // Also check if it's a child of a marquee element
+                                if (node.closest && (node.closest('.marquee-content') || node.closest('.marquee-text'))) {
+                                    continue;
+                                }
                             }
                             shouldProcess = true;
                             break;
