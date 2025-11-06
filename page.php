@@ -598,29 +598,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 20px 20px #000000;
         }
         
-        /* Sliced Effect */
-        .page-title-effect-sliced {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(3rem, 12vw, 8rem);
-            font-weight: 700;
-            text-transform: uppercase;
-            text-align: center;
-        }
-        .page-title-effect-sliced .sliced-top {
-            background: linear-gradient(to bottom, transparent 0%, transparent 50%, #000 50%, #000 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
-        }
-        .page-title-effect-sliced .sliced-bottom {
-            background: linear-gradient(to bottom, #000 0%, #000 50%, transparent 50%, transparent 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-        }
-        
         /* Rainbow/Layered Effect */
         .page-title-effect-rainbow {
             font-family: 'Oswald', sans-serif;
@@ -2225,11 +2202,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 </div>
             <?php elseif ($pageNameEffect === 'water'): ?>
                 <h2 class="page-title-effect-water" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h2>
-            <?php elseif ($pageNameEffect === 'sliced'): ?>
-                <div class="page-title-effect-sliced">
-                    <div class="sliced-top"><?php echo $pageTitleText; ?></div>
-                    <div class="sliced-bottom"><?php echo $pageTitleText; ?></div>
-                </div>
             <?php elseif ($pageNameEffect === 'rainbow'): ?>
                 <h1 class="page-title-effect-rainbow" data-heading="<?php echo $pageTitleText; ?>">
                     <span><?php echo $pageTitleText; ?></span>

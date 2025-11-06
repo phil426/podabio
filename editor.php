@@ -3218,7 +3218,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="gummy" <?php echo $currentPageNameEffect === 'gummy' ? 'selected' : ''; ?>>Gummy</option>
                                 <option value="water" <?php echo $currentPageNameEffect === 'water' ? 'selected' : ''; ?>>Water</option>
                                 <option value="outline" <?php echo $currentPageNameEffect === 'outline' ? 'selected' : ''; ?>>Outline</option>
-                                <option value="sliced" <?php echo $currentPageNameEffect === 'sliced' ? 'selected' : ''; ?>>Sliced</option>
                                 <option value="rainbow" <?php echo $currentPageNameEffect === 'rainbow' ? 'selected' : ''; ?>>Rainbow</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
