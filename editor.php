@@ -3222,7 +3222,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="badge-shield" <?php echo $currentPageNameEffect === 'badge-shield' ? 'selected' : ''; ?>>Badge Shield</option>
                                 <option value="isometric-3d" <?php echo $currentPageNameEffect === 'isometric-3d' ? 'selected' : ''; ?>>Isometric 3D</option>
                                 <option value="geometric-cutout" <?php echo $currentPageNameEffect === 'geometric-cutout' ? 'selected' : ''; ?>>Geometric Cutout</option>
-                                <option value="layered-badge" <?php echo $currentPageNameEffect === 'layered-badge' ? 'selected' : ''; ?>>Layered Badge</option>
                                 <option value="stencil" <?php echo $currentPageNameEffect === 'stencil' ? 'selected' : ''; ?>>Stencil</option>
                                 <option value="pattern-fill" <?php echo $currentPageNameEffect === 'pattern-fill' ? 'selected' : ''; ?>>Pattern Fill</option>
                                 <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>

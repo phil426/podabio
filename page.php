@@ -711,42 +711,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             z-index: 10;
         }
         
-        /* Layered Badge Effect */
-        .page-title-effect-layered-badge {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(2rem, 10vw, 5rem);
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #fff;
-            position: relative;
-            padding: 1.5rem 2.5rem;
-            z-index: 3;
-        }
-        .page-title-effect-layered-badge::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(45deg);
-            width: 120%;
-            height: 120%;
-            background: #667eea;
-            z-index: -1;
-            border-radius: 15px;
-        }
-        .page-title-effect-layered-badge::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 110%;
-            height: 110%;
-            background: #764ba2;
-            z-index: -2;
-            border-radius: 20px;
-        }
-        
         /* Stencil Effect */
         .page-title-effect-stencil {
             font-family: 'Oswald', sans-serif;
