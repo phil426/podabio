@@ -1032,6 +1032,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             overflow: hidden;
             white-space: nowrap;
             position: relative;
+            width: 100%;
+            max-width: 100%;
         }
         
         .widget-item .widget-description .marquee-content {
