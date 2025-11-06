@@ -3211,7 +3211,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;">
                                 <option value="" <?php echo $currentPageNameEffect === '' ? 'selected' : ''; ?>>None</option>
                                 <option value="3d-shadow" <?php echo $currentPageNameEffect === '3d-shadow' ? 'selected' : ''; ?>>3D Shadow</option>
-                                <option value="stroke-shadow" <?php echo $currentPageNameEffect === 'stroke-shadow' ? 'selected' : ''; ?>>Stroke Shadow</option>
                                 <option value="sweet-title" <?php echo $currentPageNameEffect === 'sweet-title' ? 'selected' : ''; ?>>Sweet Title</option>
                                 <option value="long-shadow" <?php echo $currentPageNameEffect === 'long-shadow' ? 'selected' : ''; ?>>Long Shadow</option>
                                 <option value="3d-extrude" <?php echo $currentPageNameEffect === '3d-extrude' ? 'selected' : ''; ?>>3D Extrude</option>
