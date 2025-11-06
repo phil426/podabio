@@ -1027,25 +1027,25 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
         }
         
-        /* Marquee animation for overflowing text */
-        .marquee {
+        /* Marquee animation for Custom Link widget descriptions only */
+        .widget-item .widget-description.marquee {
             overflow: hidden;
             white-space: nowrap;
             position: relative;
         }
         
-        .marquee-content {
+        .widget-item .widget-description .marquee-content {
             display: inline-block;
             white-space: nowrap;
-            animation: marquee-scroll linear infinite;
+            animation: widget-marquee-scroll linear infinite;
             animation-duration: var(--marquee-duration, 12s);
-            padding-right: 2em; /* Space at end before looping */
+            will-change: transform; /* Optimize animation performance */
+            padding-right: 2em; /* Space at end for better visual separation */
         }
         
-        @keyframes marquee-scroll {
+        @keyframes widget-marquee-scroll {
             0% { transform: translateX(0); }
-            90% { transform: translateX(var(--marquee-distance, -100px)); }
-            100% { transform: translateX(var(--marquee-distance, -100px)); } /* Pause at end */
+            100% { transform: translateX(var(--marquee-distance, -100px)); }
         }
         
         /* Video widget styles */
@@ -2737,11 +2737,21 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
         })();
         
-        // Marquee scrolling for overflowing text
+        // Marquee scrolling for Custom Link widget descriptions only
         (function() {
-            function initMarquee(element) {
+            function initWidgetMarquee(element) {
+                // Only process widget descriptions within Custom Link widgets
+                if (!element.closest('.widget-item') || !element.classList.contains('widget-description')) {
+                    return;
+                }
+                
                 // Reset processed flag to allow re-evaluation
                 delete element.dataset.marqueeProcessed;
+                
+                // Skip if element contains SVG
+                if (element.querySelector('svg')) {
+                    return;
+                }
                 
                 // Unwrap content first to get accurate measurements
                 const contentSpan = element.querySelector('.marquee-content');
@@ -2750,12 +2760,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     element.classList.remove('marquee');
                 }
                 
-                // Check if text overflows
+                // Temporarily force single-line to measure true width
+                const originalWhiteSpace = element.style.whiteSpace;
+                element.style.whiteSpace = 'nowrap';
+                
+                // Check if text overflows when forced to single line
                 const containerWidth = element.clientWidth;
                 const textWidth = element.scrollWidth;
                 
+                // Restore original white-space
+                element.style.whiteSpace = originalWhiteSpace;
+                
                 if (textWidth > containerWidth && containerWidth > 0) {
-                    // Text overflows - apply marquee
+                    // Text overflows when on single line - apply marquee
                     element.classList.add('marquee');
                     
                     // Wrap content in marquee-content span
@@ -2764,12 +2781,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     
                     const newContentSpan = element.querySelector('.marquee-content');
                     if (newContentSpan) {
-                        // Recalculate after wrapping
+                        // Recalculate after wrapping (marquee-content has nowrap by default)
                         const newTextWidth = newContentSpan.scrollWidth;
                         const overflow = newTextWidth - containerWidth;
                         const duration = Math.max(8, Math.min(15, (newTextWidth / 50))); // 8-15 seconds based on length
                         
                         // Set CSS variables for animation
+                        // Scroll by the overflow amount to reveal hidden text
                         newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
                         newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
                     }
@@ -2778,38 +2796,26 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 element.dataset.marqueeProcessed = 'true';
             }
             
-            function applyMarqueeToElements() {
-                // Target elements: widget titles, widget content, widget descriptions, page title, page description, URLs
-                const selectors = [
-                    '.widget-title',
-                    '.widget-content',
-                    '.widget-description',
-                    '.page-title',
-                    '.page-description',
-                    '.widget-url'
-                ];
-                
-                selectors.forEach(selector => {
-                    document.querySelectorAll(selector).forEach(element => {
-                        initMarquee(element);
-                    });
+            function applyWidgetMarquee() {
+                // Only target widget descriptions within Custom Link widgets
+                document.querySelectorAll('.widget-item .widget-description').forEach(element => {
+                    initWidgetMarquee(element);
                 });
             }
             
             // Run on page load
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', applyMarqueeToElements);
+                document.addEventListener('DOMContentLoaded', applyWidgetMarquee);
             } else {
-                applyMarqueeToElements();
+                applyWidgetMarquee();
             }
             
-            // Watch for dynamic content changes
+            // Watch for dynamic content changes (only Custom Link widget descriptions)
             const observer = new MutationObserver(() => {
-                // Reset processed flags to allow re-evaluation
-                document.querySelectorAll('.widget-title, .widget-content, .widget-description, .page-title, .page-description, .widget-url').forEach(el => {
+                document.querySelectorAll('.widget-item .widget-description').forEach(el => {
                     delete el.dataset.marqueeProcessed;
                 });
-                applyMarqueeToElements();
+                applyWidgetMarquee();
             });
             
             observer.observe(document.body, {

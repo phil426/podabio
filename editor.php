@@ -1566,26 +1566,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             flex-grow: 1;
         }
         
-        /* Marquee animation for overflowing text */
-        .marquee {
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-        }
-        
-        .marquee-content {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee-scroll linear infinite;
-            animation-duration: var(--marquee-duration, 12s);
-            padding-right: 2em; /* Space at end before looping */
-        }
-        
-        @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            90% { transform: translateX(var(--marquee-distance, -100px)); }
-            100% { transform: translateX(var(--marquee-distance, -100px)); } /* Pause at end */
-        }
         
         .widget-card-badge {
             margin-top: 0.5rem;
@@ -9716,111 +9696,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         });
     <?php endif; ?>
     
-    // Marquee scrolling for overflowing text in editor preview
-    (function() {
-        function initMarquee(element) {
-            // Reset processed flag to allow re-evaluation
-            delete element.dataset.marqueeProcessed;
-            
-            // Unwrap content first to get accurate measurements
-            const contentSpan = element.querySelector('.marquee-content');
-            if (contentSpan) {
-                element.innerHTML = contentSpan.innerHTML;
-                element.classList.remove('marquee');
-            }
-            
-            // Check if text overflows
-            const containerWidth = element.clientWidth;
-            const textWidth = element.scrollWidth;
-            
-            if (textWidth > containerWidth && containerWidth > 0) {
-                // Text overflows - apply marquee
-                element.classList.add('marquee');
-                
-                // Wrap content in marquee-content span
-                const content = element.innerHTML;
-                element.innerHTML = '<span class="marquee-content">' + content + '</span>';
-                
-                const newContentSpan = element.querySelector('.marquee-content');
-                if (newContentSpan) {
-                    // Recalculate after wrapping
-                    const newTextWidth = newContentSpan.scrollWidth;
-                    const overflow = newTextWidth - containerWidth;
-                    const duration = Math.max(8, Math.min(15, (newTextWidth / 50))); // 8-15 seconds based on length
-                    
-                    // Set CSS variables for animation
-                    newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
-                    newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
-                }
-            }
-            
-            element.dataset.marqueeProcessed = 'true';
-        }
-        
-        function applyMarqueeToElements() {
-            // Target elements: widget titles, widget descriptions, URLs in preview
-            const selectors = [
-                '.widget-title',
-                '.widget-card-description',
-                '.widget-description',
-                '.widget-url',
-                '.social-icon-url', // Social icon URLs in editor list
-                '#preview-panel .widget-title',
-                '#preview-panel .widget-content',
-                '#preview-panel .widget-description',
-                '#preview-panel .page-title',
-                '#preview-panel .page-description',
-                '#preview-panel .widget-url'
-            ];
-            
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(element => {
-                    initMarquee(element);
-                });
-            });
-        }
-        
-        // Run on page load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', applyMarqueeToElements);
-        } else {
-            applyMarqueeToElements();
-        }
-        
-        // Watch for dynamic content changes (especially in preview panel)
-        const observer = new MutationObserver(() => {
-            // Reset processed flag for re-evaluation
-            document.querySelectorAll('.widget-title, .widget-card-description, .widget-description, .widget-url, .social-icon-url, #preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-description, #preview-panel .widget-url').forEach(el => {
-                delete el.dataset.marqueeProcessed;
-            });
-            applyMarqueeToElements();
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            characterData: true
-        });
-        
-        // Also run when preview panel content is updated
-        const previewPanel = document.getElementById('preview-panel');
-        if (previewPanel) {
-            const previewObserver = new MutationObserver(() => {
-                setTimeout(() => {
-                    document.querySelectorAll('#preview-panel .widget-title, #preview-panel .widget-content, #preview-panel .widget-description, #preview-panel .page-title, #preview-panel .page-description, #preview-panel .widget-url, .social-icon-url').forEach(el => {
-                        delete el.dataset.marqueeProcessed;
-                    });
-                    applyMarqueeToElements();
-                }, 100);
-            });
-            
-            previewObserver.observe(previewPanel, {
-                childList: true,
-                subtree: true,
-                characterData: true
-            });
-        }
-    })();
     </script>
 </body>
 </html>
