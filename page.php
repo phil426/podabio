@@ -860,46 +860,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 12px 12px 20px rgba(0, 0, 0, 0.3);
         }
         
-        /* Geometric Frame Effect */
-        .page-title-effect-geometric-frame {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(2rem, 10vw, 5rem);
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #000;
-            padding: 2rem 3rem;
-            position: relative;
-            display: inline-block;
-        }
-        .page-title-effect-geometric-frame::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 4px solid #667eea;
-            clip-path: polygon(
-                0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%,
-                100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%
-            );
-            z-index: -1;
-        }
-        .page-title-effect-geometric-frame::after {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            right: -8px;
-            bottom: -8px;
-            border: 2px solid #764ba2;
-            clip-path: polygon(
-                0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%,
-                100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%
-            );
-            z-index: -2;
-        }
-        
         .widgets-container {
             display: flex;
             flex-direction: column;

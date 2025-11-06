@@ -3228,7 +3228,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="corporate-block" <?php echo $currentPageNameEffect === 'corporate-block' ? 'selected' : ''; ?>>Corporate Block</option>
                                 <option value="negative-space" <?php echo $currentPageNameEffect === 'negative-space' ? 'selected' : ''; ?>>Negative Space</option>
                                 <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>
-                                <option value="geometric-frame" <?php echo $currentPageNameEffect === 'geometric-frame' ? 'selected' : ''; ?>>Geometric Frame</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
                                 Apply a special text effect to your page name to make it stand out. Effects will be applied to the main page title.
