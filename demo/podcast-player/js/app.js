@@ -36,9 +36,6 @@ class PodcastApp {
         // Initialize follow section
         this.initFollowSection();
         
-        // Initialize profile header
-        this.initProfileHeader();
-        
         // Initialize compact player
         this.initCompactPlayer();
         
@@ -298,6 +295,25 @@ class PodcastApp {
         } else {
             if (artwork) artwork.style.display = 'none';
             if (placeholder) placeholder.style.display = 'flex';
+        }
+        
+        // Update background artwork
+        const artworkBg = document.getElementById('now-playing-artwork-bg');
+        if (artworkBg && episodeArtwork) {
+            const bgImg = artworkBg.querySelector('.episode-artwork-large');
+            if (bgImg) {
+                bgImg.src = getProxiedImageUrl(episodeArtwork);
+                bgImg.style.display = 'block';
+            }
+            const bgPlaceholder = artworkBg.querySelector('.artwork-placeholder');
+            if (bgPlaceholder) {
+                bgPlaceholder.style.display = 'none';
+            }
+        } else if (artworkBg) {
+            const bgImg = artworkBg.querySelector('.episode-artwork-large');
+            if (bgImg) bgImg.style.display = 'none';
+            const bgPlaceholder = artworkBg.querySelector('.artwork-placeholder');
+            if (bgPlaceholder) bgPlaceholder.style.display = 'flex';
         }
         
         if (title) title.textContent = this.currentEpisode.title;
@@ -926,81 +942,6 @@ class PodcastApp {
         }
     }
 
-    /**
-     * Initialize profile header
-     */
-    initProfileHeader() {
-        const followButton = document.getElementById('follow-button');
-        const descriptionMore = document.getElementById('description-more');
-        const descriptionHeader = document.getElementById('podcast-description-header');
-        
-        if (followButton) {
-            const isFollowing = Storage.get('podcast_following', false);
-            if (isFollowing) {
-                followButton.classList.add('following');
-                followButton.innerHTML = '<i class="fas fa-check"></i><span>Following</span>';
-            }
-            
-            followButton.addEventListener('click', () => {
-                const isFollowing = followButton.classList.contains('following');
-                if (isFollowing) {
-                    followButton.classList.remove('following');
-                    followButton.innerHTML = '<i class="fas fa-plus"></i><span>Follow</span>';
-                    Storage.set('podcast_following', false);
-                    showToast('Unfollowed podcast', 'info');
-                } else {
-                    followButton.classList.add('following');
-                    followButton.innerHTML = '<i class="fas fa-check"></i><span>Following</span>';
-                    Storage.set('podcast_following', true);
-                    showToast('Following podcast', 'success');
-                }
-            });
-        }
-        
-        if (descriptionMore && descriptionHeader) {
-            descriptionMore.addEventListener('click', () => {
-                const isExpanded = descriptionHeader.classList.contains('expanded');
-                if (isExpanded) {
-                    descriptionHeader.classList.remove('expanded');
-                    descriptionMore.style.display = 'inline';
-                } else {
-                    descriptionHeader.classList.add('expanded');
-                    descriptionMore.style.display = 'none';
-                }
-            });
-        }
-    }
-
-    /**
-     * Render profile header
-     */
-    renderProfileHeader() {
-        if (!this.podcastData) return;
-        
-        const coverImage = document.getElementById('header-cover-image');
-        const podcastName = document.getElementById('podcast-name-header');
-        const description = document.getElementById('description-text');
-        
-        if (coverImage && this.podcastData.coverImage) {
-            coverImage.style.backgroundImage = `url(${getProxiedImageUrl(this.podcastData.coverImage)})`;
-        }
-        
-        if (podcastName) {
-            podcastName.textContent = this.podcastData.name || 'Podcast';
-        }
-        
-        if (description) {
-            const desc = this.podcastData.description || '';
-            description.textContent = desc;
-            const descriptionHeader = document.getElementById('podcast-description-header');
-            const descriptionMore = document.getElementById('description-more');
-            
-            // Show "more" if description is long
-            if (desc.length > 120 && descriptionHeader && descriptionMore) {
-                descriptionMore.style.display = 'inline';
-            }
-        }
-    }
 
     /**
      * Initialize compact player
