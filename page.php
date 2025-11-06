@@ -792,58 +792,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: transparent;
         }
         
-        /* Corporate Block Effect */
-        .page-title-effect-corporate-block {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(2.5rem, 12vw, 6rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #000;
-            position: relative;
-            padding-left: 2rem;
-        }
-        .page-title-effect-corporate-block::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 1rem;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .page-title-effect-corporate-block::after {
-            content: '';
-            position: absolute;
-            right: -1rem;
-            top: 50%;
-            transform: translateY(-50%) rotate(45deg);
-            width: 2rem;
-            height: 2rem;
-            background: #764ba2;
-        }
-        
-        /* Negative Space Effect */
-        .page-title-effect-negative-space {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(3rem, 14vw, 7rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #000;
-            position: relative;
-        }
-        .page-title-effect-negative-space::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30%;
-            height: 70%;
-            background: #fff;
-            clip-path: circle(40% at 50% 50%);
-            z-index: 1;
-        }
-        
         /* Depth Layers Effect */
         .page-title-effect-depth-layers {
             font-family: 'Montserrat', sans-serif;

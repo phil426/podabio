@@ -3225,8 +3225,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="layered-badge" <?php echo $currentPageNameEffect === 'layered-badge' ? 'selected' : ''; ?>>Layered Badge</option>
                                 <option value="stencil" <?php echo $currentPageNameEffect === 'stencil' ? 'selected' : ''; ?>>Stencil</option>
                                 <option value="pattern-fill" <?php echo $currentPageNameEffect === 'pattern-fill' ? 'selected' : ''; ?>>Pattern Fill</option>
-                                <option value="corporate-block" <?php echo $currentPageNameEffect === 'corporate-block' ? 'selected' : ''; ?>>Corporate Block</option>
-                                <option value="negative-space" <?php echo $currentPageNameEffect === 'negative-space' ? 'selected' : ''; ?>>Negative Space</option>
                                 <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
