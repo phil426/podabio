@@ -4725,6 +4725,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         };
         
         // Auto-refresh preview when settings change
+        let isIframeLoading = false;
         function refreshPreview() {
             if (previewUpdateTimeout) {
                 clearTimeout(previewUpdateTimeout);
@@ -4735,12 +4736,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 const iframe = document.getElementById('preview-iframe');
                 
                 // Only refresh if panel is visible (not collapsed) and iframe exists
-                if (panel && !panel.classList.contains('collapsed') && iframe) {
+                // Also check if iframe is already loading to prevent multiple simultaneous reloads
+                if (panel && !panel.classList.contains('collapsed') && iframe && !isIframeLoading) {
+                    isIframeLoading = true;
+                    
                     // Reload iframe with timestamp to bypass cache
                     const currentSrc = iframe.src.split('?')[0];
                     iframe.src = currentSrc + '?preview=' + Date.now();
+                    
+                    // Reset loading flag after iframe loads (with timeout as fallback)
+                    const resetLoading = () => {
+                        isIframeLoading = false;
+                    };
+                    iframe.addEventListener('load', resetLoading, { once: true });
+                    // Fallback: reset after 5 seconds even if load event doesn't fire
+                    setTimeout(resetLoading, 5000);
                 }
-            }, 1500); // Debounce: wait 1.5 seconds after last change
+            }, 2000); // Increased debounce: wait 2 seconds after last change
         }
         
         // Widget Visibility Toggle
