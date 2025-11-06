@@ -235,7 +235,7 @@ switch ($action) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
             error_log("API: page_name_effect received: " . var_export($pageNameEffect, true));
             error_log("API: POST data contains page_name_effect: " . var_export(isset($_POST['page_name_effect']), true));
-            $validEffects = ['', '3d-shadow', 'stroke-shadow', 'sweet-title', 'long-shadow', '3d-extrude', 'dragon-text'];
+            $validEffects = ['', '3d-shadow', 'stroke-shadow', 'sweet-title', 'long-shadow', '3d-extrude'];
             if (in_array($pageNameEffect, $validEffects, true)) {
                 $updateData['page_name_effect'] = $pageNameEffect === '' ? null : $pageNameEffect;
                 error_log("API: page_name_effect validated and added to updateData: " . var_export($updateData['page_name_effect'], true));

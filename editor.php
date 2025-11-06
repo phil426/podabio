@@ -3215,7 +3215,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 <option value="sweet-title" <?php echo $currentPageNameEffect === 'sweet-title' ? 'selected' : ''; ?>>Sweet Title</option>
                                 <option value="long-shadow" <?php echo $currentPageNameEffect === 'long-shadow' ? 'selected' : ''; ?>>Long Shadow</option>
                                 <option value="3d-extrude" <?php echo $currentPageNameEffect === '3d-extrude' ? 'selected' : ''; ?>>3D Extrude</option>
-                                <option value="dragon-text" <?php echo $currentPageNameEffect === 'dragon-text' ? 'selected' : ''; ?>>Dragon Text</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
                                 Apply a special text effect to your page name to make it stand out. Effects will be applied to the main page title.
