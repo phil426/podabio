@@ -1039,18 +1039,24 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .widget-item .widget-description .marquee-content {
-            display: inline-block;
+            display: inline-flex;
             white-space: nowrap;
             animation: widget-marquee-scroll linear infinite;
             animation-duration: var(--marquee-duration, 12s);
             will-change: transform; /* Optimize animation performance */
-            padding-right: 2em; /* Space at end for better visual separation */
+        }
+        
+        .widget-item .widget-description .marquee-content .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 2em; /* Space between duplicates for better visual separation */
         }
         
         @keyframes widget-marquee-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(var(--marquee-distance, -100px)); }
         }
+        
         
         /* Video widget styles */
         .widget-video {
@@ -2793,21 +2799,25 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     // Text overflows when on single line - apply marquee
                     element.classList.add('marquee');
                     
-                    // Wrap content in marquee-content span
+                    // Wrap content in marquee-content span and duplicate for seamless loop
                     const content = element.innerHTML;
-                    element.innerHTML = '<span class="marquee-content">' + content + '</span>';
+                    // Duplicate content for seamless scrolling
+                    element.innerHTML = '<span class="marquee-content"><span class="marquee-text">' + content + '</span><span class="marquee-text">' + content + '</span></span>';
                     
                     const newContentSpan = element.querySelector('.marquee-content');
                     if (newContentSpan) {
-                        // Recalculate after wrapping (marquee-content has nowrap by default)
-                        const newTextWidth = newContentSpan.scrollWidth;
-                        const overflow = newTextWidth - containerWidth;
-                        const duration = Math.max(8, Math.min(15, (newTextWidth / 50))); // 8-15 seconds based on length
-                        
-                        // Set CSS variables for animation
-                        // Scroll by the overflow amount to reveal hidden text
-                        newContentSpan.style.setProperty('--marquee-distance', `-${overflow}px`);
-                        newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
+                        // Force a reflow to get accurate measurements
+                        void newContentSpan.offsetWidth;
+                        const firstText = newContentSpan.querySelector('.marquee-text');
+                        if (firstText) {
+                            const textWidth = firstText.scrollWidth;
+                            const duration = Math.max(8, Math.min(20, (textWidth / 40))); // 8-20 seconds based on length
+                            
+                            // Set CSS variables for animation
+                            // Scroll by exactly one text width so the duplicate seamlessly continues
+                            newContentSpan.style.setProperty('--marquee-distance', `-${textWidth}px`);
+                            newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
+                        }
                     }
                 }
                 
