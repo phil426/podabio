@@ -226,29 +226,14 @@ class AudioPlayer {
      * Update UI elements
      */
     updateUI() {
-        // Update compact player
-        const compactTitle = document.getElementById('compact-title');
-        const compactArtist = document.getElementById('compact-artist');
-        const compactArtwork = document.getElementById('compact-artwork');
-        
-        if (this.currentEpisode) {
-            if (compactTitle) compactTitle.textContent = this.currentEpisode.title;
-            if (compactArtist) compactArtist.textContent = this.currentEpisode.title; // Use podcast name from global state
-            if (compactArtwork && this.currentEpisode.artwork) {
-                compactArtwork.src = this.currentEpisode.artwork;
-                compactArtwork.style.display = 'block';
-            }
+        // Update compact player via app
+        if (window.app) {
+            window.app.updateCompactPlayer();
         }
         
-        // Update full player
-        const playerTitle = document.getElementById('player-episode-title');
-        const playerArtwork = document.getElementById('player-artwork-large');
-        
-        if (this.currentEpisode) {
-            if (playerTitle) playerTitle.textContent = this.currentEpisode.title;
-            if (playerArtwork && this.currentEpisode.artwork) {
-                playerArtwork.src = this.currentEpisode.artwork;
-            }
+        // Update full player modal via app
+        if (window.app) {
+            window.app.updateFullPlayerModal();
         }
         
         this.updatePlayButton();
@@ -260,7 +245,7 @@ class AudioPlayer {
      */
     updatePlayButton() {
         const isPlaying = this.isPlaying();
-        const playButtons = document.querySelectorAll('.play-pause-large-now');
+        const playButtons = document.querySelectorAll('.play-pause-large-now, .compact-play-pause, .modal-play-pause');
         
         playButtons.forEach(btn => {
             const icon = btn.querySelector('i');
@@ -268,6 +253,11 @@ class AudioPlayer {
                 icon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
             }
         });
+        
+        // Update compact player
+        if (window.app) {
+            window.app.updateCompactPlayer();
+        }
     }
 
     /**
@@ -313,6 +303,21 @@ class AudioPlayer {
             progressScrubber.style.left = `${progress}%`;
         }
         
+        // Update modal progress
+        const modalProgressFill = document.getElementById('modal-progress-fill');
+        const modalProgressScrubber = document.getElementById('modal-progress-scrubber');
+        if (modalProgressFill) {
+            modalProgressFill.style.width = `${progress}%`;
+        }
+        if (modalProgressScrubber) {
+            modalProgressScrubber.style.left = `${progress}%`;
+        }
+        
+        // Update compact player progress
+        if (window.app) {
+            window.app.updateCompactProgress();
+        }
+        
         // Update time displays
         const currentTimeEl = document.getElementById('current-time-display');
         if (currentTimeEl) {
@@ -340,6 +345,16 @@ class AudioPlayer {
         this.updateProgress();
         this.savePosition();
         
+        // Update modal time display
+        const modalCurrentTime = document.getElementById('modal-current-time');
+        const modalTotalTime = document.getElementById('modal-total-time');
+        if (modalCurrentTime) {
+            modalCurrentTime.textContent = formatTime(this.audio.currentTime || 0);
+        }
+        if (modalTotalTime && this.audio.duration) {
+            modalTotalTime.textContent = formatTime(this.audio.duration);
+        }
+        
         // Update chapters if available
         if (window.app && window.app.updateActiveChapter) {
             window.app.updateActiveChapter(this.getCurrentTime());
@@ -348,8 +363,12 @@ class AudioPlayer {
 
     onLoadedMetadata() {
         const totalTimeEl = document.getElementById('total-time-display');
+        const modalTotalTime = document.getElementById('modal-total-time');
         if (totalTimeEl && this.audio.duration) {
             totalTimeEl.textContent = formatTime(this.audio.duration);
+        }
+        if (modalTotalTime && this.audio.duration) {
+            modalTotalTime.textContent = formatTime(this.audio.duration);
         }
         this.updateProgress();
     }

@@ -253,3 +253,22 @@ function createElement(tag, attributes = {}, textContent = '') {
     return element;
 }
 
+/**
+ * Get proxied image URL (for CORS handling)
+ */
+function getProxiedImageUrl(imageUrl) {
+    if (!imageUrl) return '';
+    
+    // If already proxied or relative URL, return as-is
+    if (imageUrl.includes('image-proxy.php') || imageUrl.startsWith('/') || imageUrl.startsWith('./')) {
+        return imageUrl;
+    }
+    
+    // Use image proxy
+    if (typeof CONFIG !== 'undefined' && CONFIG.imageProxyUrl) {
+        return CONFIG.imageProxyUrl + '?url=' + encodeURIComponent(imageUrl);
+    }
+    
+    return imageUrl;
+}
+

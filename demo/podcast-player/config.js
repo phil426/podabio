@@ -26,6 +26,9 @@ const CONFIG = {
     // RSS feed proxy endpoint (for CORS handling)
     rssProxyUrl: 'api/rss-proxy.php',
     
+    // Image proxy endpoint (for CORS handling)
+    imageProxyUrl: 'api/image-proxy.php',
+    
     // Cache settings
     cacheTTL: 3600000, // 1 hour in milliseconds
     
