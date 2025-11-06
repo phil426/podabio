@@ -1,0 +1,99 @@
+# Podn.Bio - Apache Configuration
+
+    # Enable rewrite engine
+    <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Redirect favicon.ico to favicon generator
+    RewriteRule ^favicon\.ico$ /favicon.php [L]
+    
+    # Redirect to HTTPS (uncomment for production)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Block access to sensitive files
+    <FilesMatch "^\.">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+    
+    # Protect config files
+    <FilesMatch "\.(sql|log|ini)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+    
+    # Route custom domains (check if HTTP_HOST is a custom domain)
+    RewriteCond %{HTTP_HOST} !^getphily\.com$ [NC]
+    RewriteCond %{HTTP_HOST} !^www\.getphily\.com$ [NC]
+    RewriteCond %{HTTP_HOST} !^podn\.bio$ [NC]
+    RewriteCond %{HTTP_HOST} !^www\.podn\.bio$ [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /page.php?username=$1 [L,QSA]
+    
+    # Route username pages (for main domain)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/admin/
+    RewriteCond %{REQUEST_URI} !^/support/
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/blog/
+    RewriteCond %{REQUEST_URI} !^/payment/
+    RewriteRule ^([a-zA-Z0-9_-]+)$ /page.php?username=$1 [L,QSA]
+    
+    # Route admin panel
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/admin/
+    RewriteRule ^admin/(.*)$ /admin/$1 [L]
+    
+    # Route support pages
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/support/
+    RewriteRule ^support/(.*)$ /support/$1 [L]
+    
+    # Route blog pages
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/blog/
+    RewriteRule ^blog/(.*)$ /blog/$1 [L]
+    
+    # Route payment pages
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/payment/
+    RewriteRule ^payment/(.*)$ /payment/$1 [L]
+    
+    # Route API endpoints
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteRule ^api/(.*)$ /api/$1 [L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Default index file
+DirectoryIndex index.php index.html
+
+
