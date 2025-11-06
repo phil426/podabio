@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>Podcast Player</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/player.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+</head>
+<body>
+    <!-- Profile Header Section -->
+    <header class="profile-header" id="profile-header">
+        <div class="cover-image-container">
+            <img id="podcast-cover" class="cover-image" src="" alt="Podcast Cover" style="display: none;">
+            <div class="cover-overlay"></div>
+        </div>
+        <div class="profile-info">
+            <h1 class="podcast-name" id="podcast-name">Loading...</h1>
+            <p class="podcast-description" id="podcast-description"></p>
+            <button class="follow-button" id="follow-button">
+                <i class="fas fa-plus"></i>
+                <span>Follow</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Episode List Section -->
+    <main class="episode-list-container" id="episode-list-container">
+        <div class="loading-skeleton" id="loading-skeleton">
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+        </div>
+        
+        <div class="episodes-list" id="episodes-list" style="display: none;">
+            <!-- Episodes will be inserted here -->
+        </div>
+        
+        <div class="error-state" id="error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Failed to load episodes</p>
+            <button class="retry-button" id="retry-button">Retry</button>
+        </div>
+    </main>
+
+    <!-- Compact Player Bar (Fixed Bottom) -->
+    <div class="compact-player-bar" id="compact-player-bar" style="display: none;">
+        <div class="player-content">
+            <img class="player-artwork" id="compact-artwork" src="" alt="Episode Artwork">
+            <div class="player-info">
+                <div class="player-title" id="compact-title">Episode Title</div>
+                <div class="player-artist" id="compact-artist">Podcast Name</div>
+            </div>
+            <button class="play-button compact-play" id="compact-play-button" aria-label="Play/Pause">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="expand-button" id="expand-button" aria-label="Expand Player">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="compact-progress-bar">
+                <div class="progress-fill" id="compact-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Player Modal -->
+    <div class="player-modal" id="player-modal" style="display: none;">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content" id="modal-content">
+            <!-- Drag Handle -->
+            <div class="drag-handle"></div>
+            
+            <!-- Player Header -->
+            <div class="player-header">
+                <img class="player-artwork-large" id="player-artwork-large" src="" alt="Episode Artwork">
+                <h2 class="player-episode-title" id="player-episode-title">Episode Title</h2>
+                <p class="player-podcast-name" id="player-podcast-name">Podcast Name</p>
+                <div class="duration-badge" id="duration-badge">0:00</div>
+            </div>
+
+            <!-- Playback Controls -->
+            <div class="playback-controls">
+                <div class="control-row">
+                    <button class="control-button skip-back" id="skip-back-button" aria-label="Skip back 15 seconds">
+                        <span class="skip-label">15</span>
+                        <i class="fas fa-backward"></i>
+                    </button>
+                    <button class="control-button play-pause-large" id="play-pause-large" aria-label="Play/Pause">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-button skip-forward" id="skip-forward-button" aria-label="Skip forward 30 seconds">
+                        <span class="skip-label">30</span>
+                        <i class="fas fa-forward"></i>
+                    </button>
+                </div>
+                
+                <div class="progress-section">
+                    <span class="time-indicator current-time" id="current-time">0:00</span>
+                    <div class="progress-bar-large" id="progress-bar-large">
+                        <div class="progress-fill-large" id="progress-fill-large"></div>
+                        <div class="progress-scrubber" id="progress-scrubber"></div>
+                    </div>
+                    <span class="time-indicator total-time" id="total-time">0:00</span>
+                </div>
+                
+                <div class="secondary-controls">
+                    <button class="secondary-button speed-button" id="speed-button" aria-label="Playback Speed">
+                        <span id="speed-value">1x</span>
+                    </button>
+                    <button class="secondary-button timer-button" id="timer-button" aria-label="Sleep Timer">
+                        <i class="fas fa-moon"></i>
+                        <span id="timer-status">Off</span>
+                    </button>
+                    <button class="secondary-button share-button" id="share-button" aria-label="Share">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="secondary-button more-button" id="more-button" aria-label="More Options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drawer Tabs -->
+            <div class="drawer-tabs" id="drawer-tabs">
+                <button class="tab-button active" data-tab="shownotes" id="tab-shownotes">Show Notes</button>
+                <button class="tab-button" data-tab="chapters" id="tab-chapters">Chapters</button>
+                <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
+                <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
+            </div>
+
+            <!-- Tab Content Panels -->
+            <div class="tab-panels">
+                <!-- Show Notes Panel -->
+                <div class="tab-panel active" id="panel-shownotes">
+                    <div class="panel-content" id="shownotes-content">
+                        <!-- Show notes will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Chapters Panel -->
+                <div class="tab-panel" id="panel-chapters">
+                    <div class="panel-content" id="chapters-content">
+                        <div class="empty-state">No chapters available</div>
+                    </div>
+                </div>
+
+                <!-- Episodes Panel -->
+                <div class="tab-panel" id="panel-episodes">
+                    <div class="panel-content" id="episodes-panel-content">
+                        <!-- Episode list will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Follow Panel -->
+                <div class="tab-panel" id="panel-follow">
+                    <div class="panel-content" id="follow-content">
+                        <!-- Follow content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Drawer -->
+    <div class="share-drawer" id="share-drawer" style="display: none;">
+        <div class="drawer-backdrop" id="share-backdrop"></div>
+        <div class="drawer-content">
+            <div class="drag-handle"></div>
+            <h3 class="drawer-title">Share Episode</h3>
+            <div class="share-platforms" id="share-platforms">
+                <!-- Share buttons will be inserted here -->
+            </div>
+            <button class="cancel-button" id="share-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Speed Selector Modal -->
+    <div class="speed-modal" id="speed-modal" style="display: none;">
+        <div class="modal-backdrop-speed" id="speed-backdrop"></div>
+        <div class="speed-container">
+            <h3 class="speed-title">Playback Speed</h3>
+            <div class="speed-options" id="speed-options">
+                <!-- Speed options will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer Selector Modal -->
+    <div class="timer-modal" id="timer-modal" style="display: none;">
+        <div class="modal-backdrop-speed" id="timer-backdrop"></div>
+        <div class="speed-container">
+            <h3 class="speed-title">Sleep Timer</h3>
+            <div class="speed-options" id="timer-options">
+                <!-- Timer options will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" style="display: none;">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audio-player" preload="metadata"></audio>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/rss-parser.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
