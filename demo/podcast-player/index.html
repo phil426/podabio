@@ -33,7 +33,7 @@
                     <div class="artwork-placeholder" id="artwork-placeholder">
                         <i class="fas fa-music"></i>
                     </div>
-                    <!-- Title and Podcast Name Overlay -->
+                    <!-- Title and Podcast Name Overlay (Upper Left) -->
                     <div class="artwork-title-overlay">
                         <h1 class="episode-title-overlay" id="now-playing-title">Select an episode to play</h1>
                         <p class="podcast-name-overlay" id="now-playing-podcast">Podcast Name</p>
@@ -42,18 +42,6 @@
 
                 <!-- Player Controls (Below Artwork) -->
                 <div class="player-controls-section">
-
-                    <!-- Progress Bar -->
-                    <div class="progress-section-large">
-                        <div class="time-display">
-                            <span class="current-time-display" id="current-time-display">0:00</span>
-                            <span class="total-time-display" id="total-time-display">0:00</span>
-                        </div>
-                        <div class="progress-bar-now-playing" id="progress-bar-now-playing">
-                            <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
-                            <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
-                        </div>
-                    </div>
 
                     <!-- Primary Controls -->
                     <div class="primary-controls">
@@ -82,6 +70,9 @@
                         <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
                             <i class="fas fa-share-alt"></i>
                         </button>
+                        <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
                     </div>
 
                     <!-- Speed Selector (Inline) -->
@@ -97,22 +88,6 @@
                         <h3 class="inline-selector-title">Sleep Timer</h3>
                         <div class="timer-options-inline" id="timer-options-inline">
                             <!-- Timer options will be inserted here -->
-                        </div>
-                    </div>
-
-                    <!-- Show Notes Section (Always Visible) -->
-                    <div class="details-section" id="shownotes-section">
-                        <h2 class="section-title">Show Notes</h2>
-                        <div class="shownotes-content" id="shownotes-content">
-                            <p class="empty-message">No episode selected</p>
-                        </div>
-                    </div>
-
-                    <!-- Chapters Section (Always Visible) -->
-                    <div class="details-section" id="chapters-section">
-                        <h2 class="section-title">Chapters</h2>
-                        <div class="chapters-list" id="chapters-list">
-                            <div class="empty-state">No chapters available</div>
                         </div>
                     </div>
                 </div>

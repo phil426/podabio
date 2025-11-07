@@ -268,8 +268,9 @@ body {
     justify-content: center;
     align-items: center;
     gap: 40px;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     padding: 0;
+    width: 100%;
 }
 
 .control-button-large {
@@ -339,12 +340,23 @@ body {
 }
 
 /* Secondary Controls Bar */
+.secondary-controls-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+    width: 100%;
+    padding: 0;
+    margin-top: 0;
+}
+
 /* Inline Speed Selector */
 .inline-speed-selector {
     margin-top: 20px;
     padding: 20px;
     background-color: var(--card);
     border-radius: 12px;
+    width: 100%;
 }
 
 .inline-selector-title {
@@ -391,6 +403,7 @@ body {
     padding: 20px;
     background-color: var(--card);
     border-radius: 12px;
+    width: 100%;
 }
 
 .timer-options-inline {
@@ -415,16 +428,6 @@ body {
 .timer-option-inline:active {
     transform: scale(0.98);
     background-color: var(--border);
-}
-
-.secondary-controls-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 28px;
-    width: 100%;
-    padding: 0;
-    margin-top: 0;
 }
 
 .secondary-control-btn {
@@ -850,46 +853,43 @@ body {
     z-index: 1;
 }
 
-/* Title Overlay on Artwork */
+/* Title Overlay on Artwork (Upper Left) */
 .artwork-title-overlay {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
-    right: 0;
     padding: 24px 20px;
-    padding-bottom: 32px;
     z-index: 2;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
     pointer-events: none;
 }
 
 .episode-title-overlay {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
     line-height: 1.2;
     color: #FFFFFF;
-    margin: 0 0 8px 0;
+    margin: 0 0 12px 0;
     padding: 0;
     word-wrap: break-word;
     text-align: left;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .podcast-name-overlay {
-    font-size: 16px;
+    font-size: 18px;
     color: #FFFFFF;
     margin: 0;
     font-weight: 400;
     text-align: left;
     opacity: 0.95;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Player Controls Section (Below Artwork) */
 .player-controls-section {
     background-color: #000000;
-    padding: 24px 20px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    padding: 32px 20px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom));
     width: 100%;
     box-sizing: border-box;
     display: flex;
@@ -898,6 +898,8 @@ body {
     flex: 1;
     min-height: 40vh;
     overflow-y: auto;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 
