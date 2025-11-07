@@ -231,7 +231,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-top-drawer.peek {
-            transform: translateY(-56%);
+            transform: translateY(-70%);
         }
         
         .podcast-drawer-close {
