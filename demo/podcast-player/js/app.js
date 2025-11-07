@@ -276,25 +276,30 @@ class PodcastApp {
         const title = document.getElementById('now-playing-title');
         const podcastName = document.getElementById('now-playing-podcast');
         
-        const episodeArtwork = this.currentEpisode.artwork || this.podcastData.coverImage || '';
-        
-        // Update artwork container
+        // Only show artwork if podcast is set and we have an episode
         const artworkContainer = document.getElementById('now-playing-artwork-container');
-        if (artworkContainer && episodeArtwork) {
+        const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
+        const episodeArtwork = (hasPodcastData && this.currentEpisode) ? (this.currentEpisode.artwork || this.podcastData.coverImage || '') : '';
+        
+        // Update artwork container - show generic placeholder until podcast is set
+        if (artworkContainer) {
             const containerImg = artworkContainer.querySelector('.episode-artwork-large');
-            if (containerImg) {
-                containerImg.src = getProxiedImageUrl(episodeArtwork);
-                containerImg.style.display = 'block';
-            }
             const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
-            if (containerPlaceholder) {
-                containerPlaceholder.style.display = 'none';
+            
+            if (hasPodcastData && episodeArtwork) {
+                // Show actual artwork when podcast is set and artwork is available
+                if (containerImg) {
+                    containerImg.src = getProxiedImageUrl(episodeArtwork);
+                    containerImg.style.display = 'block';
+                }
+                if (containerPlaceholder) {
+                    containerPlaceholder.style.display = 'none';
+                }
+            } else {
+                // Show generic placeholder until podcast is set
+                if (containerImg) containerImg.style.display = 'none';
+                if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
             }
-        } else if (artworkContainer) {
-            const containerImg = artworkContainer.querySelector('.episode-artwork-large');
-            if (containerImg) containerImg.style.display = 'none';
-            const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
-            if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
         }
         
         // Update title and podcast name overlay (podcast name is main title)
