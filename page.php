@@ -3276,7 +3276,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         drawer.classList.remove('peek');
                         setTimeout(() => {
                             if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
-                                drawer.style.display = 'none';
+                                // Keep drawer visible but positioned off-screen so banner remains visible
+                                drawer.style.display = 'flex';
                             }
                         }, 300);
                         document.body.style.overflow = '';
