@@ -172,16 +172,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         /* When drawer opens, banner moves down and hides */
-        .podcast-top-drawer.open ~ .podcast-top-banner,
-        body:has(.podcast-top-drawer.open) .podcast-top-banner {
+        .podcast-top-banner.drawer-open {
             opacity: 0;
             pointer-events: none;
             transform: translateY(100vh);
         }
         
         /* During peek, banner moves down proportionally */
-        .podcast-top-drawer.peek ~ .podcast-top-banner,
-        body:has(.podcast-top-drawer.peek) .podcast-top-banner {
+        .podcast-top-banner.drawer-peek {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(calc(100vh * 0.3));
@@ -3259,6 +3257,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 const drawer = document.getElementById('podcast-top-drawer');
                 const toggleBtn = document.getElementById('podcast-drawer-toggle');
                 const closeBtn = document.getElementById('podcast-drawer-close');
+                const banner = document.getElementById('podcast-top-banner');
                 
                 if (!drawer || !toggleBtn) return;
                 
@@ -3272,6 +3271,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         void drawer.offsetWidth;
                         drawer.classList.remove('peek');
                         drawer.classList.add('open');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-peek');
+                            banner.classList.add('drawer-open');
+                        }
                         document.body.style.overflow = 'hidden';
                         this.isPeeking = false;
                     },
@@ -3279,9 +3283,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     closeDrawer: function() {
                         drawer.classList.remove('open');
                         drawer.classList.remove('peek');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-open', 'drawer-peek');
+                        }
                         setTimeout(() => {
                             if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
-                                // Keep drawer visible but positioned off-screen so banner remains visible
                                 drawer.style.display = 'flex';
                             }
                         }, 300);
@@ -3296,15 +3303,23 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         // Force reflow
                         void drawer.offsetWidth;
                         drawer.classList.add('peek');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-open');
+                            banner.classList.add('drawer-peek');
+                        }
                         this.isPeeking = true;
                         
                         // Close after showing peek
                         setTimeout(() => {
                             if (drawer.classList.contains('peek') && !drawer.classList.contains('open')) {
                                 drawer.classList.remove('peek');
+                                // Update banner state
+                                if (banner) {
+                                    banner.classList.remove('drawer-peek');
+                                }
                                 setTimeout(() => {
                                     if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
-                                        // Keep drawer visible but positioned off-screen so banner remains visible
                                         drawer.style.display = 'flex';
                                     }
                                 }, 300);
