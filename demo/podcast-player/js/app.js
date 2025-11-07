@@ -47,19 +47,39 @@ class PodcastApp {
      * Apply time bar padding via JavaScript (workaround for CSS cache)
      */
     applyTimeBarPadding() {
-        const timeDisplay = document.querySelector('.time-display');
-        const progressBar = document.querySelector('.progress-bar-now-playing');
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+            const timeDisplay = document.querySelector('.time-display');
+            const progressBar = document.querySelector('.progress-bar-now-playing');
+            
+            if (timeDisplay) {
+                timeDisplay.style.paddingLeft = '30px';
+                timeDisplay.style.paddingRight = '30px';
+            }
+            
+            if (progressBar) {
+                progressBar.style.marginLeft = '30px';
+                progressBar.style.marginRight = '30px';
+                progressBar.style.width = 'calc(100% - 60px)';
+            }
+        }, 100);
         
-        if (timeDisplay) {
-            timeDisplay.style.paddingLeft = '30px';
-            timeDisplay.style.paddingRight = '30px';
-        }
-        
-        if (progressBar) {
-            progressBar.style.marginLeft = '30px';
-            progressBar.style.marginRight = '30px';
-            progressBar.style.width = 'calc(100% - 60px)';
-        }
+        // Also apply after feed loads (elements might be created dynamically)
+        setTimeout(() => {
+            const timeDisplay = document.querySelector('.time-display');
+            const progressBar = document.querySelector('.progress-bar-now-playing');
+            
+            if (timeDisplay) {
+                timeDisplay.style.paddingLeft = '30px';
+                timeDisplay.style.paddingRight = '30px';
+            }
+            
+            if (progressBar) {
+                progressBar.style.marginLeft = '30px';
+                progressBar.style.marginRight = '30px';
+                progressBar.style.width = 'calc(100% - 60px)';
+            }
+        }, 1000);
     }
 
     /**
@@ -282,6 +302,9 @@ class PodcastApp {
         const artworkContainer = document.getElementById('now-playing-artwork-container');
         const placeholder = document.getElementById('artwork-placeholder');
         const artwork = document.getElementById('now-playing-artwork');
+        
+        // Apply time bar padding after UI update
+        this.applyTimeBarPadding();
         
         // Check if podcast is set
         const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
