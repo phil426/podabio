@@ -36,30 +36,8 @@ class PodcastApp {
         // Initialize follow section
         this.initFollowSection();
         
-        // Apply time bar padding (workaround for CSS cache issue)
-        this.applyTimeBarPadding();
-        
         // Load RSS feed
         await this.loadFeed();
-    }
-    
-    /**
-     * Apply time bar padding via JavaScript (workaround for CSS cache)
-     */
-    applyTimeBarPadding() {
-        const timeDisplay = document.querySelector('.time-display');
-        const progressBar = document.querySelector('.progress-bar-now-playing');
-        
-        if (timeDisplay) {
-            timeDisplay.style.setProperty('padding-left', '30px', 'important');
-            timeDisplay.style.setProperty('padding-right', '30px', 'important');
-        }
-        
-        if (progressBar) {
-            progressBar.style.setProperty('margin-left', '30px', 'important');
-            progressBar.style.setProperty('margin-right', '30px', 'important');
-            progressBar.style.setProperty('width', 'calc(100% - 60px)', 'important');
-        }
     }
 
     /**
@@ -282,9 +260,6 @@ class PodcastApp {
         const artworkContainer = document.getElementById('now-playing-artwork-container');
         const placeholder = document.getElementById('artwork-placeholder');
         const artwork = document.getElementById('now-playing-artwork');
-        
-        // Apply time bar padding after UI update
-        this.applyTimeBarPadding();
         
         // Check if podcast is set
         const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
@@ -586,8 +561,6 @@ class PodcastApp {
             const remaining = audio.duration - (audio.currentTime || 0);
             remainingTimeDisplay.textContent = '-' + formatTime(remaining);
         }
-        
-        this.applyTimeBarPadding(); // Ensure padding is applied
     }
 
     /**

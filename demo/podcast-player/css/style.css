@@ -7,18 +7,11 @@
 
 :root {
     --primary-color: #6366f1;
-    --background-light: #F5F5F5;
     --background-dark: #121212;
-    --card-light: #FFFFFF;
     --card-dark: #1E1E1E;
-    --text-light: #1A1A1A;
     --text-dark: #FFFFFF;
-    --text-secondary-light: #666666;
     --text-secondary-dark: #AAAAAA;
-    --border-light: rgba(0, 0, 0, 0.1);
     --border-dark: rgba(255, 255, 255, 0.1);
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 /* Force dark mode */
@@ -113,14 +106,6 @@ body {
     overflow: hidden;
     position: relative;
     width: 100%;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-}
-
-/* Ensure now-playing panel is full height */
-#now-playing-panel {
-    position: relative;
 }
 
 .tab-panel {
@@ -132,11 +117,7 @@ body {
     display: none;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
-    padding: 0;
     padding-bottom: env(safe-area-inset-bottom);
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
     height: 100%;
 }
 
@@ -156,7 +137,6 @@ body {
 
 /* Now Playing Tab Styles */
 .now-playing-content {
-    position: relative;
     height: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -164,84 +144,86 @@ body {
     flex-direction: column;
     background-color: #000000;
     width: 100%;
-    padding: 0;
-    margin: 0;
 }
 
-.episode-info-section {
+/* Artwork */
+.episode-artwork-fullwidth {
     width: 100%;
-    text-align: center;
-    margin-bottom: 24px;
+    height: 60vh;
+    min-height: 400px;
+    max-height: 60vh;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
+    flex-shrink: 0;
 }
 
-.episode-title-large {
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1.4;
-    color: #FFFFFF;
-    margin-bottom: 8px;
-    padding: 0;
-    word-wrap: break-word;
+.episode-artwork-large {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
-.podcast-name-large {
-    font-size: 15px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 0;
-    font-weight: 400;
+.artwork-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 120px;
+    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
-.duration-badge-large {
-    display: inline-block;
-    padding: 6px 14px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 500;
-    margin-top: 12px;
-}
-
-/* Progress Section */
+/* Progress Section - Fixed padding issue */
 .progress-section-large {
     width: 100%;
     padding: 32px 0 24px 0;
     background-color: #000000;
+}
+
+/* Time display with proper padding - more specific selector to override reset */
+.progress-section-large .time-display {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    width: 100%;
     box-sizing: border-box;
 }
 
-.time-display {
-    display: flex !important;
-    justify-content: space-between !important;
-    margin-bottom: 16px !important;
-    padding-left: 30px !important;
-    padding-right: 30px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    font-size: 13px !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-weight: 500 !important;
-    font-variant-numeric: tabular-nums !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.progress-bar-now-playing {
-    width: calc(100% - 60px) !important;
-    margin-left: 30px !important;
-    margin-right: 30px !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    height: 4px !important;
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    border-radius: 2px !important;
-    position: relative !important;
-    cursor: pointer !important;
-    touch-action: none !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    box-sizing: border-box !important;
+/* Progress bar with proper margin - more specific selector */
+.progress-section-large .progress-bar-now-playing {
+    width: calc(100% - 60px);
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    touch-action: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-sizing: border-box;
 }
 
 .progress-fill-now-playing {
@@ -274,6 +256,21 @@ body {
     opacity: 1;
 }
 
+/* Player Controls Section */
+.player-controls-section {
+    background-color: #000000;
+    padding: 0 20px 32px 20px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 40vh;
+    overflow-y: auto;
+    justify-content: flex-start;
+    align-items: center;
+}
+
 /* Primary Controls */
 .primary-controls {
     display: flex;
@@ -281,7 +278,6 @@ body {
     align-items: center;
     gap: 40px;
     margin-bottom: 32px;
-    padding: 0;
     width: 100%;
 }
 
@@ -301,7 +297,6 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    min-height: 56px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -358,8 +353,45 @@ body {
     align-items: center;
     gap: 28px;
     width: 100%;
-    padding: 0;
-    margin-top: 0;
+}
+
+.secondary-control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    min-height: 60px;
+    justify-content: center;
+}
+
+.secondary-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.secondary-control-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+}
+
+.secondary-control-btn i {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.secondary-control-btn span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
 }
 
 /* Inline Speed Selector */
@@ -442,46 +474,6 @@ body {
     background-color: var(--border);
 }
 
-.secondary-control-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    padding: 12px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    min-width: 60px;
-    min-height: 60px;
-    justify-content: center;
-}
-
-.secondary-control-btn:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-    color: #FFFFFF;
-    transform: translateY(-2px);
-}
-
-.secondary-control-btn:active {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: scale(0.95);
-}
-
-.secondary-control-btn i {
-    font-size: 20px;
-    margin-bottom: 2px;
-}
-
-.secondary-control-btn span {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
-}
-
 /* Details Tab Styles */
 .details-content {
     padding: 24px 16px;
@@ -496,144 +488,6 @@ body {
     font-weight: 700;
     color: var(--text);
     margin-bottom: 16px;
-}
-
-.shownotes-content {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--text);
-}
-
-.shownotes-content h1,
-.shownotes-content h2,
-.shownotes-content h3 {
-    font-weight: 700;
-    margin-top: 24px;
-    margin-bottom: 12px;
-    color: var(--text);
-}
-
-.shownotes-content h1 {
-    font-size: 20px;
-}
-
-.shownotes-content h2 {
-    font-size: 18px;
-}
-
-.shownotes-content h3 {
-    font-size: 16px;
-}
-
-.shownotes-content p {
-    margin-bottom: 12px;
-}
-
-.shownotes-content a {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-.shownotes-content ul,
-.shownotes-content ol {
-    margin-left: 16px;
-    margin-bottom: 12px;
-}
-
-.shownotes-content li {
-    margin-bottom: 8px;
-}
-
-.shownotes-content blockquote {
-    border-left: 4px solid var(--primary-color);
-    padding-left: 16px;
-    margin: 16px 0;
-    font-style: italic;
-    color: var(--text-secondary);
-}
-
-.shownotes-content img {
-    width: 100%;
-    border-radius: 12px;
-    margin: 16px 0;
-}
-
-.timestamp-link {
-    display: inline-block;
-    background-color: var(--background);
-    color: var(--text);
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-size: 14px;
-    font-weight: 600;
-    margin: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.timestamp-link:active {
-    background-color: var(--border);
-}
-
-/* Chapters List */
-.chapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.chapter-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    min-height: 72px;
-}
-
-.chapter-item:active {
-    background-color: var(--background);
-}
-
-.chapter-item.active {
-    background-color: rgba(99, 102, 241, 0.1);
-    border-left: 4px solid var(--primary-color);
-}
-
-.chapter-image {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.chapter-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.chapter-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.chapter-time {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.chapter-item .chevron {
-    color: var(--text-secondary);
-    flex-shrink: 0;
 }
 
 /* Episodes Tab Styles */
@@ -657,13 +511,13 @@ body {
     gap: 16px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     min-height: 88px;
 }
 
 .episode-card:active {
     transform: scale(0.98);
-    box-shadow: var(--shadow-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .episode-card.active {
@@ -814,526 +668,6 @@ body {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-/* Now Playing - Artwork */
-.episode-artwork-fullwidth {
-    width: 100%;
-    height: 60vh;
-    min-height: 400px;
-    max-height: 60vh;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    flex-shrink: 0;
-}
-
-.episode-artwork-large {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-.artwork-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 120px;
-    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-/* Title Overlay on Artwork (Upper Left) */
-.artwork-title-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 24px 20px;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.episode-title-overlay {
-    font-size: 42px;
-    font-weight: 700;
-    line-height: 1.2;
-    color: #FFFFFF;
-    margin: 0 0 16px 0;
-    padding: 0;
-    word-wrap: break-word;
-    text-align: left;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    letter-spacing: -0.5px;
-}
-
-.podcast-name-overlay {
-    font-size: 20px;
-    color: #FFFFFF;
-    margin: 0;
-    font-weight: 400;
-    text-align: left;
-    opacity: 0.95;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Player Controls Section (Below Progress) */
-.player-controls-section {
-    background-color: #000000;
-    padding: 0 20px 32px 20px;
-    padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    visibility: visible;
-    flex: 1;
-    min-height: 40vh;
-    overflow-y: auto;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-
-/* Full Player Modal Styles */
-.full-player-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 3000;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    position: relative;
-    width: 100%;
-    max-height: 90vh;
-    background-color: var(--card);
-    border-radius: 24px 24px 0 0;
-    padding: 16px 24px;
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    animation: modal-slide-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 2;
-}
-
-@keyframes modal-slide-up {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.modal-drag-handle {
-    width: 40px;
-    height: 4px;
-    background-color: var(--text-secondary);
-    border-radius: 2px;
-    margin: 8px auto 16px;
-    opacity: 0.5;
-}
-
-.modal-artwork-container {
-    width: 280px;
-    height: 280px;
-    margin: 0 auto 24px;
-    position: relative;
-}
-
-.modal-artwork {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.modal-artwork-placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 120px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.modal-episode-info {
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-.modal-episode-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-    line-height: 1.3;
-}
-
-.modal-podcast-name {
-    font-size: 16px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.modal-duration-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    background-color: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.modal-progress-section {
-    margin-bottom: 24px;
-}
-
-.modal-time-display {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-}
-
-.modal-progress-bar {
-    width: 100%;
-    height: 4px;
-    background-color: var(--border);
-    border-radius: 2px;
-    position: relative;
-    cursor: pointer;
-    touch-action: none;
-}
-
-.modal-progress-fill {
-    height: 100%;
-    background-color: var(--primary-color);
-    width: 0%;
-    transition: width 0.1s linear;
-    border-radius: 2px;
-}
-
-.modal-progress-scrubber {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    width: 16px;
-    height: 16px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-    border: 2px solid #FFFFFF;
-}
-
-.modal-progress-bar:hover .modal-progress-scrubber,
-.modal-progress-bar:active .modal-progress-scrubber {
-    opacity: 1;
-}
-
-.modal-primary-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-    margin-bottom: 24px;
-}
-
-.modal-skip-back,
-.modal-skip-forward {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
-    background-color: transparent;
-    color: var(--text-secondary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    min-height: 56px;
-}
-
-.modal-skip-back:active,
-.modal-skip-forward:active {
-    transform: scale(0.95);
-    opacity: 0.7;
-}
-
-.modal-skip-back .skip-label,
-.modal-skip-forward .skip-label {
-    position: absolute;
-    top: -16px;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    white-space: nowrap;
-}
-
-.modal-skip-back i,
-.modal-skip-forward i {
-    font-size: 20px;
-}
-
-.modal-play-pause {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: #FFFFFF;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    min-height: 72px;
-}
-
-.modal-play-pause:active {
-    transform: scale(0.95);
-}
-
-.modal-play-pause i {
-    font-size: 24px;
-}
-
-.modal-secondary-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 28px;
-    margin-bottom: 24px;
-}
-
-.modal-speed-control,
-.modal-timer-control,
-.modal-share-control {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 8px 10px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    min-width: 50px;
-    min-height: 56px;
-    justify-content: center;
-}
-
-.modal-speed-control:active,
-.modal-timer-control:active,
-.modal-share-control:active {
-    background-color: var(--background);
-    transform: scale(0.95);
-}
-
-.modal-speed-control i,
-.modal-timer-control i,
-.modal-share-control i {
-    font-size: 20px;
-    margin-bottom: 2px;
-}
-
-.modal-speed-control span,
-.modal-timer-control span {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
-}
-
-.modal-tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-    padding: 0 4px;
-}
-
-.modal-tab {
-    flex: 1;
-    padding: 12px 16px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    position: relative;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s;
-    min-height: 44px;
-}
-
-.modal-tab.active {
-    color: var(--text);
-    font-weight: 600;
-    border-bottom-color: var(--primary-color);
-}
-
-.modal-tab:active {
-    opacity: 0.7;
-}
-
-.modal-tab-content {
-    min-height: 200px;
-    max-height: 400px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.modal-tab-panel {
-    display: none;
-}
-
-.modal-tab-panel.active {
-    display: block;
-    animation: panel-fade-in 0.25s ease-out;
-}
-
-.modal-shownotes {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--text);
-    padding: 8px 0;
-}
-
-.modal-shownotes h1,
-.modal-shownotes h2,
-.modal-shownotes h3 {
-    font-weight: 700;
-    margin-top: 20px;
-    margin-bottom: 12px;
-    color: var(--text);
-}
-
-.modal-shownotes p {
-    margin-bottom: 12px;
-}
-
-.modal-shownotes a {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-.modal-chapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.modal-episodes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.modal-episode-card {
-    background-color: var(--background);
-    border-radius: 8px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: transform 0.2s;
-    min-height: 72px;
-}
-
-.modal-episode-card:active {
-    transform: scale(0.98);
-}
-
-.modal-episode-card.active {
-    border: 2px solid var(--primary-color);
-}
-
-.modal-episode-card .episode-artwork {
-    width: 56px;
-    height: 56px;
-    border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.modal-episode-card .episode-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.modal-episode-card .episode-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 4px;
-}
-
-.modal-episode-card .episode-meta {
-    font-size: 12px;
-    color: var(--text-secondary);
 }
 
 /* Safe Area Support for iOS */
