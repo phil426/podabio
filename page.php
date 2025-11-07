@@ -171,15 +171,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(0);
         }
         
-        /* When drawer opens, banner moves down with it */
-        .podcast-top-drawer.open .podcast-top-banner {
+        /* When drawer opens, banner moves down and hides */
+        .podcast-top-drawer.open ~ .podcast-top-banner,
+        body:has(.podcast-top-drawer.open) .podcast-top-banner {
             opacity: 0;
             pointer-events: none;
             transform: translateY(100vh);
         }
         
         /* During peek, banner moves down proportionally */
-        .podcast-top-drawer.peek .podcast-top-banner {
+        .podcast-top-drawer.peek ~ .podcast-top-banner,
+        body:has(.podcast-top-drawer.peek) .podcast-top-banner {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(calc(100vh * 0.3));
@@ -2489,17 +2491,20 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             <?php endif; ?>
         </div>
         
+        <!-- Podcast Player Top Banner (positioned independently, moves with drawer) -->
+        <?php if (!empty($page['rss_feed_url'])): ?>
+            <div class="podcast-top-banner" id="podcast-top-banner">
+                <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
+                    <i class="fas fa-podcast"></i>
+                    <span>Tap to Listen</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        <?php endif; ?>
+        
         <!-- Podcast Player Top Drawer -->
         <?php if (!empty($page['rss_feed_url'])): ?>
             <div class="podcast-top-drawer" id="podcast-top-drawer">
-                <!-- Podcast Player Top Banner (attached to drawer bottom) -->
-                <div class="podcast-top-banner" id="podcast-top-banner">
-                    <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
-                        <i class="fas fa-podcast"></i>
-                        <span>Tap to Listen</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
                 
                 <!-- Tab Navigation -->
                 <nav class="tab-navigation" id="tab-navigation">
