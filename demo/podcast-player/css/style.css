@@ -130,13 +130,14 @@ body {
     right: 0;
     bottom: 0;
     display: none;
-    overflow-y: auto;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
     padding: 0;
     padding-bottom: env(safe-area-inset-bottom);
     margin: 0;
     width: 100%;
     box-sizing: border-box;
+    height: 100%;
 }
 
 .tab-panel.active {
