@@ -47,8 +47,7 @@ class PodcastApp {
      * Apply time bar padding via JavaScript (workaround for CSS cache)
      */
     applyTimeBarPadding() {
-        // Use setTimeout to ensure DOM is ready
-        setTimeout(() => {
+        const applyStyles = () => {
             const timeDisplay = document.querySelector('.time-display');
             const progressBar = document.querySelector('.progress-bar-now-playing');
             
@@ -62,24 +61,29 @@ class PodcastApp {
                 progressBar.style.marginRight = '30px';
                 progressBar.style.width = 'calc(100% - 60px)';
             }
-        }, 100);
+        };
         
-        // Also apply after feed loads (elements might be created dynamically)
-        setTimeout(() => {
-            const timeDisplay = document.querySelector('.time-display');
-            const progressBar = document.querySelector('.progress-bar-now-playing');
-            
-            if (timeDisplay) {
-                timeDisplay.style.paddingLeft = '30px';
-                timeDisplay.style.paddingRight = '30px';
-            }
-            
-            if (progressBar) {
-                progressBar.style.marginLeft = '30px';
-                progressBar.style.marginRight = '30px';
-                progressBar.style.width = 'calc(100% - 60px)';
-            }
-        }, 1000);
+        // Apply immediately if elements exist
+        applyStyles();
+        
+        // Use MutationObserver to apply when elements are added to DOM
+        const observer = new MutationObserver(() => {
+            applyStyles();
+        });
+        
+        const progressSection = document.getElementById('progress-section-now-playing');
+        if (progressSection) {
+            observer.observe(progressSection, {
+                childList: true,
+                subtree: true
+            });
+        }
+        
+        // Also apply on multiple intervals to catch any timing issues
+        setTimeout(applyStyles, 100);
+        setTimeout(applyStyles, 500);
+        setTimeout(applyStyles, 1000);
+        setTimeout(applyStyles, 2000);
     }
 
     /**
