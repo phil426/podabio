@@ -151,19 +151,33 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             margin-bottom: 2rem;
         }
         
-        /* Podcast Top Banner - Scoped */
+        /* Podcast Top Banner - Attached to drawer bottom */
         .podcast-top-banner {
-            position: fixed;
-            top: 0;
+            position: absolute;
+            bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
             background: linear-gradient(135deg, var(--primary-color, #0066ff) 0%, rgba(0, 102, 255, 0.95) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            z-index: 9999;
+            z-index: 10001;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .podcast-top-drawer.open .podcast-top-banner {
+            transform: translateY(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .podcast-top-drawer:not(.open) .podcast-top-banner {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .podcast-banner-toggle {
@@ -205,28 +219,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(2px);
         }
         
-        /* Vibration animation for Tap to Listen button */
-        @keyframes vibrate {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-2px, -2px); }
-            20% { transform: translate(2px, 2px); }
-            30% { transform: translate(-2px, 2px); }
-            40% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            70% { transform: translate(-2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            90% { transform: translate(-1px, -1px); }
-        }
-        
-        .podcast-banner-toggle.vibrate {
-            animation: vibrate 1.5s ease-in-out;
-        }
-        
-        /* Add padding to page container when banner is present */
-        .podcast-top-banner + .page-container {
-            padding-top: calc(1rem + 42px);
-        }
         
         /* Podcast Top Drawer */
         .podcast-top-drawer {
@@ -242,6 +234,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
             overflow: hidden;
+        }
+        
+        .podcast-top-drawer .podcast-top-banner {
+            position: absolute;
+            bottom: 0;
         }
         
         .podcast-top-drawer.open {
@@ -2430,17 +2427,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     </style>
 </head>
 <body class="<?php echo $cssGenerator->getSpatialEffectClass(); ?>">
-    <!-- Podcast Player Top Banner (only show if RSS feed exists) -->
-    <?php if (!empty($page['rss_feed_url'])): ?>
-        <div class="podcast-top-banner" id="podcast-top-banner">
-            <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
-                <i class="fas fa-podcast"></i>
-                <span>Tap to Listen</span>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
-    <?php endif; ?>
-    
     <div class="page-container">
         <div class="profile-header">
             <?php if ($page['profile_image']): ?>
@@ -2505,6 +2491,15 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         <!-- Podcast Player Top Drawer -->
         <?php if (!empty($page['rss_feed_url'])): ?>
             <div class="podcast-top-drawer" id="podcast-top-drawer" style="display: none;">
+                <!-- Podcast Player Top Banner (attached to drawer bottom) -->
+                <div class="podcast-top-banner" id="podcast-top-banner">
+                    <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
+                        <i class="fas fa-podcast"></i>
+                        <span>Tap to Listen</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
                 <!-- Tab Navigation -->
                 <nav class="tab-navigation" id="tab-navigation">
                     <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
@@ -3382,22 +3377,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 setTimeout(function() {
                     PodcastDrawerController.peekDrawer();
                 }, 4000);
-                
-                // Vibration animation: Make "Tap to Listen" button vibrate every 15 seconds
-                function triggerVibration() {
-                    if (toggleBtn && !drawer.classList.contains('open')) {
-                        toggleBtn.classList.add('vibrate');
-                        setTimeout(function() {
-                            toggleBtn.classList.remove('vibrate');
-                        }, 1500);
-                    }
-                }
-                
-                // Start vibration after initial delay, then repeat every 15 seconds
-                setTimeout(function() {
-                    triggerVibration();
-                    setInterval(triggerVibration, 15000);
-                }, 15000);
                 
                 // Expose controller to window for debugging (optional)
                 window.PodcastDrawerController = PodcastDrawerController;
