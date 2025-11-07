@@ -3274,6 +3274,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 // Open drawer and initialize player when toggle is clicked
                 toggleBtn.addEventListener('click', function() {
                     openDrawer();
+                    // Wait for scripts to load before initializing
+                    if (typeof PodcastPlayerApp === 'undefined') {
+                        console.error('PodcastPlayerApp class not loaded. Check script loading order.');
+                        return;
+                    }
                     // Small delay to ensure drawer is visible before initializing
                     setTimeout(initPlayer, 100);
                 });

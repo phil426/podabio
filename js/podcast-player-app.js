@@ -848,23 +848,23 @@ class PodcastPlayerApp {
                 this.config.socialIcons.forEach(icon => {
                     // Map platform names to Font Awesome icons
                     const platformIcons = {
-                        'facebook' => 'fab fa-facebook',
-                        'twitter' => 'fab fa-twitter',
-                        'instagram' => 'fab fa-instagram',
-                        'linkedin' => 'fab fa-linkedin',
-                        'youtube' => 'fab fa-youtube',
-                        'tiktok' => 'fab fa-tiktok',
-                        'snapchat' => 'fab fa-snapchat',
-                        'pinterest' => 'fab fa-pinterest',
-                        'reddit' => 'fab fa-reddit',
-                        'discord' => 'fab fa-discord',
-                        'twitch' => 'fab fa-twitch',
-                        'github' => 'fab fa-github',
-                        'apple_podcasts' => 'fas fa-podcast',
-                        'spotify' => 'fab fa-spotify',
-                        'youtube_music' => 'fab fa-youtube',
-                        'iheart_radio' => 'fas fa-heart',
-                        'amazon_music' => 'fab fa-amazon'
+                        'facebook': 'fab fa-facebook',
+                        'twitter': 'fab fa-twitter',
+                        'instagram': 'fab fa-instagram',
+                        'linkedin': 'fab fa-linkedin',
+                        'youtube': 'fab fa-youtube',
+                        'tiktok': 'fab fa-tiktok',
+                        'snapchat': 'fab fa-snapchat',
+                        'pinterest': 'fab fa-pinterest',
+                        'reddit': 'fab fa-reddit',
+                        'discord': 'fab fa-discord',
+                        'twitch': 'fab fa-twitch',
+                        'github': 'fab fa-github',
+                        'apple_podcasts': 'fas fa-podcast',
+                        'spotify': 'fab fa-spotify',
+                        'youtube_music': 'fab fa-youtube',
+                        'iheart_radio': 'fas fa-heart',
+                        'amazon_music': 'fab fa-amazon'
                     };
                     
                     const iconClass = platformIcons[icon.platform_name] || 'fas fa-link';
