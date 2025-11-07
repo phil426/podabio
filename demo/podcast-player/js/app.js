@@ -144,6 +144,13 @@ class PodcastApp {
         
         if (loadingSkeleton) loadingSkeleton.style.display = 'none';
         if (episodesList) episodesList.style.display = 'block';
+        
+        // Auto-load the most recent episode (first in list)
+        if (this.podcastData.episodes && this.podcastData.episodes.length > 0) {
+            const mostRecentEpisode = this.podcastData.episodes[0];
+            // Load but don't auto-play (let user click play)
+            this.selectEpisode(mostRecentEpisode, false);
+        }
     }
 
     /**
