@@ -2938,6 +2938,20 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     </div>
                 </div>
                 
+                <!-- RSS Feed URL -->
+                <div class="form-group">
+                    <label for="rss_feed_url">RSS Feed URL</label>
+                    <input type="url" 
+                           id="rss_feed_url" 
+                           name="rss_feed_url" 
+                           value="<?php echo h($page['rss_feed_url'] ?? ''); ?>" 
+                           placeholder="https://feeds.simplecast.com/your-feed-id"
+                           style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <small style="display: block; margin-top: 0.5rem; color: #666;">
+                        Enter your podcast RSS feed URL. This will enable the podcast player drawer on your page.
+                    </small>
+                </div>
+                
                 <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
                 
                 <div class="form-group">
@@ -7167,7 +7181,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         const pageSettingsForm = document.getElementById('page-settings-form');
         if (pageSettingsForm) {
             // Auto-save on input changes
-            const settingsFields = ['username', 'podcast_name', 'podcast_description', 'custom_domain'];
+            const settingsFields = ['username', 'podcast_name', 'podcast_description', 'rss_feed_url', 'custom_domain'];
             settingsFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
@@ -7177,11 +7191,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             const username = document.getElementById('username').value;
                             const podcastName = document.getElementById('podcast_name').value;
                             const podcastDesc = document.getElementById('podcast_description').value;
+                            const rssFeedUrl = document.getElementById('rss_feed_url').value;
                             const customDomain = document.getElementById('custom_domain').value;
                             
                             if (username) formData.append('username', username);
                             if (podcastName) formData.append('podcast_name', podcastName);
                             if (podcastDesc) formData.append('podcast_description', podcastDesc);
+                            if (rssFeedUrl) formData.append('rss_feed_url', rssFeedUrl);
                             if (customDomain) formData.append('custom_domain', customDomain);
                             
                             return formData;

@@ -92,6 +92,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
+    <!-- Podcast Player Styles (only load if RSS feed exists) -->
+    <?php if (!empty($page['rss_feed_url'])): ?>
+        <link rel="stylesheet" href="/css/podcast-player.css">
+        <link rel="stylesheet" href="/css/podcast-player-controls.css">
+    <?php endif; ?>
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
     <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
@@ -143,6 +149,89 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: var(--page-description-color, var(--primary-color));
             opacity: 0.9;
             margin-bottom: 2rem;
+        }
+        
+        /* Podcast Drawer Toggle Button */
+        .podcast-drawer-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            margin-top: 1rem;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .podcast-drawer-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .podcast-drawer-toggle:active {
+            transform: translateY(0);
+        }
+        
+        .podcast-drawer-toggle i {
+            font-size: 18px;
+        }
+        
+        /* Podcast Top Drawer */
+        .podcast-top-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #000000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .podcast-top-drawer.open {
+            transform: translateY(0);
+        }
+        
+        .podcast-drawer-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 16px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .podcast-drawer-close {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: #FFFFFF;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .podcast-drawer-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .podcast-drawer-close:active {
+            transform: scale(0.95);
         }
         
         /* Page Name Effects */
@@ -2351,7 +2440,181 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             <?php if ($page['podcast_description']): ?>
                 <p class="page-description"><?php echo nl2br(h($page['podcast_description'])); ?></p>
             <?php endif; ?>
+            
+            <!-- Podcast Player Drawer Toggle Button (only show if RSS feed exists) -->
+            <?php if (!empty($page['rss_feed_url'])): ?>
+                <button class="podcast-drawer-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
+                    <i class="fas fa-podcast"></i>
+                    <span>Podcast</span>
+                </button>
+            <?php endif; ?>
         </div>
+        
+        <!-- Podcast Player Top Drawer -->
+        <?php if (!empty($page['rss_feed_url'])): ?>
+            <div class="podcast-top-drawer" id="podcast-top-drawer" style="display: none;">
+                <!-- Drawer Header with Close Button -->
+                <div class="podcast-drawer-header">
+                    <button class="podcast-drawer-close" id="podcast-drawer-close" aria-label="Close Podcast Player">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Tab Navigation -->
+                <nav class="tab-navigation" id="tab-navigation">
+                    <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
+                    <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
+                    <button class="tab-button" data-tab="details" id="tab-details">Details</button>
+                    <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
+                </nav>
+
+                <!-- Tab Content Container -->
+                <div class="tab-content-container" id="tab-content-container">
+                    <!-- Now Playing Tab -->
+                    <div class="tab-panel active" id="now-playing-panel">
+                        <div class="now-playing-content">
+                            <!-- Full Width Cover Artwork -->
+                            <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
+                                <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
+                                <div class="artwork-placeholder" id="artwork-placeholder">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                            </div>
+
+                            <!-- Progress Section (Below Artwork, Above Controls) -->
+                            <div class="progress-section-large" id="progress-section-now-playing">
+                                <div class="time-display">
+                                    <span id="current-time-display">0:00</span>
+                                    <span id="remaining-time-display">-0:00</span>
+                                </div>
+                                <div class="progress-bar-now-playing" id="progress-bar-now-playing">
+                                    <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
+                                    <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                                </div>
+                            </div>
+
+                            <!-- Player Controls (Below Progress) -->
+                            <div class="player-controls-section">
+                                <!-- Primary Controls -->
+                                <div class="primary-controls">
+                                    <button class="control-button-large skip-back-large" id="skip-back-large" aria-label="Skip back 10 seconds">
+                                        <span class="skip-label-large">10</span>
+                                        <i class="fas fa-backward"></i>
+                                    </button>
+                                    <button class="control-button-large play-pause-large-now" id="play-pause-large-now" aria-label="Play/Pause">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="control-button-large skip-forward-large" id="skip-forward-large" aria-label="Skip forward 45 seconds">
+                                        <span class="skip-label-large">45</span>
+                                        <i class="fas fa-forward"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Secondary Controls Bar -->
+                                <div class="secondary-controls-bar">
+                                    <button class="secondary-control-btn speed-control-btn" id="speed-control-btn" aria-label="Playback Speed">
+                                        <span id="speed-display">1x</span>
+                                    </button>
+                                    <button class="secondary-control-btn timer-control-btn" id="timer-control-btn" aria-label="Sleep Timer">
+                                        <i class="fas fa-moon"></i>
+                                        <span id="timer-display">Off</span>
+                                    </button>
+                                    <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                    <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Speed Selector (Inline) -->
+                                <div class="inline-speed-selector" id="inline-speed-selector" style="display: none;">
+                                    <h3 class="inline-selector-title">Playback Speed</h3>
+                                    <div class="speed-options-inline" id="speed-options-inline">
+                                        <!-- Speed options will be inserted here -->
+                                    </div>
+                                </div>
+
+                                <!-- Timer Selector (Inline) -->
+                                <div class="inline-timer-selector" id="inline-timer-selector" style="display: none;">
+                                    <h3 class="inline-selector-title">Sleep Timer</h3>
+                                    <div class="timer-options-inline" id="timer-options-inline">
+                                        <!-- Timer options will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Tab -->
+                    <div class="tab-panel" id="follow-panel">
+                        <div class="details-content">
+                            <!-- Follow & Share Section -->
+                            <div class="details-section" id="follow-section">
+                                <h2 class="section-title">Follow & Share</h2>
+                                <div id="follow-content">
+                                    <!-- Follow content will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Tab -->
+                    <div class="tab-panel" id="details-panel">
+                        <div class="details-content">
+                            <!-- Show Notes Section -->
+                            <div class="details-section" id="shownotes-section">
+                                <h2 class="section-title">Show Notes</h2>
+                                <div class="shownotes-content" id="shownotes-content">
+                                    <p class="empty-message">No episode selected</p>
+                                </div>
+                            </div>
+
+                            <!-- Chapters Section -->
+                            <div class="details-section" id="chapters-section">
+                                <h2 class="section-title">Chapters</h2>
+                                <div class="chapters-list" id="chapters-list">
+                                    <div class="empty-state">No chapters available</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Episodes Tab -->
+                    <div class="tab-panel" id="episodes-panel">
+                        <div class="episodes-content">
+                            <!-- Loading Skeleton -->
+                            <div class="loading-skeleton" id="loading-skeleton">
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                            </div>
+
+                            <!-- Episodes List -->
+                            <div class="episodes-list" id="episodes-list" style="display: none;">
+                                <!-- Episodes will be inserted here -->
+                            </div>
+
+                            <!-- Error State -->
+                            <div class="error-state" id="error-state" style="display: none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Failed to load episodes</p>
+                                <button class="retry-button" id="retry-button">Retry</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Notification -->
+                <div class="toast" id="toast" style="display: none;">
+                    <span id="toast-message"></span>
+                </div>
+
+                <!-- Audio Element -->
+                <audio id="podcast-audio-player" preload="metadata"></audio>
+            </div>
+        <?php endif; ?>
         
         <!-- Social Icons -->
         <?php if (!empty($socialIcons)): ?>
@@ -2931,6 +3194,88 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             });
         })();
     </script>
+    
+    <!-- Podcast Player JavaScript (only load if RSS feed exists) -->
+    <?php if (!empty($page['rss_feed_url'])): ?>
+        <script src="/js/podcast-player-utils.js"></script>
+        <script src="/js/podcast-player-rss-parser.js"></script>
+        <script src="/js/podcast-player-audio.js"></script>
+        <script src="/js/podcast-player-app.js"></script>
+        <script>
+            // Initialize Podcast Player Drawer
+            (function() {
+                const drawer = document.getElementById('podcast-top-drawer');
+                const toggleBtn = document.getElementById('podcast-drawer-toggle');
+                const closeBtn = document.getElementById('podcast-drawer-close');
+                
+                if (!drawer || !toggleBtn) return;
+                
+                // Toggle drawer
+                function openDrawer() {
+                    drawer.style.display = 'flex';
+                    // Force reflow
+                    void drawer.offsetWidth;
+                    drawer.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeDrawer() {
+                    drawer.classList.remove('open');
+                    setTimeout(() => {
+                        if (!drawer.classList.contains('open')) {
+                            drawer.style.display = 'none';
+                        }
+                    }, 300);
+                    document.body.style.overflow = '';
+                }
+                
+                toggleBtn.addEventListener('click', openDrawer);
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeDrawer);
+                }
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && drawer.classList.contains('open')) {
+                        closeDrawer();
+                    }
+                });
+                
+                // Initialize player when drawer opens
+                let playerInitialized = false;
+                toggleBtn.addEventListener('click', function() {
+                    if (!playerInitialized) {
+                        // Prepare config with RSS feed and social icons
+                        const config = {
+                            rssFeedUrl: '<?php echo h($page['rss_feed_url']); ?>',
+                            rssProxyUrl: '/api/rss-proxy.php',
+                            imageProxyUrl: '/api/podcast-image-proxy.php',
+                            platformLinks: {
+                                apple: null,
+                                spotify: null,
+                                google: null
+                            },
+                            reviewLinks: {
+                                apple: null,
+                                spotify: null,
+                                google: null
+                            },
+                            socialIcons: <?php echo json_encode($socialIcons ?? []); ?>,
+                            cacheTTL: 3600000
+                        };
+                        
+                        // Initialize player
+                        try {
+                            window.podcastPlayer = new PodcastPlayerApp(config, drawer);
+                            playerInitialized = true;
+                        } catch (error) {
+                            console.error('Failed to initialize podcast player:', error);
+                        }
+                    }
+                });
+            })();
+        </script>
+    <?php endif; ?>
     </body>
 </html>
 

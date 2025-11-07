@@ -1,0 +1,240 @@
+/* Podcast Player Controls & Follow Section CSS - Scoped to .podcast-top-drawer */
+
+/* Follow Section Styles */
+.podcast-top-drawer .follow-section {
+    margin-bottom: 32px;
+}
+
+.podcast-top-drawer .follow-section .section-header {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--podcast-text-secondary);
+    margin-top: 24px;
+    margin-bottom: 8px;
+}
+
+/* Listen On section with Social Icons layout */
+.podcast-top-drawer .follow-section.listen-on-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .section-header {
+    margin-top: 0;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .platform-buttons-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .social-icons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 0;
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .social-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--podcast-card);
+    border: 1px solid var(--podcast-border);
+    border-radius: 12px;
+    color: var(--podcast-text);
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 20px;
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .social-icon:hover {
+    background-color: var(--podcast-border);
+    transform: translateY(-2px);
+}
+
+.podcast-top-drawer .follow-section.listen-on-section .social-icon:active {
+    transform: scale(0.95);
+}
+
+.podcast-top-drawer .platform-button {
+    width: 100%;
+    height: 64px;
+    background-color: var(--podcast-card);
+    border: 1px solid var(--podcast-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 12px;
+    min-height: 44px;
+    text-decoration: none;
+    color: var(--podcast-text);
+}
+
+.podcast-top-drawer .platform-button:active {
+    transform: scale(0.98);
+}
+
+.podcast-top-drawer .platform-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.podcast-top-drawer .platform-name {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--podcast-text);
+    text-align: left;
+}
+
+.podcast-top-drawer .platform-button .chevron {
+    color: var(--podcast-text-secondary);
+    flex-shrink: 0;
+}
+
+.podcast-top-drawer .rss-button {
+    width: 100%;
+    height: 48px;
+    background-color: var(--podcast-background);
+    border: 1px solid var(--podcast-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--podcast-text);
+    margin-bottom: 16px;
+    min-height: 44px;
+}
+
+.podcast-top-drawer .rss-button:active {
+    background-color: var(--podcast-border);
+}
+
+/* Email form - HIDDEN for now (TODO: Integrate email subscription feature at a later date) */
+.podcast-top-drawer .email-form {
+    display: none; /* TODO: Integrate email subscription feature at a later date */
+}
+
+.podcast-top-drawer .email-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border: 1px solid var(--podcast-border);
+    border-radius: 12px;
+    background-color: var(--podcast-card);
+    color: var(--podcast-text);
+    font-size: 16px;
+    min-height: 44px;
+}
+
+.podcast-top-drawer .email-input:focus {
+    outline: none;
+    border-color: var(--podcast-primary-color);
+}
+
+.podcast-top-drawer .email-submit {
+    width: 100%;
+    height: 48px;
+    background-color: var(--podcast-primary-color);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.podcast-top-drawer .email-submit:active {
+    transform: scale(0.98);
+}
+
+.podcast-top-drawer .success-message {
+    text-align: center;
+    padding: 16px;
+    color: #22c55e;
+    font-size: 14px;
+}
+
+.podcast-top-drawer .review-section {
+    text-align: center;
+    margin-top: 32px;
+}
+
+.podcast-top-drawer .review-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--podcast-text);
+    margin-bottom: 8px;
+}
+
+.podcast-top-drawer .review-subtext {
+    font-size: 14px;
+    color: var(--podcast-text-secondary);
+    margin-bottom: 24px;
+}
+
+.podcast-top-drawer .review-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.podcast-top-drawer .review-button {
+    width: 100%;
+    height: 64px;
+    border-radius: 12px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+    cursor: pointer;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.podcast-top-drawer .review-button.apple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.podcast-top-drawer .review-button.spotify {
+    background-color: #1db954;
+}
+
+.podcast-top-drawer .review-button.google {
+    background-color: #4285f4;
+}
+
+.podcast-top-drawer .review-button:active {
+    transform: scale(0.98);
+}
+

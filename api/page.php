@@ -77,6 +77,24 @@ switch ($action) {
             $updateData['podcast_description'] = sanitizeInput($_POST['podcast_description']);
         }
         
+        // Handle RSS feed URL
+        if (isset($_POST['rss_feed_url'])) {
+            $rssFeedUrl = trim(sanitizeInput($_POST['rss_feed_url']));
+            
+            if (empty($rssFeedUrl)) {
+                // Allow removing RSS feed URL
+                $updateData['rss_feed_url'] = null;
+            } else {
+                // Validate URL format
+                if (!filter_var($rssFeedUrl, FILTER_VALIDATE_URL)) {
+                    echo json_encode(['success' => false, 'error' => 'Invalid RSS feed URL format. Please enter a valid URL.']);
+                    exit;
+                }
+                
+                $updateData['rss_feed_url'] = $rssFeedUrl;
+            }
+        }
+        
         // Handle custom domain
         if (isset($_POST['custom_domain'])) {
             $customDomain = trim(sanitizeInput($_POST['custom_domain']));

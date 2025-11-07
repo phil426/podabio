@@ -233,10 +233,22 @@ class WidgetRenderer {
      */
     private static function renderPodcastPlayerCustom($widget, $configData) {
         try {
+            // Disable podcast widget rendering - replaced by top drawer player
+            // Check if page has RSS feed URL set (top drawer will handle it)
+            $pageId = isset($widget['page_id']) ? (int)$widget['page_id'] : 0;
+            if ($pageId > 0) {
+                require_once __DIR__ . '/Page.php';
+                $pageClass = new Page();
+                $page = $pageClass->getById($pageId);
+                if ($page && !empty($page['rss_feed_url'])) {
+                    // Page has RSS feed - top drawer will handle it, don't render widget
+                    return '';
+                }
+            }
+            
             $title = $widget['title'] ?? 'Podcast Player';
             $rssFeedUrl = $configData['rss_feed_url'] ?? '';
             $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
-            $pageId = isset($widget['page_id']) ? (int)$widget['page_id'] : 0;
             $widgetType = $widget['widget_type'] ?? 'unknown';
             
             // Debug: Log widget type (can be removed after verification)
