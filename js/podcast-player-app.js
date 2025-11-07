@@ -155,9 +155,14 @@ class PodcastPlayerApp {
     renderPodcastData() {
         if (!this.podcastData) return;
         
-        // Extract dominant color for theme
-        if (this.podcastData.coverImage) {
-            getDominantColor(getProxiedImageUrl(this.podcastData.coverImage, this.config.imageProxyUrl), (color) => {
+        // Prioritize saved cover image from database over RSS feed cover image
+        const coverImage = this.config.savedCoverImage || this.podcastData.coverImage || '';
+        if (coverImage) {
+            // Update podcastData to use saved cover image
+            this.podcastData.coverImage = coverImage;
+            
+            // Extract dominant color for theme
+            getDominantColor(getProxiedImageUrl(coverImage, this.config.imageProxyUrl), (color) => {
                 if (color && this.drawerContainer) {
                     this.drawerContainer.style.setProperty('--podcast-primary-color', color);
                 }
@@ -205,10 +210,33 @@ class PodcastPlayerApp {
     createEpisodeCard(episode, index) {
         const card = createElement('div', { className: 'episode-card' });
         
+        // Prioritize episode artwork, then saved cover image, then RSS feed cover image
+        let artworkUrl = episode.artwork || this.config.savedCoverImage || this.podcastData.coverImage || '';
         const artwork = createElement('img', {
             className: 'episode-artwork',
-            src: getProxiedImageUrl(episode.artwork || this.podcastData.coverImage || '', this.config.imageProxyUrl),
+            src: getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl),
             alt: episode.title
+        });
+        
+        // Handle image load errors - fallback to next available image source
+        artwork.addEventListener('error', () => {
+            // Try fallback: if we used saved cover image, try RSS feed cover image
+            if (artworkUrl === this.config.savedCoverImage && this.podcastData.coverImage) {
+                artworkUrl = this.podcastData.coverImage;
+                artwork.src = getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl);
+            } else if (artworkUrl === episode.artwork) {
+                // If episode artwork failed, try saved cover image, then RSS feed cover image
+                artworkUrl = this.config.savedCoverImage || this.podcastData.coverImage || '';
+                if (artworkUrl) {
+                    artwork.src = getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl);
+                } else {
+                    // No fallback available, hide image (placeholder will show)
+                    artwork.style.display = 'none';
+                }
+            } else {
+                // No fallback available, hide image (placeholder will show)
+                artwork.style.display = 'none';
+            }
         });
         
         const info = createElement('div', { className: 'episode-info' });
@@ -304,7 +332,8 @@ class PodcastPlayerApp {
         }
         
         // Only show artwork if podcast is set and we have an episode
-        const episodeArtwork = this.currentEpisode.artwork || this.podcastData.coverImage || '';
+        // Prioritize episode artwork, then saved cover image, then RSS feed cover image
+        let episodeArtwork = this.currentEpisode.artwork || this.config.savedCoverImage || this.podcastData.coverImage || '';
         
         // Update artwork container - show generic placeholder until podcast is set
         if (artworkContainer) {
@@ -316,6 +345,29 @@ class PodcastPlayerApp {
                 if (containerImg) {
                     containerImg.src = getProxiedImageUrl(episodeArtwork, this.config.imageProxyUrl);
                     containerImg.style.display = 'block';
+                    
+                    // Handle image load errors - fallback to next available image source
+                    containerImg.addEventListener('error', () => {
+                        // Try fallback: if we used saved cover image, try RSS feed cover image
+                        if (episodeArtwork === this.config.savedCoverImage && this.podcastData.coverImage) {
+                            episodeArtwork = this.podcastData.coverImage;
+                            containerImg.src = getProxiedImageUrl(episodeArtwork, this.config.imageProxyUrl);
+                        } else if (episodeArtwork === this.currentEpisode.artwork) {
+                            // If episode artwork failed, try saved cover image, then RSS feed cover image
+                            episodeArtwork = this.config.savedCoverImage || this.podcastData.coverImage || '';
+                            if (episodeArtwork) {
+                                containerImg.src = getProxiedImageUrl(episodeArtwork, this.config.imageProxyUrl);
+                            } else {
+                                // No fallback available, show placeholder
+                                containerImg.style.display = 'none';
+                                if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
+                            }
+                        } else {
+                            // No fallback available, show placeholder
+                            containerImg.style.display = 'none';
+                            if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
+                        }
+                    }, { once: true });
                 }
                 if (containerPlaceholder) {
                     containerPlaceholder.style.display = 'none';

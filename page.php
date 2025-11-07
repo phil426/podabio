@@ -3378,6 +3378,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                             rssFeedUrl: rssFeedUrl,
                             rssProxyUrl: '/api/rss-proxy.php',
                             imageProxyUrl: '/api/podcast-image-proxy.php',
+                            savedCoverImage: '<?php echo h($page['cover_image_url'] ?? ''); ?>',
                             platformLinks: {
                                 apple: null,
                                 spotify: null,

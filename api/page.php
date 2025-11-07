@@ -92,6 +92,23 @@ switch ($action) {
                 }
                 
                 $updateData['rss_feed_url'] = $rssFeedUrl;
+                
+                // Automatically parse RSS feed and extract cover image
+                try {
+                    $parser = new RSSParser();
+                    $feedResult = $parser->parseFeed($rssFeedUrl);
+                    
+                    if ($feedResult['success'] && !empty($feedResult['data']['cover_image'])) {
+                        // Save cover image URL from parsed feed
+                        $updateData['cover_image_url'] = $feedResult['data']['cover_image'];
+                    } else {
+                        // Log error but don't fail the update
+                        error_log("Failed to parse RSS feed for cover image: " . ($feedResult['error'] ?? 'Unknown error'));
+                    }
+                } catch (Exception $e) {
+                    // Log error but don't fail the update - RSS URL will still be saved
+                    error_log("Exception while parsing RSS feed for cover image: " . $e->getMessage());
+                }
             }
         }
         
