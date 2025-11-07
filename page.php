@@ -170,13 +170,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 14px 20px;
+            padding: 11px 16px;
             background: transparent;
             color: #FFFFFF;
             border: none;
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -192,11 +192,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-banner-toggle i:first-child {
-            font-size: 18px;
+            font-size: 14px;
         }
         
         .podcast-banner-toggle i:last-child {
-            font-size: 14px;
+            font-size: 11px;
             opacity: 0.8;
             transition: transform 0.3s ease;
         }
@@ -207,7 +207,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         /* Add padding to page container when banner is present */
         .podcast-top-banner + .page-container {
-            padding-top: calc(1rem + 52px);
+            padding-top: calc(1rem + 42px);
         }
         
         /* Podcast Top Drawer */
@@ -231,7 +231,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-top-drawer.peek {
-            transform: translateY(-90%);
+            transform: translateY(-56%);
         }
         
         .podcast-drawer-close {
