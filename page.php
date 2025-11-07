@@ -164,20 +164,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             z-index: 10001;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
         }
         
         .podcast-top-drawer.open .podcast-top-banner {
-            transform: translateY(100%);
             opacity: 0;
             pointer-events: none;
-        }
-        
-        .podcast-top-drawer:not(.open) .podcast-top-banner {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
         }
         
         .podcast-banner-toggle {
@@ -236,10 +230,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             overflow: hidden;
         }
         
-        .podcast-top-drawer .podcast-top-banner {
-            position: absolute;
-            bottom: 0;
-        }
         
         .podcast-top-drawer.open {
             transform: translateY(0);
