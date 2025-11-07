@@ -189,13 +189,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6.4px;
             width: 100%;
-            padding: 11px 16px;
+            padding: 8.8px 12.8px;
             background: transparent;
             color: #FFFFFF;
             border: none;
-            font-size: 13px;
+            font-size: 10.4px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -211,11 +211,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-banner-toggle i:first-child {
-            font-size: 14px;
+            font-size: 11.2px;
         }
         
         .podcast-banner-toggle i:last-child {
-            font-size: 11px;
+            font-size: 8.8px;
             opacity: 0.8;
             transition: transform 0.3s ease;
         }
@@ -232,6 +232,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: 0;
             right: 0;
             bottom: 0;
+            height: 100vh;
+            max-height: 100vh;
             background-color: #000000;
             z-index: 10000;
             display: flex;
