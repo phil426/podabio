@@ -156,7 +156,7 @@ body {
 /* Now Playing Tab Styles */
 .now-playing-content {
     position: relative;
-    min-height: 100vh;
+    height: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     display: flex;
@@ -813,16 +813,14 @@ body {
     width: 100%;
     height: 60vh;
     min-height: 400px;
+    max-height: 60vh;
     position: relative;
     overflow: hidden;
     background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
+    flex-shrink: 0;
 }
 
 .episode-artwork-large {
@@ -858,8 +856,10 @@ body {
     left: 0;
     right: 0;
     padding: 24px 20px;
+    padding-bottom: 32px;
     z-index: 2;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 .episode-title-overlay {
@@ -871,6 +871,7 @@ body {
     padding: 0;
     word-wrap: break-word;
     text-align: left;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .podcast-name-overlay {
@@ -880,6 +881,7 @@ body {
     font-weight: 400;
     text-align: left;
     opacity: 0.95;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Player Controls Section (Below Artwork) */
@@ -889,10 +891,12 @@ body {
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
     width: 100%;
     box-sizing: border-box;
-    display: block;
+    display: flex;
+    flex-direction: column;
     visibility: visible;
     flex: 1;
     min-height: 40vh;
+    overflow-y: auto;
 }
 
 
