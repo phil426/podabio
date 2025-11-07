@@ -112,6 +112,10 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 /* Ensure now-playing panel is full height */
@@ -128,7 +132,11 @@ body {
     display: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 0;
     padding-bottom: env(safe-area-inset-bottom);
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .tab-panel.active {
@@ -154,6 +162,9 @@ body {
     display: flex;
     flex-direction: column;
     background-color: #000000;
+    width: 100%;
+    padding: 0;
+    margin: 0;
 }
 
 .episode-info-section {
@@ -800,10 +811,14 @@ body {
 /* Now Playing - Full Width Artwork */
 .episode-artwork-fullwidth {
     width: 100%;
+    max-width: 100%;
     aspect-ratio: 1;
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, var(--primary-color), #764ba2);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .episode-artwork-large {
@@ -829,6 +844,10 @@ body {
     background-color: #000000;
     padding: 24px 20px;
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    visibility: visible;
 }
 
 
