@@ -810,15 +810,19 @@ body {
 
 /* Now Playing - Artwork */
 .episode-artwork-fullwidth {
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 60vh;
+    min-height: 400px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, var(--primary-color), #764ba2);
-    margin: 0 auto;
+    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
+    margin: 0;
     padding: 0;
     box-sizing: border-box;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 .episode-artwork-large {
@@ -826,6 +830,10 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
 .artwork-placeholder {
@@ -836,7 +844,42 @@ body {
     justify-content: center;
     color: rgba(255, 255, 255, 0.3);
     font-size: 120px;
-    background: linear-gradient(135deg, var(--primary-color), #764ba2);
+    background: linear-gradient(180deg, #4A90E2 0%, #7ED321 100%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* Title Overlay on Artwork */
+.artwork-title-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 20px;
+    z-index: 2;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+}
+
+.episode-title-overlay {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #FFFFFF;
+    margin: 0 0 8px 0;
+    padding: 0;
+    word-wrap: break-word;
+    text-align: left;
+}
+
+.podcast-name-overlay {
+    font-size: 16px;
+    color: #FFFFFF;
+    margin: 0;
+    font-weight: 400;
+    text-align: left;
+    opacity: 0.95;
 }
 
 /* Player Controls Section (Below Artwork) */
@@ -848,6 +891,8 @@ body {
     box-sizing: border-box;
     display: block;
     visibility: visible;
+    flex: 1;
+    min-height: 40vh;
 }
 
 

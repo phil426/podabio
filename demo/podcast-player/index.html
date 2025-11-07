@@ -27,22 +27,21 @@
         <!-- Now Playing Tab -->
         <div class="tab-panel active" id="now-playing-panel">
             <div class="now-playing-content">
-                <!-- Full Width Cover Artwork -->
+                <!-- Full Width Cover Artwork with Title Overlay -->
                 <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
                     <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
                     <div class="artwork-placeholder" id="artwork-placeholder">
                         <i class="fas fa-music"></i>
                     </div>
+                    <!-- Title and Podcast Name Overlay -->
+                    <div class="artwork-title-overlay">
+                        <h1 class="episode-title-overlay" id="now-playing-title">Select an episode to play</h1>
+                        <p class="podcast-name-overlay" id="now-playing-podcast">Podcast Name</p>
+                    </div>
                 </div>
 
                 <!-- Player Controls (Below Artwork) -->
                 <div class="player-controls-section">
-                    <!-- Episode Information -->
-                    <div class="episode-info-section">
-                        <h1 class="episode-title-large" id="now-playing-title">Select an episode to play</h1>
-                        <p class="podcast-name-large" id="now-playing-podcast">Podcast Name</p>
-                        <div class="duration-badge-large" id="duration-badge-large" style="display: none;">0:00</div>
-                    </div>
 
                     <!-- Progress Bar -->
                     <div class="progress-section-large">

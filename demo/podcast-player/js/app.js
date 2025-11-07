@@ -263,13 +263,11 @@ class PodcastApp {
             const placeholder = document.getElementById('artwork-placeholder');
             const title = document.getElementById('now-playing-title');
             const podcastName = document.getElementById('now-playing-podcast');
-            const durationBadge = document.getElementById('duration-badge-large');
             
             if (artwork) artwork.style.display = 'none';
             if (placeholder) placeholder.style.display = 'flex';
             if (title) title.textContent = 'Select an episode to play';
             if (podcastName) podcastName.textContent = '';
-            if (durationBadge) durationBadge.style.display = 'none';
             return;
         }
         
@@ -277,20 +275,10 @@ class PodcastApp {
         const placeholder = document.getElementById('artwork-placeholder');
         const title = document.getElementById('now-playing-title');
         const podcastName = document.getElementById('now-playing-podcast');
-        const durationBadge = document.getElementById('duration-badge-large');
         
         const episodeArtwork = this.currentEpisode.artwork || this.podcastData.coverImage || '';
         
-        if (artwork && episodeArtwork) {
-            artwork.src = getProxiedImageUrl(episodeArtwork);
-            artwork.style.display = 'block';
-            if (placeholder) placeholder.style.display = 'none';
-        } else {
-            if (artwork) artwork.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'flex';
-        }
-        
-        // Update full-width artwork container
+        // Update artwork container
         const artworkContainer = document.getElementById('now-playing-artwork-container');
         if (artworkContainer && episodeArtwork) {
             const containerImg = artworkContainer.querySelector('.episode-artwork-large');
@@ -309,14 +297,9 @@ class PodcastApp {
             if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
         }
         
+        // Update title and podcast name overlay
         if (title) title.textContent = this.currentEpisode.title;
         if (podcastName) podcastName.textContent = this.podcastData.name || this.podcastData.title || '';
-        if (durationBadge && this.currentEpisode.duration) {
-            durationBadge.textContent = formatTime(this.currentEpisode.duration);
-            durationBadge.style.display = 'inline-block';
-        } else if (durationBadge) {
-            durationBadge.style.display = 'none';
-        }
     }
 
     /**
