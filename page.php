@@ -153,8 +153,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         /* Podcast Top Banner - Attached to drawer bottom */
         .podcast-top-banner {
-            position: absolute;
-            bottom: 0;
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
             width: 100%;
@@ -166,20 +166,23 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             opacity: 1;
             pointer-events: auto;
-            transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            /* When drawer is closed, position banner at top of viewport */
-            transform: translateY(calc(100vh - 100%));
-        }
-        
-        .podcast-top-drawer.open .podcast-top-banner {
-            opacity: 0;
-            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            /* Banner starts at top of viewport when drawer is closed */
             transform: translateY(0);
         }
         
+        /* When drawer opens, banner moves down with it */
+        .podcast-top-drawer.open .podcast-top-banner {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(100vh);
+        }
+        
+        /* During peek, banner moves down proportionally */
         .podcast-top-drawer.peek .podcast-top-banner {
             opacity: 1;
             pointer-events: auto;
+            transform: translateY(calc(100vh * 0.3));
         }
         
         .podcast-banner-toggle {
@@ -2488,7 +2491,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         <!-- Podcast Player Top Drawer -->
         <?php if (!empty($page['rss_feed_url'])): ?>
-            <div class="podcast-top-drawer" id="podcast-top-drawer" style="display: none;">
+            <div class="podcast-top-drawer" id="podcast-top-drawer">
                 <!-- Podcast Player Top Banner (attached to drawer bottom) -->
                 <div class="podcast-top-banner" id="podcast-top-banner">
                     <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
