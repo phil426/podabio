@@ -167,11 +167,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             opacity: 1;
             pointer-events: auto;
             transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            /* When drawer is closed, position banner at top of viewport */
+            transform: translateY(calc(100vh - 100%));
         }
         
         .podcast-top-drawer.open .podcast-top-banner {
             opacity: 0;
             pointer-events: none;
+            transform: translateY(0);
+        }
+        
+        .podcast-top-drawer.peek .podcast-top-banner {
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .podcast-banner-toggle {
