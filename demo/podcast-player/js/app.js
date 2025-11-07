@@ -257,36 +257,36 @@ class PodcastApp {
      * Update Now Playing UI
      */
     updateNowPlayingUI() {
-        if (!this.currentEpisode) {
-            // Show empty state
-            const artwork = document.getElementById('now-playing-artwork');
-            const placeholder = document.getElementById('artwork-placeholder');
-            const title = document.getElementById('now-playing-title');
-            const podcastName = document.getElementById('now-playing-podcast');
-            
-            if (artwork) artwork.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'flex';
-            if (title) title.textContent = 'Select an episode to play';
-            if (podcastName) podcastName.textContent = '';
-            return;
-        }
-        
-        const artwork = document.getElementById('now-playing-artwork');
+        const artworkContainer = document.getElementById('now-playing-artwork-container');
         const placeholder = document.getElementById('artwork-placeholder');
+        const artwork = document.getElementById('now-playing-artwork');
         const title = document.getElementById('now-playing-title');
         const podcastName = document.getElementById('now-playing-podcast');
         
-        // Only show artwork if podcast is set and we have an episode
-        const artworkContainer = document.getElementById('now-playing-artwork-container');
+        // Check if podcast is set
         const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
-        const episodeArtwork = (hasPodcastData && this.currentEpisode) ? (this.currentEpisode.artwork || this.podcastData.coverImage || '') : '';
+        
+        if (!this.currentEpisode || !hasPodcastData) {
+            // Show generic placeholder until podcast is set
+            if (artwork) artwork.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
+            if (title) {
+                title.textContent = '';
+                title.style.display = 'none';
+            }
+            if (podcastName) podcastName.textContent = hasPodcastData ? (this.podcastData.name || this.podcastData.title || '') : '';
+            return;
+        }
+        
+        // Only show artwork if podcast is set and we have an episode
+        const episodeArtwork = this.currentEpisode.artwork || this.podcastData.coverImage || '';
         
         // Update artwork container - show generic placeholder until podcast is set
         if (artworkContainer) {
             const containerImg = artworkContainer.querySelector('.episode-artwork-large');
             const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
             
-            if (hasPodcastData && episodeArtwork) {
+            if (episodeArtwork) {
                 // Show actual artwork when podcast is set and artwork is available
                 if (containerImg) {
                     containerImg.src = getProxiedImageUrl(episodeArtwork);
@@ -296,7 +296,7 @@ class PodcastApp {
                     containerPlaceholder.style.display = 'none';
                 }
             } else {
-                // Show generic placeholder until podcast is set
+                // Show generic placeholder if no artwork available
                 if (containerImg) containerImg.style.display = 'none';
                 if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
             }
