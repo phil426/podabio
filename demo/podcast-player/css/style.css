@@ -318,8 +318,8 @@ body {
 }
 
 .play-pause-large-now {
-    width: 72px;
-    height: 72px;
+    width: 82.8px;
+    height: 82.8px;
     background-color: #FFFFFF;
     color: #000000;
     border: none;
@@ -337,7 +337,7 @@ body {
 }
 
 .play-pause-large-now i {
-    font-size: 24px;
+    font-size: 27.6px;
 }
 
 /* Secondary Controls Bar */
