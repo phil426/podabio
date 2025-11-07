@@ -3229,25 +3229,20 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     document.body.style.overflow = '';
                 }
                 
-                toggleBtn.addEventListener('click', openDrawer);
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', closeDrawer);
-                }
-                
-                // Close on Escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && drawer.classList.contains('open')) {
-                        closeDrawer();
-                    }
-                });
-                
                 // Initialize player when drawer opens
                 let playerInitialized = false;
-                toggleBtn.addEventListener('click', function() {
+                const initPlayer = function() {
                     if (!playerInitialized) {
                         // Prepare config with RSS feed and social icons
+                        const rssFeedUrl = '<?php echo h($page['rss_feed_url']); ?>';
+                        
+                        if (!rssFeedUrl) {
+                            console.error('RSS feed URL is not set');
+                            return;
+                        }
+                        
                         const config = {
-                            rssFeedUrl: '<?php echo h($page['rss_feed_url']); ?>',
+                            rssFeedUrl: rssFeedUrl,
                             rssProxyUrl: '/api/rss-proxy.php',
                             imageProxyUrl: '/api/podcast-image-proxy.php',
                             platformLinks: {
@@ -3266,11 +3261,31 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         
                         // Initialize player
                         try {
-                            window.podcastPlayer = new PodcastPlayerApp(config, drawer);
+                            console.log('Initializing podcast player with RSS feed:', rssFeedUrl);
+                            window.podcastPlayerApp = new PodcastPlayerApp(config, drawer);
                             playerInitialized = true;
+                            console.log('Podcast player initialized successfully');
                         } catch (error) {
                             console.error('Failed to initialize podcast player:', error);
                         }
+                    }
+                };
+                
+                // Open drawer and initialize player when toggle is clicked
+                toggleBtn.addEventListener('click', function() {
+                    openDrawer();
+                    // Small delay to ensure drawer is visible before initializing
+                    setTimeout(initPlayer, 100);
+                });
+                
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeDrawer);
+                }
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && drawer.classList.contains('open')) {
+                        closeDrawer();
                     }
                 });
             })();

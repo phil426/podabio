@@ -76,9 +76,9 @@ function parseDuration(duration) {
 }
 
 /**
- * LocalStorage helpers
+ * LocalStorage helpers (namespaced)
  */
-const Storage = {
+const PodcastStorage = {
     get: (key, defaultValue = null) => {
         try {
             const item = localStorage.getItem(key);

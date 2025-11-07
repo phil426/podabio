@@ -17,7 +17,7 @@ class PodcastAudioPlayer {
         }
         
         this.currentEpisode = null;
-        this.playbackSpeed = parseFloat(Storage.get('podcast_playbackSpeed', 1.0));
+        this.playbackSpeed = parseFloat(PodcastStorage.get('podcast_playbackSpeed', 1.0));
         this.sleepTimer = null;
         this.sleepTimerEndTime = null;
         this.isDragging = false;
@@ -57,7 +57,7 @@ class PodcastAudioPlayer {
         this.audio.src = episode.audioUrl;
         
         // Try to resume from saved position
-        const savedPosition = Storage.get(`podcast_episode_${episode.guid}_position`, 0);
+        const savedPosition = PodcastStorage.get(`podcast_episode_${episode.guid}_position`, 0);
         if (savedPosition > 5) { // Only resume if more than 5 seconds
             this.audio.currentTime = savedPosition;
         }
@@ -139,7 +139,7 @@ class PodcastAudioPlayer {
     setPlaybackSpeed(speed) {
         this.playbackSpeed = speed;
         this.audio.playbackRate = speed;
-        Storage.set('podcast_playbackSpeed', speed);
+        PodcastStorage.set('podcast_playbackSpeed', speed);
         this.updateSpeedUI();
     }
 
@@ -221,7 +221,7 @@ class PodcastAudioPlayer {
      */
     savePosition() {
         if (this.currentEpisode && this.audio.currentTime) {
-            Storage.set(`podcast_episode_${this.currentEpisode.guid}_position`, this.audio.currentTime);
+            PodcastStorage.set(`podcast_episode_${this.currentEpisode.guid}_position`, this.audio.currentTime);
         }
     }
 
@@ -230,7 +230,7 @@ class PodcastAudioPlayer {
      */
     loadSavedPosition() {
         if (this.currentEpisode) {
-            const savedPosition = Storage.get(`podcast_episode_${this.currentEpisode.guid}_position`, 0);
+            const savedPosition = PodcastStorage.get(`podcast_episode_${this.currentEpisode.guid}_position`, 0);
             if (savedPosition > 0) {
                 this.audio.currentTime = savedPosition;
             }

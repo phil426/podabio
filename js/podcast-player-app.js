@@ -92,8 +92,8 @@ class PodcastPlayerApp {
             if (errorState) errorState.style.display = 'none';
             
             // Check cache first
-            const cached = Storage.get('podcast_data');
-            const cacheTime = Storage.get('podcast_data_time', 0);
+            const cached = PodcastStorage.get('podcast_data');
+            const cacheTime = PodcastStorage.get('podcast_data_time', 0);
             const now = Date.now();
             const cacheTTL = this.config.cacheTTL || 3600000; // Default 1 hour
             
@@ -111,8 +111,8 @@ class PodcastPlayerApp {
             this.podcastData = await this.rssParser.parseFeed(this.config.rssFeedUrl);
             
             // Cache the data
-            Storage.set('podcast_data', this.podcastData);
-            Storage.set('podcast_data_time', now);
+            PodcastStorage.set('podcast_data', this.podcastData);
+            PodcastStorage.set('podcast_data_time', now);
             
             this.renderPodcastData();
             
