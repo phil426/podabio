@@ -551,11 +551,16 @@ class PodcastApp {
      */
     updateTimeDisplays() {
         const audio = this.player.audio;
+        if (!audio.duration) return;
+        
         const currentTimeDisplay = document.getElementById('current-time-display');
-        const totalTimeDisplay = document.getElementById('total-time-display');
+        const remainingTimeDisplay = document.getElementById('remaining-time-display');
         
         if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime || 0);
-        if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audio.duration || 0);
+        if (remainingTimeDisplay) {
+            const remaining = audio.duration - (audio.currentTime || 0);
+            remainingTimeDisplay.textContent = '-' + formatTime(remaining);
+        }
     }
 
     /**
