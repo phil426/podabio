@@ -36,8 +36,30 @@ class PodcastApp {
         // Initialize follow section
         this.initFollowSection();
         
+        // Apply time bar padding (workaround for CSS cache issue)
+        this.applyTimeBarPadding();
+        
         // Load RSS feed
         await this.loadFeed();
+    }
+    
+    /**
+     * Apply time bar padding via JavaScript (workaround for CSS cache)
+     */
+    applyTimeBarPadding() {
+        const timeDisplay = document.querySelector('.time-display');
+        const progressBar = document.querySelector('.progress-bar-now-playing');
+        
+        if (timeDisplay) {
+            timeDisplay.style.paddingLeft = '30px';
+            timeDisplay.style.paddingRight = '30px';
+        }
+        
+        if (progressBar) {
+            progressBar.style.marginLeft = '30px';
+            progressBar.style.marginRight = '30px';
+            progressBar.style.width = 'calc(100% - 60px)';
+        }
     }
 
     /**
