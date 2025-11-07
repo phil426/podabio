@@ -151,35 +151,63 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             margin-bottom: 2rem;
         }
         
-        /* Podcast Drawer Toggle Button */
-        .podcast-drawer-toggle {
-            display: inline-flex;
+        /* Podcast Top Banner - Scoped */
+        .podcast-top-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color, #0066ff) 0%, rgba(0, 102, 255, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 9999;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .podcast-banner-toggle {
+            display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            margin-top: 1rem;
-            background-color: var(--primary-color);
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 20px;
+            background: transparent;
             color: #FFFFFF;
             border: none;
-            border-radius: 24px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            text-align: center;
         }
         
-        .podcast-drawer-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        .podcast-banner-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
-        .podcast-drawer-toggle:active {
-            transform: translateY(0);
+        .podcast-banner-toggle:active {
+            background: rgba(255, 255, 255, 0.15);
         }
         
-        .podcast-drawer-toggle i {
+        .podcast-banner-toggle i:first-child {
             font-size: 18px;
+        }
+        
+        .podcast-banner-toggle i:last-child {
+            font-size: 14px;
+            opacity: 0.8;
+            transition: transform 0.3s ease;
+        }
+        
+        .podcast-banner-toggle:hover i:last-child {
+            transform: translateY(2px);
+        }
+        
+        /* Add padding to page container when banner is present */
+        .podcast-top-banner + .page-container {
+            padding-top: calc(1rem + 52px);
         }
         
         /* Podcast Top Drawer */
@@ -200,6 +228,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .podcast-top-drawer.open {
             transform: translateY(0);
+        }
+        
+        .podcast-top-drawer.peek {
+            transform: translateY(-90%);
         }
         
         .podcast-drawer-close {
@@ -2380,6 +2412,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     </style>
 </head>
 <body class="<?php echo $cssGenerator->getSpatialEffectClass(); ?>">
+    <!-- Podcast Player Top Banner (only show if RSS feed exists) -->
+    <?php if (!empty($page['rss_feed_url'])): ?>
+        <div class="podcast-top-banner" id="podcast-top-banner">
+            <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
+                <i class="fas fa-podcast"></i>
+                <span>Tap to Listen</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+    <?php endif; ?>
+    
     <div class="page-container">
         <div class="profile-header">
             <?php if ($page['profile_image']): ?>
@@ -2438,14 +2481,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             
             <?php if ($page['podcast_description']): ?>
                 <p class="page-description"><?php echo nl2br(h($page['podcast_description'])); ?></p>
-            <?php endif; ?>
-            
-            <!-- Podcast Player Drawer Toggle Button (only show if RSS feed exists) -->
-            <?php if (!empty($page['rss_feed_url'])): ?>
-                <button class="podcast-drawer-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
-                    <i class="fas fa-podcast"></i>
-                    <span>Podcast</span>
-                </button>
             <?php endif; ?>
         </div>
         
@@ -3198,32 +3233,65 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         <script src="/js/podcast-player-audio.js"></script>
         <script src="/js/podcast-player-app.js"></script>
         <script>
-            // Initialize Podcast Player Drawer
+            // Initialize Podcast Player Drawer - Namespaced
             (function() {
+                'use strict';
+                
                 const drawer = document.getElementById('podcast-top-drawer');
                 const toggleBtn = document.getElementById('podcast-drawer-toggle');
                 const closeBtn = document.getElementById('podcast-drawer-close');
                 
                 if (!drawer || !toggleBtn) return;
                 
-                // Toggle drawer
-                function openDrawer() {
-                    drawer.style.display = 'flex';
-                    // Force reflow
-                    void drawer.offsetWidth;
-                    drawer.classList.add('open');
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                function closeDrawer() {
-                    drawer.classList.remove('open');
-                    setTimeout(() => {
-                        if (!drawer.classList.contains('open')) {
-                            drawer.style.display = 'none';
-                        }
-                    }, 300);
-                    document.body.style.overflow = '';
-                }
+                // Namespace for drawer functions
+                const PodcastDrawerController = {
+                    isPeeking: false,
+                    
+                    openDrawer: function() {
+                        drawer.style.display = 'flex';
+                        // Force reflow
+                        void drawer.offsetWidth;
+                        drawer.classList.remove('peek');
+                        drawer.classList.add('open');
+                        document.body.style.overflow = 'hidden';
+                        this.isPeeking = false;
+                    },
+                    
+                    closeDrawer: function() {
+                        drawer.classList.remove('open');
+                        drawer.classList.remove('peek');
+                        setTimeout(() => {
+                            if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
+                                drawer.style.display = 'none';
+                            }
+                        }, 300);
+                        document.body.style.overflow = '';
+                        this.isPeeking = false;
+                    },
+                    
+                    peekDrawer: function() {
+                        if (this.isPeeking || drawer.classList.contains('open')) return;
+                        
+                        drawer.style.display = 'flex';
+                        // Force reflow
+                        void drawer.offsetWidth;
+                        drawer.classList.add('peek');
+                        this.isPeeking = true;
+                        
+                        // Close after showing peek
+                        setTimeout(() => {
+                            if (drawer.classList.contains('peek') && !drawer.classList.contains('open')) {
+                                drawer.classList.remove('peek');
+                                setTimeout(() => {
+                                    if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
+                                        drawer.style.display = 'none';
+                                    }
+                                }, 300);
+                                this.isPeeking = false;
+                            }
+                        }, 1500); // Show peek for 1.5 seconds
+                    }
+                };
                 
                 // Initialize player when drawer opens
                 let playerInitialized = false;
@@ -3269,7 +3337,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 
                 // Open drawer and initialize player when toggle is clicked
                 toggleBtn.addEventListener('click', function() {
-                    openDrawer();
+                    PodcastDrawerController.openDrawer();
                     // Wait for scripts to load before initializing
                     if (typeof PodcastPlayerApp === 'undefined') {
                         console.error('PodcastPlayerApp class not loaded. Check script loading order.');
@@ -3280,15 +3348,25 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 });
                 
                 if (closeBtn) {
-                    closeBtn.addEventListener('click', closeDrawer);
+                    closeBtn.addEventListener('click', function() {
+                        PodcastDrawerController.closeDrawer();
+                    });
                 }
                 
                 // Close on Escape key
                 document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && drawer.classList.contains('open')) {
-                        closeDrawer();
+                    if (e.key === 'Escape' && (drawer.classList.contains('open') || drawer.classList.contains('peek'))) {
+                        PodcastDrawerController.closeDrawer();
                     }
                 });
+                
+                // Peek animation: Open drawer 10% after 4 seconds, then close
+                setTimeout(function() {
+                    PodcastDrawerController.peekDrawer();
+                }, 4000);
+                
+                // Expose controller to window for debugging (optional)
+                window.PodcastDrawerController = PodcastDrawerController;
             })();
         </script>
     <?php endif; ?>
