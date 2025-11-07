@@ -34,7 +34,7 @@ const CONFIG = {
     
     // Player settings
     defaultPlaybackSpeed: 1.0,
-    skipBackwardSeconds: 10,
-    skipForwardSeconds: 45,
+    skipBackwardSeconds: 15,
+    skipForwardSeconds: 30,
 };
 

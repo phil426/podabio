@@ -240,7 +240,7 @@ class AudioPlayer {
      */
     updatePlayButton() {
         const isPlaying = this.isPlaying();
-        const playButtons = document.querySelectorAll('.play-pause-large-now, .modal-play-pause, #nav-play-btn');
+        const playButtons = document.querySelectorAll('.play-pause-large-now, .modal-play-pause');
         
         playButtons.forEach(btn => {
             const icon = btn.querySelector('i');
@@ -330,26 +330,9 @@ class AudioPlayer {
         this.updateProgress();
         this.savePosition();
         
-        // Update time displays
-        const currentTimeEl = document.getElementById('current-time-display');
-        const remainingTimeEl = document.getElementById('remaining-time-display');
-        const totalTimeEl = document.getElementById('total-time-display');
+        // Update modal time display
         const modalCurrentTime = document.getElementById('modal-current-time');
         const modalTotalTime = document.getElementById('modal-total-time');
-        
-        if (currentTimeEl) {
-            currentTimeEl.textContent = formatTime(this.audio.currentTime || 0);
-        }
-        
-        if (remainingTimeEl && this.audio.duration) {
-            const remaining = this.audio.duration - (this.audio.currentTime || 0);
-            remainingTimeEl.textContent = '-' + formatTime(remaining);
-        }
-        
-        if (totalTimeEl && this.audio.duration) {
-            totalTimeEl.textContent = formatTime(this.audio.duration);
-        }
-        
         if (modalCurrentTime) {
             modalCurrentTime.textContent = formatTime(this.audio.currentTime || 0);
         }
