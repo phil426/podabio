@@ -135,8 +135,7 @@
 .podcast-top-drawer .now-playing-content {
     height: 100%;
     max-height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
@@ -261,8 +260,8 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 40vh;
-    overflow-y: auto;
+    min-height: 0;
+    overflow: hidden;
     justify-content: flex-start;
     align-items: center;
 }
