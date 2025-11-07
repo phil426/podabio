@@ -149,9 +149,11 @@ body {
 .now-playing-content {
     position: relative;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
+    background-color: #000000;
 }
 
 .episode-info-section {
@@ -717,10 +719,10 @@ body {
     display: none !important;
 }
 
-/* Now Playing - Full Width Artwork with Glass Panel */
+/* Now Playing - Full Width Artwork */
 .episode-artwork-fullwidth {
     width: 100%;
-    height: 100vh;
+    aspect-ratio: 1;
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, var(--primary-color), #764ba2);
@@ -744,20 +746,11 @@ body {
     background: linear-gradient(135deg, var(--primary-color), #764ba2);
 }
 
-.glass-control-panel {
-    position: absolute;
-    bottom: 90px;
-    left: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    border-radius: 24px;
-    padding: 32px 24px;
-    padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 10;
+/* Player Controls Section (Below Artwork) */
+.player-controls-section {
+    background-color: #000000;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 
