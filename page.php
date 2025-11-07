@@ -241,6 +241,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
             overflow: hidden;
+            overflow-y: hidden;
+            overflow-x: hidden;
         }
         
         

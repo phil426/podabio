@@ -7,6 +7,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
 }
 
 .podcast-top-drawer * {
@@ -97,7 +100,9 @@
 /* Tab Content Container */
 .podcast-top-drawer .tab-content-container {
     flex: 1;
-    overflow: hidden;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
     position: relative;
     width: 100%;
     min-height: 0;
@@ -111,7 +116,9 @@
     right: 0;
     bottom: 0;
     display: none;
-    overflow: hidden;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
     padding-bottom: env(safe-area-inset-bottom);
     height: 100%;
@@ -135,7 +142,9 @@
 .podcast-top-drawer .now-playing-content {
     height: 100%;
     max-height: 100%;
-    overflow: hidden;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
@@ -261,7 +270,9 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
     justify-content: flex-start;
     align-items: center;
 }
