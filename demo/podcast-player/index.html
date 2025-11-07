@@ -18,6 +18,7 @@
     <!-- Tab Navigation -->
     <nav class="tab-navigation" id="tab-navigation">
         <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
+        <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
         <button class="tab-button" data-tab="details" id="tab-details">Details</button>
         <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
     </nav>
@@ -102,14 +103,35 @@
             </div>
         </div>
 
-        <!-- Details Tab -->
-        <div class="tab-panel" id="details-panel">
+        <!-- Follow Tab -->
+        <div class="tab-panel" id="follow-panel">
             <div class="details-content">
                 <!-- Follow & Share Section -->
                 <div class="details-section" id="follow-section">
                     <h2 class="section-title">Follow & Share</h2>
                     <div id="follow-content">
                         <!-- Follow content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div class="tab-panel" id="details-panel">
+            <div class="details-content">
+                <!-- Show Notes Section -->
+                <div class="details-section" id="shownotes-section">
+                    <h2 class="section-title">Show Notes</h2>
+                    <div class="shownotes-content" id="shownotes-content">
+                        <p class="empty-message">No episode selected</p>
+                    </div>
+                </div>
+
+                <!-- Chapters Section -->
+                <div class="details-section" id="chapters-section">
+                    <h2 class="section-title">Chapters</h2>
+                    <div class="chapters-list" id="chapters-list">
+                        <div class="empty-state">No chapters available</div>
                     </div>
                 </div>
             </div>
