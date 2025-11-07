@@ -215,7 +215,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 16px;
-    padding: 0 30px;
+    padding: 0 30px !important;
     font-size: 13px;
     color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
@@ -225,8 +225,8 @@ body {
 }
 
 .progress-bar-now-playing {
-    width: calc(100% - 60px);
-    margin: 0 30px;
+    width: calc(100% - 60px) !important;
+    margin: 0 30px !important;
     height: 4px;
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
