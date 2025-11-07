@@ -228,7 +228,7 @@ class AudioPlayer {
     updateUI() {
         // Update full player modal via app
         if (window.app) {
-            window.app.updateFullPlayerModal();
+            // UI updates handled by app.js
         }
         
         this.updatePlayButton();

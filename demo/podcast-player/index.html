@@ -83,9 +83,38 @@
                         <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
                             <i class="fas fa-share-alt"></i>
                         </button>
-                        <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
+                    </div>
+
+                    <!-- Speed Selector (Inline) -->
+                    <div class="inline-speed-selector" id="inline-speed-selector" style="display: none;">
+                        <h3 class="inline-selector-title">Playback Speed</h3>
+                        <div class="speed-options-inline" id="speed-options-inline">
+                            <!-- Speed options will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Timer Selector (Inline) -->
+                    <div class="inline-timer-selector" id="inline-timer-selector" style="display: none;">
+                        <h3 class="inline-selector-title">Sleep Timer</h3>
+                        <div class="timer-options-inline" id="timer-options-inline">
+                            <!-- Timer options will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Show Notes Section (Always Visible) -->
+                    <div class="details-section" id="shownotes-section">
+                        <h2 class="section-title">Show Notes</h2>
+                        <div class="shownotes-content" id="shownotes-content">
+                            <p class="empty-message">No episode selected</p>
+                        </div>
+                    </div>
+
+                    <!-- Chapters Section (Always Visible) -->
+                    <div class="details-section" id="chapters-section">
+                        <h2 class="section-title">Chapters</h2>
+                        <div class="chapters-list" id="chapters-list">
+                            <div class="empty-state">No chapters available</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,22 +123,6 @@
         <!-- Details Tab -->
         <div class="tab-panel" id="details-panel">
             <div class="details-content">
-                <!-- Show Notes Section -->
-                <div class="details-section" id="shownotes-section">
-                    <h2 class="section-title">Show Notes</h2>
-                    <div class="shownotes-content" id="shownotes-content">
-                        <p class="empty-message">No episode selected</p>
-                    </div>
-                </div>
-
-                <!-- Chapters Section -->
-                <div class="details-section" id="chapters-section" style="display: none;">
-                    <h2 class="section-title">Chapters</h2>
-                    <div class="chapters-list" id="chapters-list">
-                        <div class="empty-state">No chapters available</div>
-                    </div>
-                </div>
-
                 <!-- Follow & Share Section -->
                 <div class="details-section" id="follow-section">
                     <h2 class="section-title">Follow & Share</h2>
@@ -146,117 +159,6 @@
         </div>
     </div>
 
-    <!-- Share Drawer (Modal) -->
-    <div class="share-drawer" id="share-drawer" style="display: none;">
-        <div class="drawer-backdrop" id="share-backdrop"></div>
-        <div class="drawer-content">
-            <div class="drag-handle"></div>
-            <h3 class="drawer-title">Share Episode</h3>
-            <div class="share-platforms" id="share-platforms">
-                <!-- Share buttons will be inserted here -->
-            </div>
-            <button class="cancel-button" id="share-cancel">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Speed Selector Modal -->
-    <div class="speed-modal" id="speed-modal" style="display: none;">
-        <div class="modal-backdrop-speed" id="speed-backdrop"></div>
-        <div class="speed-container">
-            <h3 class="speed-title">Playback Speed</h3>
-            <div class="speed-options" id="speed-options">
-                <!-- Speed options will be inserted here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Timer Selector Modal -->
-    <div class="timer-modal" id="timer-modal" style="display: none;">
-        <div class="modal-backdrop-speed" id="timer-backdrop"></div>
-        <div class="speed-container">
-            <h3 class="speed-title">Sleep Timer</h3>
-            <div class="speed-options" id="timer-options">
-                <!-- Timer options will be inserted here -->
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Full Player Modal -->
-    <div class="full-player-modal" id="full-player-modal" style="display: none;">
-        <div class="modal-backdrop" id="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-drag-handle"></div>
-            <div class="modal-artwork-container">
-                <img class="modal-artwork" id="modal-artwork" src="" alt="Episode Artwork" style="display: none;">
-                <div class="modal-artwork-placeholder" id="modal-artwork-placeholder">
-                    <i class="fas fa-music"></i>
-                </div>
-            </div>
-            <div class="modal-episode-info">
-                <h2 class="modal-episode-title" id="modal-episode-title">Episode Title</h2>
-                <p class="modal-podcast-name" id="modal-podcast-name">Podcast Name</p>
-                <div class="modal-duration-badge" id="modal-duration-badge" style="display: none;">0:00</div>
-            </div>
-            <div class="modal-progress-section">
-                <div class="modal-time-display">
-                    <span class="modal-current-time" id="modal-current-time">0:00</span>
-                    <span class="modal-total-time" id="modal-total-time">0:00</span>
-                </div>
-                <div class="modal-progress-bar" id="modal-progress-bar">
-                    <div class="modal-progress-fill" id="modal-progress-fill"></div>
-                    <div class="modal-progress-scrubber" id="modal-progress-scrubber"></div>
-                </div>
-            </div>
-            <div class="modal-primary-controls">
-                <button class="modal-skip-back" id="modal-skip-back" aria-label="Skip back 15 seconds">
-                    <span class="skip-label">15</span>
-                    <i class="fas fa-backward"></i>
-                </button>
-                <button class="modal-play-pause" id="modal-play-pause" aria-label="Play/Pause">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="modal-skip-forward" id="modal-skip-forward" aria-label="Skip forward 30 seconds">
-                    <span class="skip-label">30</span>
-                    <i class="fas fa-forward"></i>
-                </button>
-            </div>
-            <div class="modal-secondary-controls">
-                <button class="modal-speed-control" id="modal-speed-control" aria-label="Playback Speed">
-                    <span id="modal-speed-display">1x</span>
-                </button>
-                <button class="modal-timer-control" id="modal-timer-control" aria-label="Sleep Timer">
-                    <i class="fas fa-moon"></i>
-                    <span id="modal-timer-display">Off</span>
-                </button>
-                <button class="modal-share-control" id="modal-share-control" aria-label="Share">
-                    <i class="fas fa-share-alt"></i>
-                </button>
-            </div>
-            <div class="modal-tabs">
-                <button class="modal-tab active" data-modal-tab="shownotes" id="modal-tab-shownotes">Show Notes</button>
-                <button class="modal-tab" data-modal-tab="chapters" id="modal-tab-chapters">Chapters</button>
-                <button class="modal-tab" data-modal-tab="episodes" id="modal-tab-episodes">Episodes</button>
-            </div>
-            <div class="modal-tab-content" id="modal-tab-content">
-                <div class="modal-tab-panel active" id="modal-shownotes-panel">
-                    <div class="modal-shownotes" id="modal-shownotes">
-                        <p class="empty-message">No show notes available</p>
-                    </div>
-                </div>
-                <div class="modal-tab-panel" id="modal-chapters-panel">
-                    <div class="modal-chapters-list" id="modal-chapters-list">
-                        <div class="empty-state">No chapters available</div>
-                    </div>
-                </div>
-                <div class="modal-tab-panel" id="modal-episodes-panel">
-                    <div class="modal-episodes-list" id="modal-episodes-list">
-                        <!-- Episodes will be inserted here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast" style="display: none;">

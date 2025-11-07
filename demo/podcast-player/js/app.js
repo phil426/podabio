@@ -36,9 +36,6 @@ class PodcastApp {
         // Initialize follow section
         this.initFollowSection();
         
-        // Initialize full player modal
-        this.initFullPlayerModal();
-        
         // Load RSS feed
         await this.loadFeed();
     }
@@ -210,10 +207,8 @@ class PodcastApp {
         
         card.addEventListener('click', () => {
             this.loadEpisode(episode);
-            // Open full player modal
-            setTimeout(() => {
-                this.openFullPlayerModal();
-            }, 100);
+            // Switch to Now Playing tab
+            this.switchTab('now-playing');
         });
         
         return card;
@@ -315,7 +310,7 @@ class PodcastApp {
         }
         
         if (title) title.textContent = this.currentEpisode.title;
-        if (podcastName) podcastName.textContent = this.podcastData.title || '';
+        if (podcastName) podcastName.textContent = this.podcastData.name || this.podcastData.title || '';
         if (durationBadge && this.currentEpisode.duration) {
             durationBadge.textContent = formatTime(this.currentEpisode.duration);
             durationBadge.style.display = 'inline-block';
@@ -378,22 +373,20 @@ class PodcastApp {
      */
     renderChapters() {
         if (!this.currentEpisode) {
-            const section = document.getElementById('chapters-section');
-            if (section) section.style.display = 'none';
+            const content = document.getElementById('chapters-list');
+            if (content) {
+                content.innerHTML = '<div class="empty-state">No chapters available</div>';
+            }
             return;
         }
         
         const content = document.getElementById('chapters-list');
-        const section = document.getElementById('chapters-section');
-        if (!content || !section) return;
+        if (!content) return;
         
         if (!this.currentEpisode.chapters || this.currentEpisode.chapters.length === 0) {
             content.innerHTML = '<div class="empty-state">No chapters available</div>';
-            section.style.display = 'none';
             return;
         }
-        
-        section.style.display = 'block';
         content.innerHTML = '';
         
         this.currentEpisode.chapters.forEach((chapter, index) => {
@@ -500,17 +493,17 @@ class PodcastApp {
         // Secondary controls
         const speedBtn = document.getElementById('speed-control-btn');
         if (speedBtn) {
-            speedBtn.addEventListener('click', () => this.openSpeedModal());
+            speedBtn.addEventListener('click', () => this.toggleSpeedSelector());
         }
         
         const timerBtn = document.getElementById('timer-control-btn');
         if (timerBtn) {
-            timerBtn.addEventListener('click', () => this.openTimerModal());
+            timerBtn.addEventListener('click', () => this.toggleTimerSelector());
         }
         
         const shareBtn = document.getElementById('share-control-btn');
         if (shareBtn) {
-            shareBtn.addEventListener('click', () => this.openShareDrawer());
+            shareBtn.addEventListener('click', () => this.handleShare());
         }
         
         // Retry button
@@ -547,9 +540,8 @@ class PodcastApp {
         // Update progress
         this.player.audio.addEventListener('timeupdate', () => {
             this.updateProgress();
-            if (this.currentTab === 'details') {
-                this.updateActiveChapter(this.player.audio.currentTime);
-            }
+            // Always update active chapter (now in now-playing tab)
+            this.updateActiveChapter(this.player.audio.currentTime);
         });
         
         // Update time displays
@@ -597,12 +589,12 @@ class PodcastApp {
      */
     initSpeedSelector() {
         const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-        const speedOptions = document.getElementById('speed-options');
+        const speedOptions = document.getElementById('speed-options-inline');
         
         if (speedOptions) {
             speeds.forEach(speed => {
                 const option = createElement('button', {
-                    className: `speed-option ${speed === this.player.playbackSpeed ? 'active' : ''}`,
+                    className: `speed-option-inline ${speed === this.player.playbackSpeed ? 'active' : ''}`,
                     dataset: { speed: speed }
                 }, `${speed}x`);
                 
@@ -610,22 +602,11 @@ class PodcastApp {
                     e.stopPropagation();
                     this.player.setPlaybackSpeed(speed);
                     this.updateSpeedDisplay();
-                    this.closeSpeedModal();
+                    this.toggleSpeedSelector();
                 });
                 
                 speedOptions.appendChild(option);
             });
-        }
-        
-        const speedBackdrop = document.getElementById('speed-backdrop');
-        const speedModal = document.getElementById('speed-modal');
-        const speedContainer = speedModal?.querySelector('.speed-container');
-        if (speedBackdrop && speedModal) {
-            speedBackdrop.addEventListener('click', () => this.closeSpeedModal());
-            // Prevent modal from closing when clicking inside
-            if (speedContainer) {
-                speedContainer.addEventListener('click', (e) => e.stopPropagation());
-            }
         }
     }
 
@@ -636,25 +617,25 @@ class PodcastApp {
         }
     }
 
-    openSpeedModal() {
-        const modal = document.getElementById('speed-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            // Update active option
-            document.querySelectorAll('.speed-option').forEach(opt => {
-                opt.classList.toggle('active', parseFloat(opt.dataset.speed) === this.player.playbackSpeed);
-            });
-            // Prevent body scroll when modal is open
-            document.body.style.overflow = 'hidden';
+    toggleSpeedSelector() {
+        const selector = document.getElementById('inline-speed-selector');
+        const timerSelector = document.getElementById('inline-timer-selector');
+        
+        // Close timer selector if open
+        if (timerSelector && timerSelector.style.display !== 'none') {
+            timerSelector.style.display = 'none';
         }
-    }
-
-    closeSpeedModal() {
-        const modal = document.getElementById('speed-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            // Restore body scroll
-            document.body.style.overflow = '';
+        
+        if (selector) {
+            const isVisible = selector.style.display !== 'none';
+            selector.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                // Update active option
+                document.querySelectorAll('.speed-option-inline').forEach(opt => {
+                    opt.classList.toggle('active', parseFloat(opt.dataset.speed) === this.player.playbackSpeed);
+                });
+            }
         }
     }
 
@@ -662,7 +643,7 @@ class PodcastApp {
      * Initialize timer selector
      */
     initTimerSelector() {
-        const timerOptions = document.getElementById('timer-options');
+        const timerOptions = document.getElementById('timer-options-inline');
         const times = [
             { label: '15 minutes', value: 15 },
             { label: '30 minutes', value: 30 },
@@ -674,7 +655,7 @@ class PodcastApp {
         if (timerOptions) {
             times.forEach(time => {
                 const option = createElement('button', {
-                    className: 'timer-option',
+                    className: 'timer-option-inline',
                     dataset: { minutes: time.value }
                 }, time.label);
                 
@@ -682,22 +663,11 @@ class PodcastApp {
                     e.stopPropagation();
                     this.player.setSleepTimer(time.value);
                     this.updateTimerDisplay();
-                    this.closeTimerModal();
+                    this.toggleTimerSelector();
                 });
                 
                 timerOptions.appendChild(option);
             });
-        }
-        
-        const timerBackdrop = document.getElementById('timer-backdrop');
-        const timerModal = document.getElementById('timer-modal');
-        const timerContainer = timerModal?.querySelector('.speed-container');
-        if (timerBackdrop && timerModal) {
-            timerBackdrop.addEventListener('click', () => this.closeTimerModal());
-            // Prevent modal from closing when clicking inside
-            if (timerContainer) {
-                timerContainer.addEventListener('click', (e) => e.stopPropagation());
-            }
         }
     }
 
@@ -713,21 +683,18 @@ class PodcastApp {
         }
     }
 
-    openTimerModal() {
-        const modal = document.getElementById('timer-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            // Prevent body scroll when modal is open
-            document.body.style.overflow = 'hidden';
+    toggleTimerSelector() {
+        const selector = document.getElementById('inline-timer-selector');
+        const speedSelector = document.getElementById('inline-speed-selector');
+        
+        // Close speed selector if open
+        if (speedSelector && speedSelector.style.display !== 'none') {
+            speedSelector.style.display = 'none';
         }
-    }
-
-    closeTimerModal() {
-        const modal = document.getElementById('timer-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            // Restore body scroll
-            document.body.style.overflow = '';
+        
+        if (selector) {
+            const isVisible = selector.style.display !== 'none';
+            selector.style.display = isVisible ? 'none' : 'block';
         }
     }
 
@@ -735,14 +702,7 @@ class PodcastApp {
      * Initialize sharing
      */
     initSharing() {
-        const shareCancel = document.getElementById('share-cancel');
-        const shareBackdrop = document.getElementById('share-backdrop');
-        if (shareCancel) {
-            shareCancel.addEventListener('click', () => this.closeShareDrawer());
-        }
-        if (shareBackdrop) {
-            shareBackdrop.addEventListener('click', () => this.closeShareDrawer());
-        }
+        // Sharing is now handled inline via handleShare()
         
         this.setupSharePlatforms();
     }
@@ -781,25 +741,24 @@ class PodcastApp {
         if (!this.currentEpisode) return;
         
         const episodeTitle = this.currentEpisode.title;
-        const podcastName = this.podcastData.title;
+        const podcastName = this.podcastData?.title || this.podcastData?.name || 'Podcast';
         const shareText = `Check out "${episodeTitle}" from ${podcastName}`;
-        const shareUrl = window.location.href;
+        const shareUrl = this.currentEpisode.enclosure?.url || window.location.href;
         
-        if (platform.action === 'copy') {
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                showToast('Link copied!', 'success');
-                this.closeShareDrawer();
-            });
-        } else if (navigator.share && (platform.name === 'Twitter' || platform.name === 'Facebook' || platform.name === 'WhatsApp')) {
-            // Use Web Share API if available
+        // Use Web Share API if available
+        if (navigator.share) {
             navigator.share({
                 title: episodeTitle,
                 text: shareText,
                 url: shareUrl
-            }).then(() => {
-                this.closeShareDrawer();
+            }).catch(() => {
+                // User cancelled or error occurred
             });
-        } else {
+        } else if (platform && platform.action === 'copy') {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('Link copied!', 'success');
+            });
+        } else if (platform) {
             // Open share URL
             let url = platform.url;
             if (platform.name === 'Twitter') {
@@ -813,21 +772,13 @@ class PodcastApp {
             }
             
             window.open(url, '_blank');
-            this.closeShareDrawer();
-        }
-    }
-
-    openShareDrawer() {
-        const drawer = document.getElementById('share-drawer');
-        if (drawer) {
-            drawer.style.display = 'block';
-        }
-    }
-
-    closeShareDrawer() {
-        const drawer = document.getElementById('share-drawer');
-        if (drawer) {
-            drawer.style.display = 'none';
+        } else {
+            // Fallback: try to copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('Link copied!', 'success');
+            }).catch(() => {
+                showToast('Unable to share', 'error');
+            });
         }
     }
 
@@ -942,315 +893,6 @@ class PodcastApp {
 
 
 
-    /**
-     * Initialize full player modal
-     */
-    initFullPlayerModal() {
-        const modal = document.getElementById('full-player-modal');
-        const backdrop = document.getElementById('modal-backdrop');
-        const dragHandle = modal?.querySelector('.modal-drag-handle');
-        const modalTabs = document.querySelectorAll('.modal-tab');
-        
-        // Close on backdrop click
-        if (backdrop) {
-            backdrop.addEventListener('click', () => {
-                this.closeFullPlayerModal();
-            });
-        }
-        
-        // Modal tabs
-        modalTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.modalTab;
-                this.switchModalTab(tabName);
-            });
-        });
-        
-        // Drag handle to close
-        if (dragHandle) {
-            let startY = 0;
-            let currentY = 0;
-            let isDragging = false;
-            
-            dragHandle.addEventListener('touchstart', (e) => {
-                startY = e.touches[0].clientY;
-                isDragging = true;
-            });
-            
-            dragHandle.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                currentY = e.touches[0].clientY;
-                const diff = currentY - startY;
-                if (diff > 50) {
-                    this.closeFullPlayerModal();
-                    isDragging = false;
-                }
-            });
-            
-            dragHandle.addEventListener('touchend', () => {
-                isDragging = false;
-            });
-        }
-        
-        // Modal controls
-        const modalPlayPause = document.getElementById('modal-play-pause');
-        const modalSkipBack = document.getElementById('modal-skip-back');
-        const modalSkipForward = document.getElementById('modal-skip-forward');
-        const modalSpeedControl = document.getElementById('modal-speed-control');
-        const modalTimerControl = document.getElementById('modal-timer-control');
-        const modalShareControl = document.getElementById('modal-share-control');
-        
-        if (modalPlayPause) {
-            modalPlayPause.addEventListener('click', () => {
-                this.player.togglePlayPause();
-            });
-        }
-        
-        if (modalSkipBack) {
-            modalSkipBack.addEventListener('click', () => {
-                this.player.skipBackward();
-            });
-        }
-        
-        if (modalSkipForward) {
-            modalSkipForward.addEventListener('click', () => {
-                this.player.skipForward();
-            });
-        }
-        
-        if (modalSpeedControl) {
-            modalSpeedControl.addEventListener('click', () => {
-                this.openSpeedModal();
-            });
-        }
-        
-        if (modalTimerControl) {
-            modalTimerControl.addEventListener('click', () => {
-                this.openTimerModal();
-            });
-        }
-        
-        if (modalShareControl) {
-            modalShareControl.addEventListener('click', () => {
-                this.openShareDrawer();
-            });
-        }
-        
-        // Progress bar scrubbing
-        const modalProgressBar = document.getElementById('modal-progress-bar');
-        if (modalProgressBar) {
-            modalProgressBar.addEventListener('click', (e) => {
-                const rect = modalProgressBar.getBoundingClientRect();
-                const percent = (e.clientX - rect.left) / rect.width;
-                const time = percent * (this.player.audio?.duration || 0);
-                this.player.seekTo(time);
-            });
-        }
-    }
-
-    /**
-     * Open full player modal
-     */
-    openFullPlayerModal() {
-        const modal = document.getElementById('full-player-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            this.updateFullPlayerModal();
-            this.switchModalTab('shownotes');
-        }
-    }
-
-    /**
-     * Close full player modal
-     */
-    closeFullPlayerModal() {
-        const modal = document.getElementById('full-player-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    }
-
-    /**
-     * Update full player modal UI
-     */
-    updateFullPlayerModal() {
-        if (!this.currentEpisode) return;
-        
-        const modalArtwork = document.getElementById('modal-artwork');
-        const modalArtworkPlaceholder = document.getElementById('modal-artwork-placeholder');
-        const modalTitle = document.getElementById('modal-episode-title');
-        const modalPodcastName = document.getElementById('modal-podcast-name');
-        const modalDurationBadge = document.getElementById('modal-duration-badge');
-        const modalPlayPause = document.getElementById('modal-play-pause');
-        const modalSpeedDisplay = document.getElementById('modal-speed-display');
-        const modalTimerDisplay = document.getElementById('modal-timer-display');
-        
-        const artworkUrl = this.currentEpisode.artwork || this.podcastData?.coverImage || '';
-        if (modalArtwork && artworkUrl) {
-            modalArtwork.src = getProxiedImageUrl(artworkUrl);
-            modalArtwork.style.display = 'block';
-            if (modalArtworkPlaceholder) modalArtworkPlaceholder.style.display = 'none';
-        } else {
-            if (modalArtwork) modalArtwork.style.display = 'none';
-            if (modalArtworkPlaceholder) modalArtworkPlaceholder.style.display = 'flex';
-        }
-        
-        if (modalTitle) {
-            modalTitle.textContent = this.currentEpisode.title || 'Episode';
-        }
-        
-        if (modalPodcastName) {
-            modalPodcastName.textContent = this.podcastData?.name || 'Podcast';
-        }
-        
-        if (modalDurationBadge && this.currentEpisode.duration) {
-            modalDurationBadge.textContent = formatTime(this.currentEpisode.duration);
-            modalDurationBadge.style.display = 'inline-block';
-        }
-        
-        if (modalPlayPause && this.player.audio) {
-            const icon = modalPlayPause.querySelector('i');
-            if (icon) {
-                icon.className = this.player.audio.paused ? 'fas fa-play' : 'fas fa-pause';
-            }
-        }
-        
-        if (modalSpeedDisplay) {
-            modalSpeedDisplay.textContent = this.player.playbackSpeed + 'x';
-        }
-        
-        if (modalTimerDisplay) {
-            if (this.player.sleepTimer) {
-                const remaining = Math.max(0, Math.floor((this.player.sleepTimerEndTime - Date.now()) / 1000 / 60));
-                modalTimerDisplay.textContent = remaining > 0 ? `${remaining}m` : 'Off';
-            } else {
-                modalTimerDisplay.textContent = 'Off';
-            }
-        }
-        
-        // Update shownotes
-        this.updateModalShownotes();
-        
-        // Update chapters
-        this.updateModalChapters();
-        
-        // Update episodes list
-        this.updateModalEpisodes();
-    }
-
-    /**
-     * Update modal shownotes
-     */
-    updateModalShownotes() {
-        const modalShownotes = document.getElementById('modal-shownotes');
-        if (modalShownotes && this.currentEpisode) {
-            if (this.currentEpisode.description) {
-                modalShownotes.innerHTML = this.currentEpisode.description;
-            } else {
-                modalShownotes.innerHTML = '<p class="empty-message">No show notes available</p>';
-            }
-        }
-    }
-
-    /**
-     * Update modal chapters
-     */
-    updateModalChapters() {
-        const modalChaptersList = document.getElementById('modal-chapters-list');
-        if (modalChaptersList && this.currentEpisode) {
-            if (this.currentEpisode.chapters && this.currentEpisode.chapters.length > 0) {
-                modalChaptersList.innerHTML = '';
-                this.currentEpisode.chapters.forEach((chapter, index) => {
-                    const item = createElement('div', {
-                        className: `chapter-item ${this.activeChapter === index ? 'active' : ''}`,
-                        dataset: { index: index, time: chapter.startTime }
-                    });
-                    
-                    if (chapter.imageUrl) {
-                        const img = createElement('img', {
-                            className: 'chapter-image',
-                            src: getProxiedImageUrl(chapter.imageUrl),
-                            alt: chapter.title
-                        });
-                        item.appendChild(img);
-                    }
-                    
-                    const info = createElement('div', { className: 'chapter-info' });
-                    const title = createElement('div', { className: 'chapter-title' }, chapter.title);
-                    const time = createElement('div', { className: 'chapter-time' }, formatTime(chapter.startTime));
-                    info.appendChild(title);
-                    info.appendChild(time);
-                    item.appendChild(info);
-                    
-                    item.addEventListener('click', () => {
-                        this.player.seekTo(chapter.startTime);
-                        this.activeChapter = index;
-                        this.updateModalChapters();
-                    });
-                    
-                    modalChaptersList.appendChild(item);
-                });
-            } else {
-                modalChaptersList.innerHTML = '<div class="empty-state">No chapters available</div>';
-            }
-        }
-    }
-
-    /**
-     * Update modal episodes list
-     */
-    updateModalEpisodes() {
-        const modalEpisodesList = document.getElementById('modal-episodes-list');
-        if (modalEpisodesList && this.podcastData && this.podcastData.episodes) {
-            modalEpisodesList.innerHTML = '';
-            this.podcastData.episodes.slice(0, 10).forEach((episode, index) => {
-                const card = createElement('div', {
-                    className: `modal-episode-card ${episode.guid === this.currentEpisode?.guid ? 'active' : ''}`
-                });
-                
-                const artwork = createElement('img', {
-                    className: 'episode-artwork',
-                    src: getProxiedImageUrl(episode.artwork || this.podcastData.coverImage || ''),
-                    alt: episode.title
-                });
-                
-                const info = createElement('div', { className: 'episode-info' });
-                const title = createElement('div', { className: 'episode-title' }, episode.title);
-                const meta = createElement('div', { className: 'episode-meta' });
-                meta.textContent = formatTime(episode.duration || 0) + ' • ' + formatDate(episode.pubDate);
-                info.appendChild(title);
-                info.appendChild(meta);
-                
-                card.appendChild(artwork);
-                card.appendChild(info);
-                
-                card.addEventListener('click', () => {
-                    this.selectEpisode(episode, true);
-                    this.closeFullPlayerModal();
-                });
-                
-                modalEpisodesList.appendChild(card);
-            });
-        }
-    }
-
-    /**
-     * Switch modal tab
-     */
-    switchModalTab(tabName) {
-        const tabs = document.querySelectorAll('.modal-tab');
-        const panels = document.querySelectorAll('.modal-tab-panel');
-        
-        tabs.forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.modalTab === tabName);
-        });
-        
-        panels.forEach(panel => {
-            panel.classList.toggle('active', panel.id === `modal-${tabName}-panel`);
-        });
-    }
 }
 
 // Initialize app when DOM is ready
