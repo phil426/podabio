@@ -305,8 +305,15 @@ class AudioPlayer {
         
         // Update time displays
         const currentTimeEl = document.getElementById('current-time-display');
+        const remainingTimeEl = document.getElementById('remaining-time-display');
+        
         if (currentTimeEl) {
             currentTimeEl.textContent = formatTime(this.audio.currentTime);
+        }
+        
+        if (remainingTimeEl && this.audio.duration) {
+            const remaining = this.audio.duration - (this.audio.currentTime || 0);
+            remainingTimeEl.textContent = '-' + formatTime(remaining);
         }
     }
 

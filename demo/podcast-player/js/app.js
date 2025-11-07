@@ -543,12 +543,7 @@ class PodcastApp {
         if (fill) fill.style.width = percent + '%';
         if (scrubber) scrubber.style.left = percent + '%';
         
-        // Update time displays
-        const currentTimeDisplay = document.getElementById('current-time-display');
-        const totalTimeDisplay = document.getElementById('total-time-display');
-        
-        if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime);
-        if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(audio.duration);
+        // Update time displays (handled by player.js)
     }
 
     /**
