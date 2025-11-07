@@ -365,10 +365,10 @@ body {
     color: #FFFFFF;
     cursor: pointer;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 50%;
     transition: all 0.2s ease;
-    min-width: 60px;
-    min-height: 60px;
+    width: 60px;
+    height: 60px;
     justify-content: center;
 }
 
