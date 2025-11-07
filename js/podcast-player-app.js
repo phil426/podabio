@@ -108,7 +108,16 @@ class PodcastPlayerApp {
             if (!this.config.rssFeedUrl) {
                 throw new Error('RSS feed URL not provided');
             }
+            
+            console.log('Fetching RSS feed from:', this.config.rssFeedUrl);
+            console.log('Using RSS proxy:', this.config.rssProxyUrl);
+            
             this.podcastData = await this.rssParser.parseFeed(this.config.rssFeedUrl);
+            
+            console.log('RSS feed parsed successfully:', {
+                title: this.podcastData?.title,
+                episodeCount: this.podcastData?.episodes?.length || 0
+            });
             
             // Cache the data
             PodcastStorage.set('podcast_data', this.podcastData);
@@ -118,13 +127,25 @@ class PodcastPlayerApp {
             
         } catch (error) {
             console.error('Failed to load feed:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                rssFeedUrl: this.config.rssFeedUrl,
+                rssProxyUrl: this.config.rssProxyUrl
+            });
             
             // Show error state
             if (loadingSkeleton) loadingSkeleton.style.display = 'none';
             if (episodesList) episodesList.style.display = 'none';
             if (errorState) errorState.style.display = 'block';
             
-            this.showToast('Failed to load podcast feed', 'error');
+            // Update error message with details
+            const errorMessage = errorState.querySelector('p');
+            if (errorMessage) {
+                errorMessage.textContent = `Failed to load podcast feed: ${error.message}`;
+            }
+            
+            this.showToast('Failed to load podcast feed: ' + error.message, 'error');
         }
     }
 

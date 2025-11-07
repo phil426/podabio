@@ -12,13 +12,18 @@ class PodcastRSSParser {
         try {
             // Try using proxy first (for CORS handling)
             const proxyUrl = this.rssProxyUrl + '?url=' + encodeURIComponent(url);
+            console.log('Fetching RSS via proxy:', proxyUrl);
+            
             const response = await fetch(proxyUrl);
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text().catch(() => 'Unknown error');
+                console.error('RSS proxy error:', response.status, errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
             
             const text = await response.text();
+            console.log('RSS feed fetched successfully, length:', text.length);
             return text;
         } catch (error) {
             // Fallback to direct fetch if proxy fails
@@ -29,8 +34,10 @@ class PodcastRSSParser {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const text = await response.text();
+                console.log('RSS feed fetched directly, length:', text.length);
                 return text;
             } catch (directError) {
+                console.error('Direct fetch also failed:', directError);
                 throw new Error(`Failed to fetch RSS feed: ${directError.message}`);
             }
         }
@@ -42,16 +49,29 @@ class PodcastRSSParser {
     async parseFeed(feedUrl) {
         try {
             const xmlText = await this.fetchFeed(feedUrl);
+            
+            if (!xmlText || xmlText.trim().length === 0) {
+                throw new Error('RSS feed is empty');
+            }
+            
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
             
             // Check for parsing errors
             const parseError = xmlDoc.querySelector('parsererror');
             if (parseError) {
-                throw new Error('Failed to parse RSS feed XML');
+                const errorText = parseError.textContent || 'Unknown parsing error';
+                console.error('XML parsing error:', errorText);
+                throw new Error('Failed to parse RSS feed XML: ' + errorText);
             }
             
-            return this.parseXML(xmlDoc);
+            const parsedData = this.parseXML(xmlDoc);
+            console.log('RSS feed parsed:', {
+                title: parsedData.title,
+                episodeCount: parsedData.episodes?.length || 0
+            });
+            
+            return parsedData;
         } catch (error) {
             console.error('RSS parsing error:', error);
             throw error;
