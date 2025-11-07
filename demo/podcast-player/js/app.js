@@ -260,8 +260,6 @@ class PodcastApp {
         const artworkContainer = document.getElementById('now-playing-artwork-container');
         const placeholder = document.getElementById('artwork-placeholder');
         const artwork = document.getElementById('now-playing-artwork');
-        const title = document.getElementById('now-playing-title');
-        const podcastName = document.getElementById('now-playing-podcast');
         
         // Check if podcast is set
         const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
@@ -270,11 +268,6 @@ class PodcastApp {
             // Show generic placeholder until podcast is set
             if (artwork) artwork.style.display = 'none';
             if (placeholder) placeholder.style.display = 'flex';
-            if (title) {
-                title.textContent = '';
-                title.style.display = 'none';
-            }
-            if (podcastName) podcastName.textContent = hasPodcastData ? (this.podcastData.name || this.podcastData.title || '') : '';
             return;
         }
         
@@ -302,13 +295,7 @@ class PodcastApp {
             }
         }
         
-        // Update title and podcast name overlay (podcast name is main title)
-        if (podcastName) podcastName.textContent = this.podcastData.name || this.podcastData.title || '';
-        // Episode title is hidden in this view
-        if (title) {
-            title.textContent = this.currentEpisode.title;
-            title.style.display = 'none';
-        }
+        // Podcast name overlay removed - no longer updating
     }
 
     /**
