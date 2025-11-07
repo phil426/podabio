@@ -15,11 +15,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
-    <!-- Tab Navigation -->
-    <nav class="tab-navigation" id="tab-navigation">
-        <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
-        <button class="tab-button" data-tab="details" id="tab-details">Details</button>
-        <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navigation" id="top-navigation">
+        <button class="nav-back-button" id="nav-back-button" aria-label="Back">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
+            <button class="nav-tab" data-tab="details" id="tab-details">Details</button>
+            <button class="nav-tab" data-tab="bookmarks" id="tab-bookmarks">Bookmarks</button>
+        </div>
+        <div class="nav-actions">
+            <button class="nav-action-btn" id="nav-play-btn" aria-label="Play">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="nav-action-btn" id="nav-menu-btn" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
     </nav>
 
     <!-- Tab Content Container -->
@@ -27,66 +40,53 @@
         <!-- Now Playing Tab -->
         <div class="tab-panel active" id="now-playing-panel">
             <div class="now-playing-content">
-                <!-- Full Width Cover Artwork -->
-                <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
+                <!-- Large Episode Artwork -->
+                <div class="episode-artwork-container" id="now-playing-artwork-container">
                     <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
                     <div class="artwork-placeholder" id="artwork-placeholder">
                         <i class="fas fa-music"></i>
                     </div>
                 </div>
 
-                <!-- Glass Control Panel -->
-                <div class="glass-control-panel">
-                    <!-- Episode Information -->
-                    <div class="episode-info-section">
-                        <h1 class="episode-title-large" id="now-playing-title">Select an episode to play</h1>
-                        <p class="podcast-name-large" id="now-playing-podcast">Podcast Name</p>
-                        <div class="duration-badge-large" id="duration-badge-large" style="display: none;">0:00</div>
-                    </div>
+                <!-- Show Title Section -->
+                <div class="show-title-section">
+                    <div class="show-title-left" id="show-title-left">DEADLINE</div>
+                    <div class="show-title-divider"></div>
+                    <div class="show-title-right" id="show-title-right">WHITE HOUSE</div>
+                </div>
+                <div class="show-network" id="show-network">MSNBC</div>
 
-                    <!-- Progress Bar -->
-                    <div class="progress-section-large">
-                        <div class="time-display">
-                            <span class="current-time-display" id="current-time-display">0:00</span>
-                            <span class="total-time-display" id="total-time-display">0:00</span>
-                        </div>
-                        <div class="progress-bar-now-playing" id="progress-bar-now-playing">
-                            <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
-                            <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
-                        </div>
-                    </div>
+                <!-- Episode Title -->
+                <div class="episode-title-section">
+                    <h1 class="episode-title-large" id="now-playing-title">Select an episode to play</h1>
+                    <p class="podcast-name-large" id="now-playing-podcast">Deadline: White House</p>
+                </div>
 
-                    <!-- Primary Controls -->
-                    <div class="primary-controls">
-                        <button class="control-button-large skip-back-large" id="skip-back-large" aria-label="Skip back 15 seconds">
-                            <span class="skip-label-large">15</span>
-                            <i class="fas fa-backward"></i>
-                        </button>
-                        <button class="control-button-large play-pause-large-now" id="play-pause-large-now" aria-label="Play/Pause">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="control-button-large skip-forward-large" id="skip-forward-large" aria-label="Skip forward 30 seconds">
-                            <span class="skip-label-large">30</span>
-                            <i class="fas fa-forward"></i>
-                        </button>
+                <!-- Progress Bar -->
+                <div class="progress-section-large">
+                    <div class="time-display">
+                        <span class="current-time-display" id="current-time-display">0:00</span>
+                        <span class="remaining-time-display" id="remaining-time-display">-0:00</span>
                     </div>
+                    <div class="progress-bar-now-playing" id="progress-bar-now-playing">
+                        <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
+                        <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                    </div>
+                </div>
 
-                    <!-- Secondary Controls Bar -->
-                    <div class="secondary-controls-bar">
-                        <button class="secondary-control-btn speed-control-btn" id="speed-control-btn" aria-label="Playback Speed">
-                            <span id="speed-display">1x</span>
-                        </button>
-                        <button class="secondary-control-btn timer-control-btn" id="timer-control-btn" aria-label="Sleep Timer">
-                            <i class="fas fa-moon"></i>
-                            <span id="timer-display">Off</span>
-                        </button>
-                        <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
-                            <i class="fas fa-share-alt"></i>
-                        </button>
-                        <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                    </div>
+                <!-- Primary Controls -->
+                <div class="primary-controls">
+                    <button class="control-button-large skip-back-large" id="skip-back-large" aria-label="Skip back 10 seconds">
+                        <span class="skip-label-large">10</span>
+                        <i class="fas fa-backward"></i>
+                    </button>
+                    <button class="control-button-large play-pause-large-now" id="play-pause-large-now" aria-label="Play/Pause">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-button-large skip-forward-large" id="skip-forward-large" aria-label="Skip forward 45 seconds">
+                        <span class="skip-label-large">45</span>
+                        <i class="fas fa-forward"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -117,6 +117,13 @@
                         <!-- Follow content will be inserted here -->
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Bookmarks Tab -->
+        <div class="tab-panel" id="bookmarks-panel">
+            <div class="bookmarks-content">
+                <p class="empty-message">No bookmarks yet</p>
             </div>
         </div>
 
@@ -257,6 +264,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-navigation" id="bottom-navigation">
+        <button class="bottom-nav-btn" id="bottom-brightness-btn" aria-label="Brightness">
+            <i class="fas fa-sun"></i>
+        </button>
+        <button class="bottom-nav-btn" id="bottom-timer-btn" aria-label="Sleep Timer">
+            <i class="fas fa-bed"></i>
+        </button>
+        <button class="bottom-nav-btn" id="bottom-cast-btn" aria-label="Cast">
+            <i class="fas fa-wifi"></i>
+        </button>
+        <button class="bottom-nav-btn" id="bottom-share-btn" aria-label="Share">
+            <i class="fas fa-share"></i>
+        </button>
+        <button class="bottom-nav-btn" id="bottom-more-btn" aria-label="More">
+            <i class="fas fa-ellipsis-h"></i>
+        </button>
+    </nav>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast" style="display: none;">

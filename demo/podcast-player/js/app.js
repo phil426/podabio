@@ -47,13 +47,38 @@ class PodcastApp {
      * Initialize tab navigation
      */
     initTabNavigation() {
-        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabButtons = document.querySelectorAll('.nav-tab, .tab-button');
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabName = button.dataset.tab;
                 this.switchTab(tabName);
             });
         });
+        
+        // Top nav play button
+        const navPlayBtn = document.getElementById('nav-play-btn');
+        if (navPlayBtn) {
+            navPlayBtn.addEventListener('click', () => {
+                if (this.currentEpisode) {
+                    this.player.togglePlayPause();
+                }
+            });
+        }
+        
+        // Bottom nav buttons
+        const bottomTimerBtn = document.getElementById('bottom-timer-btn');
+        if (bottomTimerBtn) {
+            bottomTimerBtn.addEventListener('click', () => {
+                this.openTimerModal();
+            });
+        }
+        
+        const bottomShareBtn = document.getElementById('bottom-share-btn');
+        if (bottomShareBtn) {
+            bottomShareBtn.addEventListener('click', () => {
+                this.openShareDrawer();
+            });
+        }
     }
 
     /**
@@ -62,8 +87,8 @@ class PodcastApp {
     switchTab(tabName) {
         this.currentTab = tabName;
         
-        // Update tab buttons
-        document.querySelectorAll('.tab-button').forEach(btn => {
+        // Update nav tabs
+        document.querySelectorAll('.nav-tab, .tab-button').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
         
@@ -125,6 +150,26 @@ class PodcastApp {
      */
     renderPodcastData() {
         if (!this.podcastData) return;
+        
+        // Update show title
+        const showTitleLeft = document.getElementById('show-title-left');
+        const showTitleRight = document.getElementById('show-title-right');
+        const showNetwork = document.getElementById('show-network');
+        
+        if (showTitleLeft && this.podcastData.name) {
+            // Split podcast name if it contains separator like "|" or ":"
+            const nameParts = this.podcastData.name.split(/[|:]/).map(s => s.trim());
+            if (nameParts.length >= 2) {
+                showTitleLeft.textContent = nameParts[0].toUpperCase();
+                showTitleRight.textContent = nameParts.slice(1).join(' ').toUpperCase();
+            } else {
+                // Default split at space if no separator
+                const words = this.podcastData.name.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                showTitleLeft.textContent = words.slice(0, mid).join(' ').toUpperCase();
+                showTitleRight.textContent = words.slice(mid).join(' ').toUpperCase();
+            }
+        }
         
         // Extract dominant color for theme
         if (this.podcastData.coverImage) {
@@ -315,7 +360,10 @@ class PodcastApp {
         }
         
         if (title) title.textContent = this.currentEpisode.title;
-        if (podcastName) podcastName.textContent = this.podcastData.title || '';
+        if (podcastName) {
+            // Use podcast name or show name
+            podcastName.textContent = this.podcastData.name || this.podcastData.title || '';
+        }
         if (durationBadge && this.currentEpisode.duration) {
             durationBadge.textContent = formatTime(this.currentEpisode.duration);
             durationBadge.style.display = 'inline-block';
