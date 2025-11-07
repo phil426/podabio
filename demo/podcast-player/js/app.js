@@ -47,43 +47,19 @@ class PodcastApp {
      * Apply time bar padding via JavaScript (workaround for CSS cache)
      */
     applyTimeBarPadding() {
-        const applyStyles = () => {
-            const timeDisplay = document.querySelector('.time-display');
-            const progressBar = document.querySelector('.progress-bar-now-playing');
-            
-            if (timeDisplay) {
-                timeDisplay.style.paddingLeft = '30px';
-                timeDisplay.style.paddingRight = '30px';
-            }
-            
-            if (progressBar) {
-                progressBar.style.marginLeft = '30px';
-                progressBar.style.marginRight = '30px';
-                progressBar.style.width = 'calc(100% - 60px)';
-            }
-        };
+        const timeDisplay = document.querySelector('.time-display');
+        const progressBar = document.querySelector('.progress-bar-now-playing');
         
-        // Apply immediately if elements exist
-        applyStyles();
-        
-        // Use MutationObserver to apply when elements are added to DOM
-        const observer = new MutationObserver(() => {
-            applyStyles();
-        });
-        
-        const progressSection = document.getElementById('progress-section-now-playing');
-        if (progressSection) {
-            observer.observe(progressSection, {
-                childList: true,
-                subtree: true
-            });
+        if (timeDisplay) {
+            timeDisplay.style.setProperty('padding-left', '30px', 'important');
+            timeDisplay.style.setProperty('padding-right', '30px', 'important');
         }
         
-        // Also apply on multiple intervals to catch any timing issues
-        setTimeout(applyStyles, 100);
-        setTimeout(applyStyles, 500);
-        setTimeout(applyStyles, 1000);
-        setTimeout(applyStyles, 2000);
+        if (progressBar) {
+            progressBar.style.setProperty('margin-left', '30px', 'important');
+            progressBar.style.setProperty('margin-right', '30px', 'important');
+            progressBar.style.setProperty('width', 'calc(100% - 60px)', 'important');
+        }
     }
 
     /**
@@ -601,15 +577,17 @@ class PodcastApp {
     updateTimeDisplays() {
         const audio = this.player.audio;
         if (!audio.duration) return;
-        
+
         const currentTimeDisplay = document.getElementById('current-time-display');
         const remainingTimeDisplay = document.getElementById('remaining-time-display');
-        
+
         if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime || 0);
         if (remainingTimeDisplay) {
             const remaining = audio.duration - (audio.currentTime || 0);
             remainingTimeDisplay.textContent = '-' + formatTime(remaining);
         }
+        
+        this.applyTimeBarPadding(); // Ensure padding is applied
     }
 
     /**
