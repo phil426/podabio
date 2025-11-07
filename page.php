@@ -240,9 +240,24 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             flex-direction: column;
             transform: translateY(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            overflow: hidden;
-            overflow-y: hidden;
-            overflow-x: hidden;
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+        }
+        
+        /* Prevent body scrollbars when drawer is open or closing */
+        body:has(.podcast-top-drawer.open),
+        body:has(.podcast-top-drawer.peek) {
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+        }
+        
+        html:has(.podcast-top-drawer.open),
+        html:has(.podcast-top-drawer.peek) {
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
         }
         
         
@@ -3285,6 +3300,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     },
                     
                     closeDrawer: function() {
+                        // Force hide scrollbars immediately
+                        document.body.style.overflow = 'hidden';
+                        document.body.style.overflowY = 'hidden';
+                        document.body.style.overflowX = 'hidden';
+                        document.documentElement.style.overflow = 'hidden';
+                        document.documentElement.style.overflowY = 'hidden';
+                        document.documentElement.style.overflowX = 'hidden';
+                        
                         drawer.classList.remove('open');
                         drawer.classList.remove('peek');
                         // Update banner state
@@ -3295,8 +3318,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                             if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
                                 drawer.style.display = 'flex';
                             }
-                        }, 300);
-                        document.body.style.overflow = '';
+                            // Restore body overflow after animation completes
+                            document.body.style.overflow = '';
+                            document.body.style.overflowY = '';
+                            document.body.style.overflowX = '';
+                            document.documentElement.style.overflow = '';
+                            document.documentElement.style.overflowY = '';
+                            document.documentElement.style.overflowX = '';
+                        }, 350); // Slightly longer than transition to ensure it's complete
                         this.isPeeking = false;
                     },
                     
