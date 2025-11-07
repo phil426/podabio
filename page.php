@@ -202,31 +202,30 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(0);
         }
         
-        .podcast-drawer-header {
-            display: flex;
-            justify-content: flex-end;
-            padding: 16px;
-            background-color: rgba(0, 0, 0, 0.8);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
         .podcast-drawer-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
             width: 44px;
             height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: none;
             border-radius: 50%;
             color: #FFFFFF;
             font-size: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         
         .podcast-drawer-close:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(0, 0, 0, 0.8);
             transform: scale(1.1);
         }
         
@@ -2453,13 +2452,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         <!-- Podcast Player Top Drawer -->
         <?php if (!empty($page['rss_feed_url'])): ?>
             <div class="podcast-top-drawer" id="podcast-top-drawer" style="display: none;">
-                <!-- Drawer Header with Close Button -->
-                <div class="podcast-drawer-header">
-                    <button class="podcast-drawer-close" id="podcast-drawer-close" aria-label="Close Podcast Player">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
                 <!-- Tab Navigation -->
                 <nav class="tab-navigation" id="tab-navigation">
                     <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
@@ -2479,6 +2471,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                                 <div class="artwork-placeholder" id="artwork-placeholder">
                                     <i class="fas fa-music"></i>
                                 </div>
+                                <!-- Close Button Overlay -->
+                                <button class="podcast-drawer-close" id="podcast-drawer-close" aria-label="Close Podcast Player">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
 
                             <!-- Progress Section (Below Artwork, Above Controls) -->
