@@ -861,19 +861,20 @@ body {
 }
 
 .episode-title-overlay {
-    font-size: 36px;
+    font-size: 42px;
     font-weight: 700;
     line-height: 1.2;
     color: #FFFFFF;
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
     padding: 0;
     word-wrap: break-word;
     text-align: left;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
 }
 
 .podcast-name-overlay {
-    font-size: 18px;
+    font-size: 20px;
     color: #FFFFFF;
     margin: 0;
     font-weight: 400;

@@ -297,9 +297,13 @@ class PodcastApp {
             if (containerPlaceholder) containerPlaceholder.style.display = 'flex';
         }
         
-        // Update title and podcast name overlay
-        if (title) title.textContent = this.currentEpisode.title;
+        // Update title and podcast name overlay (podcast name is main title)
         if (podcastName) podcastName.textContent = this.podcastData.name || this.podcastData.title || '';
+        // Episode title is hidden in this view
+        if (title) {
+            title.textContent = this.currentEpisode.title;
+            title.style.display = 'none';
+        }
     }
 
     /**
