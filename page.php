@@ -2159,23 +2159,27 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
 
         /* Podcast banner and toggle */
         body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
-            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
-            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
+            background: color-mix(in srgb, var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%)) 85%, rgba(10, 14, 32, 0.65) 15%);
+            border-bottom: 1px solid rgba(122, 255, 216, 0.26);
+            box-shadow: 0 26px 70px rgba(3, 6, 30, 0.6);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
-            color: color-mix(in srgb, #F6FAFF 80%, var(--color-text-secondary) 20%);
+            color: color-mix(in srgb, #F9FDFF 90%, var(--color-accent-primary) 10%);
             text-transform: uppercase;
-            letter-spacing: 0.16em;
-            background: transparent;
-            font-weight: 600;
-            text-shadow: 0 0 4px rgba(3, 8, 35, 0.45);
+            letter-spacing: 0.18em;
+            background: rgba(12, 18, 38, 0.45);
+            font-weight: 700;
+            padding: 0.65rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(122, 255, 216, 0.45);
+            text-shadow: 0 0 12px rgba(3, 8, 35, 0.55), 0 0 18px rgba(122, 255, 216, 0.45);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(255, 255, 255, 0.18);
-            color: color-mix(in srgb, #FFFFFF 85%, var(--color-text-secondary) 15%);
+            background: rgba(18, 26, 56, 0.65);
+            border-color: rgba(122, 255, 216, 0.65);
+            color: color-mix(in srgb, #FFFFFF 94%, var(--color-accent-primary) 6%);
         }
 
         /* Podcast drawer (dark mode enforced) */
