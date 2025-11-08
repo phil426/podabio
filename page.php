@@ -245,7 +245,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 100%;
             padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
             background: transparent;
-            color: var(--color-text-on-accent);
+            color: color-mix(in srgb, var(--color-text-on-accent) 90%, #ffffff 10%);
             border: none;
             font-size: var(--type-scale-xs, 0.889rem);
             font-weight: var(--type-weight-medium, 500);
@@ -2178,7 +2178,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(20, 34, 64, 0.22);
+            color: color-mix(in srgb, var(--color-text-on-accent) 92%, #ffffff 8%);
         }
 
         /* Podcast drawer (dark mode enforced) */
