@@ -2025,48 +2025,42 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-family: var(--font-family-body, var(--body-font), sans-serif);
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
+        }
+
+        body.theme-aurora-skies .page-container {
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
 
         body.theme-aurora-skies::before,
         body.theme-aurora-skies::after {
             content: "";
             position: fixed;
-            inset: -40vh -30vw auto -30vw;
-            background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--color-accent-primary) 55%, transparent) 0%, rgba(0,0,0,0) 60%);
-            opacity: 0.75;
+            inset: auto;
+            width: 65vw;
+            height: 65vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 35%, transparent) 0%, rgba(0,0,0,0) 70%);
+            opacity: 0.4;
             pointer-events: none;
+            filter: blur(24px);
             z-index: -2;
         }
 
+        body.theme-aurora-skies::before {
+            top: -20vw;
+            left: -15vw;
+        }
+
         body.theme-aurora-skies::after {
-            inset: auto -25vw -45vh 35vw;
-            background: radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
-        }
-
-        body.theme-aurora-skies .page-container {
-            background: color-mix(in srgb, var(--color-background-surface) 92%, transparent);
-            border-radius: var(--shape-corner-lg, 1.5rem);
-            border: 1px solid color-mix(in srgb, var(--color-border-default) 35%, transparent);
-            box-shadow: 0 35px 120px rgba(3, 8, 35, 0.45);
-            backdrop-filter: saturate(150%) blur(18px);
-            -webkit-backdrop-filter: saturate(150%) blur(18px);
-            position: relative;
-        }
-
-        body.theme-aurora-skies .page-container::before {
-            content: "";
-            position: absolute;
-            inset: -3px;
-            border-radius: inherit;
-            background: color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 25%, transparent);
-            opacity: 0.35;
-            z-index: -1;
+            bottom: -25vw;
+            right: -10vw;
         }
 
         body.theme-aurora-skies .profile-image {
-            border: 3px solid color-mix(in srgb, var(--color-border-default) 65%, transparent);
-            box-shadow: 0 18px 60px rgba(7, 16, 60, 0.5);
+            border: 3px solid color-mix(in srgb, var(--color-border-default) 55%, transparent);
+            box-shadow: 0 16px 36px rgba(6, 10, 45, 0.35);
         }
 
         body.theme-aurora-skies .page-title {
@@ -2078,8 +2072,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 55%, transparent),
-                         0 0 80px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent);
+            text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
             margin-bottom: var(--space-sm);
         }
 
@@ -2088,87 +2081,95 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: block;
             margin: var(--space-xs) auto 0;
             width: clamp(6rem, 50%, 12rem);
-            height: 3px;
+            height: 2px;
             background: var(--gradient-accent, var(--color-accent-primary));
             border-radius: 999px;
-            filter: blur(0.5px);
+            opacity: 0.85;
         }
 
         body.theme-aurora-skies .page-description {
-            color: color-mix(in srgb, var(--color-text-secondary) 85%, #ffffff 15%);
-            max-width: 32rem;
-            margin-inline: auto;
+            color: color-mix(in srgb, var(--color-text-secondary) 80%, #f3fbff 20%);
         }
 
         body.theme-aurora-skies .widget-item {
             background: color-mix(in srgb, var(--color-background-surface) 80%, transparent);
-            border: 1px solid color-mix(in srgb, var(--color-border-default) 55%, transparent);
-            box-shadow: 0 22px 65px rgba(6, 10, 45, 0.5);
-            overflow: hidden;
+            border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
+            box-shadow: 0 18px 38px rgba(4, 9, 38, 0.32);
         }
 
         body.theme-aurora-skies .widget-item::before {
-            content: "";
-            position: absolute;
-            inset: -1px;
-            border-radius: inherit;
-            background: var(--gradient-widget, var(--gradient-accent, var(--color-accent-primary)));
-            opacity: 0.25;
-            z-index: -1;
+            display: none;
         }
 
         body.theme-aurora-skies .widget-item:hover {
-            transform: translateY(-6px) scale(1.01);
-            box-shadow: 0 28px 80px rgba(6, 10, 45, 0.55);
+            transform: translateY(-4px);
+            box-shadow: 0 22px 44px rgba(4, 9, 38, 0.36);
         }
 
         body.theme-aurora-skies .widget-title {
-            font-family: var(--font-family-heading, var(--widget-primary-font));
-            letter-spacing: 0.04em;
-            color: color-mix(in srgb, var(--color-text-primary) 90%, #ffffff 10%);
+            color: color-mix(in srgb, var(--color-text-primary) 92%, #ffffff 8%);
         }
 
         body.theme-aurora-skies .widget-description {
-            color: color-mix(in srgb, var(--color-text-secondary) 80%, #e1e7ff 20%);
+            color: color-mix(in srgb, var(--color-text-secondary) 78%, #d7e7ff 22%);
         }
 
         body.theme-aurora-skies .social-icon {
             color: var(--color-accent-primary);
             background: rgba(255, 255, 255, 0.04);
             border-radius: 14px;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         body.theme-aurora-skies .social-icon:hover {
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 18px 35px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 35%, transparent);
+            transform: translateY(-6px);
+            box-shadow: 0 14px 30px color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
         }
 
+        /* Podcast banner and toggle */
         body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, var(--gradient-accent, var(--color-accent-primary)));
-            border-bottom: 1px solid color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 35%, transparent);
-            box-shadow: 0 30px 80px rgba(4, 9, 30, 0.6);
+            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
+            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
             color: color-mix(in srgb, var(--color-text-on-accent) 90%, #ffffff 10%);
             text-transform: uppercase;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.16em;
+            background: transparent;
         }
 
-        body.theme-aurora-skies .podcast-top-drawer {
-            background: color-mix(in srgb, var(--color-background-surface-raised) 94%, transparent);
-            border-top: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
-            box-shadow: 0 -25px 80px rgba(3, 8, 35, 0.55);
+        body.theme-aurora-skies .podcast-banner-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Podcast drawer (dark mode enforced) */
+        body.theme-aurora-skies .podcast-top-drawer,
+        body.theme-aurora-skies .episode-drawer,
+        body.theme-aurora-skies .podcast-bottom-sheet {
+            background: linear-gradient(160deg, rgba(8, 10, 25, 0.98) 0%, rgba(12, 18, 42, 0.95) 65%, rgba(9, 14, 30, 0.92) 100%);
+            color: #f4f8ff;
+            border-top: 1px solid rgba(122, 255, 216, 0.15);
+        }
+
+        body.theme-aurora-skies .podcast-drawer-close,
+        body.theme-aurora-skies .drawer-close,
+        body.theme-aurora-skies .episode-drawer .drawer-close {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, #ffffff 20%);
         }
 
         body.theme-aurora-skies .podcast-compact-player {
-            background: rgba(12, 18, 52, 0.82);
-            border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
-            border-radius: 18px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 24px 60px rgba(4, 9, 32, 0.55);
+            background: rgba(8, 12, 30, 0.92);
+            border: 1px solid rgba(122, 255, 216, 0.12);
+            box-shadow: 0 22px 54px rgba(3, 6, 24, 0.45);
+        }
+
+        body.theme-aurora-skies .podcast-title-compact {
+            color: #f4f8ff;
+        }
+
+        body.theme-aurora-skies .episode-title-compact {
+            color: rgba(207, 215, 255, 0.85);
         }
 
         body.theme-aurora-skies .play-pause-btn,
@@ -2180,42 +2181,33 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .play-pause-btn {
-            animation: auroraPulse 3s ease-in-out infinite;
+            box-shadow: 0 12px 30px rgba(8, 16, 52, 0.55);
         }
 
         body.theme-aurora-skies .progress-bar {
-            background: rgba(122, 255, 216, 0.12);
+            background: rgba(122, 255, 216, 0.2);
         }
 
         body.theme-aurora-skies .progress-fill {
             background: var(--gradient-accent, var(--color-accent-primary));
-            box-shadow: 0 0 16px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 50%, transparent);
+            box-shadow: 0 0 12px rgba(122, 255, 216, 0.45);
         }
 
         body.theme-aurora-skies .progress-scrubber {
-            border-color: var(--aurora-glow-color, var(--color-accent-primary));
+            border-color: rgba(122, 255, 216, 0.6);
             background: #ffffff;
-            box-shadow: 0 0 18px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 55%, transparent);
-        }
-
-        body.theme-aurora-skies .episode-title-compact {
-            color: color-mix(in srgb, var(--color-text-secondary) 85%, #cfd7ff 15%);
         }
 
         body.theme-aurora-skies .volume-btn,
         body.theme-aurora-skies .expand-drawer-btn {
-            border-color: rgba(255, 255, 255, 0.1);
             background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
             color: var(--color-accent-primary);
         }
 
-        body.theme-aurora-skies .drawer-close {
-            color: color-mix(in srgb, var(--color-accent-primary) 85%, #ffffff 15%);
-        }
-
         @keyframes auroraPulse {
-            0%, 100% { box-shadow: 0 8px 25px rgba(8, 18, 52, 0.4), 0 0 12px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 30%, transparent); }
-            50% { box-shadow: 0 12px 35px rgba(8, 18, 52, 0.55), 0 0 28px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 60%, transparent); }
+            0%, 100% { box-shadow: 0 12px 32px rgba(8, 16, 52, 0.4), 0 0 14px rgba(122, 255, 216, 0.25); }
+            50% { box-shadow: 0 14px 36px rgba(8, 16, 52, 0.55), 0 0 20px rgba(122, 255, 216, 0.4); }
         }
 
         @keyframes auroraFlow {

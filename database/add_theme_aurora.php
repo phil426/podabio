@@ -1,9 +1,6 @@
 <?php
 /**
- * Add Aurora Skies Theme
- *
- * Inserts the Aurora Skies system theme with advanced token definitions.
- * Safe to run multiple times – skips if the theme already exists.
+ * Add or Update Aurora Skies Theme
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -19,12 +16,7 @@ echo "🌌 Aurora Theme Installer\n";
 echo "==========================================\n";
 
 try {
-    $existing = fetchOne("SELECT id FROM themes WHERE name = ? LIMIT 1", [$themeName]);
-    if ($existing) {
-        echo "⚠️  Theme '{$themeName}' already exists (ID: {$existing['id']}).\n";
-        echo "   No changes were made.\n";
-        return;
-    }
+    $existing = fetchOne("SELECT * FROM themes WHERE name = ? LIMIT 1", [$themeName]);
 } catch (PDOException $e) {
     echo "❌ Failed to query existing themes: " . $e->getMessage() . "\n";
     return;
@@ -44,7 +36,7 @@ $fonts = [
 $widgetStyles = [
     'border_width' => 'thin',
     'border_effect' => 'glow',
-    'border_glow_intensity' => 'pronounced',
+    'border_glow_intensity' => 'subtle',
     'border_shadow_intensity' => 'none',
     'glow_color' => '#7AFFD8',
     'spacing' => 'comfortable',
@@ -53,46 +45,46 @@ $widgetStyles = [
 
 $colorTokens = [
     'background' => [
-        'base' => '#030618',
-        'surface' => 'rgba(10, 16, 45, 0.88)',
-        'surface_raised' => 'rgba(21, 28, 64, 0.95)',
-        'overlay' => 'rgba(3, 6, 23, 0.72)'
+        'base' => '#030616',
+        'surface' => 'rgba(13, 18, 36, 0.88)',
+        'surface_raised' => 'rgba(16, 22, 42, 0.95)',
+        'overlay' => 'rgba(3, 7, 22, 0.75)'
     ],
     'gradient' => [
-        'page' => 'linear-gradient(145deg, #050919 0%, #18093E 40%, #041438 100%), radial-gradient(circle at 20% 20%, rgba(32,132,255,0.45) 0%, rgba(3,6,24,0.0) 55%)',
-        'accent' => 'linear-gradient(120deg, #7AFFD8 0%, #64A0FF 50%, #B174FF 100%)',
-        'widget' => 'linear-gradient(135deg, rgba(122,255,216,0.16) 0%, rgba(100,160,255,0.12) 45%, rgba(177,116,255,0.24) 100%)',
-        'podcast' => 'linear-gradient(135deg, rgba(122,255,216,0.25) 0%, rgba(100,160,255,0.32) 50%, rgba(177,116,255,0.28) 100%)'
+        'page' => 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)',
+        'accent' => 'linear-gradient(120deg, #7affd8 0%, #5b9cff 55%, #a875ff 100%)',
+        'widget' => 'linear-gradient(135deg, rgba(122,255,216,0.18) 0%, rgba(91,156,255,0.14) 50%, rgba(168,117,255,0.24) 100%)',
+        'podcast' => 'linear-gradient(135deg, #040610 0%, #111b3a 60%, #1c2854 100%)'
     ],
     'text' => [
-        'primary' => '#F7FBFF',
-        'secondary' => '#96A8FF',
-        'inverse' => '#050612'
+        'primary' => '#F6FAFF',
+        'secondary' => '#A6B7FF',
+        'inverse' => '#070812'
     ],
     'accent' => [
         'primary' => '#7AFFD8',
-        'muted' => 'rgba(122, 255, 216, 0.18)'
+        'muted' => 'rgba(122,255,216,0.18)'
     ],
     'border' => [
-        'default' => 'rgba(122, 255, 216, 0.42)',
+        'default' => 'rgba(122,255,216,0.32)',
         'focus' => '#7AFFD8'
     ],
     'state' => [
-        'success' => '#13E29A',
-        'warning' => '#F8C13F',
-        'danger' => '#FF5A8D'
+        'success' => '#16d6a9',
+        'warning' => '#f7b84d',
+        'danger' => '#ff6f91'
     ],
     'text_state' => [
-        'success' => '#053F2B',
-        'warning' => '#5A2E0C',
-        'danger' => '#4F041C'
+        'success' => '#06372a',
+        'warning' => '#5c310f',
+        'danger' => '#4f071c'
     ],
     'shadow' => [
-        'ambient' => 'rgba(5, 12, 38, 0.22)',
-        'focus' => 'rgba(122, 255, 216, 0.35)'
+        'ambient' => 'rgba(6, 12, 35, 0.28)',
+        'focus' => 'rgba(122,255,216,0.35)'
     ],
     'glow' => [
-        'primary' => 'rgba(122, 255, 216, 0.6)'
+        'primary' => 'rgba(122,255,216,0.55)'
     ]
 ];
 
@@ -103,14 +95,14 @@ $typographyTokens = [
         'metatext' => 'Inter'
     ],
     'scale' => [
-        'xl' => 2.65,
+        'xl' => 2.55,
         'lg' => 1.9,
-        'md' => 1.38,
-        'sm' => 1.1,
+        'md' => 1.32,
+        'sm' => 1.08,
         'xs' => 0.9
     ],
     'line_height' => [
-        'tight' => 1.18,
+        'tight' => 1.2,
         'normal' => 1.55,
         'relaxed' => 1.8
     ],
@@ -125,27 +117,28 @@ $spacingTokens = [
     'density' => 'comfortable',
     'base_scale' => [
         '2xs' => 0.25,
-        'xs' => 0.55,
+        'xs' => 0.5,
         'sm' => 0.85,
         'md' => 1.1,
         'lg' => 1.6,
-        'xl' => 2.4,
-        '2xl' => 3.4
-    ]
+        'xl' => 2.2,
+        '2xl' => 3.2
+    ],
+    'modifiers' => []
 ];
 
 $shapeTokens = [
     'corner' => [
         'none' => '0px',
-        'sm' => '0.5rem',
-        'md' => '1.25rem',
-        'lg' => '2.25rem',
+        'sm' => '0.4rem',
+        'md' => '0.9rem',
+        'lg' => '1.6rem',
         'pill' => '999px'
     ],
     'shadow' => [
-        'level_1' => '0 22px 65px rgba(6, 10, 45, 0.5)',
-        'level_2' => '0 35px 120px rgba(4, 9, 35, 0.6)',
-        'focus' => '0 0 0 4px rgba(122, 255, 216, 0.4)'
+        'level_1' => '0 16px 38px rgba(6, 10, 45, 0.32)',
+        'level_2' => '0 24px 60px rgba(6, 10, 45, 0.38)',
+        'focus' => '0 0 0 3px rgba(122,255,216,0.35)'
     ]
 ];
 
@@ -164,97 +157,69 @@ $motionTokens = [
     ]
 ];
 
-$pageBackground = 'linear-gradient(145deg, #050919 0%, #18093E 40%, #041438 100%)';
-$widgetBackground = 'rgba(10, 16, 45, 0.88)';
-$widgetBorderColor = 'rgba(122, 255, 216, 0.42)';
-$spatialEffect = 'floating';
-
-try {
-    $columns = $pdo->query("SHOW COLUMNS FROM themes")->fetchAll(PDO::FETCH_COLUMN);
-} catch (PDOException $e) {
-    echo "❌ Unable to discover theme columns: " . $e->getMessage() . "\n";
-    return;
-}
+$pageBackground = 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)';
+$widgetBackground = 'rgba(13, 18, 36, 0.88)';
+$widgetBorderColor = 'rgba(122,255,216,0.32)';
+$spatialEffect = 'none';
 
 $fields = [
-    'user_id',
-    'name',
-    'colors',
-    'fonts',
-    'page_background',
-    'widget_styles',
-    'spatial_effect',
-    'widget_background',
-    'widget_border_color',
-    'widget_primary_font',
-    'widget_secondary_font',
-    'page_primary_font',
-    'page_secondary_font',
-    'is_active'
+    'colors' => json_encode($colors),
+    'fonts' => json_encode($fonts),
+    'page_background' => $pageBackground,
+    'widget_styles' => json_encode($widgetStyles),
+    'spatial_effect' => $spatialEffect,
+    'widget_background' => $widgetBackground,
+    'widget_border_color' => $widgetBorderColor,
+    'widget_primary_font' => 'Poppins',
+    'widget_secondary_font' => 'Inter',
+    'page_primary_font' => 'Poppins',
+    'page_secondary_font' => 'Inter',
+    'color_tokens' => json_encode($colorTokens),
+    'typography_tokens' => json_encode($typographyTokens),
+    'spacing_tokens' => json_encode($spacingTokens),
+    'shape_tokens' => json_encode($shapeTokens),
+    'motion_tokens' => json_encode($motionTokens),
+    'layout_density' => 'comfortable'
 ];
-
-$values = [
-    null,
-    $themeName,
-    json_encode($colors),
-    json_encode($fonts),
-    $pageBackground,
-    json_encode($widgetStyles),
-    $spatialEffect,
-    $widgetBackground,
-    $widgetBorderColor,
-    'Poppins',
-    'Inter',
-    'Poppins',
-    'Inter',
-    1
-];
-
-if (in_array('color_tokens', $columns, true)) {
-    $fields[] = 'color_tokens';
-    $values[] = json_encode($colorTokens);
-}
-
-if (in_array('typography_tokens', $columns, true)) {
-    $fields[] = 'typography_tokens';
-    $values[] = json_encode($typographyTokens);
-}
-
-if (in_array('spacing_tokens', $columns, true)) {
-    $fields[] = 'spacing_tokens';
-    $values[] = json_encode($spacingTokens);
-}
-
-if (in_array('shape_tokens', $columns, true)) {
-    $fields[] = 'shape_tokens';
-    $values[] = json_encode($shapeTokens);
-}
-
-if (in_array('motion_tokens', $columns, true)) {
-    $fields[] = 'motion_tokens';
-    $values[] = json_encode($motionTokens);
-}
-
-if (in_array('layout_density', $columns, true)) {
-    $fields[] = 'layout_density';
-    $values[] = 'comfortable';
-}
-
-$fieldSql = implode(', ', $fields);
-$placeholderSql = implode(', ', array_fill(0, count($fields), '?'));
 
 try {
-    $stmt = $pdo->prepare("INSERT INTO themes ({$fieldSql}) VALUES ({$placeholderSql})");
-    $stmt->execute($values);
-    $insertedId = $pdo->lastInsertId();
+    if ($existing) {
+        $setParts = [];
+        $values = [];
+        foreach ($fields as $column => $value) {
+            if ($column === 'layout_density' || $column === 'spatial_effect') {
+                $setParts[] = "$column = ?";
+            } else {
+                $setParts[] = "$column = ?";
+            }
+            $values[] = $value;
+        }
+        $values[] = $existing['id'];
 
-    echo "✅ Aurora theme created successfully!\n";
-    echo "   ID: {$insertedId}\n";
-    echo "   Background: {$pageBackground}\n";
-    echo "   Accent Gradient: {$colorTokens['gradient']['accent']}\n";
+        $sql = "UPDATE themes SET name = ?, " . implode(', ', $setParts) . " WHERE id = ?";
+        array_unshift($values, $themeName);
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($values);
+        echo "✅ Aurora theme updated (ID: {$existing['id']})\n";
+    } else {
+        $columns = array_keys($fields);
+        $placeholders = implode(', ', array_fill(0, count($columns) + 2, '?'));
+        $sql = "INSERT INTO themes (user_id, name, " . implode(', ', $columns) . ", is_active) VALUES (NULL, ?, " . implode(', ', array_fill(0, count($columns), '?')) . ", 1)";
+        $stmt = $pdo->prepare($sql);
+        $values = array_merge([$themeName], array_values($fields));
+        $stmt->execute($values);
+        $newId = $pdo->lastInsertId();
+        echo "✅ Aurora theme created (ID: {$newId})\n";
+    }
+
+    $themeRow = fetchOne("SELECT id, name, page_background FROM themes WHERE name = ? LIMIT 1", [$themeName]);
+    if ($themeRow) {
+        echo "   ID: {$themeRow['id']}\n";
+        echo "   Background: {$themeRow['page_background']}\n";
+    }
     echo "   Fonts: Poppins + Inter\n";
-    echo "\nActivate it from the theme selector to experience the full design.\n";
+    echo "\nActivate it from the theme selector to experience the refreshed design.\n";
 } catch (PDOException $e) {
-    echo "❌ Failed to insert Aurora theme: " . $e->getMessage() . "\n";
+    echo "❌ Failed to upsert Aurora theme: " . $e->getMessage() . "\n";
 }
 
