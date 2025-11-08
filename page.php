@@ -119,11 +119,35 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     
     <!-- Additional widget-specific styles -->
     <style>
+        :root {
+            --mobile-page-width: min(100vw, 420px);
+            --mobile-page-offset: max(0px, calc((100vw - var(--mobile-page-width)) / 2));
+            --episode-drawer-width: var(--mobile-page-width);
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--shell-background, color-mix(in srgb, #f5f7fb 94%, #0f172a 6%));
+        }
+
+        @media (min-width: 600px) {
+            body {
+                padding: var(--space-xl, 2.5rem) 0;
+            }
+        }
+
         /* Page container and layout */
         .page-container {
-            max-width: clamp(20rem, 90vw, 600px);
+            width: var(--mobile-page-width);
+            max-width: 420px;
             margin: 0 auto;
             padding: var(--space-lg) var(--space-md);
+            box-sizing: border-box;
         }
         
         .profile-header {
@@ -174,9 +198,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-top-banner {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
+            left: var(--mobile-page-offset);
+            right: auto;
+            width: var(--mobile-page-width);
+            max-width: 420px;
+            box-sizing: border-box;
             background: var(--color-accent-primary);
             background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
             backdrop-filter: blur(10px);
@@ -249,9 +275,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-top-drawer {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
+            left: var(--mobile-page-offset);
+            right: auto;
             bottom: 0;
+            width: var(--mobile-page-width);
+            max-width: 420px;
             height: 100vh;
             max-height: 100vh;
             background-color: var(--color-background-surface-raised, rgba(15, 23, 42, 0.95));
@@ -263,6 +291,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             overflow: hidden !important;
             overflow-y: hidden !important;
             overflow-x: hidden !important;
+            box-sizing: border-box;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
         }
         
         /* Prevent body scrollbars when drawer is open or closing */
@@ -1966,9 +1997,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .episode-drawer {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 400px;
-            max-width: 90vw;
+            right: calc(-1 * (var(--mobile-page-offset) + var(--episode-drawer-width, min(90vw, 26rem))));
+            width: var(--episode-drawer-width, min(90vw, 26rem));
+            max-width: var(--episode-drawer-width, min(90vw, 26rem));
             height: 100vh;
             background: var(--color-background-surface-raised, var(--color-background-base));
             border-left: 2px solid var(--color-accent-primary);
@@ -1977,10 +2008,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             z-index: 1000;
             overflow-y: auto;
             padding: 2rem 1rem;
+            box-sizing: border-box;
         }
         
         .episode-drawer.open {
-            right: 0;
+            right: var(--mobile-page-offset);
         }
         
         .drawer-header {
