@@ -2165,17 +2165,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
-            color: var(--color-text-on-accent);
+            color: color-mix(in srgb, #F6FAFF 80%, var(--color-text-secondary) 20%);
             text-transform: uppercase;
             letter-spacing: 0.16em;
             background: transparent;
             font-weight: 600;
-            text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+            text-shadow: 0 0 4px rgba(3, 8, 35, 0.45);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: var(--color-text-on-accent);
+            background: rgba(255, 255, 255, 0.18);
+            color: color-mix(in srgb, #FFFFFF 85%, var(--color-text-secondary) 15%);
         }
 
         /* Podcast drawer (dark mode enforced) */
