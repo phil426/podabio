@@ -198,10 +198,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-top-banner {
             position: fixed;
             top: 0;
-            left: var(--mobile-page-offset);
-            right: auto;
-            width: var(--mobile-page-width);
-            max-width: 420px;
+            left: 0;
+            right: 0;
+            width: 100%;
             box-sizing: border-box;
             background: var(--color-accent-primary);
             background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
@@ -209,12 +208,16 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10001;
             box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-            border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
             opacity: 1;
             pointer-events: auto;
             transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             /* Banner starts at top of viewport when drawer is closed */
             transform: translateY(0);
+        }
+        
+        body.theme-aurora-skies .podcast-top-banner {
+            padding-top: var(--space-2xs, 0.35rem);
+            padding-bottom: var(--space-2xs, 0.35rem);
         }
         
         /* When drawer opens, banner moves down and hides */
@@ -2160,7 +2163,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         /* Podcast banner and toggle */
         body.theme-aurora-skies .podcast-top-banner {
             background: var(--gradient-podcast, linear-gradient(135deg, #061029 0%, #111d3f 55%, #1c2854 100%));
-            border-bottom: 1px solid rgba(122, 255, 216, 0.14);
             box-shadow: 0 22px 55px rgba(4, 8, 32, 0.48);
         }
 
