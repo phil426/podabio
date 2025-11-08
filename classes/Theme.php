@@ -12,6 +12,7 @@ require_once __DIR__ . '/../includes/helpers.php';
 class Theme {
     private $pdo;
     private static $cache = [];
+    private static $themeColumns = null;
     
     public function __construct() {
         $this->pdo = getDB();
@@ -251,6 +252,378 @@ class Theme {
     }
     
     /**
+     * Parse JSON column to associative array with fallback
+     * @param mixed $value
+     * @param array $default
+     * @return array
+     */
+    private function parseJsonColumn($value, $default = []) {
+        if (empty($value)) {
+            return $default;
+        }
+        
+        if (is_array($value)) {
+            return $value;
+        }
+        
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : $default;
+    }
+    
+    /**
+     * Merge theme tokens with defaults
+     * @param array $defaults
+     * @param array ...$overrides
+     * @return array
+     */
+    private function mergeTokens(array $defaults, array ...$overrides) {
+        $result = $defaults;
+        
+        foreach ($overrides as $override) {
+            if (!empty($override) && is_array($override)) {
+                $result = array_replace_recursive($result, $override);
+            }
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Default accessible color tokens
+     * @return array
+     */
+    private function getDefaultColorTokens() {
+        return [
+            'background' => [
+                'base' => '#f5f7fa',
+                'surface' => '#ffffff',
+                'surface_raised' => '#f9fafb',
+                'overlay' => 'rgba(15, 23, 42, 0.6)'
+            ],
+            'text' => [
+                'primary' => '#111827',
+                'secondary' => '#4b5563',
+                'inverse' => '#ffffff'
+            ],
+            'border' => [
+                'default' => '#d1d5db',
+                'focus' => '#2563eb'
+            ],
+            'accent' => [
+                'primary' => '#0066ff',
+                'muted' => '#e0edff'
+            ],
+            'state' => [
+                'success' => '#12b76a',
+                'warning' => '#f59e0b',
+                'danger' => '#ef4444'
+            ],
+            'text_state' => [
+                'success' => '#0f5132',
+                'warning' => '#7c2d12',
+                'danger' => '#7f1d1d'
+            ],
+            'shadow' => [
+                'ambient' => 'rgba(15, 23, 42, 0.12)',
+                'focus' => 'rgba(37, 99, 235, 0.35)'
+            ]
+        ];
+    }
+    
+    /**
+     * Default typography tokens (modular scale)
+     * @return array
+     */
+    private function getDefaultTypographyTokens() {
+        $defaultFont = defined('THEME_DEFAULT_FONT') ? THEME_DEFAULT_FONT : 'Inter';
+        
+        return [
+            'font' => [
+                'heading' => $defaultFont,
+                'body' => $defaultFont,
+                'metatext' => $defaultFont
+            ],
+            'scale' => [
+                'xl' => 2.488,
+                'lg' => 1.777,
+                'md' => 1.333,
+                'sm' => 1.111,
+                'xs' => 0.889
+            ],
+            'line_height' => [
+                'tight' => 1.2,
+                'normal' => 1.5,
+                'relaxed' => 1.7
+            ],
+            'weight' => [
+                'normal' => 400,
+                'medium' => 500,
+                'bold' => 600
+            ]
+        ];
+    }
+    
+    /**
+     * Default spacing token configuration
+     * @return array
+     */
+    private function getDefaultSpacingTokens() {
+        return [
+            'density' => 'comfortable',
+            'base_scale' => [
+                '2xs' => 0.25,
+                'xs' => 0.5,
+                'sm' => 0.75,
+                'md' => 1.0,
+                'lg' => 1.5,
+                'xl' => 2.0,
+                '2xl' => 3.0
+            ],
+            'density_multipliers' => [
+                'compact' => [
+                    '2xs' => 0.75,
+                    'xs' => 0.85,
+                    'sm' => 0.9,
+                    'md' => 1.0,
+                    'lg' => 1.0,
+                    'xl' => 1.0,
+                    '2xl' => 1.0
+                ],
+                'comfortable' => [
+                    '2xs' => 1.0,
+                    'xs' => 1.0,
+                    'sm' => 1.1,
+                    'md' => 1.25,
+                    'lg' => 1.3,
+                    'xl' => 1.35,
+                    '2xl' => 1.4
+                ]
+            ]
+        ];
+    }
+    
+    /**
+     * Default shape/radius tokens
+     * @return array
+     */
+    private function getDefaultShapeTokens() {
+        return [
+            'corner' => [
+                'none' => '0px',
+                'sm' => '0.375rem',
+                'md' => '0.75rem',
+                'lg' => '1.5rem',
+                'pill' => '9999px'
+            ],
+            'border_width' => [
+                'hairline' => '1px',
+                'regular' => '2px',
+                'bold' => '4px'
+            ],
+            'shadow' => [
+                'level_1' => '0 2px 6px rgba(15, 23, 42, 0.12)',
+                'level_2' => '0 6px 16px rgba(15, 23, 42, 0.16)',
+                'focus' => '0 0 0 4px rgba(37, 99, 235, 0.35)'
+            ]
+        ];
+    }
+    
+    /**
+     * Default motion tokens
+     * @return array
+     */
+    private function getDefaultMotionTokens() {
+        return [
+            'duration' => [
+                'fast' => '150ms',
+                'standard' => '250ms'
+            ],
+            'easing' => [
+                'standard' => 'cubic-bezier(0.4, 0, 0.2, 1)',
+                'decelerate' => 'cubic-bezier(0.0, 0, 0.2, 1)'
+            ],
+            'focus' => [
+                'ring_width' => '3px',
+                'ring_offset' => '2px'
+            ]
+        ];
+    }
+    
+    /**
+     * Resolve effective layout density
+     * @param array $page
+     * @param array|null $theme
+     * @param string|null $fallback
+     * @return string
+     */
+    private function resolveLayoutDensity($page, $theme = null, $fallback = null) {
+        $density = $fallback ?? 'comfortable';
+        
+        if (!empty($page['layout_density'])) {
+            $density = $page['layout_density'];
+        } elseif (!empty($theme['layout_density'])) {
+            $density = $theme['layout_density'];
+        }
+        
+        $allowed = ['compact', 'comfortable'];
+        return in_array($density, $allowed, true) ? $density : 'comfortable';
+    }
+    
+    /**
+     * Format spacing token to rem value
+     * @param float $value
+     * @return string
+     */
+    private function formatSpacingValue($value) {
+        $rounded = round($value, 4);
+        // Remove trailing zeros for cleaner CSS
+        $formatted = rtrim(rtrim((string)$rounded, '0'), '.');
+        if ($formatted === '') {
+            $formatted = '0';
+        }
+        return $formatted . 'rem';
+    }
+    
+    /**
+     * Get merged color tokens with fallbacks
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getColorTokens($page, $theme = null) {
+        $defaults = $this->getDefaultColorTokens();
+        $pageTokens = $this->parseJsonColumn($page['color_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['color_tokens'] ?? null, []) : [];
+        
+        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+    }
+    
+    /**
+     * Get merged typography tokens with fallbacks
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getTypographyTokens($page, $theme = null) {
+        $defaults = $this->getDefaultTypographyTokens();
+        $pageTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
+        
+        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+    }
+    
+    /**
+     * Get merged spacing tokens with computed density values
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getSpacingTokens($page, $theme = null) {
+        $defaults = $this->getDefaultSpacingTokens();
+        $pageTokens = $this->parseJsonColumn($page['spacing_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['spacing_tokens'] ?? null, []) : [];
+        
+        $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        
+        $density = $this->resolveLayoutDensity($page, $theme, $merged['density'] ?? 'comfortable');
+        $baseScale = $merged['base_scale'] ?? $defaults['base_scale'];
+        $densityMultipliers = $merged['density_multipliers'][$density] ?? ($defaults['density_multipliers'][$density] ?? []);
+        
+        $values = [];
+        foreach ($baseScale as $key => $base) {
+            $multiplier = isset($densityMultipliers[$key]) ? (float)$densityMultipliers[$key] : 1.0;
+            $values[$key] = $this->formatSpacingValue($base * $multiplier);
+        }
+        
+        $merged['density'] = $density;
+        $merged['values'] = $values;
+        
+        return $merged;
+    }
+    
+    /**
+     * Get merged shape tokens
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getShapeTokens($page, $theme = null) {
+        $defaults = $this->getDefaultShapeTokens();
+        $pageTokens = $this->parseJsonColumn($page['shape_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['shape_tokens'] ?? null, []) : [];
+        
+        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+    }
+    
+    /**
+     * Get merged motion tokens
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getMotionTokens($page, $theme = null) {
+        $defaults = $this->getDefaultMotionTokens();
+        $pageTokens = $this->parseJsonColumn($page['motion_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['motion_tokens'] ?? null, []) : [];
+        
+        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+    }
+    
+    /**
+     * Get consolidated theme token sets
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getThemeTokens($page, $theme = null) {
+        $colorTokens = $this->getColorTokens($page, $theme);
+        $typographyTokens = $this->getTypographyTokens($page, $theme);
+        $spacingTokens = $this->getSpacingTokens($page, $theme);
+        $shapeTokens = $this->getShapeTokens($page, $theme);
+        $motionTokens = $this->getMotionTokens($page, $theme);
+        
+        return [
+            'colors' => $colorTokens,
+            'typography' => $typographyTokens,
+            'spacing' => $spacingTokens,
+            'shape' => $shapeTokens,
+            'motion' => $motionTokens,
+            'layout_density' => $spacingTokens['density'] ?? $this->resolveLayoutDensity($page, $theme)
+        ];
+    }
+    
+    /**
+     * Lazy-load list of columns on themes table
+     * @return array
+     */
+    private function getThemeColumns() {
+        if (self::$themeColumns !== null) {
+            return self::$themeColumns;
+        }
+        
+        try {
+            $stmt = $this->pdo->query("SHOW COLUMNS FROM themes");
+            $columns = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+            self::$themeColumns = is_array($columns) ? $columns : [];
+        } catch (PDOException $e) {
+            error_log("Failed to inspect themes columns: " . $e->getMessage());
+            self::$themeColumns = [];
+        }
+        
+        return self::$themeColumns;
+    }
+    
+    /**
+     * Check if themes table contains a column
+     * @param string $column
+     * @return bool
+     */
+    private function hasThemeColumn($column) {
+        $columns = $this->getThemeColumns();
+        return in_array($column, $columns, true);
+    }
+    
+    /**
      * Validate theme data structure
      * @param array $themeData
      * @return bool
@@ -299,6 +672,17 @@ class Theme {
             
             if (!is_array($fonts)) {
                 return false;
+            }
+        }
+        
+        // Validate optional token JSON columns if present
+        $tokenColumns = ['color_tokens', 'typography_tokens', 'spacing_tokens', 'shape_tokens', 'motion_tokens'];
+        foreach ($tokenColumns as $tokenColumn) {
+            if (isset($themeData[$tokenColumn])) {
+                $parsed = $this->parseJsonColumn($themeData[$tokenColumn], null);
+                if ($parsed !== null && !is_array($parsed)) {
+                    return false;
+                }
             }
         }
         
@@ -609,6 +993,8 @@ class Theme {
      * @return array Complete theme config
      */
     public function getThemeConfig($page, $theme = null) {
+        $tokens = $this->getThemeTokens($page, $theme);
+        
         return [
             'colors' => $this->getThemeColors($page, $theme),
             'fonts' => $this->getThemeFonts($page, $theme),
@@ -618,7 +1004,9 @@ class Theme {
             'widget_background' => $this->getWidgetBackground($page, $theme),
             'widget_border_color' => $this->getWidgetBorderColor($page, $theme),
             'widget_styles' => $this->getWidgetStyles($page, $theme),
-            'spatial_effect' => $this->getSpatialEffect($page, $theme)
+            'spatial_effect' => $this->getSpatialEffect($page, $theme),
+            'tokens' => $tokens,
+            'layout_density' => $tokens['layout_density'] ?? 'comfortable'
         ];
     }
     
@@ -683,13 +1071,6 @@ class Theme {
         }
         
         try {
-            $stmt = $this->pdo->prepare("
-                INSERT INTO themes (user_id, name, colors, fonts, page_background, widget_styles, spatial_effect, 
-                    widget_background, widget_border_color, widget_primary_font, widget_secondary_font, 
-                    page_primary_font, page_secondary_font, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ");
-            
             $colors = isset($themeData['colors']) ? (is_array($themeData['colors']) ? json_encode($themeData['colors']) : $themeData['colors']) : null;
             $fonts = isset($themeData['fonts']) ? (is_array($themeData['fonts']) ? json_encode($themeData['fonts']) : $themeData['fonts']) : null;
             $pageBackground = $themeData['page_background'] ?? null;
@@ -702,7 +1083,23 @@ class Theme {
             $pagePrimaryFont = $themeData['page_primary_font'] ?? null;
             $pageSecondaryFont = $themeData['page_secondary_font'] ?? null;
             
-            $stmt->execute([
+            $columns = [
+                'user_id',
+                'name',
+                'colors',
+                'fonts',
+                'page_background',
+                'widget_styles',
+                'spatial_effect',
+                'widget_background',
+                'widget_border_color',
+                'widget_primary_font',
+                'widget_secondary_font',
+                'page_primary_font',
+                'page_secondary_font'
+            ];
+            
+            $params = [
                 $userId,
                 $name,
                 $colors,
@@ -716,7 +1113,41 @@ class Theme {
                 $widgetSecondaryFont,
                 $pagePrimaryFont,
                 $pageSecondaryFont
-            ]);
+            ];
+            
+            if ($this->hasThemeColumn('color_tokens')) {
+                $columns[] = 'color_tokens';
+                $params[] = isset($themeData['color_tokens']) ? (is_array($themeData['color_tokens']) ? json_encode($themeData['color_tokens']) : $themeData['color_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('typography_tokens')) {
+                $columns[] = 'typography_tokens';
+                $params[] = isset($themeData['typography_tokens']) ? (is_array($themeData['typography_tokens']) ? json_encode($themeData['typography_tokens']) : $themeData['typography_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('spacing_tokens')) {
+                $columns[] = 'spacing_tokens';
+                $params[] = isset($themeData['spacing_tokens']) ? (is_array($themeData['spacing_tokens']) ? json_encode($themeData['spacing_tokens']) : $themeData['spacing_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('shape_tokens')) {
+                $columns[] = 'shape_tokens';
+                $params[] = isset($themeData['shape_tokens']) ? (is_array($themeData['shape_tokens']) ? json_encode($themeData['shape_tokens']) : $themeData['shape_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('motion_tokens')) {
+                $columns[] = 'motion_tokens';
+                $params[] = isset($themeData['motion_tokens']) ? (is_array($themeData['motion_tokens']) ? json_encode($themeData['motion_tokens']) : $themeData['motion_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('layout_density')) {
+                $columns[] = 'layout_density';
+                $params[] = $themeData['layout_density'] ?? null;
+            }
+            
+            $columns[] = 'is_active';
+            $params[] = 1;
+            
+            $placeholders = array_fill(0, count($columns), '?');
+            $sql = "INSERT INTO themes (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
             
             $themeId = $this->pdo->lastInsertId();
             
@@ -806,6 +1237,36 @@ class Theme {
             if (isset($themeData['spatial_effect'])) {
                 $updates[] = "spatial_effect = ?";
                 $params[] = $themeData['spatial_effect'];
+            }
+            
+            if ($this->hasThemeColumn('color_tokens') && isset($themeData['color_tokens'])) {
+                $updates[] = "color_tokens = ?";
+                $params[] = is_array($themeData['color_tokens']) ? json_encode($themeData['color_tokens']) : $themeData['color_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('typography_tokens') && isset($themeData['typography_tokens'])) {
+                $updates[] = "typography_tokens = ?";
+                $params[] = is_array($themeData['typography_tokens']) ? json_encode($themeData['typography_tokens']) : $themeData['typography_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('spacing_tokens') && isset($themeData['spacing_tokens'])) {
+                $updates[] = "spacing_tokens = ?";
+                $params[] = is_array($themeData['spacing_tokens']) ? json_encode($themeData['spacing_tokens']) : $themeData['spacing_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('shape_tokens') && isset($themeData['shape_tokens'])) {
+                $updates[] = "shape_tokens = ?";
+                $params[] = is_array($themeData['shape_tokens']) ? json_encode($themeData['shape_tokens']) : $themeData['shape_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('motion_tokens') && isset($themeData['motion_tokens'])) {
+                $updates[] = "motion_tokens = ?";
+                $params[] = is_array($themeData['motion_tokens']) ? json_encode($themeData['motion_tokens']) : $themeData['motion_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('layout_density') && isset($themeData['layout_density'])) {
+                $updates[] = "layout_density = ?";
+                $params[] = $themeData['layout_density'];
             }
             
             if (empty($updates)) {

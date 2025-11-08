@@ -31,6 +31,72 @@ function getThemeConfig($page, $theme = null) {
 }
 
 /**
+ * Get consolidated theme tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getThemeTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getThemeTokens($page, $theme);
+}
+
+/**
+ * Convenience helper to fetch color tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getColorTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getColorTokens($page, $theme);
+}
+
+/**
+ * Convenience helper to fetch typography tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getTypographyTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getTypographyTokens($page, $theme);
+}
+
+/**
+ * Convenience helper to fetch spacing tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getSpacingTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getSpacingTokens($page, $theme);
+}
+
+/**
+ * Convenience helper to fetch shape tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getShapeTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getShapeTokens($page, $theme);
+}
+
+/**
+ * Convenience helper to fetch motion tokens
+ * @param array $page
+ * @param array|null $theme
+ * @return array
+ */
+function getMotionTokens($page, $theme = null) {
+    $themeObj = new Theme();
+    return $themeObj->getMotionTokens($page, $theme);
+}
+
+/**
  * Get widget styles for a page
  * @param array $page Page data array
  * @param array|null $theme Optional theme data array
@@ -124,13 +190,13 @@ function convertEnumToCSS($enum, $type) {
     $mappings = [
         'border_width' => [
             'none' => '0px',
-            'thin' => '2px',
-            'thick' => '5px'
+            'thin' => 'var(--border-width-hairline)',
+            'thick' => 'var(--border-width-bold)'
         ],
         'shadow' => [
             'none' => 'none',
-            'subtle' => '0 2px 4px rgba(0, 0, 0, 0.05)',
-            'pronounced' => '0 4px 12px rgba(0, 0, 0, 0.15)'
+            'subtle' => 'var(--shadow-level-1)',
+            'pronounced' => 'var(--shadow-level-2)'
         ],
         'glow_blur' => [
             'none' => '0px',
@@ -143,14 +209,14 @@ function convertEnumToCSS($enum, $type) {
             'pronounced' => '0.8'
         ],
         'spacing' => [
-            'tight' => '0.5rem',
-            'comfortable' => '1rem',
-            'spacious' => '1.5rem'
+            'tight' => 'var(--space-sm)',
+            'comfortable' => 'var(--space-md)',
+            'spacious' => 'var(--space-lg)'
         ],
         'shape' => [
-            'square' => '0px',
-            'rounded' => '8px',
-            'round' => '50px'
+            'square' => 'var(--shape-corner-none)',
+            'rounded' => 'var(--shape-corner-md)',
+            'round' => 'var(--shape-corner-pill)'
         ]
     ];
     
