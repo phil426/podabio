@@ -69,6 +69,15 @@ If a new component demands additional visual primitives:
 
 Following these practices keeps theming centralized, accessible, and maintainable as the design system evolves. Always review this guideline before merging style changes to ensure new code aligns with the accessible token architecture.
 
+## Theme Rules & Policies
+
+1. **Prime Rule:** Public pages always render the mobile layout inside the framed shell; desktop/tablet sees the same mobile width centered on a subtle contrasting background.
+2. **Theme Rules (Aurora baseline):**
+   - No floating containers; page content sits flush inside the mobile card.
+   - Podcast drawer, compact player, and toggles count as theme content and must be styled accordingly.
+   - Podcast drawer always runs in dark mode for readability.
+   - Tap-to-listen/podcast banner toggles must **avoid pill shapes**—use theme corner tokens (e.g. `--shape-corner-md`) so the control aligns with other buttons. Contrast must be ≥4.5:1 against the banner and text should start from `--color-text-on-accent`, optionally mixed with a light neutral to keep luminance high.
+
 ## Aurora Skies Theme
 
 The Aurora Skies system theme showcases layered gradients, neon accents, and glassmorphism touches designed for the mobile link-in-bio experience.

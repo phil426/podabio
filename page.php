@@ -2170,8 +2170,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             letter-spacing: 0.18em;
             background: rgba(12, 18, 38, 0.45);
             font-weight: 700;
-            padding: 0.65rem 1rem;
-            border-radius: 999px;
+            padding: 0.55rem 0.85rem;
+            border-radius: var(--shape-corner-md);
             border: 1px solid rgba(122, 255, 216, 0.45);
             text-shadow: 0 0 12px rgba(3, 8, 35, 0.55), 0 0 18px rgba(122, 255, 216, 0.45);
         }
