@@ -2159,27 +2159,27 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
 
         /* Podcast banner and toggle */
         body.theme-aurora-skies .podcast-top-banner {
-            background: color-mix(in srgb, var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%)) 85%, rgba(10, 14, 32, 0.65) 15%);
-            border-bottom: 1px solid rgba(122, 255, 216, 0.26);
-            box-shadow: 0 26px 70px rgba(3, 6, 30, 0.6);
+            background: var(--gradient-podcast, linear-gradient(135deg, #061029 0%, #111d3f 55%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.14);
+            box-shadow: 0 22px 55px rgba(4, 8, 32, 0.48);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
-            color: color-mix(in srgb, #F9FDFF 90%, var(--color-accent-primary) 10%);
+            color: color-mix(in srgb, #F7FBFF 88%, var(--color-accent-primary) 12%);
             text-transform: uppercase;
-            letter-spacing: 0.18em;
-            background: rgba(12, 18, 38, 0.45);
+            letter-spacing: 0.16em;
+            background: rgba(10, 15, 32, 0.38);
             font-weight: 700;
-            padding: 0.55rem 0.85rem;
+            padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
             border-radius: var(--shape-corner-md);
-            border: 1px solid rgba(122, 255, 216, 0.45);
-            text-shadow: 0 0 12px rgba(3, 8, 35, 0.55), 0 0 18px rgba(122, 255, 216, 0.45);
+            border: 1px solid rgba(122, 255, 216, 0.32);
+            text-shadow: 0 0 10px rgba(3, 8, 35, 0.5);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(18, 26, 56, 0.65);
-            border-color: rgba(122, 255, 216, 0.65);
-            color: color-mix(in srgb, #FFFFFF 94%, var(--color-accent-primary) 6%);
+            background: rgba(12, 18, 40, 0.55);
+            border-color: rgba(122, 255, 216, 0.5);
+            color: color-mix(in srgb, #FFFFFF 92%, var(--color-accent-primary) 8%);
         }
 
         /* Podcast drawer (dark mode enforced) */
