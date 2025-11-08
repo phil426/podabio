@@ -213,11 +213,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             /* Banner starts at top of viewport when drawer is closed */
             transform: translateY(0);
+            padding: var(--space-xs, 0.5rem) calc(var(--space-sm, 0.75rem));
         }
         
         body.theme-aurora-skies .podcast-top-banner {
-            padding-top: var(--space-2xs, 0.35rem);
-            padding-bottom: var(--space-2xs, 0.35rem);
+            background: var(--gradient-podcast, linear-gradient(135deg, #061029 0%, #111d3f 55%, #1c2854 100%));
+            box-shadow: 0 22px 55px rgba(4, 8, 32, 0.48);
+            padding-left: calc(var(--mobile-page-offset) + var(--space-sm, 0.75rem));
+            padding-right: calc(var(--mobile-page-offset) + var(--space-sm, 0.75rem));
         }
         
         /* When drawer opens, banner moves down and hides */
@@ -2258,13 +2261,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .podcast-top-banner::before {
-            content: "";
-            position: absolute;
-            inset: -30%;
-            background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
-            opacity: 0.45;
-            animation: auroraFlow 14s ease-in-out infinite;
-            pointer-events: none;
+            display: none;
         }
     </style>
 </head>
