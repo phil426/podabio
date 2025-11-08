@@ -29,6 +29,7 @@ class ThemeCSSGenerator {
     private $motionTokens;
     private $layoutDensity;
     private $spacingValues;
+    private $legacyColorOverridesApplied = false;
     
     public function __construct($page, $theme = null) {
         $this->page = $page;
@@ -53,6 +54,10 @@ class ThemeCSSGenerator {
         $this->motionTokens = $this->tokens['motion'] ?? [];
         $this->layoutDensity = $this->tokens['layout_density'] ?? 'comfortable';
         $this->spacingValues = $this->spacingTokens['values'] ?? [];
+
+        if ($this->shouldApplyLegacyColorOverrides($page, $theme)) {
+            $this->applyLegacyColorOverrides();
+        }
     }
     
     /**
@@ -248,6 +253,12 @@ class ThemeCSSGenerator {
         $css .= "    --gradient-widget: " . h($gradientTokens['widget'] ?? $widgetBackgroundValue) . ";\n";
         $css .= "    --gradient-podcast: " . h($gradientTokens['podcast'] ?? ($gradientTokens['accent'] ?? $accentPrimary)) . ";\n";
         $css .= "    --aurora-glow-color: " . h($glowTokens['primary'] ?? $accentPrimary) . ";\n";
+        $shellBaseColor = $this->getDominantBackgroundColor($backgroundBase);
+        $shellBackground = $this->lightenColor($shellBaseColor, 0.85) ?? $shellBaseColor;
+        if (!$shellBackground) {
+            $shellBackground = '#f5f7fa';
+        }
+        $css .= "    --shell-background: " . h($shellBackground) . ";\n";
         
         // Tokenized spacing values
         foreach ($this->spacingValues as $token => $value) {
@@ -586,6 +597,138 @@ class ThemeCSSGenerator {
         }
         
         return $attrs;
+    }
+
+    private function shouldApplyLegacyColorOverrides($page, $theme) {
+        $pageHasTokens = !empty($page['color_tokens']);
+        if ($pageHasTokens) {
+            return false;
+        }
+
+        if (!empty($page['colors'])) {
+            return true;
+        }
+
+        $themeHasTokens = !empty($theme['color_tokens'] ?? null);
+        if ($themeHasTokens) {
+            return false;
+        }
+
+        if (!empty($theme['colors'] ?? null)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function applyLegacyColorOverrides() {
+        $primary = $this->normalizeHexColor($this->colors['primary'] ?? null);
+        $secondary = $this->normalizeHexColor($this->colors['secondary'] ?? null);
+        $accent = $this->normalizeHexColor($this->colors['accent'] ?? null);
+
+        if ($primary) {
+            $this->colorTokens['text']['primary'] = $primary;
+            $this->colorTokens['text']['secondary'] = $this->colorTokens['text']['secondary'] ?? ($this->lightenColor($primary, 0.35) ?? $primary);
+            $this->colorTokens['border']['default'] = $this->darkenColor($primary, 0.2) ?? $primary;
+            if (empty($this->colorTokens['border']['focus'])) {
+                $this->colorTokens['border']['focus'] = $this->lightenColor($primary, 0.25) ?? $primary;
+            }
+        }
+
+        if ($secondary) {
+            $base = $this->lightenColor($secondary, 0.12) ?? $secondary;
+            $surfaceRaised = $this->lightenColor($secondary, 0.22) ?? $secondary;
+            $this->colorTokens['background']['surface'] = $secondary;
+            $this->colorTokens['background']['surface_raised'] = $surfaceRaised;
+            $this->colorTokens['background']['base'] = $base;
+        }
+
+        if ($accent) {
+            $this->colorTokens['accent']['primary'] = $accent;
+            $this->colorTokens['accent']['muted'] = $this->colorTokens['accent']['muted'] ?? ($this->lightenColor($accent, 0.75) ?? $accent);
+            if (empty($this->colorTokens['gradient']['accent'])) {
+                $this->colorTokens['gradient']['accent'] = null;
+            }
+        }
+
+        $this->legacyColorOverridesApplied = true;
+    }
+
+    private function normalizeHexColor($color) {
+        if (!is_string($color)) {
+            return null;
+        }
+
+        $color = trim($color);
+        if (!preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $color)) {
+            return null;
+        }
+
+        if (strlen($color) === 4) {
+            $color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
+        }
+
+        return strtoupper($color);
+    }
+
+    private function hexToRgb($hex) {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) !== 6) {
+            return null;
+        }
+
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2))
+        ];
+    }
+
+    private function rgbToHex($rgb) {
+        if (!is_array($rgb) || count($rgb) !== 3) {
+            return null;
+        }
+
+        return sprintf('#%02X%02X%02X',
+            max(0, min(255, (int)round($rgb[0]))),
+            max(0, min(255, (int)round($rgb[1]))),
+            max(0, min(255, (int)round($rgb[2]))));
+    }
+
+    private function mixHexColors($hexA, $hexB, $ratio) {
+        $ratio = max(0, min(1, $ratio));
+        $rgbA = $this->hexToRgb($hexA);
+        $rgbB = $this->hexToRgb($hexB);
+
+        if (!$rgbA || !$rgbB) {
+            return null;
+        }
+
+        $mixed = [
+            ($rgbA[0] * (1 - $ratio)) + ($rgbB[0] * $ratio),
+            ($rgbA[1] * (1 - $ratio)) + ($rgbB[1] * $ratio),
+            ($rgbA[2] * (1 - $ratio)) + ($rgbB[2] * $ratio)
+        ];
+
+        return $this->rgbToHex($mixed);
+    }
+
+    private function lightenColor($hex, $amount) {
+        $normalized = $this->normalizeHexColor($hex);
+        if (!$normalized) {
+            return null;
+        }
+
+        return $this->mixHexColors($normalized, '#FFFFFF', max(0, min(1, $amount)));
+    }
+
+    private function darkenColor($hex, $amount) {
+        $normalized = $this->normalizeHexColor($hex);
+        if (!$normalized) {
+            return null;
+        }
+
+        return $this->mixHexColors($normalized, '#000000', max(0, min(1, $amount)));
     }
 }
 
