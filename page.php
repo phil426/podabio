@@ -198,9 +198,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-top-banner {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
+            left: var(--mobile-page-offset);
+            right: auto;
+            width: var(--mobile-page-width);
+            max-width: 420px;
             box-sizing: border-box;
             background: var(--color-accent-primary);
             background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
@@ -208,19 +209,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10001;
             box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+            border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
             opacity: 1;
             pointer-events: auto;
             transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             /* Banner starts at top of viewport when drawer is closed */
             transform: translateY(0);
-            padding: var(--space-xs, 0.5rem) calc(var(--space-sm, 0.75rem));
         }
         
         body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, linear-gradient(135deg, #061029 0%, #111d3f 55%, #1c2854 100%));
-            box-shadow: 0 22px 55px rgba(4, 8, 32, 0.48);
-            padding-left: calc(var(--mobile-page-offset) + var(--space-sm, 0.75rem));
-            padding-right: calc(var(--mobile-page-offset) + var(--space-sm, 0.75rem));
+            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
+            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
         }
         
         /* When drawer opens, banner moves down and hides */
@@ -2165,26 +2165,20 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
 
         /* Podcast banner and toggle */
         body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, linear-gradient(135deg, #061029 0%, #111d3f 55%, #1c2854 100%));
-            box-shadow: 0 22px 55px rgba(4, 8, 32, 0.48);
+            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
+            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
-            color: color-mix(in srgb, #F7FBFF 90%, var(--color-accent-primary) 10%);
+            color: color-mix(in srgb, var(--color-text-on-accent) 90%, #ffffff 10%);
             text-transform: uppercase;
-            letter-spacing: 0.14em;
-            background: rgba(9, 14, 32, 0.58);
-            font-weight: 700;
-            padding: var(--space-2xs, 0.35rem) var(--space-sm, 0.75rem);
-            border-radius: var(--shape-corner-none);
-            border: 1px solid rgba(12, 18, 36, 0.85);
-            text-shadow: 0 0 8px rgba(3, 8, 35, 0.55);
+            letter-spacing: 0.16em;
+            background: transparent;
         }
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(12, 20, 46, 0.72);
-            border-color: rgba(20, 32, 68, 0.9);
-            color: color-mix(in srgb, #FFFFFF 92%, var(--color-accent-primary) 8%);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         /* Podcast drawer (dark mode enforced) */
@@ -2261,7 +2255,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .podcast-top-banner::before {
-            display: none;
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
+            opacity: 0.45;
+            animation: auroraFlow 14s ease-in-out infinite;
+            pointer-events: none;
         }
     </style>
 </head>
