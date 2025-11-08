@@ -3174,7 +3174,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                         </div>
                                     </div>
                                     <div class="theme-card-footer">
-                                        <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange()" onclick="event.stopPropagation();">
+                                        <input type="radio" name="theme_id" value="<?php echo $theme['id']; ?>" id="theme-<?php echo $theme['id']; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="handleThemeChange(event)" onclick="event.stopPropagation();">
                                         <button type="button" class="theme-widget-settings-btn" onclick="event.stopPropagation(); showWidgetSettingsDrawer(<?php echo $theme['id']; ?>)" title="View Widget Settings" style="background: none; border: 1px solid #ddd; border-radius: 6px; padding: 0.375rem 0.5rem; cursor: pointer; color: #666; font-size: 0.75rem; transition: all 0.2s;">
                                             <i class="fas fa-cog"></i>
                                         </button>
@@ -3205,19 +3205,16 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;">
                                 <option value="" <?php echo $currentPageNameEffect === '' ? 'selected' : ''; ?>>None</option>
                                 <option value="sweet-title" <?php echo $currentPageNameEffect === 'sweet-title' ? 'selected' : ''; ?>>Sweet Title</option>
-                                <option value="long-shadow" <?php echo $currentPageNameEffect === 'long-shadow' ? 'selected' : ''; ?>>Long Shadow</option>
                                 <option value="3d-extrude" <?php echo $currentPageNameEffect === '3d-extrude' ? 'selected' : ''; ?>>3D Extrude</option>
-                                <option value="jello" <?php echo $currentPageNameEffect === 'jello' ? 'selected' : ''; ?>>Jello</option>
                                 <option value="neon" <?php echo $currentPageNameEffect === 'neon' ? 'selected' : ''; ?>>Neon</option>
                                 <option value="gummy" <?php echo $currentPageNameEffect === 'gummy' ? 'selected' : ''; ?>>Gummy</option>
                                 <option value="water" <?php echo $currentPageNameEffect === 'water' ? 'selected' : ''; ?>>Water</option>
                                 <option value="outline" <?php echo $currentPageNameEffect === 'outline' ? 'selected' : ''; ?>>Outline</option>
-                                <option value="rainbow" <?php echo $currentPageNameEffect === 'rainbow' ? 'selected' : ''; ?>>Rainbow</option>
-                                <option value="badge-shield" <?php echo $currentPageNameEffect === 'badge-shield' ? 'selected' : ''; ?>>Badge Shield</option>
+                                <option value="glitch" <?php echo $currentPageNameEffect === 'glitch' ? 'selected' : ''; ?>>Glitch</option>
+                                <option value="cut-text" <?php echo $currentPageNameEffect === 'cut-text' ? 'selected' : ''; ?>>Cut Text</option>
+                                <option value="cyber-text" <?php echo $currentPageNameEffect === 'cyber-text' ? 'selected' : ''; ?>>Cyber Text</option>
                                 <option value="isometric-3d" <?php echo $currentPageNameEffect === 'isometric-3d' ? 'selected' : ''; ?>>Isometric 3D</option>
-                                <option value="geometric-cutout" <?php echo $currentPageNameEffect === 'geometric-cutout' ? 'selected' : ''; ?>>Geometric Cutout</option>
                                 <option value="stencil" <?php echo $currentPageNameEffect === 'stencil' ? 'selected' : ''; ?>>Stencil</option>
-                                <option value="pattern-fill" <?php echo $currentPageNameEffect === 'pattern-fill' ? 'selected' : ''; ?>>Pattern Fill</option>
                                 <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
@@ -7083,6 +7080,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // Auto-save functionality with debouncing
         let saveTimeouts = {};
         let savingIndicators = {};
+        let appearanceAutoSaveEnabled = false;
         
         function showSavingIndicator(formId, message = 'Saving...') {
             let indicator = savingIndicators[formId];
@@ -7115,6 +7113,11 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         function autoSaveForm(formId, action, getFormData) {
+            const isAppearanceForm = formId === 'appearance-form';
+            
+            if (isAppearanceForm && !appearanceAutoSaveEnabled) {
+                return;
+            }
             // Clear existing timeout
             if (saveTimeouts[formId]) {
                 clearTimeout(saveTimeouts[formId]);
@@ -7317,7 +7320,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         }
         
         // Page Font Preview
-        function updatePageFontPreview() {
+        function updatePageFontPreview(shouldSave = true) {
             const pagePrimaryFont = document.getElementById('page_primary_font')?.value || '';
             const pageSecondaryFont = document.getElementById('page_secondary_font')?.value || '';
             
@@ -7363,11 +7366,13 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }
             }
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updatePageFontPreview');
+            }
         }
         
         // Widget Font Preview
-        function updateWidgetFontPreview() {
+        function updateWidgetFontPreview(shouldSave = true) {
             const widgetPrimaryFont = document.getElementById('widget_primary_font')?.value || '';
             const widgetSecondaryFont = document.getElementById('widget_secondary_font')?.value || '';
             const pagePrimaryFont = document.getElementById('page_primary_font')?.value || '';
@@ -7449,7 +7454,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }
             }
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetFontPreview');
+            }
         }
         
         // Select theme from card click
@@ -7457,12 +7464,32 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             const radio = document.getElementById('theme-' + themeId);
             if (radio) {
                 radio.checked = true;
-                handleThemeChange();
+                handleThemeChange({ fromUser: true });
             }
         }
         
         // Handle theme change
-        function handleThemeChange() {
+        function handleThemeChange(triggerContext) {
+            const isUserAction = (() => {
+                if (typeof triggerContext === 'boolean') {
+                    return triggerContext;
+                }
+                if (triggerContext && typeof triggerContext === 'object') {
+                    if (triggerContext.isTrusted !== undefined) {
+                        return !!triggerContext.isTrusted;
+                    }
+                    if (triggerContext.fromUser !== undefined) {
+                        return !!triggerContext.fromUser;
+                    }
+                }
+                const fallbackEvent = typeof window !== 'undefined' ? window.event : null;
+                return !!(fallbackEvent && fallbackEvent.isTrusted);
+            })();
+            
+            if (!isUserAction && appearanceAutoSaveEnabled) {
+                appearanceAutoSaveEnabled = false;
+            }
+            
             // Get selected radio button
             const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
             const themeId = selectedRadio ? selectedRadio.value : '';
@@ -7534,7 +7561,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     pagePrimaryFont.value = fonts.heading;
                                 }
                                 updateFontPreview();
-                                updatePageFontPreview();
+                                updatePageFontPreview(false);
                             }
                             if (fonts.body) {
                                 const customBodyFont = document.getElementById('custom_body_font');
@@ -7546,7 +7573,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     pageSecondaryFont.value = fonts.body;
                                 }
                                 updateFontPreview();
-                                updatePageFontPreview();
+                                updatePageFontPreview(false);
                             }
                             
                             // Apply page fonts from theme (if available)
@@ -7554,14 +7581,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 const pagePrimaryFont = document.getElementById('page_primary_font');
                                 if (pagePrimaryFont) {
                                     pagePrimaryFont.value = data.theme.page_primary_font;
-                                    updatePageFontPreview();
+                                    updatePageFontPreview(false);
                                 }
                             }
                             if (data.theme.page_secondary_font) {
                                 const pageSecondaryFont = document.getElementById('page_secondary_font');
                                 if (pageSecondaryFont) {
                                     pageSecondaryFont.value = data.theme.page_secondary_font;
-                                    updatePageFontPreview();
+                                    updatePageFontPreview(false);
                                 }
                             }
                             
@@ -7570,14 +7597,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 const widgetPrimaryFont = document.getElementById('widget_primary_font');
                                 if (widgetPrimaryFont) {
                                     widgetPrimaryFont.value = data.theme.widget_primary_font;
-                                    updateWidgetFontPreview();
+                                    updateWidgetFontPreview(false);
                                 }
                             }
                             if (data.theme.widget_secondary_font) {
                                 const widgetSecondaryFont = document.getElementById('widget_secondary_font');
                                 if (widgetSecondaryFont) {
                                     widgetSecondaryFont.value = data.theme.widget_secondary_font;
-                                    updateWidgetFontPreview();
+                                    updateWidgetFontPreview(false);
                                 }
                             }
                             
@@ -7601,13 +7628,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                             if (dirEl) dirEl.value = direction;
                                             if (startEl) startEl.value = startColor;
                                             if (endEl) endEl.value = endColor;
-                                            updateGradient();
+                                            updateGradient(false);
                                         }
                                     } else {
                                         // Solid color
                                         const bgColorEl = document.getElementById('page_background_color');
-                                        if (bgColorEl) bgColorEl.value = data.theme.page_background;
-                                        updatePageBackground();
+                                        if (bgColorEl) {
+                                            bgColorEl.value = data.theme.page_background;
+                                            updatePageBackground(false);
+                                        }
                                     }
                                 }
                             }
@@ -7632,13 +7661,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                             if (dirEl) dirEl.value = direction;
                                             if (startEl) startEl.value = startColor;
                                             if (endEl) endEl.value = endColor;
-                                            updateWidgetGradient();
+                                            updateWidgetGradient(false);
                                         }
                                     } else {
                                         // Solid color
                                         const bgColorEl = document.getElementById('widget_background_color');
-                                        if (bgColorEl) bgColorEl.value = data.theme.widget_background;
-                                        updateWidgetBackground();
+                                        if (bgColorEl) {
+                                            bgColorEl.value = data.theme.widget_background;
+                                            updateWidgetBackground(false);
+                                        }
                                     }
                                 }
                             }
@@ -7663,13 +7694,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                             if (dirEl) dirEl.value = direction;
                                             if (startEl) startEl.value = startColor;
                                             if (endEl) endEl.value = endColor;
-                                            updateWidgetBorderGradient();
+                                            updateWidgetBorderGradient(false);
                                         }
                                     } else {
                                         // Solid color
                                         const borderColorEl = document.getElementById('widget_border_color_picker');
-                                        if (borderColorEl) borderColorEl.value = data.theme.widget_border_color;
-                                        updateWidgetBorderColor();
+                                        if (borderColorEl) {
+                                            borderColorEl.value = data.theme.widget_border_color;
+                                            updateWidgetBorderColor(false);
+                                        }
                                     }
                                 }
                             }
@@ -7722,8 +7755,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 }
                             }
                             
-                            // Trigger auto-save
-                            saveAppearanceForm();
+                            if (isUserAction) {
+                                queueAppearanceSaveFromUser('handleThemeChange');
+                            }
                         }
                     })
                     .catch((error) => {
@@ -7754,8 +7788,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (widgetSecondaryFont) widgetSecondaryFont.addEventListener('change', updateWidgetFontPreview);
             // Load fonts on page load
             if (customHeadingFont || customBodyFont) updateFontPreview();
-            if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview();
-            if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview();
+            if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview(false);
+            if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview(false);
         });
         
         // Handle appearance form with auto-save - wrapped in DOMContentLoaded
@@ -7788,7 +7822,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         if (!field.dataset.listenerAttached) {
                             field.addEventListener('change', function() {
                                 console.log('Field changed:', fieldId, 'Value:', this.value);
-                                saveAppearanceForm();
+                                queueAppearanceSaveFromUser(`appearance-field-change:${fieldId}`);
                                 
                                 // Update inline font previews
                                 if (fieldId === 'page_primary_font') {
@@ -7833,8 +7867,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 const hexField = document.getElementById(hexFieldId);
                 if (hexField) {
                     hexField.addEventListener('input', function() {
-                        // Use saveAppearanceForm() to ensure all widget styles are included
-                        saveAppearanceForm();
+                        // Queue an appearance save to ensure all widget styles are included
+                        queueAppearanceSaveFromUser(`hex-input:${hexFieldId}`);
                     });
                 }
             });
@@ -7895,6 +7929,18 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showToast('An error occurred', 'error');
             });
             });
+
+            const enableAppearanceAutoSave = (event) => {
+                if (!appearanceAutoSaveEnabled && (!event || event.isTrusted)) {
+                    appearanceAutoSaveEnabled = true;
+                    appearanceForm.removeEventListener('pointerdown', enableAppearanceAutoSave, true);
+                    appearanceForm.removeEventListener('keydown', enableAppearanceAutoSave, true);
+                    appearanceForm.removeEventListener('focusin', enableAppearanceAutoSave, true);
+                }
+            };
+            appearanceForm.addEventListener('pointerdown', enableAppearanceAutoSave, true);
+            appearanceForm.addEventListener('keydown', enableAppearanceAutoSave, true);
+            appearanceForm.addEventListener('focusin', enableAppearanceAutoSave, true);
         }); // End DOMContentLoaded wrapper for appearance form
         
         // Handle email settings form with auto-save
@@ -8745,105 +8791,119 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         // ========== Theme System JavaScript Functions ==========
         
         // Helper function to build appearance form data (must be global for inline handlers)
-        function saveAppearanceForm() {
-            if (!document.getElementById('appearance-form')) {
+        function buildAppearanceFormData() {
+            const appearanceForm = document.getElementById('appearance-form');
+            if (!appearanceForm) {
                 console.warn('Appearance form not found');
+                return null;
+            }
+            
+            const formData = new FormData();
+            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
+            const themeId = selectedRadio ? selectedRadio.value : '';
+            
+            const layoutEl = document.getElementById('layout_option');
+            const primaryColorEl = document.getElementById('custom_primary_color');
+            const secondaryColorEl = document.getElementById('custom_secondary_color');
+            const accentColorEl = document.getElementById('custom_accent_color');
+            
+            if (!layoutEl || !primaryColorEl || !secondaryColorEl || !accentColorEl) {
+                console.error('Required appearance form elements not found');
+                return null;
+            }
+            
+            const layout = layoutEl.value;
+            const primaryColor = primaryColorEl.value;
+            const secondaryColor = secondaryColorEl.value;
+            const accentColor = accentColorEl.value;
+            
+            // Legacy fonts (for backward compatibility)
+            const headingFont = document.getElementById('custom_heading_font');
+            const bodyFont = document.getElementById('custom_body_font');
+            if (headingFont && headingFont.value) formData.append('custom_heading_font', headingFont.value);
+            if (bodyFont && bodyFont.value) formData.append('custom_body_font', bodyFont.value);
+            
+            // Page fonts
+            const pagePrimaryFont = document.getElementById('page_primary_font');
+            const pageSecondaryFont = document.getElementById('page_secondary_font');
+            if (pagePrimaryFont && pagePrimaryFont.value) formData.append('page_primary_font', pagePrimaryFont.value);
+            if (pageSecondaryFont && pageSecondaryFont.value) formData.append('page_secondary_font', pageSecondaryFont.value);
+            
+            // Widget fonts
+            const widgetPrimaryFont = document.getElementById('widget_primary_font');
+            const widgetSecondaryFont = document.getElementById('widget_secondary_font');
+            if (widgetPrimaryFont && widgetPrimaryFont.value) formData.append('widget_primary_font', widgetPrimaryFont.value);
+            if (widgetSecondaryFont && widgetSecondaryFont.value) formData.append('widget_secondary_font', widgetSecondaryFont.value);
+            
+            formData.append('theme_id', themeId);
+            formData.append('layout_option', layout);
+            formData.append('custom_primary_color', primaryColor);
+            formData.append('custom_secondary_color', secondaryColor);
+            formData.append('custom_accent_color', accentColor);
+            
+            // Page background
+            const pageBackground = document.getElementById('page_background');
+            if (pageBackground && pageBackground.value) formData.append('page_background', pageBackground.value);
+            
+            // Widget background
+            const widgetBackground = document.getElementById('widget_background');
+            if (widgetBackground && widgetBackground.value) formData.append('widget_background', widgetBackground.value);
+            
+            // Widget border color
+            const widgetBorderColor = document.getElementById('widget_border_color');
+            if (widgetBorderColor && widgetBorderColor.value) formData.append('widget_border_color', widgetBorderColor.value);
+            
+            const spatialEffect = document.getElementById('spatial_effect');
+            if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
+            
+            // Page name effect (always append, even if empty)
+            const pageNameEffect = document.getElementById('page-name-effect-selector');
+            if (pageNameEffect) {
+                const effectValue = pageNameEffect.value || '';
+                formData.append('page_name_effect', effectValue);
+            } else {
+                console.error('✗ Page name effect selector (page-name-effect-selector) NOT FOUND in DOM');
+            }
+            
+            // Widget styles
+            const borderWidthEl = document.getElementById('widget_border_width');
+            const borderEffectEl = document.getElementById('widget_border_effect');
+            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
+            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
+            const glowColorEl = document.getElementById('widget_glow_color_hidden');
+            const spacingEl = document.getElementById('widget_spacing');
+            const shapeEl = document.getElementById('widget_shape');
+            
+            const widgetStyles = {
+                border_width: borderWidthEl ? borderWidthEl.value : 'none',
+                border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
+                border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
+                border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
+                glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
+                spacing: spacingEl ? spacingEl.value : 'comfortable',
+                shape: shapeEl ? shapeEl.value : 'rounded'
+            };
+            formData.append('widget_styles', JSON.stringify(widgetStyles));
+            
+            return formData;
+        }
+        
+        function queueAppearanceSaveFromUser(_reason = 'unspecified') {
+            if (!appearanceAutoSaveEnabled) {
                 return;
             }
             
-            console.log('saveAppearanceForm called');
             autoSaveForm('appearance-form', 'update_appearance', () => {
-                    const formData = new FormData();
-                    const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
-                    const themeId = selectedRadio ? selectedRadio.value : '';
-                    
-                    const layoutEl = document.getElementById('layout_option');
-                    const primaryColorEl = document.getElementById('custom_primary_color');
-                    const secondaryColorEl = document.getElementById('custom_secondary_color');
-                    const accentColorEl = document.getElementById('custom_accent_color');
-                    
-                    if (!layoutEl || !primaryColorEl || !secondaryColorEl || !accentColorEl) {
-                        console.error('Required appearance form elements not found');
-                        return null;
-                    }
-                    
-                    const layout = layoutEl.value;
-                    const primaryColor = primaryColorEl.value;
-                    const secondaryColor = secondaryColorEl.value;
-                    const accentColor = accentColorEl.value;
-                    
-                    // Legacy fonts (for backward compatibility)
-                    const headingFont = document.getElementById('custom_heading_font');
-                    const bodyFont = document.getElementById('custom_body_font');
-                    if (headingFont && headingFont.value) formData.append('custom_heading_font', headingFont.value);
-                    if (bodyFont && bodyFont.value) formData.append('custom_body_font', bodyFont.value);
-                    
-                    // Page fonts
-                    const pagePrimaryFont = document.getElementById('page_primary_font');
-                    const pageSecondaryFont = document.getElementById('page_secondary_font');
-                    if (pagePrimaryFont && pagePrimaryFont.value) formData.append('page_primary_font', pagePrimaryFont.value);
-                    if (pageSecondaryFont && pageSecondaryFont.value) formData.append('page_secondary_font', pageSecondaryFont.value);
-                    
-                    // Widget fonts
-                    const widgetPrimaryFont = document.getElementById('widget_primary_font');
-                    const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-                    if (widgetPrimaryFont && widgetPrimaryFont.value) formData.append('widget_primary_font', widgetPrimaryFont.value);
-                    if (widgetSecondaryFont && widgetSecondaryFont.value) formData.append('widget_secondary_font', widgetSecondaryFont.value);
-                    
-                    formData.append('theme_id', themeId);
-                    formData.append('layout_option', layout);
-                    formData.append('custom_primary_color', primaryColor);
-                    formData.append('custom_secondary_color', secondaryColor);
-                    formData.append('custom_accent_color', accentColor);
-                    
-                    // Page background
-                    const pageBackground = document.getElementById('page_background');
-                    if (pageBackground && pageBackground.value) formData.append('page_background', pageBackground.value);
-                    
-                    // Widget background
-                    const widgetBackground = document.getElementById('widget_background');
-                    if (widgetBackground && widgetBackground.value) formData.append('widget_background', widgetBackground.value);
-                    
-                    // Widget border color
-                    const widgetBorderColor = document.getElementById('widget_border_color');
-                    if (widgetBorderColor && widgetBorderColor.value) formData.append('widget_border_color', widgetBorderColor.value);
-                    
-                    const spatialEffect = document.getElementById('spatial_effect');
-                    if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
-                    
-                    // Page name effect (always append, even if empty)
-                    const pageNameEffect = document.getElementById('page-name-effect-selector');
-                    if (pageNameEffect) {
-                        const effectValue = pageNameEffect.value || '';
-                        formData.append('page_name_effect', effectValue);
-                        console.log('✓ Page name effect added to FormData:', effectValue || '(empty)');
-                        console.log('✓ page-name-effect-selector element found, value:', effectValue);
-                    } else {
-                        console.error('✗ Page name effect selector (page-name-effect-selector) NOT FOUND in DOM');
-                    }
-                    
-                    // Widget styles
-                    const borderWidthEl = document.getElementById('widget_border_width');
-                    const borderEffectEl = document.getElementById('widget_border_effect');
-                    const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
-                    const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
-                    const glowColorEl = document.getElementById('widget_glow_color_hidden');
-                    const spacingEl = document.getElementById('widget_spacing');
-                    const shapeEl = document.getElementById('widget_shape');
-                    
-                    const widgetStyles = {
-                        border_width: borderWidthEl ? borderWidthEl.value : 'none',
-                        border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
-                        border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
-                        border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
-                        glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
-                        spacing: spacingEl ? spacingEl.value : 'comfortable',
-                        shape: shapeEl ? shapeEl.value : 'rounded'
-                    };
-                    formData.append('widget_styles', JSON.stringify(widgetStyles));
-                    
-                    return formData;
-                });
+                const formData = buildAppearanceFormData();
+                if (!formData) {
+                    console.error('buildAppearanceFormData returned null; skipping auto-save');
+                }
+                return formData;
+            });
+        }
+        
+        function saveAppearanceForm(reason = 'unspecified') {
+            queueAppearanceSaveFromUser(reason);
         }
         
         // Page Background Functions
@@ -8877,7 +8937,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         }
         
-        function updatePageBackground() {
+        function updatePageBackground(shouldSave = true) {
             const colorPicker = document.getElementById('page_background_color');
             const hexInput = document.getElementById('page_background_color_hex');
             const hidden = document.getElementById('page_background');
@@ -8892,12 +8952,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             hidden.value = color;
             
             // Update page preview
-            updatePageFontPreview();
+            updatePageFontPreview(shouldSave);
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updatePageBackground');
+            }
         }
         
-        function updatePageBackgroundFromHex() {
+        function updatePageBackgroundFromHex(shouldSave = true) {
             const hexInput = document.getElementById('page_background_color_hex');
             
             // Add null check
@@ -8921,15 +8983,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 hexInput.value = hex;
                 
                 // Update page preview
-                updatePageFontPreview();
+                updatePageFontPreview(shouldSave);
                 
-                saveAppearanceForm();
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updatePageBackgroundFromHex');
+                }
             } else {
                 alert('Please enter a valid hex color (e.g., #ffffff)');
             }
         }
         
-        function updateGradient() {
+        function updateGradient(shouldSave = true) {
             const startColorEl = document.getElementById('gradient_start_color');
             const endColorEl = document.getElementById('gradient_end_color');
             const directionEl = document.getElementById('gradient_direction');
@@ -8950,13 +9014,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             hidden.value = gradient;
             
             // Update page preview
-            updatePageFontPreview();
+            updatePageFontPreview(shouldSave);
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateGradient');
+            }
         }
         
         // Widget Style Functions
-        function updateWidgetStyle(field, value) {
+        function updateWidgetStyle(field, value, shouldSave = true) {
             const hiddenField = document.getElementById('widget_' + field);
             if (hiddenField) {
                 hiddenField.value = value;
@@ -8981,17 +9047,19 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
             
             // Update widget preview for styling changes
-            updateWidgetFontPreview();
+            updateWidgetFontPreview(shouldSave);
             
             // Refresh preview iframe to show changes
             if (typeof refreshPreview === 'function') {
                 refreshPreview();
             }
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser(`updateWidgetStyle:${field}`);
+            }
         }
         
-        function switchBorderEffect(effect) {
+        function switchBorderEffect(effect, shouldSave = true) {
             const shadowOptions = document.getElementById('shadow-options');
             const glowOptions = document.getElementById('glow-options');
             const hidden = document.getElementById('widget_border_effect');
@@ -9028,10 +9096,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 refreshPreview();
             }
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('switchBorderEffect');
+            }
         }
         
-        function updateGlowColor() {
+        function updateGlowColor(shouldSave = true) {
             const colorPicker = document.getElementById('widget_glow_color');
             const hexInput = document.getElementById('widget_glow_color_hex');
             const hidden = document.getElementById('widget_glow_color_hidden');
@@ -9045,10 +9115,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             hexInput.value = color;
             hidden.value = color;
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateGlowColor');
+            }
         }
         
-        function updateGlowColorFromHex() {
+        function updateGlowColorFromHex(shouldSave = true) {
             const hexInput = document.getElementById('widget_glow_color_hex');
             
             if (!hexInput) {
@@ -9075,13 +9147,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 hidden.value = hex;
                 hexInput.value = hex;
                 
-                saveAppearanceForm();
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updateGlowColorFromHex');
+                }
             } else {
                 alert('Please enter a valid hex color (e.g., #ff00ff)');
             }
         }
         
-        function updateSpatialEffect(effect) {
+        function updateSpatialEffect(effect, shouldSave = true) {
             const hidden = document.getElementById('spatial_effect');
             const buttons = document.querySelectorAll('.spatial-effect-btn');
             
@@ -9101,7 +9175,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }
             });
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateSpatialEffect');
+            }
         }
         
         // Widget Background Functions
@@ -9133,7 +9209,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         }
         
-        function updateWidgetBackground() {
+        function updateWidgetBackground(shouldSave = true) {
             const colorPicker = document.getElementById('widget_background_color');
             const hexInput = document.getElementById('widget_background_color_hex');
             const hidden = document.getElementById('widget_background');
@@ -9148,12 +9224,14 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             hidden.value = color;
             
             // Update widget preview
-            updateWidgetFontPreview();
+            updateWidgetFontPreview(shouldSave);
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBackground');
+            }
         }
         
-        function updateWidgetBackgroundFromHex() {
+        function updateWidgetBackgroundFromHex(shouldSave = true) {
             const hexInput = document.getElementById('widget_background_color_hex');
             
             // Add null check
@@ -9177,15 +9255,17 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 hexInput.value = hex;
                 
                 // Update widget preview
-                updateWidgetFontPreview();
+                updateWidgetFontPreview(shouldSave);
                 
-                saveAppearanceForm();
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updateWidgetBackgroundFromHex');
+                }
             } else {
                 alert('Please enter a valid hex color (e.g., #ffffff)');
             }
         }
         
-        function updateWidgetGradient() {
+        function updateWidgetGradient(shouldSave = true) {
             const startColorEl = document.getElementById('widget_gradient_start_color');
             const endColorEl = document.getElementById('widget_gradient_end_color');
             const directionEl = document.getElementById('widget_gradient_direction');
@@ -9205,7 +9285,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             preview.style.background = gradient;
             hidden.value = gradient;
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetGradient');
+            }
         }
         
         // Widget Border Color Functions
@@ -9237,7 +9319,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
         }
         
-        function updateWidgetBorderColor() {
+        function updateWidgetBorderColor(shouldSave = true) {
             const colorPicker = document.getElementById('widget_border_color_picker');
             const hexInput = document.getElementById('widget_border_color_hex');
             const hidden = document.getElementById('widget_border_color');
@@ -9251,10 +9333,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             hexInput.value = color;
             hidden.value = color;
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBorderColor');
+            }
         }
         
-        function updateWidgetBorderColorFromHex() {
+        function updateWidgetBorderColorFromHex(shouldSave = true) {
             const hexInput = document.getElementById('widget_border_color_hex');
             
             // Add null check
@@ -9277,13 +9361,15 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 hidden.value = hex;
                 hexInput.value = hex;
                 
-                saveAppearanceForm();
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updateWidgetBorderColorFromHex');
+                }
             } else {
                 alert('Please enter a valid hex color (e.g., #000000)');
             }
         }
         
-        function updateWidgetBorderGradient() {
+        function updateWidgetBorderGradient(shouldSave = true) {
             const startColorEl = document.getElementById('widget_border_gradient_start_color');
             const endColorEl = document.getElementById('widget_border_gradient_end_color');
             const directionEl = document.getElementById('widget_border_gradient_direction');
@@ -9303,7 +9389,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             preview.style.background = gradient;
             hidden.value = gradient;
             
-            saveAppearanceForm();
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBorderGradient');
+            }
         }
         
         // Flip gradient colors (swap start and end)

@@ -446,64 +446,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             padding-left: 2.25rem;
         }
         
-        .page-title-effect-long-shadow {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 
-                0px 0px #E13E06,
-                1px 1px #E13E06,
-                2px 2px #E13E06,
-                3px 3px #E13E06,
-                4px 4px #E13E06,
-                5px 5px #E13E06,
-                6px 6px #E13E06,
-                7px 7px #E13E06,
-                8px 8px #E13E06,
-                9px 9px #E13E06,
-                10px 10px #E13E06,
-                11px 11px #E13E06,
-                12px 12px #E13E06,
-                13px 13px #E13E06,
-                14px 14px #E13E06,
-                15px 15px #E13E06,
-                16px 16px #E13E06,
-                17px 17px #E13E06,
-                18px 18px #E13E06,
-                19px 19px #E13E06,
-                20px 20px #E13E06,
-                21px 21px #E13E06,
-                22px 22px #E13E06,
-                23px 23px #E13E06,
-                24px 24px #E13E06,
-                25px 25px #E13E06,
-                26px 26px #E13E06,
-                27px 27px #E13E06,
-                28px 28px #E13E06,
-                29px 29px #E13E06,
-                30px 30px #E13E06,
-                31px 31px #E13E06,
-                32px 32px #E13E06,
-                33px 33px #E13E06,
-                34px 34px #E13E06,
-                35px 35px #E13E06,
-                36px 36px #E13E06,
-                37px 37px #E13E06,
-                38px 38px #E13E06,
-                39px 39px #E13E06,
-                40px 40px #E13E06,
-                41px 41px #E13E06,
-                42px 42px #E13E06,
-                43px 43px #E13E06,
-                44px 44px #E13E06,
-                45px 45px #E13E06,
-                46px 46px #E13E06,
-                47px 47px #E13E06,
-                48px 48px #E13E06,
-                49px 49px #E13E06,
-                50px 50px #E13E06;
-        }
-        
         .page-title-effect-3d-extrude {
             font-family: 'Bowlby One SC', sans-serif;
             font-size: clamp(2rem, 5vw, 4rem);
@@ -603,43 +545,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         @keyframes offsetAnim {
             70%, 100% {
                 stroke-dashoffset: 3.5em;
-            }
-        }
-        
-        /* Jello Effect */
-        .page-title-effect-jello {
-            font-family: system-ui, sans-serif;
-            font-size: clamp(1.5rem, 1em + 30vmin, 4rem);
-            font-weight: 900;
-            color: tomato;
-            --x-offset: -0.0625em;
-            --y-offset: 0.0625em;
-            --stroke: 0.025em;
-            --background-color: white;
-            --stroke-color: lightblue;
-            text-shadow:
-                var(--x-offset)
-                var(--y-offset)
-                0px
-                var(--background-color),
-                calc( var(--x-offset) - var(--stroke) )
-                calc( var(--y-offset) + var(--stroke) )
-                0px
-                var(--stroke-color);
-        }
-        @supports ( text-shadow: 1px 1px 1px 1px black ) {
-            .page-title-effect-jello {
-                text-shadow:
-                    var(--x-offset)
-                    var(--y-offset)
-                    0px
-                    0px
-                    var(--background-color),
-                    var(--x-offset)
-                    var(--y-offset)
-                    var(--stroke)
-                    0px
-                    var(--stroke-color);
             }
         }
         
@@ -752,72 +657,57 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 8px 8px #ff1f8f,
                 20px 20px #000000;
         }
-        
-        /* Rainbow/Layered Effect */
-        .page-title-effect-rainbow {
-            font-family: 'Oswald', sans-serif;
-            text-transform: uppercase;
-            font-size: clamp(5vw, 20vw, 10rem);
-            text-align: center;
-            line-height: 1;
-            margin: 0;
+
+        /* Glitch Effect */
+        .page-title-effect-glitch {
             position: relative;
-            color: var(--page-title-color, var(--primary-color));
+            display: inline-block;
+            font-family: 'Catamaran', sans-serif;
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #ffffff;
         }
-        .page-title-effect-rainbow::before,
-        .page-title-effect-rainbow::after,
-        .page-title-effect-rainbow span::before,
-        .page-title-effect-rainbow span::after {
-            content: attr(data-heading);
+        .page-title-effect-glitch::before,
+        .page-title-effect-glitch::after {
+            content: attr(data-text);
             position: absolute;
-            overflow: hidden;
-            left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .page-title-effect-rainbow::before {
-            color: #d61c5b;
-            height: 34%;
-            z-index: 5;
-        }
-        .page-title-effect-rainbow::after {
-            color: #f1573f;
-            height: 50%;
-            z-index: 4;
-        }
-        .page-title-effect-rainbow span {
-            position: relative;
-            display: inline-block;
-        }
-        .page-title-effect-rainbow span::before {
-            color: #feb213;
-            height: 66%;
-            z-index: 3;
-        }
-        .page-title-effect-rainbow span::after {
-            color: #6abc4e;
-            height: 80%;
-            z-index: 2;
-        }
-        
-        /* Badge Shield Effect */
-        .page-title-effect-badge-shield {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(2rem, 10vw, 5rem);
-            font-weight: 700;
+            left: 0;
+            opacity: 0.8;
             text-transform: uppercase;
-            color: #fff;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem 3rem;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.3),
-                inset 0 -3px 10px rgba(0, 0, 0, 0.2),
-                inset 0 3px 10px rgba(255, 255, 255, 0.2);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            position: relative;
-            display: inline-block;
+        }
+        .page-title-effect-glitch::before {
+            color: #0ff;
+            z-index: -1;
+            animation: page-title-glitch-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+        }
+        .page-title-effect-glitch::after {
+            color: #ff00ff;
+            z-index: -2;
+            animation: page-title-glitch-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+        }
+        @keyframes page-title-glitch-color {
+            0% {
+                transform: translate(0, 0);
+            }
+            20% {
+                transform: translate(-3px, 3px);
+            }
+            40% {
+                transform: translate(-3px, -3px);
+            }
+            60% {
+                transform: translate(3px, 3px);
+            }
+            80% {
+                transform: translate(3px, -3px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
         }
         
         /* Isometric 3D Effect */
@@ -838,32 +728,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 7px 7px 0 #764ba2,
                 8px 8px 10px rgba(0, 0, 0, 0.4);
             letter-spacing: 0.05em;
-        }
-        
-        /* Geometric Cutout Effect */
-        .page-title-effect-geometric-cutout {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(3rem, 14vw, 7rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #000;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-        }
-        .page-title-effect-geometric-cutout::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60%;
-            height: 60%;
-            background: linear-gradient(45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%);
-            mix-blend-mode: screen;
-            z-index: 10;
         }
         
         /* Stencil Effect */
@@ -891,24 +755,67 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             -webkit-text-fill-color: transparent;
         }
         
-        /* Pattern Fill Effect */
-        .page-title-effect-pattern-fill {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(3rem, 14vw, 7rem);
-            font-weight: 900;
+        /* Cut Text Effect */
+        .page-title-effect-cut-text {
+            position: relative;
+            display: inline-block;
             text-transform: uppercase;
-            background-image: 
-                repeating-linear-gradient(
-                    45deg,
-                    #667eea 0px,
-                    #667eea 10px,
-                    #764ba2 10px,
-                    #764ba2 20px
-                );
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: clamp(3rem, 12vw, 8rem);
             color: transparent;
+            font-weight: 900;
+            font-family: 'Catamaran', sans-serif;
+            font-style: italic;
+            letter-spacing: 0.05em;
+            line-height: 1;
+        }
+        .page-title-effect-cut-text::before,
+        .page-title-effect-cut-text::after {
+            content: attr(data-text);
+            position: absolute;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        .page-title-effect-cut-text::before {
+            left: 0;
+            top: 0;
+            clip-path: polygon(0 0, 110% 0, 100% 65%, 0 25%);
+            -webkit-clip-path: polygon(0 0, 110% 0, 100% 65%, 0 25%);
+        }
+        .page-title-effect-cut-text::after {
+            left: -10px;
+            top: -2px;
+            clip-path: polygon(0 25%, 100% 65%, 100% 100%, 0% 100%);
+            -webkit-clip-path: polygon(0 25%, 100% 65%, 100% 100%, 0% 100%);
+        }
+        
+        /* Cyber Text Effect */
+        .page-title-effect-cyber-text {
+            position: relative;
+            display: inline-block;
+            text-transform: uppercase;
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-family: 'Catamaran', sans-serif;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1;
+        }
+        .page-title-effect-cyber-text::before,
+        .page-title-effect-cyber-text::after {
+            content: attr(data-text);
+            position: absolute;
+            text-transform: uppercase;
+        }
+        .page-title-effect-cyber-text::before {
+            color: rgba(0, 153, 255, 0.8);
+            top: 5px;
+            left: 10px;
+        }
+        .page-title-effect-cyber-text::after {
+            color: rgba(255, 45, 85, 0.85);
+            top: -5px;
+            left: 8px;
+            z-index: -1;
         }
         
         /* Depth Layers Effect */
@@ -2493,10 +2400,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 </div>
             <?php elseif ($pageNameEffect === 'water'): ?>
                 <h2 class="page-title-effect-water" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h2>
-            <?php elseif ($pageNameEffect === 'rainbow'): ?>
-                <h1 class="page-title-effect-rainbow" data-heading="<?php echo $pageTitleText; ?>">
-                    <span><?php echo $pageTitleText; ?></span>
-                </h1>
+            <?php elseif ($pageNameEffect === 'glitch'): ?>
+                <h1 class="page-title page-title-effect-glitch" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h1>
+            <?php elseif ($pageNameEffect === 'cut-text'): ?>
+                <h1 class="page-title page-title-effect-cut-text" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h1>
+            <?php elseif ($pageNameEffect === 'cyber-text'): ?>
+                <h1 class="page-title page-title-effect-cyber-text" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h1>
             <?php elseif ($pageNameEffect === 'stencil'): ?>
                 <h1 class="page-title-effect-stencil" data-text="<?php echo $pageTitleText; ?>"><?php echo $pageTitleText; ?></h1>
             <?php else: ?>
