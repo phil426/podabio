@@ -58,6 +58,14 @@ if ($page['theme_id']) {
 $colors = getThemeColors($page, $theme);
 $fonts = getThemeFonts($page, $theme);
 $themeTokens = getThemeTokens($page, $theme);
+$themeBodyClass = '';
+if ($theme && !empty($theme['name'])) {
+    $slug = strtolower(trim($theme['name']));
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    if (!empty($slug)) {
+        $themeBodyClass = 'theme-' . $slug;
+    }
+}
 
 // Extract individual values
 $primaryColor = $colors['primary'];
@@ -2009,9 +2017,225 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
             
         }
+
+        /* Aurora Theme Styling */
+        body.theme-aurora-skies {
+            background: var(--gradient-page, var(--page-background));
+            color: var(--color-text-on-background, var(--text-color));
+            font-family: var(--font-family-body, var(--body-font), sans-serif);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body.theme-aurora-skies::before,
+        body.theme-aurora-skies::after {
+            content: "";
+            position: fixed;
+            inset: -40vh -30vw auto -30vw;
+            background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--color-accent-primary) 55%, transparent) 0%, rgba(0,0,0,0) 60%);
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        body.theme-aurora-skies::after {
+            inset: auto -25vw -45vh 35vw;
+            background: radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
+        }
+
+        body.theme-aurora-skies .page-container {
+            background: color-mix(in srgb, var(--color-background-surface) 92%, transparent);
+            border-radius: var(--shape-corner-lg, 1.5rem);
+            border: 1px solid color-mix(in srgb, var(--color-border-default) 35%, transparent);
+            box-shadow: 0 35px 120px rgba(3, 8, 35, 0.45);
+            backdrop-filter: saturate(150%) blur(18px);
+            -webkit-backdrop-filter: saturate(150%) blur(18px);
+            position: relative;
+        }
+
+        body.theme-aurora-skies .page-container::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: inherit;
+            background: color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 25%, transparent);
+            opacity: 0.35;
+            z-index: -1;
+        }
+
+        body.theme-aurora-skies .profile-image {
+            border: 3px solid color-mix(in srgb, var(--color-border-default) 65%, transparent);
+            box-shadow: 0 18px 60px rgba(7, 16, 60, 0.5);
+        }
+
+        body.theme-aurora-skies .page-title {
+            position: relative;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: transparent;
+            background-image: var(--gradient-accent, linear-gradient(120deg, #7affd8 0%, #64a0ff 50%, #b174ff 100%));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 55%, transparent),
+                         0 0 80px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent);
+            margin-bottom: var(--space-sm);
+        }
+
+        body.theme-aurora-skies .page-title::after {
+            content: "";
+            display: block;
+            margin: var(--space-xs) auto 0;
+            width: clamp(6rem, 50%, 12rem);
+            height: 3px;
+            background: var(--gradient-accent, var(--color-accent-primary));
+            border-radius: 999px;
+            filter: blur(0.5px);
+        }
+
+        body.theme-aurora-skies .page-description {
+            color: color-mix(in srgb, var(--color-text-secondary) 85%, #ffffff 15%);
+            max-width: 32rem;
+            margin-inline: auto;
+        }
+
+        body.theme-aurora-skies .widget-item {
+            background: color-mix(in srgb, var(--color-background-surface) 80%, transparent);
+            border: 1px solid color-mix(in srgb, var(--color-border-default) 55%, transparent);
+            box-shadow: 0 22px 65px rgba(6, 10, 45, 0.5);
+            overflow: hidden;
+        }
+
+        body.theme-aurora-skies .widget-item::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: var(--gradient-widget, var(--gradient-accent, var(--color-accent-primary)));
+            opacity: 0.25;
+            z-index: -1;
+        }
+
+        body.theme-aurora-skies .widget-item:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 28px 80px rgba(6, 10, 45, 0.55);
+        }
+
+        body.theme-aurora-skies .widget-title {
+            font-family: var(--font-family-heading, var(--widget-primary-font));
+            letter-spacing: 0.04em;
+            color: color-mix(in srgb, var(--color-text-primary) 90%, #ffffff 10%);
+        }
+
+        body.theme-aurora-skies .widget-description {
+            color: color-mix(in srgb, var(--color-text-secondary) 80%, #e1e7ff 20%);
+        }
+
+        body.theme-aurora-skies .social-icon {
+            color: var(--color-accent-primary);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        body.theme-aurora-skies .social-icon:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 18px 35px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 35%, transparent);
+        }
+
+        body.theme-aurora-skies .podcast-top-banner {
+            background: var(--gradient-podcast, var(--gradient-accent, var(--color-accent-primary)));
+            border-bottom: 1px solid color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 35%, transparent);
+            box-shadow: 0 30px 80px rgba(4, 9, 30, 0.6);
+        }
+
+        body.theme-aurora-skies .podcast-banner-toggle {
+            color: color-mix(in srgb, var(--color-text-on-accent) 90%, #ffffff 10%);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        body.theme-aurora-skies .podcast-top-drawer {
+            background: color-mix(in srgb, var(--color-background-surface-raised) 94%, transparent);
+            border-top: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
+            box-shadow: 0 -25px 80px rgba(3, 8, 35, 0.55);
+        }
+
+        body.theme-aurora-skies .podcast-compact-player {
+            background: rgba(12, 18, 52, 0.82);
+            border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
+            border-radius: 18px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 24px 60px rgba(4, 9, 32, 0.55);
+        }
+
+        body.theme-aurora-skies .play-pause-btn,
+        body.theme-aurora-skies .skip-back-btn,
+        body.theme-aurora-skies .skip-forward-btn {
+            background: var(--gradient-accent, var(--color-accent-primary));
+            color: var(--color-text-on-accent);
+            border: none;
+        }
+
+        body.theme-aurora-skies .play-pause-btn {
+            animation: auroraPulse 3s ease-in-out infinite;
+        }
+
+        body.theme-aurora-skies .progress-bar {
+            background: rgba(122, 255, 216, 0.12);
+        }
+
+        body.theme-aurora-skies .progress-fill {
+            background: var(--gradient-accent, var(--color-accent-primary));
+            box-shadow: 0 0 16px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 50%, transparent);
+        }
+
+        body.theme-aurora-skies .progress-scrubber {
+            border-color: var(--aurora-glow-color, var(--color-accent-primary));
+            background: #ffffff;
+            box-shadow: 0 0 18px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 55%, transparent);
+        }
+
+        body.theme-aurora-skies .episode-title-compact {
+            color: color-mix(in srgb, var(--color-text-secondary) 85%, #cfd7ff 15%);
+        }
+
+        body.theme-aurora-skies .volume-btn,
+        body.theme-aurora-skies .expand-drawer-btn {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--color-accent-primary);
+        }
+
+        body.theme-aurora-skies .drawer-close {
+            color: color-mix(in srgb, var(--color-accent-primary) 85%, #ffffff 15%);
+        }
+
+        @keyframes auroraPulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(8, 18, 52, 0.4), 0 0 12px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 30%, transparent); }
+            50% { box-shadow: 0 12px 35px rgba(8, 18, 52, 0.55), 0 0 28px color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 60%, transparent); }
+        }
+
+        @keyframes auroraFlow {
+            0% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
+            50% { transform: translate3d(2%, -1%, 0) scale(1.03); opacity: 1; }
+            100% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
+        }
+
+        body.theme-aurora-skies .podcast-top-banner::before {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
+            opacity: 0.45;
+            animation: auroraFlow 14s ease-in-out infinite;
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="<?php echo $cssGenerator->getSpatialEffectClass(); ?>">
+<body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass); ?>">
     <div class="page-container">
         <div class="profile-header">
             <?php if ($page['profile_image']): ?>

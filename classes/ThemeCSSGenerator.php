@@ -201,6 +201,8 @@ class ThemeCSSGenerator {
         
         $stateColors = $this->colorTokens['state'] ?? [];
         $stateTextColors = $this->colorTokens['text_state'] ?? [];
+        $gradientTokens = $this->colorTokens['gradient'] ?? [];
+        $glowTokens = $this->colorTokens['glow'] ?? [];
         $effectiveWidgetBorderColor = $this->widgetBorderColor ?: $borderDefault;
         
         // Calculate optimal text colors for good contrast
@@ -241,6 +243,11 @@ class ThemeCSSGenerator {
         $css .= "    --color-text-on-accent: " . h($onAccent) . ";\n";
         $css .= "    --color-shadow-ambient: " . h($shadowAmbient) . ";\n";
         $css .= "    --color-shadow-focus: " . h($shadowFocus) . ";\n";
+        $css .= "    --gradient-page: " . h($gradientTokens['page'] ?? $pageBackgroundValue) . ";\n";
+        $css .= "    --gradient-accent: " . h($gradientTokens['accent'] ?? $accentPrimary) . ";\n";
+        $css .= "    --gradient-widget: " . h($gradientTokens['widget'] ?? $widgetBackgroundValue) . ";\n";
+        $css .= "    --gradient-podcast: " . h($gradientTokens['podcast'] ?? ($gradientTokens['accent'] ?? $accentPrimary)) . ";\n";
+        $css .= "    --aurora-glow-color: " . h($glowTokens['primary'] ?? $accentPrimary) . ";\n";
         
         // Tokenized spacing values
         foreach ($this->spacingValues as $token => $value) {

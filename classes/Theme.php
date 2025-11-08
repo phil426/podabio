@@ -326,6 +326,15 @@ class Theme {
             'shadow' => [
                 'ambient' => 'rgba(15, 23, 42, 0.12)',
                 'focus' => 'rgba(37, 99, 235, 0.35)'
+            ],
+            'gradient' => [
+                'page' => null,
+                'accent' => null,
+                'widget' => null,
+                'podcast' => null
+            ],
+            'glow' => [
+                'primary' => null
             ]
         ];
     }
@@ -398,7 +407,8 @@ class Theme {
                     'xl' => 1.35,
                     '2xl' => 1.4
                 ]
-            ]
+            ],
+            'modifiers' => []
         ];
     }
     
@@ -537,6 +547,7 @@ class Theme {
         
         $merged['density'] = $density;
         $merged['values'] = $values;
+        $merged['modifiers'] = $merged['modifiers'] ?? [];
         
         return $merged;
     }
