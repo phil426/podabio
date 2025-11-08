@@ -57,6 +57,7 @@ if ($page['theme_id']) {
 
 $colors = getThemeColors($page, $theme);
 $fonts = getThemeFonts($page, $theme);
+$themeTokens = getThemeTokens($page, $theme);
 
 // Extract individual values
 $primaryColor = $colors['primary'];
@@ -112,24 +113,29 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <style>
         /* Page container and layout */
         .page-container {
-            max-width: 600px;
+            max-width: clamp(20rem, 90vw, 600px);
             margin: 0 auto;
-            padding: 2rem 1rem;
+            padding: var(--space-lg) var(--space-md);
         }
         
         .profile-header {
             text-align: center;
-            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
         }
         
         .profile-image {
-            width: 120px;
-            height: 120px;
+            width: 7.5rem;
+            height: 7.5rem;
             border-radius: 50%;
             object-fit: cover;
-            margin-top: 36px;
-            margin-bottom: 1rem;
-            border: 3px solid var(--primary-color);
+            margin-top: var(--space-xl);
+            margin-bottom: var(--space-sm);
+            border: var(--border-width-regular, 2px) solid var(--color-border-default);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
         }
         
         .cover-image {
@@ -140,15 +146,20 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .page-title {
-            font-size: 2rem;
-            margin: 0.5rem 0;
-            color: var(--page-title-color, var(--primary-color));
+            font-size: var(--type-scale-xl, 2rem);
+            line-height: var(--type-line-height-tight, 1.2);
+            font-family: var(--font-family-heading);
+            font-weight: var(--type-weight-bold, 600);
+            margin: var(--space-xs) 0;
+            color: var(--page-title-color, var(--color-text-primary));
         }
         
         .page-description {
-            color: var(--page-description-color, var(--primary-color));
+            color: var(--page-description-color, var(--color-text-secondary));
             opacity: 0.9;
-            margin-bottom: 2rem;
+            font-size: var(--type-scale-sm, 1rem);
+            line-height: var(--type-line-height-normal, 1.5);
+            margin-bottom: var(--space-lg);
         }
         
         /* Podcast Top Banner - Attached to drawer bottom */
@@ -158,15 +169,16 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: 0;
             right: 0;
             width: 100%;
-            background: linear-gradient(135deg, var(--primary-color, #0066ff) 0%, rgba(0, 102, 255, 0.95) 100%);
+            background: var(--color-accent-primary);
+            background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 10001;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+            border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
             opacity: 1;
             pointer-events: auto;
-            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             /* Banner starts at top of viewport when drawer is closed */
             transform: translateY(0);
         }
@@ -189,25 +201,25 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6.4px;
+            gap: var(--space-2xs, 0.25rem);
             width: 100%;
-            padding: 8.8px 12.8px;
+            padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
             background: transparent;
-            color: #FFFFFF;
+            color: var(--color-text-on-accent);
             border: none;
-            font-size: 10.4px;
-            font-weight: 600;
+            font-size: var(--type-scale-xs, 0.889rem);
+            font-weight: var(--type-weight-medium, 500);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             text-align: center;
         }
         
         .podcast-banner-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: color-mix(in srgb, var(--color-text-inverse) 15%, transparent);
         }
         
         .podcast-banner-toggle:active {
-            background: rgba(255, 255, 255, 0.15);
+            background: color-mix(in srgb, var(--color-text-inverse) 25%, transparent);
         }
         
         .podcast-banner-toggle i:first-child {
@@ -234,12 +246,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             bottom: 0;
             height: 100vh;
             max-height: 100vh;
-            background-color: #000000;
+            background-color: var(--color-background-surface-raised, rgba(15, 23, 42, 0.95));
             z-index: 10000;
             display: flex;
             flex-direction: column;
             transform: translateY(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             overflow: hidden !important;
             overflow-y: hidden !important;
             overflow-x: hidden !important;
@@ -271,28 +283,28 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .podcast-drawer-close {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 44px;
-            height: 44px;
+            top: var(--space-sm, 0.75rem);
+            right: var(--space-sm, 0.75rem);
+            width: 2.75rem;
+            height: 2.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: color-mix(in srgb, var(--color-text-inverse) 15%, transparent);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: none;
-            border-radius: 50%;
-            color: #FFFFFF;
-            font-size: 20px;
+            border-radius: var(--shape-corner-pill, 9999px);
+            color: var(--color-text-inverse);
+            font-size: 1.25rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             z-index: 10;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
         }
         
         .podcast-drawer-close:hover {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: color-mix(in srgb, var(--color-text-inverse) 25%, transparent);
             transform: scale(1.1);
         }
         
@@ -301,342 +313,185 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         /* Page Name Effects */
+        /* Neon Effect */
+        /* Gummy Effect */
+        /* Water Effect */
+        /* Outline Effect */
+        /* Depth Layers Effect */
+        
+        /* Theme-driven overrides for page title effects */
         .page-title-effect-3d-shadow {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(1.5rem, 8vw, 4rem);
-            letter-spacing: clamp(0.5rem, 2vw, 1rem);
-            color: #fff;
+            color: var(--color-text-inverse);
             text-shadow:
-                2px 2px 0 #f44336,
-                4px 4px 0 #e91e63,
-                6px 6px 0 #9c27b0,
-                8px 8px 0 #673ab7,
-                10px 10px 0 #3f51b5,
-                12px 12px 0 #2196f3,
-                14px 14px 0 #03a9f4,
-                16px 16px 0 #00bcd4;
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 90%, transparent),
+                6px 6px 0 color-mix(in srgb, var(--color-accent-primary) 70%, black 30%),
+                9px 9px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%);
         }
         
         .page-title-effect-stroke-shadow {
-            font-size: clamp(2rem, calc(1em + 15vmin), 5rem);
-            font-weight: 900;
-            color: tomato;
-            --x-offset: -0.0625em;
-            --y-offset: 0.0625em;
-            --stroke: 0.025em;
-            --background-color: white;
-            --stroke-color: lightblue;
-            text-shadow: 
-                var(--x-offset)
-                var(--y-offset)
-                0px
-                var(--background-color), 
-                calc(var(--x-offset) - var(--stroke))
-                calc(var(--y-offset) + var(--stroke))
-                0px
-                var(--stroke-color);
-        }
-        
-        @supports (text-shadow: 1px 1px 1px 1px black) {
-            .page-title-effect-stroke-shadow {
-                text-shadow:
-                    var(--x-offset)
-                    var(--y-offset)
-                    0px
-                    0px
-                    var(--background-color), 
-                    var(--x-offset) 
-                    var(--y-offset)
-                    var(--stroke)
-                    0px
-                    var(--stroke-color);
-            }
-        }
-        
-        .page-title-effect-slashed {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-        }
-        
-        .page-title-effect-slashed .top,
-        .page-title-effect-slashed .bot {
-            position: absolute;
-            text-align: center;
-            font-size: clamp(2rem, 8vw, 4rem);
-            text-transform: uppercase;
-            overflow: hidden;
-            color: white;
-            text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
-        }
-        
-        .page-title-effect-slashed .top {
-            top: 0;
-            left: 5px;
-            right: 0;
-            bottom: 50%;
+            color: var(--color-accent-primary);
+            -webkit-text-stroke: 0.18rem var(--color-text-inverse);
+            text-stroke: 0.18rem var(--color-text-inverse);
+            text-shadow: 0.35rem 0.35rem 0 color-mix(in srgb, var(--color-accent-primary) 45%, black 55%);
         }
         
         .page-title-effect-slashed .top::before {
-            content: attr(title);
-            position: absolute;
-            bottom: -50px;
-            left: 0;
-            right: 0;
-            transform: rotate(5deg);
-        }
-        
-        .page-title-effect-slashed .bot {
-            top: 50%;
-            left: 0;
-            right: 5px;
-            bottom: 0;
+            color: var(--color-text-inverse);
         }
         
         .page-title-effect-slashed .bot::before {
-            content: attr(title);
-            position: absolute;
-            top: -50px;
-            left: 0;
-            right: 0;
-            transform: rotate(5deg);
-        }
-        
-        .page-title-effect-sweet-title {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: color-mix(in srgb, var(--color-text-inverse) 75%, var(--color-accent-primary) 25%);
         }
         
         .page-title-effect-sweet-title .sweet-title {
-            color: #fde9ff;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: clamp(2rem, 10vw, 4rem);
-            line-height: 0.75em;
-            text-align: center;
-            font-family: 'Exo 2', sans-serif;
-            text-shadow: 3px 1px 1px #4af7ff, 2px 2px 1px #165bfb, 4px 2px 1px #4af7ff,
-                3px 3px 1px #165bfb, 5px 3px 1px #4af7ff, 4px 4px 1px #165bfb,
-                6px 4px 1px #4af7ff, 5px 5px 1px #165bfb, 7px 5px 1px #4af7ff,
-                6px 6px 1px #165bfb, 8px 6px 1px #4af7ff, 7px 7px 1px #165bfb,
-                9px 7px 1px #4af7ff;
-        }
-        
-        .page-title-effect-sweet-title .sweet-title span {
-            display: block;
-            position: relative;
+            color: var(--color-text-inverse);
+            text-shadow:
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                7px 7px 0 color-mix(in srgb, var(--color-accent-primary) 55%, black 45%);
         }
         
         .page-title-effect-sweet-title .sweet-title span::before {
-            content: attr(data-text);
-            position: absolute;
-            text-shadow: 2px 2px 1px #e94aa1, -1px -1px 1px #c736f9,
-                -2px 2px 1px #e94aa1, 1px -1px 1px #f736f9;
-            z-index: 1;
-        }
-        
-        .page-title-effect-sweet-title .sweet-title span:nth-child(1) {
-            padding-right: 2.25rem;
-        }
-        
-        .page-title-effect-sweet-title .sweet-title span:nth-child(2) {
-            padding-left: 2.25rem;
+            color: color-mix(in srgb, var(--color-accent-primary) 60%, var(--color-text-inverse) 40%);
         }
         
         .page-title-effect-3d-extrude {
-            font-family: 'Bowlby One SC', sans-serif;
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 400;
-            color: hsl(0, 100%, 55%);
-            text-transform: uppercase;
-            text-shadow: 
-                1px 1px 0 hsl(200, 100%, 15%),
-                2px 2px 0 hsl(200, 100%, 15%),
-                3px 3px 0 hsl(200, 100%, 15%),
-                4px 4px 0 hsl(200, 100%, 15%),
-                5px 5px 0 hsl(200, 100%, 15%),
-                6px 6px 0 hsl(200, 100%, 15%),
-                7px 7px 0 hsl(200, 100%, 15%),
-                8px 8px 0 hsl(200, 100%, 15%),
-                9px 9px 0 hsl(200, 100%, 15%),
-                10px 10px 0 hsl(200, 100%, 15%),
-                11px 11px 0 hsl(200, 100%, 15%),
-                12px 12px 0 hsl(200, 100%, 15%),
-                13px 13px 0 hsl(200, 100%, 15%),
-                14px 14px 0 hsl(200, 100%, 15%),
-                15px 15px 0 hsl(200, 100%, 15%),
-                16px 16px 0 hsl(200, 100%, 15%),
-                17px 17px 0 hsl(200, 100%, 15%),
-                18px 18px 0 hsl(200, 100%, 15%),
-                19px 19px 0 hsl(200, 100%, 15%),
-                20px 20px 0 hsl(200, 100%, 15%),
-                21px 21px 0 hsl(200, 100%, 15%),
-                22px 22px 0 hsl(200, 100%, 15%),
-                23px 23px 0 hsl(200, 100%, 15%),
-                24px 24px 0 hsl(200, 100%, 15%),
-                25px 25px 0 hsl(200, 100%, 15%),
-                26px 26px 0 hsl(200, 100%, 15%),
-                27px 27px 0 hsl(200, 100%, 15%),
-                28px 28px 0 hsl(200, 100%, 15%),
-                29px 29px 0 hsl(200, 100%, 15%),
-                30px 30px 0 hsl(200, 100%, 15%),
-                31px 31px 0 hsl(200, 100%, 15%),
-                32px 32px 0 hsl(200, 100%, 15%),
-                33px 33px 0 hsl(200, 100%, 15%),
-                34px 34px 0 hsl(200, 100%, 15%),
-                35px 35px 0 hsl(200, 100%, 15%),
-                36px 36px 0 hsl(200, 100%, 15%),
-                37px 37px 0 hsl(200, 100%, 15%),
-                38px 38px 0 hsl(200, 100%, 15%),
-                39px 39px 0 hsl(200, 100%, 15%),
-                40px 40px 0 hsl(200, 100%, 15%),
-                41px 41px 0 hsl(200, 100%, 15%),
-                42px 42px 0 hsl(200, 100%, 15%),
-                43px 43px 0 hsl(200, 100%, 15%),
-                44px 44px 0 hsl(200, 100%, 15%),
-                45px 45px 0 hsl(200, 100%, 15%);
-            transform: translate3d(-15px, -15px, 0);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .page-title-effect-dragon-text {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 1rem 0;
-        }
-        
-        .page-title-effect-dragon-text .svg-text {
-            width: 100%;
-            max-width: 800px;
-            height: auto;
+            color: var(--color-accent-primary);
+            text-shadow:
+                1px 1px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 65%, black 35%),
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%),
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 35%, black 65%);
         }
         
         .page-title-effect-dragon-text .svg-text__shaded {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 120px;
-            font-weight: 300;
-            fill: #f0f0f0;
-            text-shadow: 0 1px 1px rgba(33, 33, 33, 0.15),
-                0 3px 10px rgba(33, 33, 33, 0.15),
-                0 3px 20px rgba(33, 33, 33, 0.35);
-        }
-        
-        .page-title-effect-dragon-text .svg-text__shaded__sub {
-            font-size: 6px;
-            font-family: 'Open Sans', sans-serif;
+            fill: var(--color-text-inverse);
+            text-shadow: 0 3px 20px color-mix(in srgb, var(--color-accent-primary) 40%, black 60%);
         }
         
         .page-title-effect-dragon-text .svg-text__shaded__stroke {
-            stroke-dasharray: 3em 0.5em;
-            stroke-dashoffset: 0;
-            transition: all 0.6s ease-in-out;
+            stroke: color-mix(in srgb, var(--color-accent-primary) 45%, transparent);
+            animation: dragon-offset 4s ease-in-out infinite;
         }
         
-        .page-title-effect-dragon-text:hover .svg-text__shaded__stroke {
-            animation: offsetAnim 4.2s ease-in-out infinite;
-        }
-        
-        @keyframes offsetAnim {
-            70%, 100% {
-                stroke-dashoffset: 3.5em;
-            }
-        }
-        
-        /* Neon Effect */
         .page-title-effect-neon {
-            font-family: 'Exo 2', sans-serif;
-            font-size: clamp(3rem, 13vw, 8rem);
-            font-weight: 200;
-            font-style: italic;
-            color: #fff;
-            padding: 1rem 2rem 1.5rem;
-            border: 0.2rem solid #fff;
-            border-radius: 1rem;
-            text-transform: uppercase;
-            animation: flicker 1.5s infinite alternate;
-            --neon-text-color: #f40;
-            --neon-border-color: #08f;
-        }
-        @keyframes flicker {
-            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-                text-shadow:
-                    -0.1rem -0.1rem 0.5rem #fff,
-                    0.1rem 0.1rem 0.5rem #fff,
-                    0 0 1rem var(--neon-text-color),
-                    0 0 2rem var(--neon-text-color),
-                    0 0 3rem var(--neon-text-color),
-                    0 0 4rem var(--neon-text-color),
-                    0 0 5rem var(--neon-text-color);
-                box-shadow:
-                    0 0 .25rem #fff,
-                    inset 0 0 .25rem #fff,
-                    0 0 1rem var(--neon-border-color),
-                    inset 0 0 1rem var(--neon-border-color),
-                    0 0 2rem var(--neon-border-color),
-                    inset 0 0 2rem var(--neon-border-color);
-            }
-            20%, 24%, 55% {
-                text-shadow: none;
-                box-shadow: none;
-            }
-        }
-        .page-title-effect-neon::selection {
-            background-color: var(--neon-text-color);
-            text-shadow: none;
+            color: var(--color-accent-primary);
+            border-color: color-mix(in srgb, var(--color-accent-primary) 40%, var(--color-text-inverse) 60%);
+            animation: neon-flicker 2s infinite alternate;
         }
         
-        /* Gummy Effect */
         .page-title-effect-gummy {
-            font-family: system-ui, sans-serif;
-            font-size: clamp(3rem, 15vw, 8rem);
-            letter-spacing: -.15ch;
-            line-height: .75;
-            --hue: 320;
-            /* Fallback colors for browsers that don't support oklch */
-            color: #e91e63;
+            color: color-mix(in srgb, var(--color-accent-primary) 65%, white 35%);
             text-shadow:
-                0 .15ch 15px rgba(0, 0, 0, 0.3),
-                0 -2px 0 rgba(255, 255, 255, 0.9);
+                0 0.15ch 15px color-mix(in srgb, var(--color-accent-primary) 45%, black 55%),
+                0 -0.15ch 0 var(--color-text-inverse);
         }
-        @supports (color: oklch(0% 0 0)) {
-            .page-title-effect-gummy {
-                --bg: oklch(35% .3 var(--hue));
-                --text: oklch(85% .1 var(--hue));
-                --shadow: oklch(25% .2 var(--hue));
-                --highlight: oklch(98% .05 var(--hue));
-                color: var(--text);
+        
+        .page-title-effect-water {
+            color: var(--color-text-inverse);
+            -webkit-text-stroke: 2px var(--color-accent-primary);
+        }
+        
+        .page-title-effect-water::before {
+            color: var(--color-accent-primary);
+            animation: water-wave 4s ease-in-out infinite;
+        }
+        
+        .page-title-effect-outline {
+            -webkit-text-stroke-color: var(--color-text-inverse);
+            text-shadow: 0.4rem 0.4rem color-mix(in srgb, var(--color-accent-primary) 55%, black 45%);
+        }
+        
+        .page-title-effect-glitch {
+            color: var(--color-text-inverse);
+        }
+        
+        .page-title-effect-glitch::before {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+            animation: title-glitch-shift 0.6s infinite alternate;
+        }
+        
+        .page-title-effect-glitch::after {
+            color: color-mix(in srgb, var(--color-border-focus) 70%, transparent);
+            animation: title-glitch-shift 0.6s infinite alternate reverse;
+        }
+        
+        .page-title-effect-isometric-3d {
+            color: var(--color-text-inverse);
+            text-shadow:
+                1px 1px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 60%, black 40%),
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 45%, black 55%);
+        }
+        
+        .page-title-effect-stencil {
+            -webkit-text-stroke: 3px var(--color-text-inverse);
+            text-stroke: 3px var(--color-text-inverse);
+        }
+        
+        .page-title-effect-stencil::before {
+            background: linear-gradient(to right, transparent 0%, transparent 45%, color-mix(in srgb, var(--color-accent-primary) 70%, transparent) 55%, transparent 100%);
+        }
+        
+        .page-title-effect-cut-text::before {
+            color: var(--color-text-inverse);
+        }
+        
+        .page-title-effect-cut-text::after {
+            color: color-mix(in srgb, var(--color-accent-primary) 70%, var(--color-text-inverse) 30%);
+        }
+        
+        .page-title-effect-cyber-text {
+            color: color-mix(in srgb, var(--color-text-inverse) 85%, transparent);
+        }
+        
+        .page-title-effect-cyber-text::before {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+        }
+        
+        .page-title-effect-cyber-text::after {
+            color: color-mix(in srgb, var(--color-border-focus) 70%, transparent);
+        }
+        
+        .page-title-effect-depth-layers {
+            color: var(--color-text-inverse);
+            text-shadow:
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 90%, transparent),
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 70%, black 30%),
+                6px 6px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%),
+                10px 10px 20px color-mix(in srgb, var(--color-accent-primary) 25%, black 75%);
+        }
+        
+        @keyframes neon-flicker {
+            0%, 20%, 60%, 100% {
+                box-shadow:
+                    0 0 0.5rem var(--color-text-inverse),
+                    0 0 1.5rem color-mix(in srgb, var(--color-accent-primary) 70%, transparent),
+                    0 0 3rem color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
                 text-shadow:
-                    0 .15ch 15px var(--shadow),
-                    0 -2px 0 var(--highlight);
+                    0 0 0.5rem var(--color-text-inverse),
+                    0 0 1.5rem color-mix(in srgb, var(--color-accent-primary) 70%, transparent),
+                    0 0 3rem color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+            }
+            30%, 55% {
+                box-shadow: none;
+                text-shadow: none;
             }
         }
         
-        /* Water Effect */
-        .page-title-effect-water {
-            position: relative;
-            font-family: "Poppins", sans-serif;
-            font-size: clamp(3em, 8vw, 8em);
-            color: #fff;
-            -webkit-text-stroke: 2px #03a9f4;
+        @keyframes dragon-offset {
+            0%, 70% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 3.5em; }
         }
-        .page-title-effect-water::before {
-            content: attr(data-text);
-            position: absolute;
-            color: #03a9f4;
-            animation: animate-water 4s ease-in-out infinite;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+        
+        @keyframes title-glitch-shift {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-0.15rem, 0.1rem); }
+            50% { transform: translate(0.2rem, -0.15rem); }
+            75% { transform: translate(-0.2rem, -0.2rem); }
+            100% { transform: translate(0.15rem, 0.15rem); }
         }
-        @keyframes animate-water {
+        
+        @keyframes water-wave {
             0%, 100% {
                 clip-path: polygon(0% 45%, 16% 44%, 33% 50%, 54% 60%, 70% 61%, 84% 59%, 100% 52%, 100% 100%, 0% 100%);
             }
@@ -645,228 +500,30 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
         }
         
-        /* Outline Effect */
-        .page-title-effect-outline {
-            font-family: 'Raleway', sans-serif;
-            font-size: clamp(3rem, 12vw, 120px);
-            letter-spacing: 0.1em;
-            -webkit-text-fill-color: transparent;
-            -webkit-text-stroke-width: 3px;
-            -webkit-text-stroke-color: white;
-            text-shadow:
-                8px 8px #ff1f8f,
-                20px 20px #000000;
-        }
-
-        /* Glitch Effect */
-        .page-title-effect-glitch {
-            position: relative;
-            display: inline-block;
-            font-family: 'Catamaran', sans-serif;
-            font-size: clamp(3rem, 12vw, 8rem);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #ffffff;
-        }
-        .page-title-effect-glitch::before,
-        .page-title-effect-glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0.8;
-            text-transform: uppercase;
-        }
-        .page-title-effect-glitch::before {
-            color: #0ff;
-            z-index: -1;
-            animation: page-title-glitch-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-        }
-        .page-title-effect-glitch::after {
-            color: #ff00ff;
-            z-index: -2;
-            animation: page-title-glitch-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
-        }
-        @keyframes page-title-glitch-color {
-            0% {
-                transform: translate(0, 0);
-            }
-            20% {
-                transform: translate(-3px, 3px);
-            }
-            40% {
-                transform: translate(-3px, -3px);
-            }
-            60% {
-                transform: translate(3px, 3px);
-            }
-            80% {
-                transform: translate(3px, -3px);
-            }
-            100% {
-                transform: translate(0, 0);
-            }
-        }
-        
-        /* Isometric 3D Effect */
-        .page-title-effect-isometric-3d {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(2.5rem, 12vw, 6rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #fff;
-            transform: skewY(-5deg) rotateX(10deg);
-            text-shadow:
-                1px 1px 0 #667eea,
-                2px 2px 0 #667eea,
-                3px 3px 0 #764ba2,
-                4px 4px 0 #764ba2,
-                5px 5px 0 #764ba2,
-                6px 6px 0 #764ba2,
-                7px 7px 0 #764ba2,
-                8px 8px 10px rgba(0, 0, 0, 0.4);
-            letter-spacing: 0.05em;
-        }
-        
-        /* Stencil Effect */
-        .page-title-effect-stencil {
-            font-family: 'Oswald', sans-serif;
-            font-size: clamp(3rem, 14vw, 7rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: transparent;
-            -webkit-text-stroke: 3px #000;
-            text-stroke: 3px #000;
-            letter-spacing: 0.2em;
-            position: relative;
-        }
-        .page-title-effect-stencil::before {
-            content: attr(data-text);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, transparent 0%, transparent 45%, #000 45%, #000 55%, transparent 55%, transparent 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        /* Cut Text Effect */
-        .page-title-effect-cut-text {
-            position: relative;
-            display: inline-block;
-            text-transform: uppercase;
-            font-size: clamp(3rem, 12vw, 8rem);
-            color: transparent;
-            font-weight: 900;
-            font-family: 'Catamaran', sans-serif;
-            font-style: italic;
-            letter-spacing: 0.05em;
-            line-height: 1;
-        }
-        .page-title-effect-cut-text::before,
-        .page-title-effect-cut-text::after {
-            content: attr(data-text);
-            position: absolute;
-            color: #ffffff;
-            text-transform: uppercase;
-        }
-        .page-title-effect-cut-text::before {
-            left: 0;
-            top: 0;
-            clip-path: polygon(0 0, 110% 0, 100% 65%, 0 25%);
-            -webkit-clip-path: polygon(0 0, 110% 0, 100% 65%, 0 25%);
-        }
-        .page-title-effect-cut-text::after {
-            left: -10px;
-            top: -2px;
-            clip-path: polygon(0 25%, 100% 65%, 100% 100%, 0% 100%);
-            -webkit-clip-path: polygon(0 25%, 100% 65%, 100% 100%, 0% 100%);
-        }
-        
-        /* Cyber Text Effect */
-        .page-title-effect-cyber-text {
-            position: relative;
-            display: inline-block;
-            text-transform: uppercase;
-            font-size: clamp(3rem, 12vw, 8rem);
-            font-family: 'Catamaran', sans-serif;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.85);
-            line-height: 1;
-        }
-        .page-title-effect-cyber-text::before,
-        .page-title-effect-cyber-text::after {
-            content: attr(data-text);
-            position: absolute;
-            text-transform: uppercase;
-        }
-        .page-title-effect-cyber-text::before {
-            color: rgba(0, 153, 255, 0.8);
-            top: 5px;
-            left: 10px;
-        }
-        .page-title-effect-cyber-text::after {
-            color: rgba(255, 45, 85, 0.85);
-            top: -5px;
-            left: 8px;
-            z-index: -1;
-        }
-        
-        /* Depth Layers Effect */
-        .page-title-effect-depth-layers {
-            font-family: 'Montserrat', sans-serif;
-            font-size: clamp(2.5rem, 12vw, 6rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #fff;
-            text-shadow:
-                2px 2px 0 #667eea,
-                4px 4px 0 #764ba2,
-                6px 6px 0 #f093fb,
-                8px 8px 0 #4facfe,
-                10px 10px 0 #00f2fe,
-                12px 12px 20px rgba(0, 0, 0, 0.3);
-        }
-        
         .widgets-container {
             display: flex;
             flex-direction: column;
-            gap: var(--widget-spacing, 1rem);
+            gap: var(--widget-spacing, var(--space-md));
             position: relative;
         }
         
-        .widget-item {
-            display: block;
-            padding: 1rem;
-            background: var(--widget-background, var(--secondary-color));
-            border: var(--widget-border-width, 2px) solid var(--widget-border-color, var(--primary-color));
-            border-radius: var(--widget-border-radius, 12px);
-            text-decoration: none;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            /* Box shadow is set by ThemeCSSGenerator based on border effect */
-            /* For shadow: uses --widget-box-shadow */
-            /* For glow: box-shadow is set to none and glow uses ::before pseudo-element */
-            width: 100%;
-            box-sizing: border-box;
-            position: relative;
-            z-index: auto;
-            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
-        }
-        
-        /* All widgets use horizontal flexbox layout (Linktree style) */
         .widget-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: var(--space-sm);
             width: 100%;
-            padding: 0.875rem 1rem;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--widget-background, var(--color-background-surface));
+            border: var(--widget-border-width, var(--border-width-hairline)) solid var(--widget-border-color, var(--color-border-default));
+            border-radius: var(--widget-border-radius, var(--shape-corner-md));
+            text-decoration: none;
+            color: var(--color-text-on-surface);
+            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            box-sizing: border-box;
+            position: relative;
+            z-index: auto;
+            font-family: var(--widget-secondary-font, var(--font-family-body));
+            box-shadow: var(--widget-box-shadow, var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12)));
         }
         
         /* Widgets without thumbnails/icons - center text */
@@ -881,25 +538,27 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .widget-link-simple .widget-title {
             margin: 0 !important;
-            font-size: 1.0625rem; /* 17px - increased one step */
-            font-weight: 400; /* Normal weight, not bold */
+            font-size: var(--type-scale-md, 1.333rem);
+            font-weight: var(--type-weight-medium, 500);
         }
         
         /* Thumbnail wrapper for consistent sizing */
         .widget-thumbnail-wrapper {
             flex-shrink: 0;
-            width: 60px;
-            height: 60px;
+            width: clamp(3rem, 16vw, 3.75rem);
+            height: clamp(3rem, 16vw, 3.75rem);
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: var(--shape-corner-md, 0.75rem);
+            overflow: hidden;
         }
         
         /* Icon wrapper for consistent sizing */
         .widget-icon-wrapper {
             flex-shrink: 0;
-            width: 60px;
-            height: 60px;
+            width: clamp(3rem, 16vw, 3.75rem);
+            height: clamp(3rem, 16vw, 3.75rem);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -915,8 +574,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .widget-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(calc(var(--space-2xs, 0.25rem) * -1));
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
         }
         
         /* Featured Widget Effects */
@@ -1070,24 +729,25 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .widget-content {
             flex: 1;
             min-width: 0; /* Allow flex item to shrink below content size */
-            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
-            font-size: 1rem; /* 16px - increased one step */
+            font-family: var(--widget-secondary-font, var(--font-family-body));
+            font-size: var(--type-scale-sm, 1rem);
+            line-height: var(--type-line-height-normal, 1.5);
         }
         
         .widget-title {
-            font-weight: 400; /* Normal weight, not bold */
-            margin: 0 0 0.25rem 0;
-            font-family: var(--widget-primary-font, var(--page-primary-font, var(--heading-font)), sans-serif);
-            color: var(--text-color);
-            font-size: 1.125rem; /* 18px - increased one step */
+            font-weight: var(--type-weight-medium, 500);
+            margin: 0 0 var(--space-2xs, 0.25rem) 0;
+            font-family: var(--widget-primary-font, var(--font-family-heading));
+            color: var(--color-text-on-surface);
+            font-size: var(--type-scale-md, 1.333rem);
         }
         
         .widget-description {
-            font-size: 1rem; /* 16px - matches widget-content */
-            color: var(--text-color);
-            opacity: 0.8;
-            margin: 0.25rem 0 0 0;
-            font-family: var(--widget-secondary-font, var(--page-secondary-font, var(--body-font)), sans-serif);
+            font-size: var(--type-scale-sm, 1rem);
+            color: var(--color-text-secondary);
+            opacity: 0.9;
+            margin: var(--space-2xs, 0.25rem) 0 0 0;
+            font-family: var(--widget-secondary-font, var(--font-family-body));
             min-width: 0; /* Allow text to be constrained in flex container */
         }
         
@@ -1219,7 +879,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .rss-icon {
-            color: #ff6600;
+            color: var(--color-accent-primary);
             font-size: 1rem;
             opacity: 0.7;
             transition: opacity 0.2s ease;
@@ -1258,7 +918,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-title-compact {
             font-size: 0.9375rem;
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--color-text-on-surface);
             line-height: 1.25;
             margin: 0;
             display: -webkit-box;
@@ -1271,8 +931,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .episode-title-compact {
             font-size: 0.8125rem;
             font-weight: 400;
-            color: var(--primary-color);
-            opacity: 0.65;
+            color: var(--color-text-secondary);
             line-height: 1.3;
             margin: 0;
             display: -webkit-box;
@@ -1295,19 +954,19 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             height: 38px;
             border-radius: 50%;
             border: none;
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             font-size: 0.75rem;
             padding: 0;
             position: relative;
             gap: 0.05rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -1321,7 +980,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
             transform: translate(-50%, -50%);
             transition: width 0.4s ease, height 0.4s ease;
         }
@@ -1336,18 +995,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 56px;
             height: 56px;
             font-size: 1.125rem;
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
             border: none;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             padding: 0;
             position: relative;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
             z-index: 2;
             flex-shrink: 0;
             overflow: hidden;
@@ -1424,24 +1083,24 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             border-radius: 50%;
             border: 1.5px solid rgba(0, 0, 0, 0.08);
             background: rgba(255, 255, 255, 0.9);
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             cursor: pointer;
             display: flex;
             flex-shrink: 0;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             font-size: 0.8125rem;
             padding: 0;
             position: relative;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
         }
         
         .expand-drawer-btn {
-            background: var(--primary-color);
-            color: var(--secondary-color);
-            border-color: var(--primary-color);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+            border-color: var(--color-accent-primary);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
         }
         
         .expand-drawer-btn::before {
@@ -1464,7 +1123,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .expand-drawer-btn:hover {
             transform: scale(1.1) translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
         }
         
         .expand-drawer-btn:active {
@@ -1482,7 +1141,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .expand-drawer-btn.active {
-            background: var(--primary-color);
+            background: color-mix(in srgb, var(--color-accent-primary) 90%, transparent);
             opacity: 0.95;
         }
         
@@ -1490,7 +1149,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             background: rgba(255, 255, 255, 1);
             border-color: rgba(0, 0, 0, 0.12);
             transform: scale(1.08);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
         }
         
         .volume-btn:active {
@@ -1519,8 +1178,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .current-time,
         .total-time {
             font-size: 0.6875rem;
-            color: var(--primary-color);
-            opacity: 0.7;
+            color: var(--color-text-secondary);
             white-space: nowrap;
             min-width: 36px;
             text-align: center;
@@ -1555,7 +1213,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: 0;
             height: 100%;
             width: var(--progress-width, 0%);
-            background: var(--primary-color);
+            background: var(--color-accent-primary);
             border-radius: 2px;
             transition: width 0.1s linear;
             pointer-events: none;
@@ -1568,22 +1226,22 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: var(--progress-width, 0%);
             width: 12px;
             height: 12px;
-            background: var(--secondary-color);
+            background: var(--color-text-on-background);
             border-radius: 50%;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--color-accent-primary);
             cursor: grab;
             z-index: 10;
             transform: translate(-50%, -50%);
             transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
             pointer-events: auto;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
             touch-action: none;
         }
         
         .progress-scrubber:active {
             cursor: grabbing;
             transform: translate(-50%, -50%) scale(1.4);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
             transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
         
@@ -1606,7 +1264,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 100%;
             height: 0;
             overflow: hidden;
-            background: var(--secondary-color);
+            background: var(--color-background-surface, var(--color-background-base));
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             margin-top: 0.5rem;
@@ -1679,14 +1337,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateX(-50%) scaleX(0);
             width: 60%;
             height: 3px;
-            background: var(--primary-color);
+            background: var(--color-accent-primary);
             border-radius: 3px 3px 0 0;
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .tab-btn.active {
             opacity: 1;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
         }
         
         .tab-btn.active::after {
@@ -1778,7 +1436,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             transform: translateY(-50%);
             width: 3px;
             height: 0;
-            background: var(--primary-color);
+            background: var(--color-accent-primary);
             border-radius: 0 2px 2px 0;
             transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -1789,8 +1447,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .chapter-item.active {
-            background: rgba(0, 102, 255, 0.08);
-            border-color: rgba(0, 102, 255, 0.2);
+            background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+            border-color: color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
         }
         
         .chapter-item.active::before {
@@ -1799,7 +1457,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .chapter-time {
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             min-width: 56px;
             font-size: 0.8125rem;
             font-variant-numeric: tabular-nums;
@@ -1926,12 +1584,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             background: rgba(255, 255, 255, 0.95);
             border: 1.5px solid rgba(0, 0, 0, 0.08);
             border-radius: 12px;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             text-decoration: none;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
             font-size: 0.875rem;
             font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
             position: relative;
             overflow: hidden;
         }
@@ -1943,7 +1601,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--primary-color);
+            background: var(--color-accent-primary);
             opacity: 0;
             transition: opacity 0.2s ease;
         }
@@ -1951,9 +1609,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .follow-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            border-color: var(--color-accent-primary);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
         }
         
         .follow-button:hover::before {
@@ -2051,10 +1709,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         .podcast-widget-minimal .podcast-cover {
             width: 80px;
             height: 80px;
-            border-radius: 12px;
+            border-radius: var(--shape-corner-md, 0.75rem);
             object-fit: cover;
             flex-shrink: 0;
-            background: #f0f0f0;
+            background: var(--color-background-surface, var(--color-background-base));
         }
         
         .podcast-widget-minimal .podcast-info {
@@ -2093,9 +1751,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid var(--primary-color);
-            background: var(--secondary-color);
-            color: var(--primary-color);
+            border: 2px solid var(--color-accent-primary);
+            background: var(--color-background-surface, rgba(255, 255, 255, 0.95));
+            color: var(--color-accent-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -2105,8 +1763,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-widget-minimal .minimal-play-pause:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
             transform: scale(1.05);
         }
         
@@ -2121,7 +1779,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         
         .podcast-widget-minimal .minimal-progress-bar {
             height: 100%;
-            background: var(--primary-color);
+            background: var(--color-accent-primary);
             border-radius: 2px;
             transition: width 0.1s linear;
             width: 0%;
@@ -2140,9 +1798,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            border: 1px solid var(--primary-color);
+            border: 1px solid var(--color-accent-primary);
             background: transparent;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -2152,13 +1810,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-widget-minimal .minimal-expand:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
         }
         
         .podcast-error {
             padding: 1rem;
-            color: #dc3545;
+            color: var(--color-state-danger);
             text-align: center;
         }
         
@@ -2168,8 +1826,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--secondary-color);
-            border-top: 2px solid var(--primary-color);
+            background: var(--color-background-surface, var(--color-background-base));
+            border-top: 2px solid var(--color-accent-primary);
             border-radius: 20px 20px 0 0;
             max-height: 85vh;
             overflow-y: auto;
@@ -2195,7 +1853,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
-            background: var(--secondary-color);
+            background: var(--color-background-surface, var(--color-background-base));
             z-index: 10;
         }
         
@@ -2203,9 +1861,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border: 1px solid var(--primary-color);
+            border: 1px solid var(--color-accent-primary);
             background: transparent;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -2214,8 +1872,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .podcast-widget-drawer .drawer-close:hover {
-            background: var(--primary-color);
-            color: var(--secondary-color);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
         }
         
         /* Responsive Design */
@@ -2264,7 +1922,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             justify-content: center;
             background: transparent;
             border: none;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 1.5rem;
@@ -2304,8 +1962,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 400px;
             max-width: 90vw;
             height: 100vh;
-            background: var(--secondary-color);
-            border-left: 2px solid var(--primary-color);
+            background: var(--color-background-surface-raised, var(--color-background-base));
+            border-left: 2px solid var(--color-accent-primary);
             box-shadow: -4px 0 12px rgba(0,0,0,0.2);
             transition: right 0.3s ease;
             z-index: 1000;
@@ -2323,7 +1981,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             align-items: center;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid var(--primary-color);
+            border-bottom: 2px solid color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
         }
         
         .drawer-close {
@@ -2331,7 +1989,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: var(--primary-color);
+            color: var(--color-accent-primary);
             padding: 0;
             width: 32px;
             height: 32px;
@@ -2388,8 +2046,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     <svg class="svg-text" viewBox="0 0 1000 300">
                         <defs>
                             <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fff;stop-opacity:1" />
+                                <stop offset="0%" style="stop-color:var(--color-text-inverse);stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:var(--color-text-inverse);stop-opacity:0.85" />
                             </linearGradient>
                         </defs>
                         <text x="500" y="200" text-anchor="middle" class="svg-text__shaded" fill="url(#textGradient)">
@@ -2692,11 +2350,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         <div class="drawer-overlay" id="email-overlay" onclick="closeEmailDrawer()"></div>
         <div class="episode-drawer" id="email-drawer">
             <div class="drawer-header">
-                <h2 style="margin: 0; color: var(--primary-color);">Subscribe to Email List</h2>
+                <h2 style="margin: 0; color: var(--color-text-primary);">Subscribe to Email List</h2>
                 <button class="drawer-close" onclick="closeEmailDrawer()" aria-label="Close">×</button>
             </div>
             <div style="padding: 1rem 0;">
-                <p style="margin-bottom: 1rem; color: var(--primary-color);">Get notified about new episodes and updates.</p>
+                <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Get notified about new episodes and updates.</p>
                 <form id="email-subscribe-form" onsubmit="subscribeEmail(event)">
                     <div class="form-group">
                         <label for="subscribe-email" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Address</label>
@@ -2705,7 +2363,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                                name="email" 
                                required 
                                placeholder="your@email.com"
-                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--primary-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--color-accent-primary); border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
                     </div>
                     <button type="submit" 
                             class="widget-item" 
@@ -2749,7 +2407,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             if (!email) {
                 messageDiv.textContent = 'Please enter an email address';
                 messageDiv.style.display = 'block';
-                messageDiv.style.color = 'var(--primary-color)';
+                messageDiv.style.color = 'var(--color-accent-primary)';
                 return;
             }
             
@@ -2828,7 +2486,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             // SVG sparkle path (star shape)
             const sparkleSVG = `
                 <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.438 31.781-8.938 8.908-31.781 10.422-31.781 10.422C1 44.031 0 45.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.843 1.514 31.781 10.422 8.938 8.911 10.438 31.781 10.438 31.781C45.031 95 46.625 96 48 96s2.969-1 3.578-2.219c0 0 1.514-22.87 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422C94 51.031 95 49.359 95 48c0-1.375-1-2.969-2.219-3.578z" fill="#FFD700"/>
+                    <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.438 31.781-8.938 8.908-31.781 10.422-31.781 10.422C1 44.031 0 45.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.843 1.514 31.781 10.422 8.938 8.911 10.438 31.781 10.438 31.781C45.031 95 46.625 96 48 96s2.969-1 3.578-2.219c0 0 1.514-22.87 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422C94 51.031 95 49.359 95 48c0-1.375-1-2.969-2.219-3.578z" fill="var(--color-accent-primary)"/>
                 </svg>
             `;
             
@@ -2906,7 +2564,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 // iOS 13+ requires permission
                 const permissionButton = document.createElement('button');
                 permissionButton.textContent = 'Enable Tilt Effect';
-                permissionButton.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; z-index: 1000; font-weight: 600; box-shadow: 0 4px 12px rgba(0,102,255,0.3);';
+                permissionButton.style.position = 'fixed';
+                permissionButton.style.bottom = '20px';
+                permissionButton.style.right = '20px';
+                permissionButton.style.padding = '12px 24px';
+                permissionButton.style.background = 'var(--color-accent-primary)';
+                permissionButton.style.color = 'var(--color-text-inverse)';
+                permissionButton.style.border = 'none';
+                permissionButton.style.borderRadius = 'var(--shape-corner-md, 0.75rem)';
+                permissionButton.style.cursor = 'pointer';
+                permissionButton.style.zIndex = '1000';
+                permissionButton.style.fontWeight = '600';
+                permissionButton.style.boxShadow = 'var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16))';
                 permissionButton.onclick = function() {
                     DeviceOrientationEvent.requestPermission()
                         .then(response => {
@@ -2917,7 +2586,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         })
                         .catch(() => {
                             permissionButton.textContent = 'Permission Denied';
-                            permissionButton.style.background = '#dc3545';
+                            permissionButton.style.background = 'var(--color-state-danger)';
                         });
                 };
                 document.body.appendChild(permissionButton);

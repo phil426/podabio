@@ -21,6 +21,14 @@ class ThemeCSSGenerator {
     private $widgetBorderColor;
     private $widgetStyles;
     private $spatialEffect;
+    private $tokens;
+    private $colorTokens;
+    private $typographyTokens;
+    private $spacingTokens;
+    private $shapeTokens;
+    private $motionTokens;
+    private $layoutDensity;
+    private $spacingValues;
     
     public function __construct($page, $theme = null) {
         $this->page = $page;
@@ -37,6 +45,14 @@ class ThemeCSSGenerator {
         $this->widgetBorderColor = $this->themeObj->getWidgetBorderColor($page, $theme);
         $this->widgetStyles = $this->themeObj->getWidgetStyles($page, $theme);
         $this->spatialEffect = $this->themeObj->getSpatialEffect($page, $theme);
+        $this->tokens = $this->themeObj->getThemeTokens($page, $theme);
+        $this->colorTokens = $this->tokens['colors'] ?? [];
+        $this->typographyTokens = $this->tokens['typography'] ?? [];
+        $this->spacingTokens = $this->tokens['spacing'] ?? [];
+        $this->shapeTokens = $this->tokens['shape'] ?? [];
+        $this->motionTokens = $this->tokens['motion'] ?? [];
+        $this->layoutDensity = $this->tokens['layout_density'] ?? 'comfortable';
+        $this->spacingValues = $this->spacingTokens['values'] ?? [];
     }
     
     /**
@@ -169,12 +185,111 @@ class ThemeCSSGenerator {
         $borderRadius = convertEnumToCSS($this->widgetStyles['shape'] ?? 'rounded', 'shape');
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         
+        $textPrimary = $this->colorTokens['text']['primary'] ?? $this->colors['primary'];
+        $textSecondary = $this->colorTokens['text']['secondary'] ?? $this->colors['primary'];
+        $textInverse = $this->colorTokens['text']['inverse'] ?? '#ffffff';
+        $accentPrimary = $this->colorTokens['accent']['primary'] ?? $this->colors['accent'];
+        $accentMuted = $this->colorTokens['accent']['muted'] ?? '#e0edff';
+        $backgroundBase = $this->colorTokens['background']['base'] ?? $this->pageBackground;
+        $backgroundSurface = $this->colorTokens['background']['surface'] ?? $this->widgetBackground;
+        $backgroundSurfaceRaised = $this->colorTokens['background']['surface_raised'] ?? $backgroundSurface;
+        $backgroundOverlay = $this->colorTokens['background']['overlay'] ?? 'rgba(15, 23, 42, 0.6)';
+        $borderDefault = $this->colorTokens['border']['default'] ?? $this->widgetBorderColor;
+        $borderFocusColor = $this->colorTokens['border']['focus'] ?? $accentPrimary;
+        $shadowAmbient = $this->colorTokens['shadow']['ambient'] ?? 'rgba(15, 23, 42, 0.12)';
+        $shadowFocus = $this->colorTokens['shadow']['focus'] ?? 'rgba(37, 99, 235, 0.35)';
+        
+        $stateColors = $this->colorTokens['state'] ?? [];
+        $stateTextColors = $this->colorTokens['text_state'] ?? [];
+        $effectiveWidgetBorderColor = $this->widgetBorderColor ?: $borderDefault;
+        
         // Calculate optimal text colors for good contrast
-        $pageTitleColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
-        $pageDescriptionColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
-        $socialIconColor = $this->getOptimalTextColor($this->pageBackground, $this->colors['primary']);
+        $pageBackgroundValue = $this->pageBackground ?: $backgroundBase;
+        $widgetBackgroundValue = $this->widgetBackground ?: $backgroundSurface;
+        
+        $pageTitleColor = $this->getOptimalTextColor($pageBackgroundValue, $textPrimary);
+        $pageDescriptionColor = $this->getOptimalTextColor($pageBackgroundValue, $textSecondary);
+        $socialIconColor = $this->getOptimalTextColor($pageBackgroundValue, $accentPrimary);
+        $onBackground = $this->getOptimalTextColor($pageBackgroundValue, $textPrimary);
+        $onSurface = $this->getOptimalTextColor($backgroundSurface, $textPrimary);
+        $onSurfaceRaised = $this->getOptimalTextColor($backgroundSurfaceRaised, $textPrimary);
+        $onAccent = $this->getOptimalTextColor($accentPrimary, $textInverse);
         
         $css = ":root {\n";
+        
+        // Tokenized color variables
+        $css .= "    --color-background-base: " . h($backgroundBase) . ";\n";
+        $css .= "    --color-background-surface: " . h($backgroundSurface) . ";\n";
+        $css .= "    --color-background-surface-raised: " . h($backgroundSurfaceRaised) . ";\n";
+        $css .= "    --color-background-overlay: " . h($backgroundOverlay) . ";\n";
+        $css .= "    --color-text-primary: " . h($textPrimary) . ";\n";
+        $css .= "    --color-text-secondary: " . h($textSecondary) . ";\n";
+        $css .= "    --color-text-inverse: " . h($textInverse) . ";\n";
+        $css .= "    --color-border-default: " . h($borderDefault) . ";\n";
+        $css .= "    --color-border-focus: " . h($borderFocusColor) . ";\n";
+        $css .= "    --color-accent-primary: " . h($accentPrimary) . ";\n";
+        $css .= "    --color-accent-muted: " . h($accentMuted) . ";\n";
+        $css .= "    --color-state-success: " . h($stateColors['success'] ?? '#12b76a') . ";\n";
+        $css .= "    --color-state-warning: " . h($stateColors['warning'] ?? '#f59e0b') . ";\n";
+        $css .= "    --color-state-danger: " . h($stateColors['danger'] ?? '#ef4444') . ";\n";
+        $css .= "    --color-text-state-success: " . h($stateTextColors['success'] ?? '#0f5132') . ";\n";
+        $css .= "    --color-text-state-warning: " . h($stateTextColors['warning'] ?? '#7c2d12') . ";\n";
+        $css .= "    --color-text-state-danger: " . h($stateTextColors['danger'] ?? '#7f1d1d') . ";\n";
+        $css .= "    --color-text-on-background: " . h($onBackground) . ";\n";
+        $css .= "    --color-text-on-surface: " . h($onSurface) . ";\n";
+        $css .= "    --color-text-on-surface-raised: " . h($onSurfaceRaised) . ";\n";
+        $css .= "    --color-text-on-accent: " . h($onAccent) . ";\n";
+        $css .= "    --color-shadow-ambient: " . h($shadowAmbient) . ";\n";
+        $css .= "    --color-shadow-focus: " . h($shadowFocus) . ";\n";
+        
+        // Tokenized spacing values
+        foreach ($this->spacingValues as $token => $value) {
+            $css .= "    --space-" . h($token) . ": " . h($value) . ";\n";
+        }
+        $css .= "    --layout-density: " . h($this->layoutDensity) . ";\n";
+        
+        // Shape tokens
+        foreach ($this->shapeTokens['corner'] ?? [] as $name => $value) {
+            $css .= "    --shape-corner-" . h(str_replace('_', '-', $name)) . ": " . h($value) . ";\n";
+        }
+        foreach ($this->shapeTokens['border_width'] ?? [] as $name => $value) {
+            $css .= "    --border-width-" . h(str_replace('_', '-', $name)) . ": " . h($value) . ";\n";
+        }
+        foreach ($this->shapeTokens['shadow'] ?? [] as $name => $value) {
+            $css .= "    --shadow-" . h(str_replace('_', '-', $name)) . ": " . h($value) . ";\n";
+        }
+        
+        // Typography tokens
+        $headingFont = $this->typographyTokens['font']['heading'] ?? $this->pageFonts['page_primary_font'];
+        $bodyFont = $this->typographyTokens['font']['body'] ?? $this->pageFonts['page_secondary_font'];
+        $metaFont = $this->typographyTokens['font']['metatext'] ?? $bodyFont;
+        
+        $css .= "    --font-family-heading: '" . h($headingFont) . "', sans-serif;\n";
+        $css .= "    --font-family-body: '" . h($bodyFont) . "', sans-serif;\n";
+        $css .= "    --font-family-meta: '" . h($metaFont) . "', sans-serif;\n";
+        
+        foreach ($this->typographyTokens['scale'] ?? [] as $name => $value) {
+            $css .= "    --type-scale-" . h($name) . ": " . h($value) . "rem;\n";
+        }
+        foreach ($this->typographyTokens['line_height'] ?? [] as $name => $value) {
+            $css .= "    --type-line-height-" . h($name) . ": " . h($value) . ";\n";
+        }
+        foreach ($this->typographyTokens['weight'] ?? [] as $name => $value) {
+            $css .= "    --type-weight-" . h($name) . ": " . h($value) . ";\n";
+        }
+        
+        // Motion tokens
+        foreach ($this->motionTokens['duration'] ?? [] as $name => $value) {
+            $css .= "    --motion-duration-" . h($name) . ": " . h($value) . ";\n";
+        }
+        foreach ($this->motionTokens['easing'] ?? [] as $name => $value) {
+            $css .= "    --motion-easing-" . h($name) . ": " . h($value) . ";\n";
+        }
+        $css .= "    --focus-ring-width: " . h($this->motionTokens['focus']['ring_width'] ?? '3px') . ";\n";
+        $css .= "    --focus-ring-offset: " . h($this->motionTokens['focus']['ring_offset'] ?? '2px') . ";\n";
+        $css .= "    --focus-ring-color: " . h($borderFocusColor) . ";\n";
+        
+        // Legacy variables for backward compatibility
         $css .= "    --primary-color: " . h($this->colors['primary']) . ";\n";
         $css .= "    --secondary-color: " . h($this->colors['secondary']) . ";\n";
         $css .= "    --accent-color: " . h($this->colors['accent']) . ";\n";
@@ -196,13 +311,13 @@ class ThemeCSSGenerator {
         $css .= "    --widget-primary-font: '" . h($this->widgetFonts['widget_primary_font']) . "';\n";
         $css .= "    --widget-secondary-font: '" . h($this->widgetFonts['widget_secondary_font']) . "';\n";
         
-        $css .= "    --page-background: " . h($this->pageBackground) . ";\n";
-        $css .= "    --widget-background: " . h($this->widgetBackground) . ";\n";
+        $css .= "    --page-background: " . h($pageBackgroundValue) . ";\n";
+        $css .= "    --widget-background: " . h($widgetBackgroundValue) . ";\n";
         $css .= "    --widget-border-width: {$borderWidth};\n";
-        $css .= "    --widget-border-color: " . h($this->widgetBorderColor) . ";\n";
+        $css .= "    --widget-border-color: " . h($effectiveWidgetBorderColor) . ";\n";
         $css .= "    --widget-spacing: {$spacing};\n";
         $css .= "    --widget-border-radius: {$borderRadius};\n";
-        $css .= "    --text-color: var(--primary-color);\n";
+        $css .= "    --text-color: var(--color-text-primary);\n";
         
         // Add shadow or glow variables based on border effect
         if ($borderEffect === 'shadow') {
