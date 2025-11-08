@@ -17,8 +17,10 @@ echo "==========================================\n";
 
 try {
     $existing = fetchOne("SELECT * FROM themes WHERE name = ? LIMIT 1", [$themeName]);
+    $columns = $pdo->query("SHOW COLUMNS FROM themes")->fetchAll(PDO::FETCH_COLUMN);
+    $columns = array_map('strtolower', $columns);
 } catch (PDOException $e) {
-    echo "❌ Failed to query existing themes: " . $e->getMessage() . "\n";
+    echo "❌ Failed to inspect themes table: " . $e->getMessage() . "\n";
     return;
 }
 
@@ -162,7 +164,8 @@ $widgetBackground = 'rgba(13, 18, 36, 0.88)';
 $widgetBorderColor = 'rgba(122,255,216,0.32)';
 $spatialEffect = 'none';
 
-$fields = [
+$fieldValues = [
+    'name' => $themeName,
     'colors' => json_encode($colors),
     'fonts' => json_encode($fonts),
     'page_background' => $pageBackground,
@@ -173,46 +176,67 @@ $fields = [
     'widget_primary_font' => 'Poppins',
     'widget_secondary_font' => 'Inter',
     'page_primary_font' => 'Poppins',
-    'page_secondary_font' => 'Inter',
-    'color_tokens' => json_encode($colorTokens),
-    'typography_tokens' => json_encode($typographyTokens),
-    'spacing_tokens' => json_encode($spacingTokens),
-    'shape_tokens' => json_encode($shapeTokens),
-    'motion_tokens' => json_encode($motionTokens),
-    'layout_density' => 'comfortable'
+    'page_secondary_font' => 'Inter'
 ];
+
+if (in_array('color_tokens', $columns, true)) {
+    $fieldValues['color_tokens'] = json_encode($colorTokens);
+}
+if (in_array('typography_tokens', $columns, true)) {
+    $fieldValues['typography_tokens'] = json_encode($typographyTokens);
+}
+if (in_array('spacing_tokens', $columns, true)) {
+    $fieldValues['spacing_tokens'] = json_encode($spacingTokens);
+}
+if (in_array('shape_tokens', $columns, true)) {
+    $fieldValues['shape_tokens'] = json_encode($shapeTokens);
+}
+if (in_array('motion_tokens', $columns, true)) {
+    $fieldValues['motion_tokens'] = json_encode($motionTokens);
+}
+if (in_array('layout_density', $columns, true)) {
+    $fieldValues['layout_density'] = 'comfortable';
+}
 
 try {
     if ($existing) {
-        $setParts = [];
-        $values = [];
-        foreach ($fields as $column => $value) {
-            if ($column === 'layout_density' || $column === 'spatial_effect') {
-                $setParts[] = "$column = ?";
-            } else {
-                $setParts[] = "$column = ?";
+        $setSql = ['name = ?'];
+        $values = [$themeName];
+        foreach ($fieldValues as $column => $value) {
+            if ($column === 'name') {
+                continue;
             }
+            $setSql[] = "$column = ?";
             $values[] = $value;
         }
         $values[] = $existing['id'];
-
-        $sql = "UPDATE themes SET name = ?, " . implode(', ', $setParts) . " WHERE id = ?";
-        array_unshift($values, $themeName);
+        $sql = "UPDATE themes SET " . implode(', ', $setSql) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($values);
-        echo "✅ Aurora theme updated (ID: {$existing['id']})\n";
+        $themeId = $existing['id'];
+        echo "✅ Aurora theme updated (ID: {$themeId})\n";
     } else {
-        $columns = array_keys($fields);
-        $placeholders = implode(', ', array_fill(0, count($columns) + 2, '?'));
-        $sql = "INSERT INTO themes (user_id, name, " . implode(', ', $columns) . ", is_active) VALUES (NULL, ?, " . implode(', ', array_fill(0, count($columns), '?')) . ", 1)";
+        $columnsSql = ['user_id', 'name'];
+        $placeholders = ['NULL', '?'];
+        $values = [$themeName];
+        foreach ($fieldValues as $column => $value) {
+            if ($column === 'name') {
+                continue;
+            }
+            $columnsSql[] = $column;
+            $placeholders[] = '?';
+            $values[] = $value;
+        }
+        $columnsSql[] = 'is_active';
+        $placeholders[] = '1';
+        $sql = "INSERT INTO themes (" . implode(', ', $columnsSql) . ") VALUES (" . implode(', ', $placeholders) . ")";
         $stmt = $pdo->prepare($sql);
-        $values = array_merge([$themeName], array_values($fields));
         $stmt->execute($values);
-        $newId = $pdo->lastInsertId();
-        echo "✅ Aurora theme created (ID: {$newId})\n";
+        $themeId = $pdo->lastInsertId();
+        echo "✅ Aurora theme created (ID: {$themeId})\n";
     }
 
-    $themeRow = fetchOne("SELECT id, name, page_background FROM themes WHERE name = ? LIMIT 1", [$themeName]);
+    $themeRow = fetchOne("SELECT id, page_background FROM themes WHERE name = ? LIMIT 1", [$themeName]);
     if ($themeRow) {
         echo "   ID: {$themeRow['id']}\n";
         echo "   Background: {$themeRow['page_background']}\n";
