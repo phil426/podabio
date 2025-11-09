@@ -245,8 +245,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             width: 100%;
             padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
             background: transparent;
-            color: color-mix(in srgb, #FAFEFF 92%, var(--color-text-on-accent) 8%);
-            text-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+            color: #FFFFFF;
+            text-shadow: 0 0 10px rgba(8, 12, 32, 0.65);
             border: none;
             font-size: var(--type-scale-xs, 0.889rem);
             font-weight: var(--type-weight-medium, 500);
@@ -2172,7 +2172,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
 
         body.theme-aurora-skies .podcast-banner-toggle {
-            color: color-mix(in srgb, var(--color-text-on-accent) 90%, #ffffff 10%);
+            color: #FFFFFF;
             text-transform: uppercase;
             letter-spacing: 0.16em;
             background: transparent;
@@ -2180,7 +2180,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
 
         body.theme-aurora-skies .podcast-banner-toggle:hover {
             background: rgba(20, 34, 64, 0.22);
-            color: color-mix(in srgb, #FFFFFF 94%, var(--color-text-on-accent) 6%);
+            color: #FFFFFF;
         }
 
         /* Podcast drawer (dark mode enforced) */
