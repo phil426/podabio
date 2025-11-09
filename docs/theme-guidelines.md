@@ -76,7 +76,8 @@ Following these practices keeps theming centralized, accessible, and maintainabl
    - No floating containers; page content sits flush inside the mobile card.
    - Podcast drawer, compact player, and toggles count as theme content and must be styled accordingly.
    - Podcast drawer always runs in dark mode for readability.
-   - Tap-to-listen/podcast banner toggles must **avoid pill shapes**—use theme corner tokens (e.g. `--shape-corner-md`) so the control aligns with other buttons. Contrast must be ≥4.5:1 against the banner and text should start from `--color-text-on-accent`, optionally mixed with a light neutral to keep luminance high.
+   - Tap-to-listen/podcast banner toggles must **avoid pill shapes**—use theme corner tokens (e.g. `--shape-corner-md`) so the control aligns with other buttons. Contrast must be ≥4.5:1 against the banner and text should default to `#FFFFFF` or a verified `color-mix` with a white majority, paired with a subtle text shadow for clarity against gradients.
+   - When theming the podcast banner ensure the toggle sits flush against the player (no overlap). Keep banner padding minimal, and if you add glow effects (`::before` layers) confirm they do not obscure the toggle text.
 
 ## Aurora Skies Theme
 
