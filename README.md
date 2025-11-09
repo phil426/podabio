@@ -109,6 +109,31 @@ location ~ ^/(index|features|pricing|about|blog|signup|login) {
 }
 ```
 
+## Local → GitHub → Hostinger Workflow
+
+1. **Sync from Hostinger (one-time baseline)**
+   - `ssh -p 65002 u810635266@82.198.236.40`
+   - Archive the live site: `cd /home/u810635266/domains/getphily.com && tar czf ~/podnbio_files_$(date +%Y%m%d%H%M%S).tar.gz public_html`
+   - Dump the DB: `mysqldump -u u810635266_podnbio -p'6;hhwddG' u810635266_site_podnbio > ~/podnbio_db_$(date +%Y%m%d%H%M%S).sql`
+   - `scp` both files to your workstation and extract/import into `~/.cursor/podinbio`
+2. **Develop locally**
+   - Update `config/database.php` for `127.0.0.1` and `podnbio_dev`
+   - Set `APP_URL` to `http://127.0.0.1:8080`
+   - Run Apache (or `php -S 127.0.0.1:8080 router.php`) and work against the mirrored data
+   - Commit changes to git (keep secrets out by ignoring `config/database.php`)
+3. **Push to GitHub (source of truth)**
+   - `git push origin main` (or PR branches)
+   - GitHub now reflects the live snapshot + your changes
+4. **Deploy to Hostinger**
+   - SSH in and `git pull origin main`
+   - Run DB migrations as needed (`php database/migrate_xyz.php`)
+   - Clear caches/logs if applicable
+5. **Promote to new `podn.bio` host**
+   - Provision new Hostinger account pointing at the same repo
+   - Clone from GitHub, copy `.env`/config secrets
+   - Import the latest DB dump
+   - Update DNS when ready to switch domains
+
 ## File Structure
 
 ```
