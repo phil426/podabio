@@ -616,7 +616,7 @@
     background-color: var(--podcast-primary-color);
     color: #FFFFFF;
     border: none;
-    border-radius: 24px;
+/*    border-radius: 24px; */
     padding: 12px 32px;
     font-size: 16px;
     font-weight: 600;
