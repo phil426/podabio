@@ -346,7 +346,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
         .navbar-logo:hover {
             color: #0052cc;
         }
-        
         .navbar-center {
             flex: 1;
             display: flex;
@@ -492,7 +491,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             overflow: visible; /* Allow content to extend for scrolling */
             min-width: 0; /* Allow flex shrinking */
         }
-        
         .editor-content {
             width: calc(100% + 240px); /* Extend width to include preview panel space */
             min-height: 100%;
@@ -607,29 +605,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             padding-top: 40px;
         }
         
-        #live-preview-panel .preview-refresh-btn {
-            margin: 1rem 1rem 0.5rem 1rem; /* Reduced bottom margin */
-            padding: 0.625rem 1rem;
-            background: #0066ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-shrink: 0; /* Prevent button compression */
-        }
-        
-        #live-preview-panel .preview-refresh-btn:hover {
-            background: #0052cc;
-            transform: translateY(-1px);
-            
-        }
-        
         /* Wrapper to constrain scaled container's layout width */
         #live-preview-panel .preview-iframe-wrapper {
             width: 195px; /* Matches scaled visual width (390px * 0.5) */
@@ -689,7 +664,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             list-style: none;
             padding: 0;
         }
-        
         /* Widget Utility Styles - Used in accordion headers */
         
         /* Widget Visibility Toggle */
@@ -980,7 +954,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background-color: #f0f9ff;
             border-color: #0066ff;
         }
-        
         /* Legacy widget-item styles for backward compatibility */
         .widget-item {
             background: #f9f9f9;
@@ -1469,7 +1442,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             display: flex;
             opacity: 1;
         }
-        
         .modal {
             background: #ffffff;
             border-radius: 4px;
@@ -1494,7 +1466,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             max-height: 90vh;
             overflow-y: auto;
         }
-        
         .widget-gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1521,7 +1492,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transform: translateY(-4px);
             
         }
-        
         .widget-card.coming-soon {
             opacity: 0.6;
             cursor: not-allowed;
@@ -1708,7 +1678,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 1.25rem;
             color: #111827;
         }
-        
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-menu-toggle {
@@ -1966,7 +1935,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             background: #f0f7ff;
             border-color: #0066ff;
         }
-        
         .user-menu-avatar {
             width: 32px;
             height: 32px;
@@ -1987,7 +1955,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             align-items: flex-start;
             min-width: 0;
         }
-        
         .user-menu-name {
             font-weight: 600;
             color: #111827;
@@ -1997,7 +1964,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             text-overflow: ellipsis;
             max-width: 150px;
         }
-        
         .user-menu-email {
             color: #6b7280;
             font-size: 0.75rem;
@@ -2023,7 +1989,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             transition: all 0.2s ease;
             overflow: hidden;
         }
-        
         .user-menu-dropdown.show {
             opacity: 1;
             visibility: visible;
@@ -2060,7 +2025,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             font-size: 0.75rem;
             font-weight: 500;
         }
-        
         .user-menu-status.verified {
             color: #059669;
             border-color: #10b981;
@@ -2396,7 +2360,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             color: #6b7280;
             margin: 0;
         }
-        
         @media (max-width: 640px) {
             .support-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -2892,7 +2855,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <?php endif; ?>
             </ul>
         </div>
-        
         <!-- Settings Tab -->
         <div id="tab-settings" class="tab-content">
             <h2>Page Settings</h2>
@@ -3078,7 +3040,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     </div>
                 <?php endif; ?>
             </div>
-            
             <div class="form-group" style="margin-bottom: 2rem;">
                 <h3 style="margin-bottom: 1rem;">Subscription</h3>
                 <?php
@@ -3204,21 +3165,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     name="page_name_effect"
                                     style="width: 100%; padding: 0.625rem 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem;">
                                 <option value="" <?php echo $currentPageNameEffect === '' ? 'selected' : ''; ?>>None</option>
-                                <option value="sweet-title" <?php echo $currentPageNameEffect === 'sweet-title' ? 'selected' : ''; ?>>Sweet Title</option>
-                                <option value="3d-extrude" <?php echo $currentPageNameEffect === '3d-extrude' ? 'selected' : ''; ?>>3D Extrude</option>
-                                <option value="neon" <?php echo $currentPageNameEffect === 'neon' ? 'selected' : ''; ?>>Neon</option>
-                                <option value="gummy" <?php echo $currentPageNameEffect === 'gummy' ? 'selected' : ''; ?>>Gummy</option>
-                                <option value="water" <?php echo $currentPageNameEffect === 'water' ? 'selected' : ''; ?>>Water</option>
-                                <option value="outline" <?php echo $currentPageNameEffect === 'outline' ? 'selected' : ''; ?>>Outline</option>
-                                <option value="glitch" <?php echo $currentPageNameEffect === 'glitch' ? 'selected' : ''; ?>>Glitch</option>
-                                <option value="cut-text" <?php echo $currentPageNameEffect === 'cut-text' ? 'selected' : ''; ?>>Cut Text</option>
-                                <option value="cyber-text" <?php echo $currentPageNameEffect === 'cyber-text' ? 'selected' : ''; ?>>Cyber Text</option>
-                                <option value="isometric-3d" <?php echo $currentPageNameEffect === 'isometric-3d' ? 'selected' : ''; ?>>Isometric 3D</option>
-                                <option value="stencil" <?php echo $currentPageNameEffect === 'stencil' ? 'selected' : ''; ?>>Stencil</option>
-                                <option value="depth-layers" <?php echo $currentPageNameEffect === 'depth-layers' ? 'selected' : ''; ?>>Depth Layers</option>
                             </select>
                             <small style="display: block; margin-top: 0.75rem; color: #666;">
-                                Apply a special text effect to your page name to make it stand out. Effects will be applied to the main page title.
+                                Page name effects have been disabled globally; titles render with the default styling.
                             </small>
                         </div>
                     </div>
@@ -3389,7 +3338,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 </div>
                     </div>
                 </div>
-                
                 <!-- Page Fonts -->
                 <div class="accordion-section" id="page-fonts">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('page-fonts')">
@@ -3404,7 +3352,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 $pagePrimaryFont = $pageFonts['page_primary_font'] ?? 'Inter';
                 $pageSecondaryFont = $pageFonts['page_secondary_font'] ?? 'Inter';
                 ?>
-                
                 <div class="form-group">
                     <label for="page_primary_font">Titles and Headings Font</label>
                     <select id="page_primary_font" name="page_primary_font" style="width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;">
@@ -3438,7 +3385,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 </div>
                     </div>
                 </div>
-                
                 <!-- Widget Background -->
                 <div class="accordion-section" id="widget-background">
                     <button type="button" class="accordion-header" onclick="toggleAccordion('widget-background')">
@@ -3757,9 +3703,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         <?php 
                         $spatialEffects = [
                             'none' => ['label' => 'None', 'icon' => 'fa-square', 'desc' => 'Standard layout'],
-                            'glass' => ['label' => 'Glass', 'icon' => 'fa-image', 'desc' => 'Glassmorphism effect'],
-                            'depth' => ['label' => 'Depth', 'icon' => 'fa-cube', 'desc' => '3D perspective'],
-                            'floating' => ['label' => 'Floating', 'icon' => 'fa-window-maximize', 'desc' => 'Floating container'],
                             'tilt' => ['label' => 'Tilt', 'icon' => 'fa-mobile-screen-button', 'desc' => 'Device tilt parallax']
                         ];
                         $currentSpatialEffect = $spatialEffect;
@@ -3867,7 +3810,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 </div>
             </div>
         </div>
-        
         <!-- Email Subscription Tab -->
         <div id="tab-email" class="tab-content">
             <h2>Email Subscription Settings</h2>
@@ -3909,7 +3851,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 <button type="submit" class="btn btn-primary">Save Email Settings</button>
             </form>
         </div>
-        
         <!-- Blog Tab -->
         <div id="tab-blog" class="tab-content">
             <div class="blog-section">
@@ -4064,10 +4005,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         <iframe id="preview-iframe" src="<?php echo h($pageUrl ?? ''); ?>"></iframe>
                     </div>
                 </div>
-                <button type="button" class="preview-refresh-btn" onclick="refreshPreview()" title="Refresh Preview">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
             </div>
         </div>
         
@@ -4200,13 +4137,10 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             </div>
         </div>
         <?php endif; ?>
-    
     <!-- Croppie Image Cropper -->
     <script src="https://unpkg.com/croppie@2.6.5/croppie.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
     <!-- Draggable Library for Drag-and-Drop Sorting -->
     <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.12/lib/draggable.bundle.js"></script>
-    
     <script>
         // Ensure functions are in global scope
         window.csrfToken = '<?php echo h($csrfToken); ?>';
@@ -4410,7 +4344,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 sidebar.classList.remove('open');
             }
         });
-        
         // Toggle Featured Widget from header button
         window.toggleFeaturedWidget = function(widgetId, currentlyFeatured) {
             const newFeaturedState = !currentlyFeatured;
@@ -4439,7 +4372,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Save the change (don't expand dropdown)
             saveFeaturedWidgetState(widgetId, newFeaturedState);
         };
-        
         // Save featured widget state
         function saveFeaturedWidgetState(widgetId, isFeatured) {
             const formData = new FormData();
@@ -4464,7 +4396,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -4532,7 +4465,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -4573,7 +4507,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (widgetItem) {
                 const widgetId = widgetItem.getAttribute('data-widget-id');
                 // Fetch current widget to get effect
-                fetch('/api/widgets.php?action=get&widget_id=' + widgetId)
+                fetch('/api/widgets.php?action=get&widget_id=' + widgetId, {
+                    credentials: 'same-origin'
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success && data.widget) {
@@ -4686,7 +4622,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
             showToast('Page URL copied to clipboard!', 'success');
         }
-        
         function fallbackCopy(text) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
@@ -4703,7 +4638,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             }
             document.body.removeChild(textarea);
         }
-        
         // Toggle preview panel (collapse/expand)
         window.togglePreview = function() {
             const panel = document.getElementById('live-preview-panel');
@@ -4765,7 +4699,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }
             }, 2000); // Increased debounce: wait 2 seconds after last change
         }
-        
         // Widget Visibility Toggle
         function toggleWidgetVisibility(widgetId, isVisible) {
             const formData = new FormData();
@@ -4776,7 +4709,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => {
                 // Check if response is ok before parsing JSON
@@ -4860,7 +4794,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 toggleCheckbox.title = toggleCheckbox.checked ? 'Visible' : 'Hidden';
             }
         };
-        
         // Social Icon Visibility Toggle
         window.toggleSocialIconVisibility = function(iconId, isVisible) {
             const formData = new FormData();
@@ -4871,7 +4804,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => {
                 if (!response.ok) {
@@ -5033,7 +4967,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -5081,7 +5016,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -5099,7 +5035,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc3545;"><p>Error loading widgets. Please refresh the page.</p></div>';
             });
         }
-        
         function renderWidgetGallery() {
             const grid = document.getElementById('widget-gallery-grid');
             if (!grid) return;
@@ -5177,7 +5112,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 });
             }
         });
-        
         window.openWidgetConfig = function(widgetId) {
             // Find widget definition
             const widget = allWidgets.find(w => w.widget_id === widgetId);
@@ -5355,7 +5289,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 }, 1000);
             });
         }
-        
         function fetchRSSFeedInfo(rssUrl, titleInput, descInput, thumbnailInput) {
             if (!rssUrl) return;
             
@@ -5442,7 +5375,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     showToast('Error loading RSS feed. Please try again.', 'error');
                 });
         }
-        
         function showThumbnailPreview(imageUrl) {
             const thumbnailInput = document.getElementById('widget_config_thumbnail_image');
             if (!thumbnailInput) return;
@@ -5586,7 +5518,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: requestData
+                body: requestData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -5641,8 +5574,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             return false; // Prevent any default form behavior
         };
-        
-        
         window.editWidget = function(widgetId, buttonElement) {
             // Try to find widget item - check for accordion first, then legacy
             let widgetItem = null;
@@ -5663,7 +5594,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -5744,7 +5676,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             </div>
                         `;
                     }
-                    
                     // Widget-specific fields (skip RSS feed URL and thumbnail_image for podcast player as they're already added)
                     if (widgetDef && widgetDef.config_fields) {
                         Object.entries(widgetDef.config_fields).forEach(([fieldName, fieldDef]) => {
@@ -5811,7 +5742,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     `;
                                     
                                     // Load categories
-                                    fetch('/api/blog_categories.php')
+                                    fetch('/api/blog_categories.php', {
+                                        credentials: 'same-origin'
+                                    })
                                         .then(response => response.json())
                                         .then(data => {
                                             const select = document.getElementById(`widget_config_${fieldName}`);
@@ -5955,7 +5888,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/widgets.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -5979,7 +5913,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showMessage('An error occurred', 'error');
             });
         }
-        
         // Widget accordions now use the same toggleAccordion() function as Appearance tab
         
         window.loadWidgetSettingsInline = function(widgetId) {
@@ -6007,7 +5940,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     
                     fetch('/api/widgets.php', {
                         method: 'POST',
-                        body: loadFormData
+                        body: loadFormData,
+                        credentials: 'same-origin'
                     })
                     .then(response => {
                         return response.text().then(text => {
@@ -6066,7 +6000,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     });
                 });
             }
-            
             // Main loading function
             function loadSettings() {
                 // First ensure widget definitions are loaded
@@ -6080,7 +6013,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         
                         return fetch('/api/widgets.php', {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            credentials: 'same-origin'
                         });
                     })
                     .then(response => {
@@ -6412,7 +6346,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                     formHTML += fieldHTML;
                 });
                 }
-                
                 // Featured Effect form removed - effects are managed in Appearance tab
                 
                 // Add action buttons
@@ -6463,7 +6396,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 contentDiv.innerHTML = '<div class="widget-content-inner"><p style="color: #dc3545;">Error rendering widget settings: ' + error.message + '</p></div>';
             }
         };
-        
         // Debounce helper for auto-save
         const widgetSaveDebounceTimers = {};
         
@@ -6570,7 +6502,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             widgetSaveDebounceTimers[widgetId] = setTimeout(() => {
                 fetch('/api/widgets.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -6624,7 +6557,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -6735,7 +6669,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             // Use new toast system
             showToast(message, type);
         }
-        
         // Convert legacy alerts to toasts on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Handle URL parameters first (to prevent duplicates from both URL and inline alerts)
@@ -6845,7 +6778,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 overlay.classList.remove('active');
             }
         });
-        
         /* ========================================
            DRAG AND DROP MODULE
            Can be extracted to: /js/editor/drag-drop.js
@@ -6873,7 +6805,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 fetch('/api/widgets.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -6918,7 +6851,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 fetch('/api/page.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -6992,7 +6926,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             formData.append('action', 'reorder');
             formData.append('widget_orders', JSON.stringify(widgetOrders));
             formData.append('csrf_token', csrfToken);
-            fetch('/api/widgets.php', { method: 'POST', body: formData })
+            fetch('/api/widgets.php', { method: 'POST', body: formData, credentials: 'same-origin' })
                 .then(response => response.json())
                 .then(data => { if (data.success && typeof refreshPreview === 'function') refreshPreview(); });
         };
@@ -7022,7 +6956,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -7076,11 +7011,493 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 toggleText.textContent = 'Show';
             }
         }
-        
         // Auto-save functionality with debouncing
         let saveTimeouts = {};
         let savingIndicators = {};
         let appearanceAutoSaveEnabled = false;
+
+        const gradientConfigs = {
+            page: {
+                hidden: 'page_background',
+                preview: 'gradient-preview',
+                start: 'gradient_start_color',
+                end: 'gradient_end_color',
+                direction: 'gradient_direction'
+            },
+            widget: {
+                hidden: 'widget_background',
+                preview: 'widget-gradient-preview',
+                start: 'widget_gradient_start_color',
+                end: 'widget_gradient_end_color',
+                direction: 'widget_gradient_direction'
+            },
+            border: {
+                hidden: 'widget_border_color',
+                preview: 'widget-border-gradient-preview',
+                start: 'widget_border_gradient_start_color',
+                end: 'widget_border_gradient_end_color',
+                direction: 'widget_border_gradient_direction'
+            }
+        };
+
+        function styleToggleButton(button, isActive, { adjustFontWeight = true } = {}) {
+            if (!button) return;
+            button.classList.toggle('active', isActive);
+            button.style.borderColor = isActive ? '#0066ff' : '#ddd';
+            button.style.background = isActive ? '#0066ff' : 'white';
+            button.style.color = isActive ? '#ffffff' : '#666';
+            if (adjustFontWeight) {
+                button.style.fontWeight = isActive ? '600' : '500';
+            }
+        }
+
+        function buildGradientValue(scope) {
+            const config = gradientConfigs[scope];
+            if (!config) return '';
+
+            const directionEl = document.getElementById(config.direction);
+            const startEl = document.getElementById(config.start);
+            const endEl = document.getElementById(config.end);
+
+            const direction = directionEl ? directionEl.value || '135deg' : '135deg';
+            const start = startEl ? startEl.value || '#0066ff' : '#0066ff';
+            const end = endEl ? endEl.value || '#ff00ff' : '#ff00ff';
+
+            return `linear-gradient(${direction}, ${start} 0%, ${end} 100%)`;
+        }
+
+        function switchBackgroundType(type, shouldSave = true) {
+            const solidOption = document.getElementById('bg-solid-option');
+            const gradientOption = document.getElementById('bg-gradient-option');
+            const buttons = document.querySelectorAll('.bg-type-btn');
+
+            buttons.forEach(button => {
+                const isActive = button.dataset.type === type;
+                styleToggleButton(button, isActive);
+            });
+
+            if (solidOption && gradientOption) {
+                solidOption.style.display = type === 'solid' ? 'block' : 'none';
+                gradientOption.style.display = type === 'gradient' ? 'block' : 'none';
+            }
+
+            const hidden = document.getElementById('page_background');
+            const colorPicker = document.getElementById('page_background_color');
+            const hexInput = document.getElementById('page_background_color_hex');
+
+            if (!hidden) return;
+
+            if (type === 'solid') {
+                const color = colorPicker ? colorPicker.value : '#ffffff';
+                hidden.value = color;
+                if (hexInput) hexInput.value = color;
+            } else {
+                hidden.value = buildGradientValue('page');
+            }
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser(`switchBackgroundType:${type}`);
+            }
+        }
+
+        function updatePageBackground(shouldSave = true) {
+            const colorPicker = document.getElementById('page_background_color');
+            const hexInput = document.getElementById('page_background_color_hex');
+            const hidden = document.getElementById('page_background');
+
+            if (!colorPicker || !hexInput || !hidden) return;
+
+            hexInput.value = colorPicker.value;
+            hidden.value = colorPicker.value;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updatePageBackground');
+            }
+        }
+
+        function updatePageBackgroundFromHex(shouldSave = true) {
+            const hexInput = document.getElementById('page_background_color_hex');
+            const colorPicker = document.getElementById('page_background_color');
+            const hidden = document.getElementById('page_background');
+
+            if (!hexInput || !colorPicker || !hidden) return;
+
+            let hex = hexInput.value.trim();
+            if (!hex.startsWith('#')) hex = `#${hex}`;
+
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorPicker.value = hex;
+                hexInput.value = hex;
+                hidden.value = hex;
+
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updatePageBackgroundFromHex');
+                }
+            } else {
+                alert('Please enter a valid hex color (e.g., #ffffff)');
+            }
+        }
+
+        function updateGradient(shouldSave = true) {
+            const hidden = document.getElementById('page_background');
+            const preview = document.getElementById('gradient-preview');
+
+            if (!hidden) return;
+
+            const gradientValue = buildGradientValue('page');
+            hidden.value = gradientValue;
+            if (preview) preview.style.background = gradientValue;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateGradient');
+            }
+        }
+
+        function flipGradientColors(scope) {
+            const config = gradientConfigs[scope];
+            if (!config) return;
+
+            const startEl = document.getElementById(config.start);
+            const endEl = document.getElementById(config.end);
+
+            if (!startEl || !endEl) return;
+
+            const temp = startEl.value;
+            startEl.value = endEl.value;
+            endEl.value = temp;
+
+            if (scope === 'page') {
+                updateGradient();
+            } else if (scope === 'widget') {
+                updateWidgetGradient();
+            } else if (scope === 'border') {
+                updateWidgetBorderGradient();
+            }
+        }
+
+        function switchWidgetBackgroundType(type, shouldSave = true) {
+            const solidOption = document.getElementById('widget-bg-solid-option');
+            const gradientOption = document.getElementById('widget-bg-gradient-option');
+            const buttons = document.querySelectorAll('.widget-bg-type-btn');
+
+            buttons.forEach(button => {
+                const isActive = button.dataset.type === type;
+                styleToggleButton(button, isActive);
+            });
+
+            if (solidOption && gradientOption) {
+                solidOption.style.display = type === 'solid' ? 'block' : 'none';
+                gradientOption.style.display = type === 'gradient' ? 'block' : 'none';
+            }
+
+            const hidden = document.getElementById('widget_background');
+            const colorPicker = document.getElementById('widget_background_color');
+
+            if (!hidden) return;
+
+            if (type === 'solid') {
+                hidden.value = colorPicker ? colorPicker.value : '#ffffff';
+            } else {
+                hidden.value = buildGradientValue('widget');
+            }
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser(`switchWidgetBackgroundType:${type}`);
+            }
+        }
+
+        function updateWidgetBackground(shouldSave = true) {
+            const colorPicker = document.getElementById('widget_background_color');
+            const hexInput = document.getElementById('widget_background_color_hex');
+            const hidden = document.getElementById('widget_background');
+
+            if (!colorPicker || !hexInput || !hidden) return;
+
+            hexInput.value = colorPicker.value;
+            hidden.value = colorPicker.value;
+
+            updateWidgetFontPreview(shouldSave);
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBackground');
+            }
+        }
+
+        function updateWidgetBackgroundFromHex(shouldSave = true) {
+            const hexInput = document.getElementById('widget_background_color_hex');
+            const colorPicker = document.getElementById('widget_background_color');
+            const hidden = document.getElementById('widget_background');
+
+            if (!hexInput || !colorPicker || !hidden) return;
+
+            let hex = hexInput.value.trim();
+            if (!hex.startsWith('#')) hex = `#${hex}`;
+
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorPicker.value = hex;
+                hexInput.value = hex;
+                hidden.value = hex;
+
+                updateWidgetFontPreview(shouldSave);
+
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updateWidgetBackgroundFromHex');
+                }
+            } else {
+                alert('Please enter a valid hex color (e.g., #ffffff)');
+            }
+        }
+
+        function updateWidgetGradient(shouldSave = true) {
+            const hidden = document.getElementById('widget_background');
+            const preview = document.getElementById('widget-gradient-preview');
+
+            if (!hidden) return;
+
+            const gradientValue = buildGradientValue('widget');
+            hidden.value = gradientValue;
+            if (preview) preview.style.background = gradientValue;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetGradient');
+            }
+        }
+        function switchWidgetBorderType(type, shouldSave = true) {
+            const solidOption = document.getElementById('widget-border-solid-option');
+            const gradientOption = document.getElementById('widget-border-gradient-option');
+            const buttons = document.querySelectorAll('.widget-border-type-btn');
+
+            buttons.forEach(button => {
+                const isActive = button.dataset.type === type;
+                styleToggleButton(button, isActive);
+            });
+
+            if (solidOption && gradientOption) {
+                solidOption.style.display = type === 'solid' ? 'block' : 'none';
+                gradientOption.style.display = type === 'gradient' ? 'block' : 'none';
+            }
+
+            const hidden = document.getElementById('widget_border_color');
+            const colorPicker = document.getElementById('widget_border_color_picker');
+
+            if (!hidden) return;
+
+            if (type === 'solid') {
+                hidden.value = colorPicker ? colorPicker.value : '#000000';
+            } else {
+                hidden.value = buildGradientValue('border');
+            }
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser(`switchWidgetBorderType:${type}`);
+            }
+        }
+
+        function updateWidgetBorderColor(shouldSave = true) {
+            const colorPicker = document.getElementById('widget_border_color_picker');
+            const hexInput = document.getElementById('widget_border_color_hex');
+            const hidden = document.getElementById('widget_border_color');
+
+            if (!colorPicker || !hexInput || !hidden) return;
+
+            hexInput.value = colorPicker.value;
+            hidden.value = colorPicker.value;
+
+            const preview = document.getElementById('widget-border-gradient-preview');
+            if (preview) preview.style.background = colorPicker.value;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBorderColor');
+            }
+        }
+
+        function updateWidgetBorderColorFromHex(shouldSave = true) {
+            const hexInput = document.getElementById('widget_border_color_hex');
+            const colorPicker = document.getElementById('widget_border_color_picker');
+
+            if (!hexInput || !colorPicker) return;
+
+            let hex = hexInput.value.trim();
+            if (!hex.startsWith('#')) hex = `#${hex}`;
+
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorPicker.value = hex;
+                hexInput.value = hex;
+                updateWidgetBorderColor(shouldSave);
+            } else {
+                alert('Please enter a valid hex color (e.g., #000000)');
+            }
+        }
+
+        function updateWidgetBorderGradient(shouldSave = true) {
+            const hidden = document.getElementById('widget_border_color');
+            const preview = document.getElementById('widget-border-gradient-preview');
+
+            if (!hidden) return;
+
+            const gradientValue = buildGradientValue('border');
+            hidden.value = gradientValue;
+            if (preview) preview.style.background = gradientValue;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateWidgetBorderGradient');
+            }
+        }
+
+        function updateWidgetStyle(field, value) {
+            const hidden = document.getElementById(`widget_${field}`);
+            if (hidden) {
+                hidden.value = value;
+            }
+
+            document.querySelectorAll(`.widget-style-btn[data-field=\"${field}\"]`).forEach(button => {
+                const isActive = button.dataset.value === value;
+                styleToggleButton(button, isActive);
+            });
+
+            queueAppearanceSaveFromUser(`updateWidgetStyle:${field}`);
+        }
+
+        function switchBorderEffect(effect) {
+            const hidden = document.getElementById('widget_border_effect');
+            if (hidden) hidden.value = effect;
+
+            const shadowOptions = document.getElementById('shadow-options');
+            const glowOptions = document.getElementById('glow-options');
+
+            if (shadowOptions) shadowOptions.style.display = effect === 'shadow' ? 'block' : 'none';
+            if (glowOptions) glowOptions.style.display = effect === 'glow' ? 'block' : 'none';
+
+            document.querySelectorAll('.border-effect-btn').forEach(button => {
+                const isActive = button.dataset.effect === effect;
+                styleToggleButton(button, isActive);
+            });
+
+            queueAppearanceSaveFromUser(`switchBorderEffect:${effect}`);
+        }
+
+        function updateGlowColor(shouldSave = true) {
+            const colorPicker = document.getElementById('widget_glow_color');
+            const hexInput = document.getElementById('widget_glow_color_hex');
+            const hidden = document.getElementById('widget_glow_color_hidden');
+
+            if (!colorPicker || !hexInput || !hidden) return;
+
+            hexInput.value = colorPicker.value;
+            hidden.value = colorPicker.value;
+
+            if (shouldSave) {
+                queueAppearanceSaveFromUser('updateGlowColor');
+            }
+        }
+
+        function updateGlowColorFromHex(shouldSave = true) {
+            const hexInput = document.getElementById('widget_glow_color_hex');
+            const colorPicker = document.getElementById('widget_glow_color');
+            const hidden = document.getElementById('widget_glow_color_hidden');
+
+            if (!hexInput || !colorPicker || !hidden) return;
+
+            let hex = hexInput.value.trim();
+            if (!hex.startsWith('#')) hex = `#${hex}`;
+
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorPicker.value = hex;
+                hexInput.value = hex;
+                hidden.value = hex;
+
+                if (shouldSave) {
+                    queueAppearanceSaveFromUser('updateGlowColorFromHex');
+                }
+            } else {
+                alert('Please enter a valid hex color (e.g., #ff00ff)');
+            }
+        }
+
+        function updateSpatialEffect(effect) {
+            const hidden = document.getElementById('spatial_effect');
+            if (hidden) hidden.value = effect;
+
+            document.querySelectorAll('.spatial-effect-btn').forEach(button => {
+                const isActive = button.dataset.effect === effect;
+                styleToggleButton(button, isActive, { adjustFontWeight: false });
+            });
+
+            queueAppearanceSaveFromUser(`updateSpatialEffect:${effect}`);
+        }
+
+        function buildAppearanceFormData() {
+            const appearanceForm = document.getElementById('appearance-form');
+            if (!appearanceForm) {
+                console.error('buildAppearanceFormData: appearance-form not found');
+                return null;
+            }
+
+            const formData = new FormData(appearanceForm);
+
+            const syncField = (id, name) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    formData.set(name, el.value);
+                }
+            };
+
+            syncField('custom_primary_color', 'custom_primary_color');
+            syncField('custom_secondary_color', 'custom_secondary_color');
+            syncField('custom_accent_color', 'custom_accent_color');
+            syncField('custom_heading_font', 'custom_heading_font');
+            syncField('custom_body_font', 'custom_body_font');
+
+            const pageNameEffectEl = document.getElementById('page-name-effect-selector');
+            formData.set('page_name_effect', pageNameEffectEl ? pageNameEffectEl.value : '');
+
+            const widgetStyles = {
+                border_width: document.getElementById('widget_border_width')?.value || 'none',
+                border_effect: document.getElementById('widget_border_effect')?.value || 'shadow',
+                border_shadow_intensity: document.getElementById('widget_border_shadow_intensity')?.value || 'subtle',
+                border_glow_intensity: document.getElementById('widget_border_glow_intensity')?.value || 'none',
+                glow_color: document.getElementById('widget_glow_color_hidden')?.value || '#ff00ff',
+                spacing: document.getElementById('widget_spacing')?.value || 'comfortable',
+                shape: document.getElementById('widget_shape')?.value || 'rounded'
+            };
+            formData.set('widget_styles', JSON.stringify(widgetStyles));
+
+            return formData;
+        }
+
+        function queueAppearanceSaveFromUser(reason = 'unspecified') {
+            if (!appearanceAutoSaveEnabled) {
+                return;
+            }
+
+            autoSaveForm('appearance-form', 'update_appearance', () => {
+                const formData = buildAppearanceFormData();
+                if (!formData) {
+                    console.error('buildAppearanceFormData returned null; skipping auto-save. Reason:', reason);
+                }
+                return formData;
+            });
+        }
+
+        window.switchBackgroundType = switchBackgroundType;
+        window.updatePageBackground = updatePageBackground;
+        window.updatePageBackgroundFromHex = updatePageBackgroundFromHex;
+        window.updateGradient = updateGradient;
+        window.flipGradientColors = flipGradientColors;
+        window.switchWidgetBackgroundType = switchWidgetBackgroundType;
+        window.updateWidgetBackground = updateWidgetBackground;
+        window.updateWidgetBackgroundFromHex = updateWidgetBackgroundFromHex;
+        window.updateWidgetGradient = updateWidgetGradient;
+        window.switchWidgetBorderType = switchWidgetBorderType;
+        window.updateWidgetBorderColor = updateWidgetBorderColor;
+        window.updateWidgetBorderColorFromHex = updateWidgetBorderColorFromHex;
+        window.updateWidgetBorderGradient = updateWidgetBorderGradient;
+        window.updateWidgetStyle = updateWidgetStyle;
+        window.switchBorderEffect = switchBorderEffect;
+        window.updateGlowColor = updateGlowColor;
+        window.updateGlowColorFromHex = updateGlowColorFromHex;
+        window.updateSpatialEffect = updateSpatialEffect;
+        window.queueAppearanceSaveFromUser = queueAppearanceSaveFromUser;
         
         function showSavingIndicator(formId, message = 'Saving...') {
             let indicator = savingIndicators[formId];
@@ -7147,16 +7564,23 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 fetch('/api/page.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         if (useToast) {
                             showToast('Appearance saved', 'success');
++                            if (typeof refreshPreview === 'function') {
++                                refreshPreview();
++                            }
                         } else {
                             showSavingIndicator(formId, 'Saved');
                             setTimeout(() => hideSavingIndicator(formId), 2000);
++                            if (formId === 'appearance-form' && typeof refreshPreview === 'function') {
++                                refreshPreview();
++                            }
                         }
                     } else {
                         if (useToast) {
@@ -7220,7 +7644,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -7318,7 +7743,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 previewBody.style.fontFamily = `'${bodyFont}', sans-serif`;
             }
         }
-        
         // Page Font Preview
         function updatePageFontPreview(shouldSave = true) {
             const pagePrimaryFont = document.getElementById('page_primary_font')?.value || '';
@@ -7407,7 +7831,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (previewBody && finalSecondaryFont) {
                 previewBody.style.fontFamily = `'${finalSecondaryFont}', sans-serif`;
             }
-            
             // Update widget styling in preview
             if (previewContainer) {
                 const widgetBackgroundEl = document.getElementById('widget_background');
@@ -7467,7 +7890,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 handleThemeChange({ fromUser: true });
             }
         }
-        
         // Handle theme change
         function handleThemeChange(triggerContext) {
             const isUserAction = (() => {
@@ -7507,7 +7929,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             if (themeId) {
                 // Load theme data via AJAX
-                fetch('/api/themes.php?id=' + themeId)
+                fetch('/api/themes.php?id=' + themeId, {
+                    credentials: 'same-origin'
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success && data.theme) {
@@ -7614,7 +8038,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 if (pageBackground) {
                                     pageBackground.value = data.theme.page_background;
                                     const isGradient = data.theme.page_background.includes('gradient');
-                                    switchBackgroundType(isGradient ? 'gradient' : 'solid');
+                                    switchBackgroundType(isGradient ? 'gradient' : 'solid', false);
                                     if (isGradient) {
                                         // Parse and populate gradient fields
                                         const match = data.theme.page_background.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
@@ -7647,7 +8071,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 if (widgetBackground) {
                                     widgetBackground.value = data.theme.widget_background;
                                     const isGradient = data.theme.widget_background.includes('gradient');
-                                    switchWidgetBackgroundType(isGradient ? 'gradient' : 'solid');
+                                    switchWidgetBackgroundType(isGradient ? 'gradient' : 'solid', false);
                                     if (isGradient) {
                                         // Parse and populate gradient fields
                                         const match = data.theme.widget_background.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
@@ -7680,7 +8104,7 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                 if (widgetBorderColor) {
                                     widgetBorderColor.value = data.theme.widget_border_color;
                                     const isGradient = data.theme.widget_border_color.includes('gradient');
-                                    switchWidgetBorderType(isGradient ? 'gradient' : 'solid');
+                                    switchWidgetBorderType(isGradient ? 'gradient' : 'solid', false);
                                     if (isGradient) {
                                         // Parse and populate gradient fields
                                         const match = data.theme.widget_border_color.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6})\s*0%,\s*(#[0-9a-fA-F]{6})\s*100%\)/);
@@ -7754,7 +8178,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                                     spatialEffect.value = data.theme.spatial_effect;
                                 }
                             }
-                            
                             if (isUserAction) {
                                 queueAppearanceSaveFromUser('handleThemeChange');
                             }
@@ -7791,7 +8214,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             if (pagePrimaryFont || pageSecondaryFont) updatePageFontPreview(false);
             if (widgetPrimaryFont || widgetSecondaryFont) updateWidgetFontPreview(false);
         });
-        
         // Handle appearance form with auto-save - wrapped in DOMContentLoaded
         document.addEventListener('DOMContentLoaded', function() {
             const appearanceForm = document.getElementById('appearance-form');
@@ -7877,50 +8299,27 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             appearanceForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(this);
+            const formData = buildAppearanceFormData();
+            if (!formData) {
+                showToast('Failed to build appearance form data', 'error');
+                return;
+            }
             formData.append('action', 'update_appearance');
-            
-            // Include custom colors and fonts
-            formData.append('custom_primary_color', document.getElementById('custom_primary_color').value);
-            formData.append('custom_secondary_color', document.getElementById('custom_secondary_color').value);
-            formData.append('custom_accent_color', document.getElementById('custom_accent_color').value);
-            formData.append('custom_heading_font', document.getElementById('custom_heading_font').value);
-            formData.append('custom_body_font', document.getElementById('custom_body_font').value);
-            
-            // Page name effect
-            const pageNameEffectEl = document.getElementById('page-name-effect-selector');
-            if (pageNameEffectEl) formData.append('page_name_effect', pageNameEffectEl.value);
-            
-            // Include widget styles as JSON
-            const borderWidthEl = document.getElementById('widget_border_width');
-            const borderEffectEl = document.getElementById('widget_border_effect');
-            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
-            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
-            const glowColorEl = document.getElementById('widget_glow_color_hidden');
-            const spacingEl = document.getElementById('widget_spacing');
-            const shapeEl = document.getElementById('widget_shape');
-            
-            const widgetStyles = {
-                border_width: borderWidthEl ? borderWidthEl.value : 'none',
-                border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
-                border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
-                border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
-                glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
-                spacing: spacingEl ? spacingEl.value : 'comfortable',
-                shape: shapeEl ? shapeEl.value : 'rounded'
-            };
-            formData.append('widget_styles', JSON.stringify(widgetStyles));
             
             showToast('Saving appearance...', 'info');
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showToast('Appearance updated successfully!', 'success');
+                    if (typeof refreshPreview === 'function') {
+                        refreshPreview();
+                    }
                 } else {
                     showToast(data.error || 'Failed to update appearance', 'error');
                 }
@@ -7974,7 +8373,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -7992,7 +8392,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
             });
         }
-        
         // Global variables for image cropping
         let croppieInstance = null;
         let currentCropContext = null;
@@ -8085,7 +8484,9 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             formData.append('csrf_token', csrfToken);
             
             // Get current config_data and remove thumbnail
-            fetch('/api/widgets.php?action=get&widget_id=' + widgetId)
+            fetch('/api/widgets.php?action=get&widget_id=' + widgetId, {
+                credentials: 'same-origin'
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.widget) {
@@ -8101,7 +8502,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                         
                         return fetch('/api/widgets.php', {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            credentials: 'same-origin'
                         }).then(r => r.json());
                     }
                 })
@@ -8263,7 +8665,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             currentCropInputId = null;
             currentCropPreviewId = null;
         }
-        
         // Apply crop and upload
         function applyCrop() {
             if (!croppieInstance) {
@@ -8293,7 +8694,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 fetch('/api/upload.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -8330,7 +8732,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showToast('Failed to process image', 'error');
             });
         }
-        
         // Handle successful image upload
         function handleImageUploadSuccess(data, previewId, isWidgetThumbnail = false) {
             const imageUrl = data.url || data.path;
@@ -8418,7 +8819,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 
                 fetch('/api/widgets.php', {
                     method: 'POST',
-                    body: getFormData
+                    body: getFormData,
+                    credentials: 'same-origin'
                 })
                     .then(response => {
                         if (!response.ok) {
@@ -8440,7 +8842,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                             
                             return fetch('/api/widgets.php', {
                                 method: 'POST',
-                                body: formData
+                                body: formData,
+                                credentials: 'same-origin'
                             }).then(r => {
                                 if (!r.ok) {
                                     throw new Error(`HTTP ${r.status}: ${r.statusText}`);
@@ -8560,7 +8963,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => {
                 if (!response.ok) {
@@ -8714,7 +9118,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -8743,7 +9148,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -8758,7 +9164,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
                 showToast('An error occurred', 'error');
             });
         }
-        
         // Handle directory form submission
         const directoryForm = document.getElementById('directory-form');
         if (directoryForm) {
@@ -8767,10 +9172,12 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             const formData = new FormData(this);
             formData.append('action', 'add_directory');
+            formData.append('csrf_token', csrfToken);
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -8787,878 +9194,6 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             });
             });
         }
-        
-        // ========== Theme System JavaScript Functions ==========
-        
-        // Helper function to build appearance form data (must be global for inline handlers)
-        function buildAppearanceFormData() {
-            const appearanceForm = document.getElementById('appearance-form');
-            if (!appearanceForm) {
-                console.warn('Appearance form not found');
-                return null;
-            }
-            
-            const formData = new FormData();
-            const selectedRadio = document.querySelector('input[name="theme_id"]:checked');
-            const themeId = selectedRadio ? selectedRadio.value : '';
-            
-            const layoutEl = document.getElementById('layout_option');
-            const primaryColorEl = document.getElementById('custom_primary_color');
-            const secondaryColorEl = document.getElementById('custom_secondary_color');
-            const accentColorEl = document.getElementById('custom_accent_color');
-            
-            if (!layoutEl || !primaryColorEl || !secondaryColorEl || !accentColorEl) {
-                console.error('Required appearance form elements not found');
-                return null;
-            }
-            
-            const layout = layoutEl.value;
-            const primaryColor = primaryColorEl.value;
-            const secondaryColor = secondaryColorEl.value;
-            const accentColor = accentColorEl.value;
-            
-            // Legacy fonts (for backward compatibility)
-            const headingFont = document.getElementById('custom_heading_font');
-            const bodyFont = document.getElementById('custom_body_font');
-            if (headingFont && headingFont.value) formData.append('custom_heading_font', headingFont.value);
-            if (bodyFont && bodyFont.value) formData.append('custom_body_font', bodyFont.value);
-            
-            // Page fonts
-            const pagePrimaryFont = document.getElementById('page_primary_font');
-            const pageSecondaryFont = document.getElementById('page_secondary_font');
-            if (pagePrimaryFont && pagePrimaryFont.value) formData.append('page_primary_font', pagePrimaryFont.value);
-            if (pageSecondaryFont && pageSecondaryFont.value) formData.append('page_secondary_font', pageSecondaryFont.value);
-            
-            // Widget fonts
-            const widgetPrimaryFont = document.getElementById('widget_primary_font');
-            const widgetSecondaryFont = document.getElementById('widget_secondary_font');
-            if (widgetPrimaryFont && widgetPrimaryFont.value) formData.append('widget_primary_font', widgetPrimaryFont.value);
-            if (widgetSecondaryFont && widgetSecondaryFont.value) formData.append('widget_secondary_font', widgetSecondaryFont.value);
-            
-            formData.append('theme_id', themeId);
-            formData.append('layout_option', layout);
-            formData.append('custom_primary_color', primaryColor);
-            formData.append('custom_secondary_color', secondaryColor);
-            formData.append('custom_accent_color', accentColor);
-            
-            // Page background
-            const pageBackground = document.getElementById('page_background');
-            if (pageBackground && pageBackground.value) formData.append('page_background', pageBackground.value);
-            
-            // Widget background
-            const widgetBackground = document.getElementById('widget_background');
-            if (widgetBackground && widgetBackground.value) formData.append('widget_background', widgetBackground.value);
-            
-            // Widget border color
-            const widgetBorderColor = document.getElementById('widget_border_color');
-            if (widgetBorderColor && widgetBorderColor.value) formData.append('widget_border_color', widgetBorderColor.value);
-            
-            const spatialEffect = document.getElementById('spatial_effect');
-            if (spatialEffect && spatialEffect.value) formData.append('spatial_effect', spatialEffect.value);
-            
-            // Page name effect (always append, even if empty)
-            const pageNameEffect = document.getElementById('page-name-effect-selector');
-            if (pageNameEffect) {
-                const effectValue = pageNameEffect.value || '';
-                formData.append('page_name_effect', effectValue);
-            } else {
-                console.error('✗ Page name effect selector (page-name-effect-selector) NOT FOUND in DOM');
-            }
-            
-            // Widget styles
-            const borderWidthEl = document.getElementById('widget_border_width');
-            const borderEffectEl = document.getElementById('widget_border_effect');
-            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
-            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
-            const glowColorEl = document.getElementById('widget_glow_color_hidden');
-            const spacingEl = document.getElementById('widget_spacing');
-            const shapeEl = document.getElementById('widget_shape');
-            
-            const widgetStyles = {
-                border_width: borderWidthEl ? borderWidthEl.value : 'none',
-                border_effect: borderEffectEl ? borderEffectEl.value : 'shadow',
-                border_shadow_intensity: shadowIntensityEl ? shadowIntensityEl.value : 'subtle',
-                border_glow_intensity: glowIntensityEl ? glowIntensityEl.value : 'none',
-                glow_color: glowColorEl ? glowColorEl.value : '#ff00ff',
-                spacing: spacingEl ? spacingEl.value : 'comfortable',
-                shape: shapeEl ? shapeEl.value : 'rounded'
-            };
-            formData.append('widget_styles', JSON.stringify(widgetStyles));
-            
-            return formData;
-        }
-        
-        function queueAppearanceSaveFromUser(_reason = 'unspecified') {
-            if (!appearanceAutoSaveEnabled) {
-                return;
-            }
-            
-            autoSaveForm('appearance-form', 'update_appearance', () => {
-                const formData = buildAppearanceFormData();
-                if (!formData) {
-                    console.error('buildAppearanceFormData returned null; skipping auto-save');
-                }
-                return formData;
-            });
-        }
-        
-        function saveAppearanceForm(reason = 'unspecified') {
-            queueAppearanceSaveFromUser(reason);
-        }
-        
-        // Page Background Functions
-        function switchBackgroundType(type) {
-            const solidOption = document.getElementById('bg-solid-option');
-            const gradientOption = document.getElementById('bg-gradient-option');
-            const buttons = document.querySelectorAll('.bg-type-btn');
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                    btn.style.fontWeight = '600';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                    btn.style.fontWeight = '500';
-                }
-            });
-            
-            if (type === 'solid') {
-                solidOption.style.display = '';
-                gradientOption.style.display = 'none';
-            } else {
-                solidOption.style.display = 'none';
-                gradientOption.style.display = '';
-            }
-        }
-        
-        function updatePageBackground(shouldSave = true) {
-            const colorPicker = document.getElementById('page_background_color');
-            const hexInput = document.getElementById('page_background_color_hex');
-            const hidden = document.getElementById('page_background');
-            
-            if (!colorPicker || !hexInput || !hidden) {
-                console.error('Page background elements not found');
-                return;
-            }
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            hidden.value = color;
-            
-            // Update page preview
-            updatePageFontPreview(shouldSave);
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updatePageBackground');
-            }
-        }
-        
-        function updatePageBackgroundFromHex(shouldSave = true) {
-            const hexInput = document.getElementById('page_background_color_hex');
-            
-            // Add null check
-            if (!hexInput) {
-                console.error('page_background_color_hex element not found');
-                return;
-            }
-            
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('page_background_color');
-                const hidden = document.getElementById('page_background');
-                
-                colorPicker.value = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                // Update page preview
-                updatePageFontPreview(shouldSave);
-                
-                if (shouldSave) {
-                    queueAppearanceSaveFromUser('updatePageBackgroundFromHex');
-                }
-            } else {
-                alert('Please enter a valid hex color (e.g., #ffffff)');
-            }
-        }
-        
-        function updateGradient(shouldSave = true) {
-            const startColorEl = document.getElementById('gradient_start_color');
-            const endColorEl = document.getElementById('gradient_end_color');
-            const directionEl = document.getElementById('gradient_direction');
-            const preview = document.getElementById('gradient-preview');
-            const hidden = document.getElementById('page_background');
-            
-            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
-                console.error('Gradient elements not found');
-                return;
-            }
-            
-            const startColor = startColorEl.value;
-            const endColor = endColorEl.value;
-            const direction = directionEl.value;
-            
-            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
-            preview.style.background = gradient;
-            hidden.value = gradient;
-            
-            // Update page preview
-            updatePageFontPreview(shouldSave);
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateGradient');
-            }
-        }
-        
-        // Widget Style Functions
-        function updateWidgetStyle(field, value, shouldSave = true) {
-            const hiddenField = document.getElementById('widget_' + field);
-            if (hiddenField) {
-                hiddenField.value = value;
-            }
-            
-            // Update button states
-            const buttons = document.querySelectorAll(`[data-field="${field}"]`);
-            buttons.forEach(btn => {
-                if (btn.dataset.value === value) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                    btn.style.fontWeight = '600';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                    btn.style.fontWeight = '500';
-                }
-            });
-            
-            // Update widget preview for styling changes
-            updateWidgetFontPreview(shouldSave);
-            
-            // Refresh preview iframe to show changes
-            if (typeof refreshPreview === 'function') {
-                refreshPreview();
-            }
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser(`updateWidgetStyle:${field}`);
-            }
-        }
-        
-        function switchBorderEffect(effect, shouldSave = true) {
-            const shadowOptions = document.getElementById('shadow-options');
-            const glowOptions = document.getElementById('glow-options');
-            const hidden = document.getElementById('widget_border_effect');
-            const buttons = document.querySelectorAll('.border-effect-btn');
-            
-            hidden.value = effect;
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.effect === effect) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                    btn.style.fontWeight = '600';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                    btn.style.fontWeight = '500';
-                }
-            });
-            
-            if (effect === 'shadow') {
-                shadowOptions.style.display = '';
-                glowOptions.style.display = 'none';
-            } else {
-                shadowOptions.style.display = 'none';
-                glowOptions.style.display = '';
-            }
-            
-            // Refresh preview iframe to show changes
-            if (typeof refreshPreview === 'function') {
-                refreshPreview();
-            }
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('switchBorderEffect');
-            }
-        }
-        
-        function updateGlowColor(shouldSave = true) {
-            const colorPicker = document.getElementById('widget_glow_color');
-            const hexInput = document.getElementById('widget_glow_color_hex');
-            const hidden = document.getElementById('widget_glow_color_hidden');
-            
-            if (!colorPicker || !hexInput || !hidden) {
-                console.error('Glow color elements not found');
-                return;
-            }
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            hidden.value = color;
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateGlowColor');
-            }
-        }
-        
-        function updateGlowColorFromHex(shouldSave = true) {
-            const hexInput = document.getElementById('widget_glow_color_hex');
-            
-            if (!hexInput) {
-                console.error('widget_glow_color_hex element not found');
-                return;
-            }
-            
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('widget_glow_color');
-                const hidden = document.getElementById('widget_glow_color_hidden');
-                
-                if (!colorPicker || !hidden) {
-                    console.error('Glow color elements not found');
-                    return;
-                }
-                
-                colorPicker.value = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                if (shouldSave) {
-                    queueAppearanceSaveFromUser('updateGlowColorFromHex');
-                }
-            } else {
-                alert('Please enter a valid hex color (e.g., #ff00ff)');
-            }
-        }
-        
-        function updateSpatialEffect(effect, shouldSave = true) {
-            const hidden = document.getElementById('spatial_effect');
-            const buttons = document.querySelectorAll('.spatial-effect-btn');
-            
-            hidden.value = effect;
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.effect === effect) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                }
-            });
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateSpatialEffect');
-            }
-        }
-        
-        // Widget Background Functions
-        function switchWidgetBackgroundType(type) {
-            const solidOption = document.getElementById('widget-bg-solid-option');
-            const gradientOption = document.getElementById('widget-bg-gradient-option');
-            const buttons = document.querySelectorAll('.widget-bg-type-btn');
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                }
-            });
-            
-            if (type === 'solid') {
-                solidOption.style.display = '';
-                gradientOption.style.display = 'none';
-            } else {
-                solidOption.style.display = 'none';
-                gradientOption.style.display = '';
-            }
-        }
-        
-        function updateWidgetBackground(shouldSave = true) {
-            const colorPicker = document.getElementById('widget_background_color');
-            const hexInput = document.getElementById('widget_background_color_hex');
-            const hidden = document.getElementById('widget_background');
-            
-            if (!colorPicker || !hexInput || !hidden) {
-                console.error('Widget background elements not found');
-                return;
-            }
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            hidden.value = color;
-            
-            // Update widget preview
-            updateWidgetFontPreview(shouldSave);
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateWidgetBackground');
-            }
-        }
-        
-        function updateWidgetBackgroundFromHex(shouldSave = true) {
-            const hexInput = document.getElementById('widget_background_color_hex');
-            
-            // Add null check
-            if (!hexInput) {
-                console.error('widget_background_color_hex element not found');
-                return;
-            }
-            
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('widget_background_color');
-                const hidden = document.getElementById('widget_background');
-                
-                colorPicker.value = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                // Update widget preview
-                updateWidgetFontPreview(shouldSave);
-                
-                if (shouldSave) {
-                    queueAppearanceSaveFromUser('updateWidgetBackgroundFromHex');
-                }
-            } else {
-                alert('Please enter a valid hex color (e.g., #ffffff)');
-            }
-        }
-        
-        function updateWidgetGradient(shouldSave = true) {
-            const startColorEl = document.getElementById('widget_gradient_start_color');
-            const endColorEl = document.getElementById('widget_gradient_end_color');
-            const directionEl = document.getElementById('widget_gradient_direction');
-            const preview = document.getElementById('widget-gradient-preview');
-            const hidden = document.getElementById('widget_background');
-            
-            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
-                console.error('Widget gradient elements not found');
-                return;
-            }
-            
-            const startColor = startColorEl.value;
-            const endColor = endColorEl.value;
-            const direction = directionEl.value;
-            
-            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
-            preview.style.background = gradient;
-            hidden.value = gradient;
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateWidgetGradient');
-            }
-        }
-        
-        // Widget Border Color Functions
-        function switchWidgetBorderType(type) {
-            const solidOption = document.getElementById('widget-border-solid-option');
-            const gradientOption = document.getElementById('widget-border-gradient-option');
-            const buttons = document.querySelectorAll('.widget-border-type-btn');
-            
-            buttons.forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('active');
-                    btn.style.borderColor = '#0066ff';
-                    btn.style.background = '#0066ff';
-                    btn.style.color = 'white';
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.borderColor = '#ddd';
-                    btn.style.background = 'white';
-                    btn.style.color = '#666';
-                }
-            });
-            
-            if (type === 'solid') {
-                solidOption.style.display = '';
-                gradientOption.style.display = 'none';
-            } else {
-                solidOption.style.display = 'none';
-                gradientOption.style.display = '';
-            }
-        }
-        
-        function updateWidgetBorderColor(shouldSave = true) {
-            const colorPicker = document.getElementById('widget_border_color_picker');
-            const hexInput = document.getElementById('widget_border_color_hex');
-            const hidden = document.getElementById('widget_border_color');
-            
-            if (!colorPicker || !hexInput || !hidden) {
-                console.error('Widget border color elements not found');
-                return;
-            }
-            
-            const color = colorPicker.value;
-            hexInput.value = color;
-            hidden.value = color;
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateWidgetBorderColor');
-            }
-        }
-        
-        function updateWidgetBorderColorFromHex(shouldSave = true) {
-            const hexInput = document.getElementById('widget_border_color_hex');
-            
-            // Add null check
-            if (!hexInput) {
-                console.error('widget_border_color_hex element not found');
-                return;
-            }
-            
-            let hex = hexInput.value.trim();
-            
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            
-            if (/^#[0-9A-F]{6}$/i.test(hex)) {
-                const colorPicker = document.getElementById('widget_border_color_picker');
-                const hidden = document.getElementById('widget_border_color');
-                
-                colorPicker.value = hex;
-                hidden.value = hex;
-                hexInput.value = hex;
-                
-                if (shouldSave) {
-                    queueAppearanceSaveFromUser('updateWidgetBorderColorFromHex');
-                }
-            } else {
-                alert('Please enter a valid hex color (e.g., #000000)');
-            }
-        }
-        
-        function updateWidgetBorderGradient(shouldSave = true) {
-            const startColorEl = document.getElementById('widget_border_gradient_start_color');
-            const endColorEl = document.getElementById('widget_border_gradient_end_color');
-            const directionEl = document.getElementById('widget_border_gradient_direction');
-            const preview = document.getElementById('widget-border-gradient-preview');
-            const hidden = document.getElementById('widget_border_color');
-            
-            if (!startColorEl || !endColorEl || !directionEl || !preview || !hidden) {
-                console.error('Widget border gradient elements not found');
-                return;
-            }
-            
-            const startColor = startColorEl.value;
-            const endColor = endColorEl.value;
-            const direction = directionEl.value;
-            
-            const gradient = `linear-gradient(${direction}, ${startColor} 0%, ${endColor} 100%)`;
-            preview.style.background = gradient;
-            hidden.value = gradient;
-            
-            if (shouldSave) {
-                queueAppearanceSaveFromUser('updateWidgetBorderGradient');
-            }
-        }
-        
-        // Flip gradient colors (swap start and end)
-        function flipGradientColors(type) {
-            let startColorEl, endColorEl, updateFunction;
-            
-            if (type === 'page') {
-                startColorEl = document.getElementById('gradient_start_color');
-                endColorEl = document.getElementById('gradient_end_color');
-                updateFunction = updateGradient;
-            } else if (type === 'widget') {
-                startColorEl = document.getElementById('widget_gradient_start_color');
-                endColorEl = document.getElementById('widget_gradient_end_color');
-                updateFunction = updateWidgetGradient;
-            } else if (type === 'border') {
-                startColorEl = document.getElementById('widget_border_gradient_start_color');
-                endColorEl = document.getElementById('widget_border_gradient_end_color');
-                updateFunction = updateWidgetBorderGradient;
-            }
-            
-            if (!startColorEl || !endColorEl) {
-                console.error('Gradient color elements not found for type:', type);
-                return;
-            }
-            
-            // Read both values first
-            const startColor = startColorEl.value;
-            const endColor = endColorEl.value;
-            
-            // Swap the colors
-            startColorEl.value = endColor;
-            endColorEl.value = startColor;
-            
-            // Trigger change event to ensure browser updates
-            startColorEl.dispatchEvent(new Event('change', { bubbles: true }));
-            endColorEl.dispatchEvent(new Event('change', { bubbles: true }));
-            
-            // Update the gradient preview
-            if (updateFunction) {
-                updateFunction();
-            }
-        }
-        
-        // Widget Settings Drawer Functions
-        function showWidgetSettingsDrawer(themeId) {
-            const drawer = document.getElementById('widget-settings-drawer');
-            const overlay = document.getElementById('widget-settings-drawer-overlay');
-            const drawerBody = document.getElementById('widget-settings-drawer-body');
-            
-            if (!drawer || !overlay) return;
-            
-            // Show loading state
-            drawerBody.innerHTML = `
-                <div style="text-align: center; color: #666; padding: 2rem;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <p>Loading widget settings...</p>
-                </div>
-            `;
-            
-            // Show drawer
-            overlay.style.display = 'block';
-            drawer.style.display = 'flex';
-            setTimeout(() => {
-                drawer.classList.add('active');
-                overlay.classList.add('active');
-            }, 10);
-            
-            // Load theme data
-            fetch('/api/themes.php?id=' + themeId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.theme) {
-                        renderWidgetSettings(data.theme);
-                    } else {
-                        drawerBody.innerHTML = '<p style="color: #ef4444;">Failed to load theme settings.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading theme:', error);
-                    drawerBody.innerHTML = '<p style="color: #ef4444;">Error loading theme settings.</p>';
-                });
-        }
-        
-        function renderWidgetSettings(theme) {
-            const drawerBody = document.getElementById('widget-settings-drawer-body');
-            
-            // Parse theme data
-            const colors = theme.colors ? JSON.parse(theme.colors) : {};
-            const fonts = theme.fonts ? JSON.parse(theme.fonts) : {};
-            const widgetStyles = theme.widget_styles ? JSON.parse(theme.widget_styles) : {};
-            
-            const pagePrimaryFont = theme.page_primary_font || fonts.heading || 'Inter';
-            const pageSecondaryFont = theme.page_secondary_font || fonts.body || 'Inter';
-            const widgetPrimaryFont = theme.widget_primary_font || pagePrimaryFont;
-            const widgetSecondaryFont = theme.widget_secondary_font || pageSecondaryFont;
-            const widgetBackground = theme.widget_background || '#ffffff';
-            const widgetBorderColor = theme.widget_border_color || '#000000';
-            
-            // Build preview HTML
-            const html = `
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Sample Widget Preview</h3>
-                    <div style="padding: 1rem; background: ${widgetBackground}; border: 2px solid ${widgetBorderColor}; border-radius: 12px; margin-bottom: 1rem;">
-                        <div style="font-family: '${widgetPrimaryFont}', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: ${colors.primary || '#000000'};">Widget Title</div>
-                        <div style="font-family: '${widgetSecondaryFont}', sans-serif; font-size: 0.875rem; color: ${colors.primary || '#000000'}; opacity: 0.8;">This is a sample widget showing how content will look with this theme's widget settings.</div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Background</h4>
-                    <div style="width: 100%; height: 60px; background: ${widgetBackground}; border: 2px solid #ddd; border-radius: 8px;"></div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Border Color</h4>
-                    <div style="width: 100%; height: 60px; background: ${widgetBorderColor}; border: 2px solid #ddd; border-radius: 8px;"></div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Fonts</h4>
-                    <div style="padding: 0.75rem; background: #f9f9f9; border-radius: 8px;">
-                        <div style="font-family: '${widgetPrimaryFont}', sans-serif; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Primary: ${widgetPrimaryFont}</div>
-                        <div style="font-family: '${widgetSecondaryFont}', sans-serif; font-size: 0.875rem; color: #666;">Secondary: ${widgetSecondaryFont}</div>
-                    </div>
-                </div>
-                
-                ${widgetStyles.border_width ? `
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #666;">Widget Structure</h4>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Border: ${widgetStyles.border_width}</span>
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Shape: ${widgetStyles.shape || 'rounded'}</span>
-                        <span style="padding: 0.375rem 0.75rem; background: #f0f0f0; border-radius: 6px; font-size: 0.75rem;">Spacing: ${widgetStyles.spacing || 'comfortable'}</span>
-                    </div>
-                </div>
-                ` : ''}
-            `;
-            
-            drawerBody.innerHTML = html;
-        }
-        
-        function closeWidgetSettingsDrawer() {
-            const drawer = document.getElementById('widget-settings-drawer');
-            const overlay = document.getElementById('widget-settings-drawer-overlay');
-            
-            if (drawer) {
-                drawer.classList.remove('active');
-                setTimeout(() => {
-                    drawer.style.display = 'none';
-                }, 300);
-            }
-            
-            if (overlay) {
-                overlay.classList.remove('active');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 300);
-            }
-        }
-        
-        // Save Theme Function
-        function saveTheme() {
-            const themeNameEl = document.getElementById('theme_name');
-            if (!themeNameEl) {
-                alert('Theme name field not found');
-                return;
-            }
-            
-            const themeName = themeNameEl.value.trim();
-            
-            if (!themeName) {
-                alert('Please enter a theme name');
-                return;
-            }
-            
-            if (themeName.length > 100) {
-                alert('Theme name must be 100 characters or less');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('action', 'save_theme');
-            formData.append('csrf_token', csrfToken);
-            formData.append('theme_name', themeName);
-            
-            // Get current colors
-            const primaryColorEl = document.getElementById('custom_primary_color');
-            const secondaryColorEl = document.getElementById('custom_secondary_color');
-            const accentColorEl = document.getElementById('custom_accent_color');
-            if (primaryColorEl) formData.append('custom_primary_color', primaryColorEl.value);
-            if (secondaryColorEl) formData.append('custom_secondary_color', secondaryColorEl.value);
-            if (accentColorEl) formData.append('custom_accent_color', accentColorEl.value);
-            
-            // Get current fonts
-            const pagePrimaryFontEl = document.getElementById('page_primary_font');
-            const pageSecondaryFontEl = document.getElementById('page_secondary_font');
-            const widgetPrimaryFontEl = document.getElementById('widget_primary_font');
-            const widgetSecondaryFontEl = document.getElementById('widget_secondary_font');
-            if (pagePrimaryFontEl) formData.append('page_primary_font', pagePrimaryFontEl.value);
-            if (pageSecondaryFontEl) formData.append('page_secondary_font', pageSecondaryFontEl.value);
-            if (widgetPrimaryFontEl) formData.append('widget_primary_font', widgetPrimaryFontEl.value);
-            if (widgetSecondaryFontEl) formData.append('widget_secondary_font', widgetSecondaryFontEl.value);
-            
-            // Get page background
-            const pageBackgroundEl = document.getElementById('page_background');
-            if (pageBackgroundEl && pageBackgroundEl.value) formData.append('page_background', pageBackgroundEl.value);
-            
-            // Get widget background and border color
-            const widgetBackgroundEl = document.getElementById('widget_background');
-            const widgetBorderColorEl = document.getElementById('widget_border_color');
-            if (widgetBackgroundEl && widgetBackgroundEl.value) formData.append('widget_background', widgetBackgroundEl.value);
-            if (widgetBorderColorEl && widgetBorderColorEl.value) formData.append('widget_border_color', widgetBorderColorEl.value);
-            
-            // Get spatial effect
-            const spatialEffectEl = document.getElementById('spatial_effect');
-            if (spatialEffectEl && spatialEffectEl.value) formData.append('spatial_effect', spatialEffectEl.value);
-            
-            // Get widget styles
-            const widgetStyles = {
-                border_width: '',
-                border_effect: '',
-                border_shadow_intensity: '',
-                border_glow_intensity: '',
-                glow_color: '',
-                spacing: '',
-                shape: ''
-            };
-            
-            const borderWidthEl = document.getElementById('widget_border_width');
-            const borderEffectEl = document.getElementById('widget_border_effect');
-            const shadowIntensityEl = document.getElementById('widget_border_shadow_intensity');
-            const glowIntensityEl = document.getElementById('widget_border_glow_intensity');
-            const glowColorEl = document.getElementById('widget_glow_color_hidden');
-            const spacingEl = document.getElementById('widget_spacing');
-            const shapeEl = document.getElementById('widget_shape');
-            
-            if (borderWidthEl) widgetStyles.border_width = borderWidthEl.value;
-            if (borderEffectEl) widgetStyles.border_effect = borderEffectEl.value;
-            if (shadowIntensityEl) widgetStyles.border_shadow_intensity = shadowIntensityEl.value;
-            if (glowIntensityEl) widgetStyles.border_glow_intensity = glowIntensityEl.value;
-            if (glowColorEl) widgetStyles.glow_color = glowColorEl.value;
-            if (spacingEl) widgetStyles.spacing = spacingEl.value;
-            if (shapeEl) widgetStyles.shape = shapeEl.value;
-            
-            formData.append('widget_styles', JSON.stringify(widgetStyles));
-            
-            showMessage('Saving theme...', 'info');
-            
-            fetch('/api/page.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage('Theme saved successfully!', 'success');
-                    document.getElementById('theme_name').value = '';
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error || 'Failed to save theme', 'error');
-                }
-            })
-            .catch(() => {
-                showMessage('An error occurred', 'error');
-            });
-        }
-        
         // Icon Selector Functions (for Font Awesome dropdown)
         if (typeof window.iconSelectorFunctionsAdded === 'undefined') {
             window.iconSelectorFunctionsAdded = true;
@@ -9778,7 +9313,8 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
             
             fetch('/api/page.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
             .then(response => response.json())
             .then(data => {
@@ -9815,4 +9351,3 @@ $pageUrl = $page ? (APP_URL . '/' . $page['username']) : '';
     </script>
 </body>
 </html>
-

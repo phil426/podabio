@@ -230,6 +230,57 @@ $googleAuthUrl = getGoogleAuthUrl();
         .auth-box .form-group input::placeholder {
             color: #9ca3af;
         }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-wrapper input {
+            padding-right: 3rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.5rem;
+            width: 2.5rem;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: #374151;
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid #0066ff;
+            outline-offset: 2px;
+        }
+
+        .password-toggle[aria-pressed="true"] {
+            color: #0066ff;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         
         .auth-box .form-group small {
             display: block;
@@ -414,13 +465,25 @@ $googleAuthUrl = getGoogleAuthUrl();
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required minlength="8" placeholder="At least 8 characters">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" required placeholder="Create a password">
+                        <button type="button" class="password-toggle" data-target="password" aria-pressed="false">
+                            <span class="sr-only">Show password</span>
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     <small>Must be at least 8 characters</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required minlength="8" placeholder="Re-enter your password">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                        <button type="button" class="password-toggle" data-target="confirm_password" aria-pressed="false">
+                            <span class="sr-only">Show password</span>
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">
@@ -447,5 +510,32 @@ $googleAuthUrl = getGoogleAuthUrl();
             </p>
         </div>
     </div>
+    <script>
+        (function() {
+            const toggles = document.querySelectorAll('.password-toggle');
+            toggles.forEach((btn) => {
+                const targetId = btn.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+
+                btn.addEventListener('click', () => {
+                    const shouldShow = input.type === 'password';
+                    input.type = shouldShow ? 'text' : 'password';
+                    btn.setAttribute('aria-pressed', shouldShow ? 'true' : 'false');
+
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-eye', !shouldShow);
+                        icon.classList.toggle('fa-eye-slash', shouldShow);
+                    }
+
+                    const srText = btn.querySelector('.sr-only');
+                    if (srText) {
+                        srText.textContent = shouldShow ? 'Hide password' : 'Show password';
+                    }
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

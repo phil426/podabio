@@ -48,6 +48,7 @@ $action = $_POST['action'] ?? '';
 
 // Verify CSRF token
 if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+    error_log("API update_appearance CSRF failed. Provided token: " . ($_POST['csrf_token'] ?? 'missing') . " session token: " . ($_SESSION['csrf_token'] ?? 'unset') . " referer: " . ($_SERVER['HTTP_REFERER'] ?? 'unknown'));
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
     exit;
@@ -259,7 +260,7 @@ switch ($action) {
         // Handle spatial effect
         if (isset($_POST['spatial_effect'])) {
             $spatialEffect = sanitizeInput($_POST['spatial_effect']);
-            $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
+            $validEffects = ['none', 'tilt'];
             if (in_array($spatialEffect, $validEffects, true)) {
                 $updateData['spatial_effect'] = $spatialEffect;
             }
@@ -270,9 +271,9 @@ switch ($action) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
             error_log("API: page_name_effect received: " . var_export($pageNameEffect, true));
             error_log("API: POST data contains page_name_effect: " . var_export(isset($_POST['page_name_effect']), true));
-            $validEffects = ['', 'sweet-title', '3d-extrude', 'neon', 'gummy', 'water', 'outline', 'glitch', 'cut-text', 'cyber-text', 'isometric-3d', 'stencil', 'depth-layers'];
+            $validEffects = ['', 'none'];
             if (in_array($pageNameEffect, $validEffects, true)) {
-                $updateData['page_name_effect'] = $pageNameEffect === '' ? null : $pageNameEffect;
+                $updateData['page_name_effect'] = null; // Normalize all inputs to NULL (no effect)
                 error_log("API: page_name_effect validated and added to updateData: " . var_export($updateData['page_name_effect'], true));
             } else {
                 error_log("API: page_name_effect validation FAILED. Value: " . var_export($pageNameEffect, true) . ", Valid effects: " . implode(', ', $validEffects));
