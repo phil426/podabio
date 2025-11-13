@@ -92,7 +92,11 @@ export function SettingsPanel(): JSX.Element {
 
   const updateMutation = useMutation({
     mutationFn: (payload: { directory_id: number | string; platform_name: string; url: string }) => 
-      updateSocialIcon(payload),
+      updateSocialIcon({
+        directory_id: String(payload.directory_id),
+        platform_name: payload.platform_name,
+        url: payload.url
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setEditingId(null);
@@ -108,7 +112,9 @@ export function SettingsPanel(): JSX.Element {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (payload: { directory_id: number | string }) => deleteSocialIcon(payload),
+    mutationFn: (payload: { directory_id: number | string }) => deleteSocialIcon({
+      directory_id: String(payload.directory_id)
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setStatus('Social icon deleted successfully.');
@@ -122,7 +128,10 @@ export function SettingsPanel(): JSX.Element {
 
   const toggleMutation = useMutation({
     mutationFn: (payload: { icon_id: number | string; is_active: boolean }) => 
-      toggleSocialIconVisibility(payload),
+      toggleSocialIconVisibility({
+        icon_id: String(payload.icon_id),
+        is_active: String(payload.is_active)
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
     }
