@@ -84,7 +84,7 @@ $user = getCurrentUser();
         <div class="cancel-icon">!</div>
         <h1>Payment Cancelled</h1>
         <p>Your payment was cancelled. No charges were made to your account.</p>
-        <a href="/dashboard.php" class="btn">Return to Dashboard</a>
+        <a href="/admin/react-admin.php" class="btn">Return to Studio</a>
     </div>
 </body>
 </html>

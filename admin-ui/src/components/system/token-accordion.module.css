@@ -1,0 +1,57 @@
+.root {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.item {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: var(--pod-app-color-menu-item-bg, rgba(9, 18, 39, 0.04));
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  overflow: hidden;
+}
+
+.header {
+  margin: 0;
+}
+
+.trigger {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  background: transparent;
+}
+
+.triggerLabel {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.triggerDescription {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.chevron {
+  width: 18px;
+  height: 18px;
+  transition: transform 150ms ease;
+}
+
+.trigger[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.content {
+  overflow: hidden;
+}
+
+.contentInner {
+  padding: 0 0.85rem 0.85rem;
+  display: grid;
+  gap: 0.6rem;
+}
+

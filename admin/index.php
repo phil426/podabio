@@ -19,7 +19,7 @@ function isAdmin() {
     }
     
     // Check if user email is admin (or use is_admin field if it exists)
-    $adminEmails = ['phil@redwoodempiremedia.com', 'cursor@podn.bio']; // Add admin emails here
+    $adminEmails = ['phil@redwoodempiremedia.com', 'cursor@poda.bio']; // Add admin emails here
     return in_array(strtolower($user['email']), array_map('strtolower', $adminEmails));
 }
 
@@ -259,7 +259,7 @@ $csrfToken = generateCSRFToken();
                 <a href="/admin/blog.php">Blog</a>
                 <a href="/admin/support.php">Support</a>
                 <a href="/admin/settings.php">Settings</a>
-                <a href="/dashboard.php">User Dashboard</a>
+                <a href="/admin/react-admin.php">PodaBio Studio</a>
                 <a href="/logout.php">Logout</a>
             </nav>
         </div>

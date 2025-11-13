@@ -112,13 +112,17 @@ class Page {
      */
     public function update($pageId, $data) {
         $allowedFields = [
-            'username', 'custom_domain', 'rss_feed_url', 'podcast_name', 
-            'podcast_description', 'cover_image_url', 'theme_id', 'colors', 
+            'username', 'custom_domain', 'rss_feed_url', 'podcast_name',
+            'podcast_description', 'footer_text', 'cover_image_url', 'theme_id', 'colors',
             'fonts', 'layout_option', 'background_image', 'profile_image',
             'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin',
             'page_background', 'widget_styles', 'spatial_effect',
             'widget_background', 'widget_border_color', 'widget_primary_font', 'widget_secondary_font',
-            'page_primary_font', 'page_secondary_font', 'page_name_effect'
+            'page_primary_font', 'page_secondary_font', 'page_name_effect', 'token_overrides',
+            'publish_status', 'published_at', 'scheduled_publish_at',
+            'profile_visible', 'footer_visible', 'podcast_player_enabled',
+            'profile_image_shape', 'profile_image_shadow', 'profile_image_size', 'profile_image_border',
+            'name_alignment', 'name_text_size', 'bio_alignment', 'bio_text_size'
         ];
         
         $updates = [];
@@ -134,7 +138,7 @@ class Page {
         foreach ($allowedFields as $field) {
             // Use array_key_exists to allow null values (for deleting images, etc.)
             if (array_key_exists($field, $data)) {
-                if ($field === 'colors' || $field === 'fonts' || $field === 'widget_styles') {
+                if ($field === 'colors' || $field === 'fonts' || $field === 'widget_styles' || $field === 'token_overrides') {
                     // JSON encode arrays (allow null for clearing)
                     $updates[] = "$field = ?";
                     $params[] = ($data[$field] === null || $data[$field] === '') ? null : (is_array($data[$field]) ? json_encode($data[$field]) : $data[$field]);

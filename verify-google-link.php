@@ -9,7 +9,6 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/classes/User.php';
-require_once __DIR__ . '/classes/Page.php';
 require_once __DIR__ . '/config/oauth.php';
 
 $error = '';
@@ -62,12 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_email'] = $userData['email'];
                     regenerateSession();
                     
-                    // Check if user has a page - if yes, go to editor, otherwise dashboard
-                    $pageClass = new Page();
-                    $userPage = $pageClass->getByUserId($userId);
                     $successMsg = 'Google account linked successfully!';
-                    $redirectTo = '/editor.php?tab=account&success=' . urlencode($successMsg);
-                    redirect($redirectTo);
+                    redirect('/admin/react-admin.php#/account/profile?success=' . urlencode($successMsg));
                 } else {
                     $error = $linkResult['error'];
                 }

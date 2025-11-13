@@ -111,7 +111,7 @@ class DomainVerifier {
         }
         
         // Don't allow our own domain
-        $ownDomains = ['getphily.com', 'podn.bio'];
+        $ownDomains = ['getphily.com', 'poda.bio'];
         foreach ($ownDomains as $ownDomain) {
             if ($domain === $ownDomain || substr($domain, -strlen('.' . $ownDomain)) === '.' . $ownDomain) {
                 return false;

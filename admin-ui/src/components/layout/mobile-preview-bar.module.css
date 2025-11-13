@@ -1,0 +1,166 @@
+.bar {
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.bar > * {
+  pointer-events: auto;
+}
+
+.barInfo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.barHeadingRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.barLabel {
+  display: block;
+  font-weight: 700;
+}
+
+.barMeta {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.deviceSelector {
+  position: relative;
+}
+
+.deviceButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deviceButton:hover {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.deviceIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.deviceName {
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.chevronIconOpen {
+  transform: rotate(180deg);
+}
+
+.deviceMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 220px;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  padding: 0.5rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.deviceMenuItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  border: none;
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.deviceMenuItem:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.deviceMenuItemActive {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--pod-semantic-accent-primary, #2563eb);
+  font-weight: 600;
+}
+
+.deviceMenuItemActive:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+.deviceMenuItemName {
+  font-weight: 500;
+}
+
+.deviceMenuItemSize {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.statusBadge {
+  width: fit-content;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusBadge_published {
+  background: rgba(34, 197, 94, 0.18);
+  color: #166534;
+}
+
+.statusBadge_draft {
+  background: rgba(148, 163, 184, 0.35);
+  color: #334155;
+}
+
+.statusBadge_scheduled {
+  background: rgba(249, 115, 22, 0.18);
+  color: #9a3412;
+}
+

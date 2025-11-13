@@ -23,17 +23,9 @@ requireAuth();
 // Set JSON response header
 header('Content-Type: application/json');
 
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-    exit;
-}
-
 $user = getCurrentUser();
 $userId = $user['id'];
 
-// Get user's page
 $page = new Page();
 $userPage = $page->getByUserId($userId);
 
@@ -44,6 +36,91 @@ if (!$userPage) {
 }
 
 $pageId = $userPage['id'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $action = $_GET['action'] ?? '';
+
+    if ($action !== 'get_snapshot') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        exit;
+    }
+
+    $defaultTokens = require __DIR__ . '/../config/tokens.php';
+    $overrides = [];
+    if (!empty($userPage['token_overrides'])) {
+        $decodedOverrides = json_decode($userPage['token_overrides'], true);
+        if (is_array($decodedOverrides)) {
+            $overrides = $decodedOverrides;
+        }
+    }
+
+    $mergedTokens = array_replace_recursive($defaultTokens, $overrides);
+
+    $widgets = array_map(function ($widget) {
+        if (!empty($widget['config_data']) && is_string($widget['config_data'])) {
+            $decoded = json_decode($widget['config_data'], true);
+            if (is_array($decoded)) {
+                $widget['config_data'] = $decoded;
+            }
+        }
+        return $widget;
+    }, $page->getAllWidgets($pageId));
+
+    $response = [
+        'success' => true,
+        'page' => [
+            'id' => $userPage['id'],
+            'username' => $userPage['username'],
+            'podcast_name' => $userPage['podcast_name'],
+            'podcast_description' => $userPage['podcast_description'],
+            'footer_text' => $userPage['footer_text'] ?? null,
+            'footer_copyright' => $userPage['footer_copyright'] ?? null,
+            'footer_privacy_link' => $userPage['footer_privacy_link'] ?? null,
+            'footer_terms_link' => $userPage['footer_terms_link'] ?? null,
+            'profile_visible' => isset($userPage['profile_visible']) ? (bool)$userPage['profile_visible'] : true,
+            'footer_visible' => isset($userPage['footer_visible']) ? (bool)$userPage['footer_visible'] : true,
+            'podcast_player_enabled' => isset($userPage['podcast_player_enabled']) ? (bool)$userPage['podcast_player_enabled'] : false,
+            'profile_image_shape' => $userPage['profile_image_shape'] ?? 'circle',
+            'profile_image_shadow' => $userPage['profile_image_shadow'] ?? 'subtle',
+            'profile_image_size' => $userPage['profile_image_size'] ?? 'medium',
+            'profile_image_border' => $userPage['profile_image_border'] ?? 'none',
+            'name_alignment' => $userPage['name_alignment'] ?? 'center',
+            'name_text_size' => $userPage['name_text_size'] ?? 'large',
+            'bio_alignment' => $userPage['bio_alignment'] ?? 'center',
+            'bio_text_size' => $userPage['bio_text_size'] ?? 'medium',
+            'rss_feed_url' => $userPage['rss_feed_url'],
+            'cover_image_url' => $userPage['cover_image_url'],
+            'theme_id' => $userPage['theme_id'],
+            'colors' => json_decode($userPage['colors'] ?? '', true),
+            'fonts' => json_decode($userPage['fonts'] ?? '', true),
+            'page_background' => $userPage['page_background'],
+            'widget_background' => $userPage['widget_background'],
+            'widget_border_color' => $userPage['widget_border_color'],
+            'page_primary_font' => $userPage['page_primary_font'],
+        'page_secondary_font' => $userPage['page_secondary_font'],
+        'profile_image' => $userPage['profile_image'] ?? null,
+            'publish_status' => $userPage['publish_status'] ?? 'draft',
+            'published_at' => $userPage['published_at'] ?? null,
+            'scheduled_publish_at' => $userPage['scheduled_publish_at'] ?? null
+        ],
+        'widgets' => $widgets,
+        'social_icons' => $page->getSocialIcons($pageId),
+        'tokens' => $mergedTokens,
+        'token_overrides' => $overrides
+    ];
+
+    echo json_encode($response);
+    exit;
+}
+
+// Only accept POST requests for mutations
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
 $action = $_POST['action'] ?? '';
 
 // Verify CSRF token
@@ -76,6 +153,90 @@ switch ($action) {
         
         if (isset($_POST['podcast_description'])) {
             $updateData['podcast_description'] = sanitizeInput($_POST['podcast_description']);
+        }
+
+        if (isset($_POST['footer_text'])) {
+            $updateData['footer_text'] = sanitizeInput($_POST['footer_text']);
+        }
+
+        if (isset($_POST['footer_copyright'])) {
+            $updateData['footer_copyright'] = sanitizeInput($_POST['footer_copyright']);
+        }
+
+        if (isset($_POST['footer_privacy_link'])) {
+            $updateData['footer_privacy_link'] = sanitizeInput($_POST['footer_privacy_link']);
+        }
+
+        if (isset($_POST['footer_terms_link'])) {
+            $updateData['footer_terms_link'] = sanitizeInput($_POST['footer_terms_link']);
+        }
+
+        if (isset($_POST['profile_visible'])) {
+            $updateData['profile_visible'] = (int)$_POST['profile_visible'];
+        }
+
+        if (isset($_POST['footer_visible'])) {
+            $updateData['footer_visible'] = (int)$_POST['footer_visible'];
+        }
+
+        if (isset($_POST['podcast_player_enabled'])) {
+            $updateData['podcast_player_enabled'] = (int)$_POST['podcast_player_enabled'];
+        }
+
+        if (isset($_POST['profile_image_shape'])) {
+            $shape = sanitizeInput($_POST['profile_image_shape']);
+            if (in_array($shape, ['circle', 'rounded', 'square'], true)) {
+                $updateData['profile_image_shape'] = $shape;
+            }
+        }
+
+        if (isset($_POST['bio_alignment'])) {
+            $alignment = sanitizeInput($_POST['bio_alignment']);
+            if (in_array($alignment, ['left', 'center', 'right'], true)) {
+                $updateData['bio_alignment'] = $alignment;
+            }
+        }
+
+        if (isset($_POST['bio_text_size'])) {
+            $textSize = sanitizeInput($_POST['bio_text_size']);
+            if (in_array($textSize, ['small', 'medium', 'large'], true)) {
+                $updateData['bio_text_size'] = $textSize;
+            }
+        }
+
+        if (isset($_POST['name_alignment'])) {
+            $alignment = sanitizeInput($_POST['name_alignment']);
+            if (in_array($alignment, ['left', 'center', 'right'], true)) {
+                $updateData['name_alignment'] = $alignment;
+            }
+        }
+
+        if (isset($_POST['name_text_size'])) {
+            $textSize = sanitizeInput($_POST['name_text_size']);
+            if (in_array($textSize, ['large', 'xlarge', 'xxlarge'], true)) {
+                $updateData['name_text_size'] = $textSize;
+            }
+        }
+
+        if (isset($_POST['profile_image_shadow'])) {
+            $shadow = sanitizeInput($_POST['profile_image_shadow']);
+            if (in_array($shadow, ['none', 'subtle', 'strong'], true)) {
+                $updateData['profile_image_shadow'] = $shadow;
+            }
+        }
+
+        if (isset($_POST['profile_image_size'])) {
+            $size = sanitizeInput($_POST['profile_image_size']);
+            if (in_array($size, ['small', 'medium', 'large'], true)) {
+                $updateData['profile_image_size'] = $size;
+            }
+        }
+
+        if (isset($_POST['profile_image_border'])) {
+            $border = sanitizeInput($_POST['profile_image_border']);
+            if (in_array($border, ['none', 'thin', 'thick'], true)) {
+                $updateData['profile_image_border'] = $border;
+            }
         }
         
         // Handle RSS feed URL
@@ -404,6 +565,64 @@ switch ($action) {
         
         $result = $page->reorderSocialIcons($pageId, $iconOrders);
         echo json_encode($result);
+        break;
+
+    case 'update_publish_state':
+        $publishStatus = $_POST['publish_status'] ?? '';
+        $validStatuses = ['draft', 'published', 'scheduled'];
+
+        if (!in_array($publishStatus, $validStatuses, true)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid publish status.']);
+            break;
+        }
+
+        $updateData = [
+            'publish_status' => $publishStatus
+        ];
+
+        if ($publishStatus === 'published') {
+            $updateData['published_at'] = date('Y-m-d H:i:s');
+            $updateData['scheduled_publish_at'] = null;
+        } elseif ($publishStatus === 'scheduled') {
+            $scheduledInput = trim($_POST['scheduled_publish_at'] ?? '');
+            if ($scheduledInput === '') {
+                echo json_encode(['success' => false, 'error' => 'Scheduled publish time is required.']);
+                break;
+            }
+
+            $timestamp = strtotime($scheduledInput);
+            if ($timestamp === false) {
+                echo json_encode(['success' => false, 'error' => 'Invalid scheduled date/time.']);
+                break;
+            }
+
+            if ($timestamp <= time()) {
+                echo json_encode(['success' => false, 'error' => 'Scheduled publish time must be in the future.']);
+                break;
+            }
+
+            $updateData['scheduled_publish_at'] = date('Y-m-d H:i:s', $timestamp);
+            $updateData['published_at'] = null;
+        } else {
+            $updateData['scheduled_publish_at'] = null;
+            $updateData['published_at'] = null;
+        }
+
+        $updated = $page->update($pageId, $updateData);
+
+        if (!$updated) {
+            echo json_encode(['success' => false, 'error' => 'Unable to update publish status.']);
+            break;
+        }
+
+        $latest = fetchOne("SELECT publish_status, published_at, scheduled_publish_at FROM pages WHERE id = ?", [$pageId]);
+
+        echo json_encode([
+            'success' => true,
+            'publish_status' => $latest['publish_status'] ?? $publishStatus,
+            'published_at' => $latest['published_at'] ?? null,
+            'scheduled_publish_at' => $latest['scheduled_publish_at'] ?? null
+        ]);
         break;
         
     case 'remove_image':

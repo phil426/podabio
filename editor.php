@@ -17,9 +17,16 @@ require_once __DIR__ . '/classes/Theme.php';
 require_once __DIR__ . '/includes/theme-helpers.php';
 require_once __DIR__ . '/classes/WidgetStyleManager.php';
 require_once __DIR__ . '/config/oauth.php';
+require_once __DIR__ . '/includes/feature-flags.php';
 
 // Require authentication
 requireAuth();
+
+$allowLegacy = isset($_GET['legacy']) && $_GET['legacy'] === '1';
+if (!$allowLegacy && feature_flag('admin_new_experience')) {
+    header('Location: /admin/react-admin.php?from=legacy');
+    exit;
+}
 
 $user = getCurrentUser();
 $userId = $user['id'];

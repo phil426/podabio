@@ -1,0 +1,192 @@
+.inspector {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
+  border-left: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+}
+
+.closeButton {
+  padding: 0.35rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: var(--active-tab-bg, rgba(15, 23, 42, 0.08));
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.errorBanner {
+  padding: 0.75rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  font-size: 0.85rem;
+}
+
+.errorBanner p {
+  margin: 0;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.required {
+  color: #dc2626;
+}
+
+.helpText {
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  margin-top: -0.25rem;
+}
+
+.input,
+.textarea,
+.select {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.1));
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.select {
+  cursor: pointer;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+}
+
+.resetButton {
+  padding: 0.6rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resetButton:hover:not(:disabled) {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+}
+
+.resetButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+

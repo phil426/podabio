@@ -1,11 +1,11 @@
-# Google OAuth Setup - Podn.Bio
+# Google OAuth Setup - PodaBio
 
 ## Developer Account Credentials
 
 **Account Email:** phil@redwoodempiremedia.com  
 **Account Password:** [Stored securely - not in version control]
 
-**Purpose:** Google Developer Account with AI Agentic Features for implementing and testing Podn.Bio features
+**Purpose:** Google Developer Account with AI Agentic Features for implementing and testing PodaBio features
 
 ## Setup Instructions
 
@@ -17,7 +17,7 @@
 
 ### 2. Create/Select Project
 
-1. Create new project: "Podn.Bio" (or use existing)
+1. Create new project: "PodaBio" (or use existing)
 2. Note the Project ID for reference
 
 ### 3. Enable APIs
@@ -33,15 +33,15 @@
 2. Click "Create Credentials" > "OAuth client ID"
 3. If prompted, configure OAuth consent screen first:
    - User Type: External
-   - App name: Podn.Bio
+   - App name: PodaBio
    - User support email: phil@redwoodempiremedia.com
    - Developer contact: phil@redwoodempiremedia.com
 4. Create OAuth client ID:
    - Application type: Web application
-   - Name: Podn.Bio Web Client
+   - Name: PodaBio Web Client
    - Authorized redirect URIs:
      - Development: `https://getphily.com/auth/google/callback.php`
-     - Production: `https://podn.bio/auth/google/callback.php`
+     - Production: `https://poda.bio/auth/google/callback.php`
 
 ### 5. Save Credentials
 
@@ -64,9 +64,9 @@
 ### Testing Users
 
 For testing, you can add test users in OAuth consent screen:
-- test.serial@podn.bio
-- test.radiolab@podn.bio
-- cursor@podn.bio
+- test.serial@poda.bio
+- test.radiolab@poda.bio
+- cursor@poda.bio
 - Or use any email for testing
 
 ## Security Notes
@@ -83,7 +83,7 @@ For testing, you can add test users in OAuth consent screen:
 1. Visit: `https://getphily.com/login.php`
 2. Click "Sign in with Google"
 3. Should redirect to Google authentication
-4. After approval, redirect back to dashboard
+4. After approval, redirect back to PodaBio Studio (`/admin/react-admin.php`)
 5. User account should be created/linked automatically
 
 ## Troubleshooting
@@ -105,7 +105,7 @@ For testing, you can add test users in OAuth consent screen:
 
 ## Production Migration
 
-When moving to podn.bio:
+When moving to poda.bio:
 1. Update redirect URI in Google Console
 2. Update `APP_URL` in `config/constants.php`
 3. Update `GOOGLE_REDIRECT_URI` in `config/oauth.php`

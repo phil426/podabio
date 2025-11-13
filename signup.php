@@ -12,7 +12,7 @@ require_once __DIR__ . '/config/oauth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    redirect('/editor.php');
+    redirect('/admin/react-admin.php');
 }
 
 $error = '';

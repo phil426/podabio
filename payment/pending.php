@@ -126,7 +126,7 @@ $planType = sanitizeInput($_GET['plan'] ?? 'premium');
         
         <p style="margin-top: 2rem;">You'll receive an email confirmation once your payment is verified and your subscription is activated.</p>
         
-        <a href="/dashboard.php" class="btn">Return to Dashboard</a>
+        <a href="/admin/react-admin.php" class="btn">Return to Studio</a>
     </div>
 </body>
 </html>

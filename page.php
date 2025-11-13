@@ -13,15 +13,35 @@ require_once __DIR__ . '/classes/Analytics.php';
 require_once __DIR__ . '/classes/Theme.php';
 require_once __DIR__ . '/classes/ThemeCSSGenerator.php';
 
+// Allow page to be embedded in iframe (for admin preview)
+header('X-Frame-Options: SAMEORIGIN');
+
 // Check if request is for custom domain or username
 $domain = $_SERVER['HTTP_HOST'];
 $username = $_GET['username'] ?? '';
 
+// If no username in GET, try to extract from REQUEST_URI
+if (empty($username)) {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    // Remove query string
+    $requestUri = strtok($requestUri, '?');
+    // Remove leading slash
+    $requestUri = ltrim($requestUri, '/');
+    // Check if it looks like a username (alphanumeric, underscore, hyphen, no slashes)
+    if (preg_match('/^[a-zA-Z0-9_-]+$/', $requestUri) && 
+        !file_exists(__DIR__ . $requestUri) && 
+        !is_dir(__DIR__ . '/' . $requestUri)) {
+        $username = $requestUri;
+    }
+}
+
 $pageClass = new Page();
 $page = null;
 
+// Define main domains (including localhost for development)
+$mainDomains = ['getphily.com', 'www.getphily.com', 'poda.bio', 'www.poda.bio', 'localhost', '127.0.0.1'];
+
 // First check if this is a custom domain (not our main domains)
-$mainDomains = ['getphily.com', 'www.getphily.com', 'podn.bio', 'www.podn.bio'];
 if (!in_array(strtolower($domain), $mainDomains)) {
     // Try custom domain first
     $page = $pageClass->getByCustomDomain(strtolower($domain));
@@ -101,8 +121,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
-    <!-- Podcast Player Styles (only load if RSS feed exists) -->
-    <?php if (!empty($page['rss_feed_url'])): ?>
+    <!-- Podcast Player Styles (only load if RSS feed exists and player is enabled) -->
+    <?php 
+    $podcastPlayerEnabled = isset($page['podcast_player_enabled']) ? (bool)$page['podcast_player_enabled'] : false;
+    $hasRssFeed = !empty($page['rss_feed_url']);
+    $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
+    ?>
+    <?php if ($showPodcastPlayer): ?>
         <link rel="stylesheet" href="/css/podcast-player.css">
         <link rel="stylesheet" href="/css/podcast-player-controls.css">
     <?php endif; ?>
@@ -160,14 +185,60 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         .profile-image {
-            width: 7.5rem;
-            height: 7.5rem;
-            border-radius: 50%;
             object-fit: cover;
-            margin-top: var(--space-xl);
-            margin-bottom: var(--space-sm);
-            border: var(--border-width-regular, 2px) solid var(--color-border-default);
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .profile-image-size-small {
+            width: 6.25rem;
+            height: 6.25rem;
+        }
+        
+        .profile-image-size-medium {
+            width: 8.75rem;
+            height: 8.75rem;
+        }
+        
+        .profile-image-size-large {
+            width: 11.25rem;
+            height: 11.25rem;
+        }
+        
+        .profile-image-shape-circle {
+            border-radius: 50%;
+        }
+        
+        .profile-image-shape-rounded {
+            border-radius: 1.125rem;
+        }
+        
+        .profile-image-shape-square {
+            border-radius: 0;
+        }
+        
+        .profile-image-shadow-none {
+            box-shadow: none;
+        }
+        
+        .profile-image-shadow-subtle {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-image-shadow-strong {
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .profile-image-border-none {
+            border: none;
+        }
+        
+        .profile-image-border-thin {
+            border: 2.625px solid rgba(15, 23, 42, 0.15);
+        }
+        
+        .profile-image-border-thick {
+            border: 5.25px solid rgba(15, 23, 42, 0.25);
         }
         
         .cover-image {
@@ -192,6 +263,30 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-size: var(--type-scale-sm, 1rem);
             line-height: var(--type-line-height-normal, 1.5);
             margin-bottom: var(--space-lg);
+        }
+        
+        .name-size-large {
+            font-size: 1.125rem;
+        }
+        
+        .name-size-xlarge {
+            font-size: 1.375rem;
+        }
+        
+        .name-size-xxlarge {
+            font-size: 1.625rem;
+        }
+        
+        .bio-size-small {
+            font-size: 0.875rem;
+        }
+        
+        .bio-size-medium {
+            font-size: 1rem;
+        }
+        
+        .bio-size-large {
+            font-size: 1.125rem;
         }
         
         /* Podcast Top Banner - Attached to drawer bottom */
@@ -620,7 +715,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         /* Other widgets (podcast, video, etc.) - full width */
-        .widget-podcast-custom,
         .widget-podcast,
         .widget-video,
         .widget-text,
@@ -2273,31 +2367,124 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             animation: auroraFlow 14s ease-in-out infinite;
             pointer-events: none;
         }
+
+        .widget-heading {
+            width: 100%;
+            padding: var(--space-sm, 1rem) var(--space-md, 1.25rem);
+            text-align: center;
+        }
+
+        .widget-heading-text {
+            margin: 0;
+            font-family: var(--heading-font, var(--font-family-heading));
+        }
+
+        .widget-heading-h1 .widget-heading-text {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: var(--type-weight-bold, 700);
+        }
+
+        .widget-heading-h2 .widget-heading-text {
+            font-size: clamp(1.6rem, 3.25vw, 2.2rem);
+            font-weight: var(--type-weight-semibold, 600);
+        }
+
+        .widget-heading-h3 .widget-heading-text {
+            font-size: clamp(1.3rem, 2.75vw, 1.8rem);
+            font-weight: var(--type-weight-medium, 500);
+        }
+
+        .widget-text-note {
+            width: 100%;
+            padding: var(--space-xs, 0.75rem) var(--space-sm, 1rem);
+            font-size: 0.9rem;
+            font-style: italic;
+            color: rgba(15, 23, 42, 0.75);
+            text-align: center;
+        }
+
+        .widget-text-note p {
+            margin: 0;
+        }
+
+        .widget-divider {
+            width: 100%;
+            padding: var(--space-xs, 0.75rem) var(--space-md, 1.25rem);
+        }
+
+        .widget-divider-line {
+            border: none;
+            height: 3px;
+            width: 100%;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        .widget-divider-line-shadow {
+            background: rgba(71, 85, 105, 0.6);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        .widget-divider-line-gradient {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.85), rgba(124, 58, 237, 0.85));
+        }
     </style>
 </head>
 <body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass); ?>">
     <div class="page-container">
+        <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
         <div class="profile-header">
-            <?php if ($page['profile_image']): ?>
-                <img src="<?php echo h($page['profile_image']); ?>" alt="Profile" class="profile-image">
+            <?php if ($page['profile_image']): 
+                $imageShape = $page['profile_image_shape'] ?? 'circle';
+                $imageShadow = $page['profile_image_shadow'] ?? 'subtle';
+                $imageSize = $page['profile_image_size'] ?? 'medium';
+                $imageBorder = $page['profile_image_border'] ?? 'none';
+                $shapeClass = 'profile-image-shape-' . $imageShape;
+                $shadowClass = 'profile-image-shadow-' . $imageShadow;
+                $sizeClass = 'profile-image-size-' . $imageSize;
+                $borderClass = 'profile-image-border-' . $imageBorder;
+            ?>
+                <img src="<?php echo h($page['profile_image']); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>">
             <?php endif; ?>
             
             <?php if ($page['cover_image_url']): ?>
                 <img src="<?php echo h($page['cover_image_url']); ?>" alt="Cover" class="cover-image">
             <?php endif; ?>
             
-            <?php
-            $pageTitleText = h($page['podcast_name'] ?: $page['username']);
+            <?php if ($page['podcast_name']): 
+                $nameAlignment = $page['name_alignment'] ?? 'center';
+                $nameTextSize = $page['name_text_size'] ?? 'large';
+                $alignmentStyle = 'text-align: ' . h($nameAlignment) . ';';
+                $sizeClass = 'name-size-' . h($nameTextSize);
+                // Allow safe HTML tags (strong, em, u, br) but sanitize the rest
+                $nameContent = $page['podcast_name'];
+                // First convert newlines to <br>, then strip unwanted tags
+                $nameContent = nl2br($nameContent);
+                $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
             ?>
-            <h1 class="page-title"><?php echo $pageTitleText; ?></h1>
+                <h1 class="page-title <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle; ?>"><?php echo $nameContent; ?></h1>
+            <?php elseif ($page['username']): ?>
+                <h1 class="page-title"><?php echo h($page['username']); ?></h1>
+            <?php endif; ?>
             
-            <?php if ($page['podcast_description']): ?>
-                <p class="page-description"><?php echo nl2br(h($page['podcast_description'])); ?></p>
+            <?php if ($page['podcast_description']): 
+                $bioAlignment = $page['bio_alignment'] ?? 'center';
+                $bioTextSize = $page['bio_text_size'] ?? 'medium';
+                $alignmentStyle = 'text-align: ' . h($bioAlignment) . ';';
+                $sizeClass = 'bio-size-' . h($bioTextSize);
+                // Allow safe HTML tags (strong, em, u, br) but sanitize the rest
+                $bioContent = $page['podcast_description'];
+                // First convert newlines to <br>, then strip unwanted tags
+                $bioContent = nl2br($bioContent);
+                $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
+            ?>
+                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle; ?>"><?php echo $bioContent; ?></p>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
         
         <!-- Podcast Player Top Banner (positioned independently, moves with drawer) -->
-        <?php if (!empty($page['rss_feed_url'])): ?>
+        <?php if ($showPodcastPlayer): ?>
             <div class="podcast-top-banner" id="podcast-top-banner">
                 <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
                     <i class="fas fa-podcast"></i>
@@ -2308,7 +2495,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         <?php endif; ?>
         
         <!-- Podcast Player Top Drawer -->
-        <?php if (!empty($page['rss_feed_url'])): ?>
+        <?php if ($showPodcastPlayer): ?>
             <div class="podcast-top-drawer" id="podcast-top-drawer">
                 
                 <!-- Tab Navigation -->
@@ -2529,7 +2716,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                     $featuredEffect = $widget['featured_effect'] ?? '';
                     
                     try {
-                        $rendered = WidgetRenderer::render($widget);
+                        $rendered = WidgetRenderer::render($widget, $page);
                         if (!empty($rendered)) {
                             // Wrap in featured container if featured
                             if ($isFeatured && $featuredEffect) {
@@ -2569,6 +2756,26 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             endif; ?>
         </div>
     </div>
+    
+    <!-- Footer -->
+    <?php if ((!isset($page['footer_visible']) || $page['footer_visible']) && (!empty($page['footer_text']) || !empty($page['footer_copyright']) || !empty($page['footer_privacy_link']) || !empty($page['footer_terms_link']))): ?>
+        <footer class="page-footer" style="margin-top: 2rem; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid rgba(15, 23, 42, 0.1);">
+            <?php if (!empty($page['footer_text'])): ?>
+                <p style="margin: 0 0 1rem 0; color: var(--color-text-secondary, #6b7280); font-size: 0.9rem;"><?php echo nl2br(h($page['footer_text'])); ?></p>
+            <?php endif; ?>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--color-text-secondary, #6b7280);">
+                <?php if (!empty($page['footer_copyright'])): ?>
+                    <span><?php echo h($page['footer_copyright']); ?></span>
+                <?php endif; ?>
+                <?php if (!empty($page['footer_privacy_link'])): ?>
+                    <a href="<?php echo h($page['footer_privacy_link']); ?>" target="_blank" rel="noopener noreferrer" style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Privacy Policy</a>
+                <?php endif; ?>
+                <?php if (!empty($page['footer_terms_link'])): ?>
+                    <a href="<?php echo h($page['footer_terms_link']); ?>" target="_blank" rel="noopener noreferrer" style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Terms of Service</a>
+                <?php endif; ?>
+            </div>
+        </footer>
+    <?php endif; ?>
     
     <!-- Email Subscription Drawer -->
     <?php if (!empty($page['email_service_provider'])): ?>
@@ -3065,8 +3272,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         })();
     </script>
     
-    <!-- Podcast Player JavaScript (only load if RSS feed exists) -->
-    <?php if (!empty($page['rss_feed_url'])): ?>
+    <!-- Podcast Player JavaScript (only load if RSS feed exists and player is enabled) -->
+    <?php if ($showPodcastPlayer): ?>
         <script src="/js/podcast-player-utils.js"></script>
         <script src="/js/podcast-player-rss-parser.js"></script>
         <script src="/js/podcast-player-audio.js"></script>

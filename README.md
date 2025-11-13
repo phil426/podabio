@@ -1,4 +1,4 @@
-# Podn.Bio - Link-in-Bio Platform for Podcasters
+# PodaBio - Link-in-Bio Platform for Podcasters
 
 A comprehensive link-in-bio platform designed for all content creators, with special focus on podcasters.
 
@@ -13,7 +13,7 @@ A comprehensive link-in-bio platform designed for all content creators, with spe
 5. **Page Display System** - Dynamic username-based pages with responsive design
 6. **Analytics Tracking** - Page views, link clicks, and email subscription tracking
 7. **Basic Classes** - User, Page, Analytics, Subscription, ImageHandler, RSSParser
-8. **User Dashboard** - Basic dashboard with account management (login methods, linking/unlinking)
+8. **PodaBio Studio shell** - React-based admin experience with account management, theme editor, and publishing flows (replaces the legacy dashboard)
 9. **Page Editor** - Full-featured page editor with drag-and-drop link reordering, link management, RSS feed import, image uploads (profile/background), podcast directory management, email subscription configuration, and settings/appearance customization
 10. **Shikwasa.js Podcast Player** - Integrated web audio player for podcast episodes with theme support
 11. **Email Subscription System** - Drawer slider for email subscriptions with integration for 6 major email service providers
@@ -128,7 +128,7 @@ location ~ ^/(index|features|pricing|about|blog|signup|login) {
    - SSH in and `git pull origin main`
    - Run DB migrations as needed (`php database/migrate_xyz.php`)
    - Clear caches/logs if applicable
-5. **Promote to new `podn.bio` host**
+5. **Promote to new `poda.bio` host**
    - Provision new Hostinger account pointing at the same repo
    - Clone from GitHub, copy `.env`/config secrets
    - Import the latest DB dump
@@ -169,7 +169,7 @@ location ~ ^/(index|features|pricing|about|blog|signup|login) {
 
 ## Next Steps
 
-1. ✅ User dashboard (basic version with account management - completed)
+1. ✅ Legacy user dashboard (retired; replaced by PodaBio Studio)
 2. ✅ Page editor with drag-and-drop (completed)
 3. ✅ Link management (completed - full CRUD with drag-and-drop)
 4. Enhanced theme customization with color/font pickers

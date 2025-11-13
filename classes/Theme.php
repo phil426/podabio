@@ -19,6 +19,25 @@ class Theme {
     }
     
     /**
+     * Safely decode JSON columns
+     * @param array $source Source row
+     * @param string $field Field name
+     * @return array|null
+     */
+    private function decodeJsonField(array $source, string $field) {
+        if (!isset($source[$field]) || $source[$field] === null) {
+            return null;
+        }
+
+        if (is_array($source[$field])) {
+            return $source[$field];
+        }
+
+        $decoded = json_decode($source[$field], true);
+        return is_array($decoded) ? $decoded : null;
+    }
+    
+    /**
      * Get cached theme to reduce database queries
      * @param int $themeId
      * @return array|null
@@ -1056,6 +1075,71 @@ class Theme {
     }
     
     /**
+     * Clone an existing theme into the current user's library
+     * @param int $themeId Theme to clone
+     * @param int $userId Destination user ID
+     * @param string|null $name Optional new name
+     * @return array ['success' => bool, 'theme_id' => int|null, 'error' => string|null]
+     */
+    public function cloneTheme($themeId, $userId, $name = null) {
+        $theme = fetchOne("SELECT * FROM themes WHERE id = ?", [$themeId]);
+
+        if (!$theme) {
+            return ['success' => false, 'theme_id' => null, 'error' => 'Theme not found'];
+        }
+
+        $cloneName = $name !== null && $name !== '' ? $name : ($theme['name'] ?? 'Custom theme') . ' Copy';
+
+        $themeData = [
+            'colors' => $this->decodeJsonField($theme, 'colors'),
+            'fonts' => $this->decodeJsonField($theme, 'fonts'),
+            'page_background' => $theme['page_background'] ?? null,
+            'widget_styles' => $this->decodeJsonField($theme, 'widget_styles'),
+            'spatial_effect' => $theme['spatial_effect'] ?? 'none',
+            'widget_background' => $theme['widget_background'] ?? null,
+            'widget_border_color' => $theme['widget_border_color'] ?? null,
+            'widget_primary_font' => $theme['widget_primary_font'] ?? null,
+            'widget_secondary_font' => $theme['widget_secondary_font'] ?? null,
+            'page_primary_font' => $theme['page_primary_font'] ?? null,
+            'page_secondary_font' => $theme['page_secondary_font'] ?? null
+        ];
+
+        if ($this->hasThemeColumn('color_tokens') && isset($theme['color_tokens'])) {
+            $themeData['color_tokens'] = $this->decodeJsonField($theme, 'color_tokens');
+        }
+
+        if ($this->hasThemeColumn('typography_tokens') && isset($theme['typography_tokens'])) {
+            $themeData['typography_tokens'] = $this->decodeJsonField($theme, 'typography_tokens');
+        }
+
+        if ($this->hasThemeColumn('spacing_tokens') && isset($theme['spacing_tokens'])) {
+            $themeData['spacing_tokens'] = $this->decodeJsonField($theme, 'spacing_tokens');
+        }
+
+        if ($this->hasThemeColumn('shape_tokens') && isset($theme['shape_tokens'])) {
+            $themeData['shape_tokens'] = $this->decodeJsonField($theme, 'shape_tokens');
+        }
+
+        if ($this->hasThemeColumn('motion_tokens') && isset($theme['motion_tokens'])) {
+            $themeData['motion_tokens'] = $this->decodeJsonField($theme, 'motion_tokens');
+        }
+
+        if ($this->hasThemeColumn('layout_density') && isset($theme['layout_density'])) {
+            $themeData['layout_density'] = $theme['layout_density'];
+        }
+
+        if ($this->hasThemeColumn('categories') && isset($theme['categories'])) {
+            $themeData['categories'] = $this->decodeJsonField($theme, 'categories');
+        }
+        
+        if ($this->hasThemeColumn('tags') && isset($theme['tags'])) {
+            $themeData['tags'] = $this->decodeJsonField($theme, 'tags');
+        }
+
+        return $this->createTheme($userId, $cloneName, $themeData);
+    }
+    
+    /**
      * Create a new user theme
      * @param int $userId User ID
      * @param string $name Theme name
@@ -1149,6 +1233,16 @@ class Theme {
             if ($this->hasThemeColumn('layout_density')) {
                 $columns[] = 'layout_density';
                 $params[] = $themeData['layout_density'] ?? null;
+            }
+            
+            if ($this->hasThemeColumn('categories')) {
+                $columns[] = 'categories';
+                $params[] = isset($themeData['categories']) ? (is_array($themeData['categories']) ? json_encode($themeData['categories']) : $themeData['categories']) : null;
+            }
+            
+            if ($this->hasThemeColumn('tags')) {
+                $columns[] = 'tags';
+                $params[] = isset($themeData['tags']) ? (is_array($themeData['tags']) ? json_encode($themeData['tags']) : $themeData['tags']) : null;
             }
             
             $columns[] = 'is_active';
@@ -1278,6 +1372,16 @@ class Theme {
             if ($this->hasThemeColumn('layout_density') && isset($themeData['layout_density'])) {
                 $updates[] = "layout_density = ?";
                 $params[] = $themeData['layout_density'];
+            }
+            
+            if ($this->hasThemeColumn('categories') && isset($themeData['categories'])) {
+                $updates[] = "categories = ?";
+                $params[] = is_array($themeData['categories']) ? json_encode($themeData['categories']) : $themeData['categories'];
+            }
+            
+            if ($this->hasThemeColumn('tags') && isset($themeData['tags'])) {
+                $updates[] = "tags = ?";
+                $params[] = is_array($themeData['tags']) ? json_encode($themeData['tags']) : $themeData['tags'];
             }
             
             if (empty($updates)) {

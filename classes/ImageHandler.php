@@ -101,16 +101,30 @@ class ImageHandler {
         }
         
         list($width, $height, $imageType) = $imageInfo;
-        
+        $sourceX = 0;
+        $sourceY = 0;
+        $sourceWidth = $width;
+        $sourceHeight = $height;
+
         // Determine target dimensions
         switch ($type) {
             case 'profile':
                 $targetWidth = PROFILE_IMAGE_WIDTH;
                 $targetHeight = PROFILE_IMAGE_HEIGHT;
+                $squareSize = min($width, $height);
+                $sourceWidth = $squareSize;
+                $sourceHeight = $squareSize;
+                $sourceX = (int)(($width - $squareSize) / 2);
+                $sourceY = (int)(($height - $squareSize) / 2);
                 break;
             case 'thumbnail':
                 $targetWidth = THUMBNAIL_WIDTH;
                 $targetHeight = THUMBNAIL_HEIGHT;
+                $squareSize = min($width, $height);
+                $sourceWidth = $squareSize;
+                $sourceHeight = $squareSize;
+                $sourceX = (int)(($width - $squareSize) / 2);
+                $sourceY = (int)(($height - $squareSize) / 2);
                 break;
             case 'background':
                 // Keep aspect ratio, just resize if too large
@@ -160,10 +174,16 @@ class ImageHandler {
         
         // Resize
         imagecopyresampled(
-            $destination, $source,
-            0, 0, 0, 0,
-            $targetWidth, $targetHeight,
-            $width, $height
+            $destination,
+            $source,
+            0,
+            0,
+            $sourceX,
+            $sourceY,
+            $targetWidth,
+            $targetHeight,
+            $sourceWidth,
+            $sourceHeight
         );
         
         // Save

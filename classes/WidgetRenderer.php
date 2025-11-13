@@ -9,11 +9,45 @@ require_once __DIR__ . '/WidgetRegistry.php';
 class WidgetRenderer {
     
     /**
+     * Get user's Instagram access token
+     * @param int|null $userId User ID
+     * @return string|null Access token or null if not found/expired
+     */
+    private static function getUserInstagramToken($userId) {
+        if (!$userId) {
+            return null;
+        }
+        
+        require_once __DIR__ . '/../config/database.php';
+        $user = fetchOne(
+            "SELECT instagram_access_token, instagram_token_expires_at 
+             FROM users 
+             WHERE id = ? AND instagram_access_token IS NOT NULL",
+            [$userId]
+        );
+        
+        if (!$user || empty($user['instagram_access_token'])) {
+            return null;
+        }
+        
+        // Check if token is expired
+        if (!empty($user['instagram_token_expires_at'])) {
+            $expiresAt = strtotime($user['instagram_token_expires_at']);
+            if ($expiresAt < time()) {
+                return null; // Token expired
+            }
+        }
+        
+        return $user['instagram_access_token'];
+    }
+    
+    /**
      * Render a widget
      * @param array $widget Widget data from database
+     * @param array|null $page Optional page data (for getting user_id)
      * @return string HTML output
      */
-    public static function render($widget) {
+    public static function render($widget, $page = null) {
         if (!$widget || !isset($widget['widget_type'])) {
             return '';
         }
@@ -22,6 +56,19 @@ class WidgetRenderer {
         $configData = is_string($widget['config_data']) 
             ? json_decode($widget['config_data'], true) 
             : ($widget['config_data'] ?? []);
+        
+        // Get user ID from page or widget
+        $userId = null;
+        if ($page && isset($page['user_id'])) {
+            $userId = $page['user_id'];
+        } elseif (isset($widget['page_id'])) {
+            // Get user_id from page
+            require_once __DIR__ . '/../config/database.php';
+            $pageData = fetchOne("SELECT user_id FROM pages WHERE id = ?", [$widget['page_id']]);
+            if ($pageData) {
+                $userId = $pageData['user_id'];
+            }
+        }
         
         // Get widget definition
         $widgetDef = WidgetRegistry::getWidget($widgetType);
@@ -41,6 +88,15 @@ class WidgetRenderer {
                 
             case 'text_html':
                 return self::renderTextHtml($widget, $configData);
+
+            case 'heading_block':
+                return self::renderHeadingBlock($widget, $configData);
+
+            case 'text_note':
+                return self::renderTextNote($widget, $configData);
+
+            case 'divider_rule':
+                return self::renderDividerRule($configData);
                 
             case 'image':
                 return self::renderImage($widget, $configData);
@@ -59,6 +115,33 @@ class WidgetRenderer {
                 
             case 'blog_related_posts':
                 return self::renderBlogRelatedPosts($widget, $configData);
+                
+            case 'shopify_product':
+                return self::renderShopifyProduct($widget, $configData);
+                
+            case 'shopify_product_list':
+                return self::renderShopifyProductList($widget, $configData);
+                
+            case 'shopify_collection':
+                return self::renderShopifyCollection($widget, $configData);
+                
+            case 'instagram_post':
+                return self::renderInstagramPost($widget, $configData, $userId);
+                
+            case 'instagram_feed':
+                return self::renderInstagramFeed($widget, $configData, $userId);
+                
+            case 'instagram_gallery':
+                return self::renderInstagramGallery($widget, $configData, $userId);
+                
+            case 'giphy_search':
+                return self::renderGiphySearch($widget, $configData);
+                
+            case 'giphy_trending':
+                return self::renderGiphyTrending($widget, $configData);
+                
+            case 'giphy_random':
+                return self::renderGiphyRandom($widget, $configData);
                 
             default:
                 // Fallback rendering
@@ -189,6 +272,61 @@ class WidgetRenderer {
         $html .= '</div>';
         $html .= '</div>';
         
+        return $html;
+    }
+
+    /**
+     * Render heading block widget
+     */
+    private static function renderHeadingBlock($widget, $configData) {
+        $text = trim($configData['text'] ?? $widget['title'] ?? '');
+        if ($text === '') {
+            return '';
+        }
+
+        $level = strtolower($configData['level'] ?? 'h2');
+        if (!in_array($level, ['h1', 'h2', 'h3'], true)) {
+            $level = 'h2';
+        }
+
+        $class = 'widget-item widget-heading widget-heading-' . $level;
+        $html = '<div class="' . $class . '">';
+        $html .= '<' . $level . ' class="widget-heading-text">' . htmlspecialchars($text) . '</' . $level . '>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Render italic note text widget
+     */
+    private static function renderTextNote($widget, $configData) {
+        $text = trim($configData['text'] ?? $widget['title'] ?? '');
+        if ($text === '') {
+            return '';
+        }
+
+        $html = '<div class="widget-item widget-text-note">';
+        $html .= '<p>' . htmlspecialchars($text) . '</p>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Render divider rule widget
+     */
+    private static function renderDividerRule($configData) {
+        $style = strtolower($configData['style'] ?? 'flat');
+        $allowed = ['flat', 'shadow', 'gradient'];
+        if (!in_array($style, $allowed, true)) {
+            $style = 'flat';
+        }
+
+        $html = '<div class="widget-item widget-divider">';
+        $html .= '<hr class="widget-divider-line widget-divider-line-' . $style . '" />';
+        $html .= '</div>';
+
         return $html;
     }
     
@@ -1238,6 +1376,644 @@ class WidgetRenderer {
         }
         
         $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Shopify product widget
+     */
+    private static function renderShopifyProduct($widget, $configData) {
+        require_once __DIR__ . '/ShopifyClient.php';
+        require_once __DIR__ . '/../config/shopify.php';
+        
+        $productHandle = $configData['product_handle'] ?? '';
+        $showDescription = isset($configData['show_description']) ? (bool)$configData['show_description'] : true;
+        $buttonText = $configData['button_text'] ?? 'Buy Now';
+        $title = $widget['title'] ?? '';
+        
+        if (empty($productHandle)) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Product handle is required</div></div></div>';
+        }
+        
+        if (!WidgetRegistry::isShopifyConfigured()) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
+        }
+        
+        $client = new ShopifyClient();
+        $product = $client->getProductByHandle($productHandle);
+        
+        if (!$product) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Product not found</div></div></div>';
+        }
+        
+        $productTitle = $product['title'] ?? $title;
+        $productDescription = $product['description'] ?? '';
+        $productImage = null;
+        if (!empty($product['images']['edges'])) {
+            $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
+        }
+        
+        $price = null;
+        $currencyCode = 'USD';
+        if (!empty($product['priceRange']['minVariantPrice'])) {
+            $price = $product['priceRange']['minVariantPrice']['amount'];
+            $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
+        }
+        
+        $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
+        
+        $html = '<div class="widget-item widget-shopify widget-shopify-product">';
+        $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-link">';
+        
+        if ($productImage) {
+            $html .= '<div class="shopify-product-image">';
+            $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '">';
+            $html .= '</div>';
+        }
+        
+        $html .= '<div class="shopify-product-content">';
+        $html .= '<div class="shopify-product-title">' . htmlspecialchars($productTitle) . '</div>';
+        
+        if ($price !== null) {
+            $html .= '<div class="shopify-product-price">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
+        }
+        
+        if ($showDescription && $productDescription) {
+            $html .= '<div class="shopify-product-description">' . htmlspecialchars(substr(strip_tags($productDescription), 0, 150)) . '...</div>';
+        }
+        
+        $html .= '<div class="shopify-product-button">' . htmlspecialchars($buttonText) . '</div>';
+        $html .= '</div>';
+        $html .= '</a>';
+        $html .= '</div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Shopify product list widget
+     */
+    private static function renderShopifyProductList($widget, $configData) {
+        require_once __DIR__ . '/ShopifyClient.php';
+        require_once __DIR__ . '/../config/shopify.php';
+        
+        $productCount = min(max((int)($configData['product_count'] ?? 10), 1), 50);
+        $searchQuery = $configData['search_query'] ?? null;
+        $layout = $configData['layout'] ?? 'list';
+        $showPrices = isset($configData['show_prices']) ? (bool)$configData['show_prices'] : true;
+        
+        if (!WidgetRegistry::isShopifyConfigured()) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
+        }
+        
+        $client = new ShopifyClient();
+        $products = $client->getProducts($productCount, $searchQuery);
+        
+        if (empty($products)) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note">No products found</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-shopify widget-shopify-product-list layout-' . h($layout) . '">';
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="shopify-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">';
+        } else {
+            $html .= '<div class="shopify-products-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($products as $product) {
+            $productTitle = $product['title'] ?? 'Untitled Product';
+            $productHandle = $product['handle'] ?? '';
+            $productImage = null;
+            if (!empty($product['images']['edges'])) {
+                $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
+            }
+            
+            $price = null;
+            $currencyCode = 'USD';
+            if (!empty($product['priceRange']['minVariantPrice'])) {
+                $price = $product['priceRange']['minVariantPrice']['amount'];
+                $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
+            }
+            
+            $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
+            
+            $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-item">';
+            
+            if ($layout === 'grid') {
+                $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
+                if ($productImage) {
+                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                }
+            } else {
+                $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
+                if ($productImage) {
+                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
+                }
+            }
+            
+            $html .= '<div style="flex: 1;">';
+            $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . htmlspecialchars($productTitle) . '</h3>';
+            
+            if ($showPrices && $price !== null) {
+                $html .= '<div style="font-size: 0.875rem; color: #666; font-weight: 500;">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
+            }
+            $html .= '</div>';
+            
+            $html .= '</div></a>';
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Shopify collection widget
+     */
+    private static function renderShopifyCollection($widget, $configData) {
+        require_once __DIR__ . '/ShopifyClient.php';
+        require_once __DIR__ . '/../config/shopify.php';
+        
+        $collectionHandle = $configData['collection_handle'] ?? '';
+        $productCount = min(max((int)($configData['product_count'] ?? 10), 1), 50);
+        $layout = $configData['layout'] ?? 'list';
+        $showCollectionTitle = isset($configData['show_collection_title']) ? (bool)$configData['show_collection_title'] : true;
+        $showPrices = isset($configData['show_prices']) ? (bool)$configData['show_prices'] : true;
+        
+        if (empty($collectionHandle)) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Collection handle is required</div></div></div>';
+        }
+        
+        if (!WidgetRegistry::isShopifyConfigured()) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
+        }
+        
+        $client = new ShopifyClient();
+        $collection = $client->getCollectionByHandle($collectionHandle, $productCount);
+        
+        if (!$collection) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Collection not found</div></div></div>';
+        }
+        
+        $collectionTitle = $collection['title'] ?? '';
+        $products = [];
+        if (!empty($collection['products']['edges'])) {
+            foreach ($collection['products']['edges'] as $edge) {
+                $products[] = $edge['node'];
+            }
+        }
+        
+        if (empty($products)) {
+            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note">No products in this collection</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-shopify widget-shopify-collection layout-' . h($layout) . '">';
+        
+        if ($showCollectionTitle && $collectionTitle) {
+            $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 600;">' . htmlspecialchars($collectionTitle) . '</h3>';
+        }
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="shopify-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">';
+        } else {
+            $html .= '<div class="shopify-products-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($products as $product) {
+            $productTitle = $product['title'] ?? 'Untitled Product';
+            $productHandle = $product['handle'] ?? '';
+            $productImage = null;
+            if (!empty($product['images']['edges'])) {
+                $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
+            }
+            
+            $price = null;
+            $currencyCode = 'USD';
+            if (!empty($product['priceRange']['minVariantPrice'])) {
+                $price = $product['priceRange']['minVariantPrice']['amount'];
+                $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
+            }
+            
+            $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
+            
+            $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-item">';
+            
+            if ($layout === 'grid') {
+                $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
+                if ($productImage) {
+                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                }
+            } else {
+                $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
+                if ($productImage) {
+                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
+                }
+            }
+            
+            $html .= '<div style="flex: 1;">';
+            $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . htmlspecialchars($productTitle) . '</h3>';
+            
+            if ($showPrices && $price !== null) {
+                $html .= '<div style="font-size: 0.875rem; color: #666; font-weight: 500;">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
+            }
+            $html .= '</div>';
+            
+            $html .= '</div></a>';
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Instagram post widget
+     */
+    private static function renderInstagramPost($widget, $configData, $userId = null) {
+        require_once __DIR__ . '/InstagramClient.php';
+        require_once __DIR__ . '/../config/instagram.php';
+        
+        $mediaId = $configData['media_id'] ?? '';
+        $showCaption = isset($configData['show_caption']) ? (bool)$configData['show_caption'] : true;
+        $showTimestamp = isset($configData['show_timestamp']) ? (bool)$configData['show_timestamp'] : true;
+        
+        if (empty($mediaId)) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Media ID is required</div></div></div>';
+        }
+        
+        // Get user's Instagram token
+        $accessToken = self::getUserInstagramToken($userId);
+        
+        if (!$accessToken) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Instagram is not connected. Please connect your Instagram account in the Integrations tab.</div></div></div>';
+        }
+        
+        // Use user's token, fallback to global config if needed
+        $appId = defined('INSTAGRAM_APP_ID') ? INSTAGRAM_APP_ID : '';
+        $appSecret = defined('INSTAGRAM_APP_SECRET') ? INSTAGRAM_APP_SECRET : '';
+        $client = new InstagramClient($appId, $appSecret, $accessToken);
+        $media = $client->getMedia($mediaId);
+        
+        if (!$media || isset($media['error'])) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Post not found or unable to load</div></div></div>';
+        }
+        
+        $mediaUrl = $media['media_url'] ?? $media['thumbnail_url'] ?? '';
+        $mediaType = $media['media_type'] ?? 'IMAGE';
+        $caption = $media['caption'] ?? '';
+        $permalink = $media['permalink'] ?? '';
+        $timestamp = $media['timestamp'] ?? '';
+        
+        $html = '<div class="widget-item widget-instagram widget-instagram-post">';
+        
+        if ($permalink) {
+            $html .= '<a href="' . htmlspecialchars($permalink) . '" target="_blank" rel="noopener noreferrer" class="instagram-post-link">';
+        }
+        
+        if ($mediaUrl) {
+            $html .= '<div class="instagram-media">';
+            if ($mediaType === 'VIDEO') {
+                $html .= '<video src="' . htmlspecialchars($mediaUrl) . '" controls style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 8px;"></video>';
+            } else {
+                $html .= '<img src="' . htmlspecialchars($mediaUrl) . '" alt="Instagram post" style="width: 100%; height: auto; border-radius: 8px; display: block;">';
+            }
+            $html .= '</div>';
+        }
+        
+        if ($showCaption && $caption) {
+            $html .= '<div class="instagram-caption" style="padding: 0.75rem; font-size: 0.875rem; color: #333; line-height: 1.5;">';
+            $html .= htmlspecialchars(InstagramClient::truncateCaption($caption, 200));
+            $html .= '</div>';
+        }
+        
+        if ($showTimestamp && $timestamp) {
+            $html .= '<div class="instagram-timestamp" style="padding: 0 0.75rem 0.75rem; font-size: 0.75rem; color: #999;">';
+            $html .= htmlspecialchars(InstagramClient::formatTimestamp($timestamp));
+            $html .= '</div>';
+        }
+        
+        if ($permalink) {
+            $html .= '</a>';
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Instagram feed widget
+     */
+    private static function renderInstagramFeed($widget, $configData, $userId = null) {
+        require_once __DIR__ . '/InstagramClient.php';
+        require_once __DIR__ . '/../config/instagram.php';
+        
+        $postCount = min(max((int)($configData['post_count'] ?? 12), 1), 100);
+        $layout = $configData['layout'] ?? 'grid';
+        $showCaptions = isset($configData['show_captions']) ? (bool)$configData['show_captions'] : false;
+        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
+        
+        // Get user's Instagram token
+        $accessToken = self::getUserInstagramToken($userId);
+        
+        if (!$accessToken) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Instagram is not connected. Please connect your Instagram account in the Integrations tab.</div></div></div>';
+        }
+        
+        // Use user's token, fallback to global config if needed
+        $appId = defined('INSTAGRAM_APP_ID') ? INSTAGRAM_APP_ID : '';
+        $appSecret = defined('INSTAGRAM_APP_SECRET') ? INSTAGRAM_APP_SECRET : '';
+        $client = new InstagramClient($appId, $appSecret, $accessToken);
+        $mediaItems = $client->getUserMedia($postCount);
+        
+        if (empty($mediaItems)) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note">No posts found</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-instagram widget-instagram-feed layout-' . h($layout) . '">';
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="instagram-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: 0.5rem;">';
+        } else {
+            $html .= '<div class="instagram-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($mediaItems as $media) {
+            $mediaUrl = $media['media_url'] ?? $media['thumbnail_url'] ?? '';
+            $mediaType = $media['media_type'] ?? 'IMAGE';
+            $caption = $media['caption'] ?? '';
+            $permalink = $media['permalink'] ?? '';
+            $timestamp = $media['timestamp'] ?? '';
+            
+            if ($layout === 'grid') {
+                $html .= '<a href="' . htmlspecialchars($permalink) . '" target="_blank" rel="noopener noreferrer" class="instagram-grid-item" style="display: block; position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px;">';
+                if ($mediaUrl) {
+                    $html .= '<img src="' . htmlspecialchars($mediaUrl) . '" alt="Instagram post" style="width: 100%; height: 100%; object-fit: cover;">';
+                }
+                if ($mediaType === 'VIDEO') {
+                    $html .= '<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.6); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">VIDEO</div>';
+                }
+                $html .= '</a>';
+            } else {
+                $html .= '<a href="' . htmlspecialchars($permalink) . '" target="_blank" rel="noopener noreferrer" class="instagram-list-item" style="display: flex; gap: 1rem; text-decoration: none; color: inherit; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
+                if ($mediaUrl) {
+                    $html .= '<img src="' . htmlspecialchars($mediaUrl) . '" alt="Instagram post" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">';
+                }
+                $html .= '<div style="flex: 1;">';
+                if ($showCaptions && $caption) {
+                    $html .= '<div style="font-size: 0.875rem; margin-bottom: 0.5rem;">' . htmlspecialchars(InstagramClient::truncateCaption($caption, 150)) . '</div>';
+                }
+                if ($timestamp) {
+                    $html .= '<div style="font-size: 0.75rem; color: #999;">' . htmlspecialchars(InstagramClient::formatTimestamp($timestamp)) . '</div>';
+                }
+                $html .= '</div>';
+                $html .= '</a>';
+            }
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Instagram gallery widget
+     */
+    private static function renderInstagramGallery($widget, $configData, $userId = null) {
+        require_once __DIR__ . '/InstagramClient.php';
+        require_once __DIR__ . '/../config/instagram.php';
+        
+        $postCount = min(max((int)($configData['post_count'] ?? 9), 1), 100);
+        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
+        $spacing = $configData['spacing'] ?? 'small';
+        
+        $spacingMap = [
+            'none' => '0',
+            'small' => '0.25rem',
+            'medium' => '0.5rem',
+            'large' => '1rem'
+        ];
+        $gap = $spacingMap[$spacing] ?? '0.25rem';
+        
+        // Get user's Instagram token
+        $accessToken = self::getUserInstagramToken($userId);
+        
+        if (!$accessToken) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Instagram is not connected. Please connect your Instagram account in the Integrations tab.</div></div></div>';
+        }
+        
+        // Use user's token, fallback to global config if needed
+        $appId = defined('INSTAGRAM_APP_ID') ? INSTAGRAM_APP_ID : '';
+        $appSecret = defined('INSTAGRAM_APP_SECRET') ? INSTAGRAM_APP_SECRET : '';
+        $client = new InstagramClient($appId, $appSecret, $accessToken);
+        $mediaItems = $client->getUserMedia($postCount);
+        
+        if (empty($mediaItems)) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note">No posts found</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-instagram widget-instagram-gallery">';
+        $html .= '<div class="instagram-gallery-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: ' . $gap . ';">';
+        
+        foreach ($mediaItems as $media) {
+            $mediaUrl = $media['media_url'] ?? $media['thumbnail_url'] ?? '';
+            $mediaType = $media['media_type'] ?? 'IMAGE';
+            $permalink = $media['permalink'] ?? '';
+            
+            $html .= '<a href="' . htmlspecialchars($permalink) . '" target="_blank" rel="noopener noreferrer" class="instagram-gallery-item" style="display: block; position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+            if ($mediaUrl) {
+                $html .= '<img src="' . htmlspecialchars($mediaUrl) . '" alt="Instagram post" style="width: 100%; height: 100%; object-fit: cover;">';
+            }
+            if ($mediaType === 'VIDEO') {
+                $html .= '<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">▶</div>';
+            }
+            $html .= '</a>';
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Giphy search widget
+     */
+    private static function renderGiphySearch($widget, $configData) {
+        require_once __DIR__ . '/GiphyClient.php';
+        require_once __DIR__ . '/../config/giphy.php';
+        
+        $searchQuery = $configData['search_query'] ?? '';
+        $gifCount = min(max((int)($configData['gif_count'] ?? 12), 1), 50);
+        $layout = $configData['layout'] ?? 'grid';
+        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
+        $rating = $configData['rating'] ?? 'g';
+        
+        if (empty($searchQuery)) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Search query is required</div></div></div>';
+        }
+        
+        if (!WidgetRegistry::isGiphyConfigured()) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
+        }
+        
+        $client = new GiphyClient();
+        $gifs = $client->search($searchQuery, $gifCount, $rating);
+        
+        if (empty($gifs)) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note">No GIFs found</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-giphy widget-giphy-search layout-' . h($layout) . '">';
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="giphy-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: 0.5rem;">';
+        } else {
+            $html .= '<div class="giphy-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($gifs as $gif) {
+            $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
+            $previewUrl = GiphyClient::getPreviewImage($gif['images'] ?? []);
+            $gifTitle = $gif['title'] ?? 'GIF';
+            $gifPermalink = $gif['url'] ?? '';
+            
+            if (!$gifUrl) {
+                continue;
+            }
+            
+            if ($layout === 'grid') {
+                $html .= '<div class="giphy-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
+                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
+                $html .= '</div>';
+            } else {
+                $html .= '<div class="giphy-item" style="display: flex; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
+                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
+                $html .= '<div style="flex: 1; display: flex; align-items: center;">';
+                $html .= '<div style="font-size: 0.875rem; color: #333;">' . htmlspecialchars($gifTitle) . '</div>';
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Giphy trending widget
+     */
+    private static function renderGiphyTrending($widget, $configData) {
+        require_once __DIR__ . '/GiphyClient.php';
+        require_once __DIR__ . '/../config/giphy.php';
+        
+        $gifCount = min(max((int)($configData['gif_count'] ?? 12), 1), 50);
+        $layout = $configData['layout'] ?? 'grid';
+        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
+        $rating = $configData['rating'] ?? 'g';
+        
+        if (!WidgetRegistry::isGiphyConfigured()) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
+        }
+        
+        $client = new GiphyClient();
+        $gifs = $client->getTrending($gifCount, $rating);
+        
+        if (empty($gifs)) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note">No trending GIFs found</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-giphy widget-giphy-trending layout-' . h($layout) . '">';
+        $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 600;">Trending GIFs</h3>';
+        
+        if ($layout === 'grid') {
+            $html .= '<div class="giphy-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: 0.5rem;">';
+        } else {
+            $html .= '<div class="giphy-list" style="display: flex; flex-direction: column; gap: 1rem;">';
+        }
+        
+        foreach ($gifs as $gif) {
+            $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
+            $previewUrl = GiphyClient::getPreviewImage($gif['images'] ?? []);
+            $gifTitle = $gif['title'] ?? 'GIF';
+            $gifPermalink = $gif['url'] ?? '';
+            
+            if (!$gifUrl) {
+                continue;
+            }
+            
+            if ($layout === 'grid') {
+                $html .= '<div class="giphy-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
+                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
+                $html .= '</div>';
+            } else {
+                $html .= '<div class="giphy-item" style="display: flex; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
+                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
+                $html .= '<div style="flex: 1; display: flex; align-items: center;">';
+                $html .= '<div style="font-size: 0.875rem; color: #333;">' . htmlspecialchars($gifTitle) . '</div>';
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+        }
+        
+        $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Giphy random widget
+     */
+    private static function renderGiphyRandom($widget, $configData) {
+        require_once __DIR__ . '/GiphyClient.php';
+        require_once __DIR__ . '/../config/giphy.php';
+        
+        $tag = $configData['tag'] ?? null;
+        $rating = $configData['rating'] ?? 'g';
+        $showTitle = isset($configData['show_title']) ? (bool)$configData['show_title'] : false;
+        
+        if (!WidgetRegistry::isGiphyConfigured()) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
+        }
+        
+        $client = new GiphyClient();
+        $gif = $client->getRandom($tag, $rating);
+        
+        if (!$gif) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Unable to load random GIF</div></div></div>';
+        }
+        
+        $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
+        $gifTitle = $gif['title'] ?? 'Random GIF';
+        $gifPermalink = $gif['url'] ?? '';
+        
+        if (!$gifUrl) {
+            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">GIF data incomplete</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-giphy widget-giphy-random">';
+        
+        if ($gifPermalink) {
+            $html .= '<a href="' . htmlspecialchars($gifPermalink) . '" target="_blank" rel="noopener noreferrer" class="giphy-random-link">';
+        }
+        
+        $html .= '<div class="giphy-random-gif" style="text-align: center;">';
+        $html .= '<img src="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 0 auto;">';
+        $html .= '</div>';
+        
+        if ($showTitle && $gifTitle) {
+            $html .= '<div class="giphy-random-title" style="padding: 0.75rem; text-align: center; font-size: 0.875rem; color: #333;">';
+            $html .= htmlspecialchars($gifTitle);
+            $html .= '</div>';
+        }
+        
+        if ($gifPermalink) {
+            $html .= '</a>';
+        }
+        
+        $html .= '</div>';
         
         return $html;
     }

@@ -27,8 +27,10 @@
     # Route custom domains (check if HTTP_HOST is a custom domain)
     RewriteCond %{HTTP_HOST} !^getphily\.com$ [NC]
     RewriteCond %{HTTP_HOST} !^www\.getphily\.com$ [NC]
-    RewriteCond %{HTTP_HOST} !^podn\.bio$ [NC]
-    RewriteCond %{HTTP_HOST} !^www\.podn\.bio$ [NC]
+    RewriteCond %{HTTP_HOST} !^poda\.bio$ [NC]
+    RewriteCond %{HTTP_HOST} !^www\.poda\.bio$ [NC]
+    RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ /page.php?username=$1 [L,QSA]
@@ -41,6 +43,10 @@
     RewriteCond %{REQUEST_URI} !^/api/
     RewriteCond %{REQUEST_URI} !^/blog/
     RewriteCond %{REQUEST_URI} !^/payment/
+    RewriteCond %{REQUEST_URI} !^/editor
+    RewriteCond %{REQUEST_URI} !^/login
+    RewriteCond %{REQUEST_URI} !^/signup
+    RewriteCond %{REQUEST_URI} !^/index\.php
     RewriteRule ^([a-zA-Z0-9_-]+)$ /page.php?username=$1 [L,QSA]
     
     # Route admin panel
