@@ -17,14 +17,15 @@ if (!feature_flag('admin_new_experience')) {
 
 $accountWorkspaceEnabled = feature_flag('admin_account_workspace', true);
 
-$manifestPath = __DIR__ . '/../admin-ui/dist/manifest.json';
+$manifestPath = __DIR__ . '/../admin-ui/dist/.vite/manifest.json';
 $scriptSrc = null;
 $cssHref = null;
 
 if (file_exists($manifestPath)) {
     $manifest = json_decode(file_get_contents($manifestPath), true);
-    if (isset($manifest['src/main.tsx'])) {
-        $entry = $manifest['src/main.tsx'];
+    // Vite manifest uses 'index.html' as the key
+    if (isset($manifest['index.html'])) {
+        $entry = $manifest['index.html'];
         $scriptSrc = '/admin-ui/dist/' . $entry['file'];
         if (!empty($entry['css'])) {
             $cssHref = '/admin-ui/dist/' . $entry['css'][0];

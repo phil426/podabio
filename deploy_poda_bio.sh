@@ -13,13 +13,29 @@ echo ""
 # Server details
 SSH_HOST="u925957603@195.179.237.142"
 SSH_PORT="65002"
+# Password with special characters - use single quotes to prevent expansion
+SSH_PASS='[REDACTED]'
 PROJECT_DIR="/home/u925957603/domains/poda.bio/public_html/"
 
 echo "📡 Connecting to Hostinger server (poda.bio)..."
 echo ""
 
-# Deploy via SSH
-ssh -p $SSH_PORT $SSH_HOST << 'ENDSSH'
+# Check if sshpass is installed
+if ! command -v sshpass &> /dev/null; then
+    echo "❌ sshpass not found. Please install it:"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "   brew install hudochenkov/sshpass/sshpass"
+    else
+        echo "   sudo apt-get install sshpass"
+    fi
+    exit 1
+fi
+
+# Deploy via SSH with password authentication
+# Note: If this fails, you may need to:
+# 1. Manually connect once: ssh -p $SSH_PORT $SSH_HOST (to accept host key)
+# 2. Or set up SSH keys: ssh-copy-id -p $SSH_PORT $SSH_HOST
+sshpass -p "$SSH_PASS" ssh -p $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts $SSH_HOST << 'ENDSSH'
     set -e
     cd /home/u925957603/domains/poda.bio/public_html/
     
