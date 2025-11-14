@@ -246,6 +246,7 @@ class WidgetRenderer {
         return $html;
     }
     
+    /**
      * Render text/HTML widget
      */
     private static function renderTextHtml($widget, $configData) {
