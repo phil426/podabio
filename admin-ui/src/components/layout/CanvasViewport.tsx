@@ -23,15 +23,25 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const page = data?.page;
+  const [dataVersion, setDataVersion] = useState(0);
 
-  // Construct the public page URL with preview dimensions
+  // Increment version when data changes to force iframe refresh
+  useEffect(() => {
+    if (data) {
+      setDataVersion((prev) => prev + 1);
+    }
+  }, [data]);
+
+  // Construct the public page URL with preview dimensions and cache-busting
+  // The version ensures the iframe refreshes when data changes
   const publicPageUrl = useMemo(() => {
     if (!page?.username) return null;
     // Use the current origin and construct the public page URL
     const baseUrl = window.location.origin;
     // Pass device width as query parameter so page renders at exact device width
-    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_width=${selectedDevice.width}`;
-  }, [page?.username, selectedDevice.width]);
+    // Add version for cache-busting to ensure fresh content after updates
+    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_width=${selectedDevice.width}&_v=${dataVersion}`;
+  }, [page?.username, selectedDevice.width, dataVersion]);
 
   const previewDimensions = useMemo(() => {
     const scaledWidth = selectedDevice.width * 0.75;
@@ -144,6 +154,7 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
                 </div>
               )}
               <iframe
+                key={publicPageUrl}
                 ref={iframeRef}
                 src={publicPageUrl}
                 className={styles.previewIframe}

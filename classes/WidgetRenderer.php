@@ -196,7 +196,7 @@ class WidgetRenderer {
         }
         
         $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        $html .= '<div class="widget-text">' . htmlspecialchars($title) . '</div>';
         if ($description) {
             $html .= '<div class="widget-description">' . htmlspecialchars($description) . '</div>';
         }
@@ -215,7 +215,6 @@ class WidgetRenderer {
     private static function renderYouTubeVideo($widget, $configData) {
         // Support both video_url (new) and video_id (legacy) for backward compatibility
         $videoUrl = $configData['video_url'] ?? $configData['video_id'] ?? '';
-        $title = $widget['title'] ?? 'Video';
         $autoplay = isset($configData['autoplay']) && $configData['autoplay'];
         
         if (!$videoUrl) {
@@ -237,19 +236,16 @@ class WidgetRenderer {
             $embedUrl .= '?autoplay=1';
         }
         
+        // Render only the video iframe, wrapped in widget-item to inherit border and shadow styles
         $html = '<div class="widget-item widget-video">';
-        $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
         $html .= '<div class="widget-video-embed">';
-        $html .= '<iframe width="100%" height="315" src="' . $embedUrl . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-        $html .= '</div>';
+        $html .= '<iframe src="' . $embedUrl . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         $html .= '</div>';
         $html .= '</div>';
         
         return $html;
     }
     
-    /**
      * Render text/HTML widget
      */
     private static function renderTextHtml($widget, $configData) {
@@ -261,11 +257,6 @@ class WidgetRenderer {
         }
         
         $html = '<div class="widget-item widget-text">';
-        if ($title) {
-            $html .= '<div class="widget-content">';
-            $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
-            $html .= '</div>';
-        }
         $html .= '<div class="widget-text-content">';
         // Allow HTML but sanitize dangerous tags
         $html .= self::sanitizeHtml($content);
@@ -395,7 +386,7 @@ class WidgetRenderer {
             }
             
             if (empty($rssFeedUrl)) {
-                return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
+                return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
             }
             
             if ($widgetId <= 0) {
@@ -1157,9 +1148,7 @@ class WidgetRenderer {
         }
         
         $html = '<button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">';
-        $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">📧 Subscribe to Email List</div>';
-        $html .= '</div>';
+        $html .= '<div class="widget-content">📧 Subscribe to Email List</div>';
         $html .= '</button>';
         
         return $html;

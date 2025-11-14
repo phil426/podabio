@@ -1,657 +1,3494 @@
 <?php
 /**
- * Page Class
- * Podn.Bio
+ * Public Page Display
+ * Podn.Bio - Displays user's link-in-bio page
  */
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/config/constants.php';
+require_once __DIR__ . '/includes/session.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/theme-helpers.php';
+require_once __DIR__ . '/classes/Page.php';
+require_once __DIR__ . '/classes/Analytics.php';
+require_once __DIR__ . '/classes/Theme.php';
+require_once __DIR__ . '/classes/ThemeCSSGenerator.php';
 
-class Page {
-    private $pdo;
-    
-    public function __construct() {
-        $this->pdo = getDB();
-    }
-    
-    /**
-     * Get page by username
-     * @param string $username
-     * @return array|null
-     */
-    public function getByUsername($username) {
-        return fetchOne(
-            "SELECT p.*, u.email FROM pages p 
-             JOIN users u ON p.user_id = u.id 
-             WHERE p.username = ? AND p.is_active = 1",
-            [$username]
-        );
-    }
-    
-    /**
-     * Get page by custom domain
-     * @param string $domain
-     * @return array|null
-     */
-    public function getByCustomDomain($domain) {
-        return fetchOne(
-            "SELECT p.*, u.email FROM pages p 
-             JOIN users u ON p.user_id = u.id 
-             WHERE p.custom_domain = ? AND p.is_active = 1",
-            [$domain]
-        );
-    }
-    
-    /**
-     * Get page by user ID
-     * @param int $userId
-     * @return array|null
-     */
-    public function getByUserId($userId) {
-        return fetchOne("SELECT * FROM pages WHERE user_id = ?", [$userId]);
-    }
-    
-    /**
-     * Create new page for user
-     * @param int $userId
-     * @param string $username
-     * @return array ['success' => bool, 'page_id' => int|null, 'error' => string|null]
-     */
-    public function create($userId, $username) {
-        // Validate username
-        if (!preg_match('/^[a-zA-Z0-9_-]{3,30}$/', $username)) {
-            return ['success' => false, 'page_id' => null, 'error' => 'Username must be 3-30 characters and contain only letters, numbers, underscores, and hyphens'];
-        }
-        
-        // Check if username exists
-        $existing = fetchOne("SELECT id FROM pages WHERE username = ?", [$username]);
-        if ($existing) {
-            return ['success' => false, 'page_id' => null, 'error' => 'Username already taken'];
-        }
-        
-        // Check if user already has a page
-        $userPage = $this->getByUserId($userId);
-        if ($userPage) {
-            return ['success' => false, 'page_id' => null, 'error' => 'You already have a page'];
-        }
-        
-        // Create default subscription (free plan)
-        require_once __DIR__ . '/Subscription.php';
-        $subscription = new Subscription();
-        $subResult = $subscription->createDefault($userId);
-        if (!$subResult['success']) {
-            error_log("Subscription creation failed during page creation: " . ($subResult['error'] ?? 'Unknown error'));
-            // Continue anyway - subscription creation failure shouldn't block page creation
-        }
-        
-        try {
-            $stmt = $this->pdo->prepare("
-                INSERT INTO pages (user_id, username, theme_id, layout_option)
-                VALUES (?, ?, 1, 'layout1')
-            ");
-            $stmt->execute([$userId, $username]);
-            
-            $pageId = $this->pdo->lastInsertId();
-            
-            return ['success' => true, 'page_id' => $pageId, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Page creation failed: " . $e->getMessage());
-            return ['success' => false, 'page_id' => null, 'error' => 'Failed to create page'];
-        }
-    }
-    
-    /**
-     * Update page
-     * @param int $pageId
-     * @param array $data
-     * @return bool
-     */
-    public function update($pageId, $data) {
-        $allowedFields = [
-            'username', 'custom_domain', 'rss_feed_url', 'podcast_name', 
-            'podcast_description', 'cover_image_url', 'theme_id', 'colors', 
-            'fonts', 'layout_option', 'background_image', 'profile_image',
-            'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin'
-        ];
-        
-        $updates = [];
-        $params = [];
-        
-        foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
-                if ($field === 'colors' || $field === 'fonts') {
-                    // JSON encode arrays
-                    $updates[] = "$field = ?";
-                    $params[] = is_array($data[$field]) ? json_encode($data[$field]) : $data[$field];
-                } else {
-                    $updates[] = "$field = ?";
-                    $params[] = $data[$field];
-                }
-            }
-        }
-        
-        if (empty($updates)) {
-            return false;
-        }
-        
-        $params[] = $pageId;
-        $sql = "UPDATE pages SET " . implode(', ', $updates) . " WHERE id = ?";
-        
-        try {
-            executeQuery($sql, $params);
-            return true;
-        } catch (PDOException $e) {
-            error_log("Page update failed: " . $e->getMessage());
-            return false;
-        }
-    }
-    
-    /**
-     * Get page links (legacy method - use getWidgets instead)
-     * @param int $pageId
-     * @return array
-     * @deprecated Use getWidgets() instead
-     */
-    public function getLinks($pageId) {
-        // For backward compatibility, return widgets converted to link format
-        $widgets = $this->getWidgets($pageId);
-        $links = [];
-        foreach ($widgets as $widget) {
-            $config = is_string($widget['config_data']) ? json_decode($widget['config_data'], true) : ($widget['config_data'] ?? []);
-            $links[] = [
-                'id' => $widget['id'],
-                'page_id' => $widget['page_id'],
-                'type' => $widget['widget_type'],
-                'title' => $widget['title'],
-                'url' => $config['url'] ?? '',
-                'thumbnail_image' => $config['thumbnail_image'] ?? null,
-                'icon' => $config['icon'] ?? null,
-                'display_order' => $widget['display_order'],
-                'disclosure_text' => $config['disclosure_text'] ?? null,
-                'is_active' => $widget['is_active']
-            ];
-        }
-        return $links;
-    }
-    
-    /**
-     * Get page widgets
-     * @param int $pageId
-     * @return array
-     */
-    public function getWidgets($pageId) {
-        return fetchAll(
-            "SELECT * FROM widgets WHERE page_id = ? AND is_active = 1 ORDER BY display_order ASC",
-            [$pageId]
-        );
-    }
-    
-    /**
-     * Get all widgets for a page (including inactive)
-     * @param int $pageId
-     * @return array
-     */
-    public function getAllWidgets($pageId) {
-        return fetchAll(
-            "SELECT * FROM widgets WHERE page_id = ? ORDER BY display_order ASC",
-            [$pageId]
-        );
-    }
-    
-    /**
-     * Get page episodes
-     * @param int $pageId
-     * @param int $limit
-     * @return array
-     */
-    public function getEpisodes($pageId, $limit = 10) {
-        return fetchAll(
-            "SELECT * FROM episodes WHERE page_id = ? AND is_visible = 1 
-             ORDER BY pub_date DESC, created_at DESC LIMIT ?",
-            [$pageId, $limit]
-        );
-    }
-    
-    /**
-     * Get page theme
-     * @param int $themeId
-     * @return array|null
-     */
-    public function getTheme($themeId) {
-        return fetchOne("SELECT * FROM themes WHERE id = ? AND is_active = 1", [$themeId]);
-    }
-    
-    /**
-     * Check if username is available
-     * @param string $username
-     * @return bool
-     */
-    public function isUsernameAvailable($username) {
-        $existing = fetchOne("SELECT id FROM pages WHERE username = ?", [$username]);
-        return $existing === false;
-    }
-    
-    /**
-     * Add link to page
-     * @param int $pageId
-     * @param array $data
-     * @return array ['success' => bool, 'link_id' => int|null, 'error' => string|null]
-     */
-    public function addLink($pageId, $data) {
-        $required = ['type', 'title', 'url'];
-        foreach ($required as $field) {
-            if (empty($data[$field])) {
-                return ['success' => false, 'link_id' => null, 'error' => "Field '$field' is required"];
-            }
-        }
-        
-        // Get max display order
-        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM links WHERE page_id = ?", [$pageId]);
-        $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
-        
-        try {
-            $stmt = $this->pdo->prepare("
-                INSERT INTO links (page_id, type, title, url, thumbnail_image, icon, display_order, disclosure_text, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
-                $pageId,
-                $data['type'],
-                $data['title'],
-                $data['url'],
-                $data['thumbnail_image'] ?? null,
-                $data['icon'] ?? null,
-                $displayOrder,
-                $data['disclosure_text'] ?? null,
-                $data['is_active'] ?? 1
-            ]);
-            
-            $linkId = $this->pdo->lastInsertId();
-            return ['success' => true, 'link_id' => $linkId, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Link creation failed: " . $e->getMessage());
-            return ['success' => false, 'link_id' => null, 'error' => 'Failed to create link'];
-        }
-    }
-    
-    /**
-     * Update link
-     * @param int $linkId
-     * @param int $pageId
-     * @param array $data
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function updateLink($linkId, $pageId, $data) {
-        // Verify link belongs to page
-        $link = fetchOne("SELECT id FROM links WHERE id = ? AND page_id = ?", [$linkId, $pageId]);
-        if (!$link) {
-            return ['success' => false, 'error' => 'Link not found'];
-        }
-        
-        $allowedFields = ['type', 'title', 'url', 'thumbnail_image', 'icon', 'display_order', 'disclosure_text', 'is_active'];
-        $updates = [];
-        $params = [];
-        
-        foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
-                $updates[] = "$field = ?";
-                $params[] = $data[$field];
-            }
-        }
-        
-        if (empty($updates)) {
-            return ['success' => false, 'error' => 'No fields to update'];
-        }
-        
-        $params[] = $linkId;
-        $params[] = $pageId;
-        $sql = "UPDATE links SET " . implode(', ', $updates) . " WHERE id = ? AND page_id = ?";
-        
-        try {
-            executeQuery($sql, $params);
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Link update failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to update link'];
-        }
-    }
-    
-    /**
-     * Delete link
-     * @param int $linkId
-     * @param int $pageId
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function deleteLink($linkId, $pageId) {
-        // Verify link belongs to page
-        $link = fetchOne("SELECT id FROM links WHERE id = ? AND page_id = ?", [$linkId, $pageId]);
-        if (!$link) {
-            return ['success' => false, 'error' => 'Link not found'];
-        }
-        
-        try {
-            executeQuery("DELETE FROM links WHERE id = ? AND page_id = ?", [$linkId, $pageId]);
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Link deletion failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to delete link'];
-        }
-    }
-    
-    /**
-     * Update link display order (for drag-and-drop)
-     * @param int $pageId
-     * @param array $linkOrders Array of ['link_id' => int, 'display_order' => int]
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function updateLinkOrder($pageId, $linkOrders) {
-        if (empty($linkOrders)) {
-            return ['success' => false, 'error' => 'No links provided'];
-        }
-        
-        $this->pdo->beginTransaction();
-        
-        try {
-            foreach ($linkOrders as $order) {
-                $linkId = $order['link_id'] ?? null;
-                $displayOrder = $order['display_order'] ?? null;
-                
-                if ($linkId === null || $displayOrder === null) {
-                    continue;
-                }
-                
-                // Verify link belongs to page
-                $link = fetchOne("SELECT id FROM links WHERE id = ? AND page_id = ?", [$linkId, $pageId]);
-                if (!$link) {
-                    continue;
-                }
-                
-                executeQuery("UPDATE links SET display_order = ? WHERE id = ? AND page_id = ?", 
-                    [$displayOrder, $linkId, $pageId]);
-            }
-            
-            $this->pdo->commit();
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            $this->pdo->rollBack();
-            error_log("Link order update failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to update link order'];
-        }
-    }
-    
-    /**
-     * Get all links for page (including inactive)
-     * @param int $pageId
-     * @return array
-     */
-    public function getAllLinks($pageId) {
-        return fetchAll(
-            "SELECT * FROM links WHERE page_id = ? ORDER BY display_order ASC, created_at ASC",
-            [$pageId]
-        );
-    }
-    
-    /**
-     * Get link by ID
-     * @param int $linkId
-     * @param int $pageId
-     * @return array|null
-     */
-    public function getLink($linkId, $pageId) {
-        return fetchOne(
-            "SELECT * FROM links WHERE id = ? AND page_id = ?",
-            [$linkId, $pageId]
-        );
-    }
-    
-    /**
-     * Add social icon link
-     * @param int $pageId
-     * @param string $platformName
-     * @param string $url
-     * @return array ['success' => bool, 'icon_id' => int|null, 'error' => string|null]
-     */
-    public function addSocialIcon($pageId, $platformName, $url) {
-        if (empty($platformName) || empty($url)) {
-            return ['success' => false, 'icon_id' => null, 'error' => 'Platform name and URL are required'];
-        }
-        
-        // Get max display order
-        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM social_icons WHERE page_id = ?", [$pageId]);
-        $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
-        
-        try {
-            $stmt = $this->pdo->prepare("
-                INSERT INTO social_icons (page_id, platform_name, url, icon, display_order)
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
-                $pageId,
-                $platformName,
-                $url,
-                null, // Icon can be determined by platform name
-                $displayOrder
-            ]);
-            
-            $iconId = $this->pdo->lastInsertId();
-            return ['success' => true, 'icon_id' => $iconId, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Social icon creation failed: " . $e->getMessage());
-            return ['success' => false, 'icon_id' => null, 'error' => 'Failed to create social icon link'];
-        }
-    }
-    
-    /**
-     * Get social icons for page
-     * @param int $pageId
-     * @return array
-     */
-    public function getSocialIcons($pageId) {
-        return fetchAll(
-            "SELECT * FROM social_icons WHERE page_id = ? ORDER BY display_order ASC",
-            [$pageId]
-        );
-    }
-    
-    /**
-     * Delete social icon
-     * @param int $iconId
-     * @param int $pageId
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function deleteSocialIcon($iconId, $pageId) {
-        $icon = fetchOne("SELECT id FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
-        if (!$icon) {
-            return ['success' => false, 'error' => 'Social icon not found'];
-        }
-        
-        try {
-            executeQuery("DELETE FROM social_icons WHERE id = ? AND page_id = ?", [$iconId, $pageId]);
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Social icon deletion failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to delete social icon'];
-        }
-    }
-    
-    /**
-     * Legacy method: Add podcast directory link (for backwards compatibility)
-     * @deprecated Use addSocialIcon() instead
-     */
-    public function addPodcastDirectory($pageId, $platformName, $url) {
-        return $this->addSocialIcon($pageId, $platformName, $url);
-    }
-    
-    /**
-     * Legacy method: Get podcast directories (for backwards compatibility)
-     * @deprecated Use getSocialIcons() instead
-     */
-    public function getPodcastDirectories($pageId) {
-        return $this->getSocialIcons($pageId);
-    }
-    
-    /**
-     * Legacy method: Delete podcast directory (for backwards compatibility)
-     * @deprecated Use deleteSocialIcon() instead
-     */
-    public function deletePodcastDirectory($iconId, $pageId) {
-        return $this->deleteSocialIcon($iconId, $pageId);
-    }
-    
-    /**
-     * Add widget to page
-     * @param int $pageId
-     * @param string $widgetType
-     * @param string $title
-     * @param array $configData
-     * @return array ['success' => bool, 'widget_id' => int|null, 'error' => string|null]
-     */
-    public function addWidget($pageId, $widgetType, $title, $configData = []) {
-        if (empty($title) || empty($widgetType)) {
-            return ['success' => false, 'widget_id' => null, 'error' => 'Title and widget type are required'];
-        }
-        
-        // Get max display order
-        $maxOrder = fetchOne("SELECT COALESCE(MAX(display_order), 0) as max_order FROM widgets WHERE page_id = ?", [$pageId]);
-        $displayOrder = ($maxOrder['max_order'] ?? 0) + 1;
-        
-        try {
-            $stmt = $this->pdo->prepare("
-                INSERT INTO widgets (page_id, widget_type, title, config_data, display_order, is_active)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
-                $pageId,
-                $widgetType,
-                $title,
-                json_encode($configData),
-                $displayOrder,
-                1
-            ]);
-            
-            $widgetId = $this->pdo->lastInsertId();
-            return ['success' => true, 'widget_id' => $widgetId, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Widget creation failed: " . $e->getMessage());
-            return ['success' => false, 'widget_id' => null, 'error' => 'Failed to create widget'];
-        }
-    }
-    
-    /**
-     * Update widget
-     * @param int $widgetId
-     * @param int $pageId
-     * @param array $data
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function updateWidget($widgetId, $pageId, $data) {
-        $updates = [];
-        $params = [];
-        
-        if (isset($data['title'])) {
-            $updates[] = "title = ?";
-            $params[] = $data['title'];
-        }
-        
-        if (isset($data['widget_type'])) {
-            $updates[] = "widget_type = ?";
-            $params[] = $data['widget_type'];
-        }
-        
-        if (isset($data['config_data'])) {
-            $updates[] = "config_data = ?";
-            $params[] = is_array($data['config_data']) ? json_encode($data['config_data']) : $data['config_data'];
-        }
-        
-        if (isset($data['is_active'])) {
-            $updates[] = "is_active = ?";
-            $params[] = (int)$data['is_active'];
-        }
-        
-        if (empty($updates)) {
-            return ['success' => false, 'error' => 'No fields to update'];
-        }
-        
-        $params[] = $widgetId;
-        $params[] = $pageId;
-        
-        try {
-            $stmt = $this->pdo->prepare("
-                UPDATE widgets SET " . implode(', ', $updates) . " 
-                WHERE id = ? AND page_id = ?
-            ");
-            $stmt->execute($params);
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Widget update failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to update widget'];
-        }
-    }
-    
-    /**
-     * Delete widget
-     * @param int $widgetId
-     * @param int $pageId
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function deleteWidget($widgetId, $pageId) {
-        try {
-            $stmt = $this->pdo->prepare("DELETE FROM widgets WHERE id = ? AND page_id = ?");
-            $stmt->execute([$widgetId, $pageId]);
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            error_log("Widget deletion failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to delete widget'];
-        }
-    }
-    
-    /**
-     * Get widget by ID
-     * @param int $widgetId
-     * @param int $pageId
-     * @return array|null
-     */
-    public function getWidget($widgetId, $pageId) {
-        return fetchOne(
-            "SELECT * FROM widgets WHERE id = ? AND page_id = ?",
-            [$widgetId, $pageId]
-        );
-    }
-    
-    /**
-     * Update widget display order
-     * @param int $pageId
-     * @param array $orders Array of ['widget_id' => int, 'display_order' => int]
-     * @return array ['success' => bool, 'error' => string|null]
-     */
-    public function updateWidgetOrder($pageId, $orders) {
-        try {
-            $this->pdo->beginTransaction();
-            
-            foreach ($orders as $order) {
-                if (!isset($order['widget_id']) || !isset($order['display_order'])) {
-                    continue;
-                }
-                
-                $stmt = $this->pdo->prepare("
-                    UPDATE widgets 
-                    SET display_order = ? 
-                    WHERE id = ? AND page_id = ?
-                ");
-                $stmt->execute([
-                    (int)$order['display_order'],
-                    (int)$order['widget_id'],
-                    $pageId
-                ]);
-            }
-            
-            $this->pdo->commit();
-            return ['success' => true, 'error' => null];
-        } catch (PDOException $e) {
-            $this->pdo->rollBack();
-            error_log("Widget order update failed: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to update widget order'];
-        }
+// Allow page to be embedded in iframe (for admin preview)
+header('X-Frame-Options: SAMEORIGIN');
+
+// Check if request is for custom domain or username
+$domain = $_SERVER['HTTP_HOST'];
+$username = $_GET['username'] ?? '';
+
+// If no username in GET, try to extract from REQUEST_URI
+if (empty($username)) {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    // Remove query string
+    $requestUri = strtok($requestUri, '?');
+    // Remove leading slash
+    $requestUri = ltrim($requestUri, '/');
+    // Check if it looks like a username (alphanumeric, underscore, hyphen, no slashes)
+    if (preg_match('/^[a-zA-Z0-9_-]+$/', $requestUri) && 
+        !file_exists(__DIR__ . $requestUri) && 
+        !is_dir(__DIR__ . '/' . $requestUri)) {
+        $username = $requestUri;
     }
 }
+
+$pageClass = new Page();
+$page = null;
+
+// Define main domains (including localhost for development)
+$mainDomains = ['getphily.com', 'www.getphily.com', 'poda.bio', 'www.poda.bio', 'localhost', '127.0.0.1'];
+
+// First check if this is a custom domain (not our main domains)
+if (!in_array(strtolower($domain), $mainDomains)) {
+    // Try custom domain first
+    $page = $pageClass->getByCustomDomain(strtolower($domain));
+}
+
+// If no custom domain match, try username
+if (!$page && !empty($username)) {
+    $page = $pageClass->getByUsername($username);
+}
+
+if (!$page || !$page['is_active']) {
+    http_response_code(404);
+    die('Page not found');
+}
+
+// Track page view
+$analytics = new Analytics();
+$analytics->trackView($page['id']);
+
+// Get page data
+require_once __DIR__ . '/classes/WidgetRenderer.php';
+$widgets = $pageClass->getWidgets($page['id']);
+$links = $pageClass->getLinks($page['id']); // Legacy support
+// Removed episodes - now handled via Podcast Player widget
+$socialIcons = $pageClass->getSocialIcons($page['id'], true); // Only get active icons for front-end
+
+// Get theme and extract colors/fonts using Theme class
+$themeClass = new Theme();
+$theme = null;
+if ($page['theme_id']) {
+    $theme = $themeClass->getTheme($page['theme_id']);
+}
+
+$colors = getThemeColors($page, $theme);
+$fonts = getThemeFonts($page, $theme);
+$themeTokens = getThemeTokens($page, $theme);
+$themeBodyClass = '';
+if ($theme && !empty($theme['name'])) {
+    $slug = strtolower(trim($theme['name']));
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    if (!empty($slug)) {
+        $themeBodyClass = 'theme-' . $slug;
+    }
+}
+
+// Extract individual values
+$primaryColor = $colors['primary'];
+$secondaryColor = $colors['secondary'];
+$accentColor = $colors['accent'];
+$headingFont = $fonts['heading'];
+$bodyFont = $fonts['body'];
+
+// Initialize ThemeCSSGenerator for complete CSS generation
+$cssGenerator = new ThemeCSSGenerator($page, $theme);
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo h($page['podcast_name'] ?: $page['username']); ?> - <?php echo h(APP_NAME); ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230066ff'/><text x='50' y='70' font-size='60' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial, sans-serif'>P</text></svg>">
+    <link rel="alternate icon" href="/favicon.php">
+    
+    <!-- Google Fonts -->
+    <?php
+    // Build Google Fonts URL using Theme class
+    $fontUrl = $themeClass->buildGoogleFontsUrl($fonts);
+    ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="<?php echo h($fontUrl); ?>" rel="stylesheet">
+    <!-- Additional fonts for page name effects -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;700;900&family=Bowlby+One+SC&family=Poppins:wght@400;600;700&family=Raleway:wght@900&family=Oswald:wght@400;600;700;900&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Podcast Player Styles (only load if RSS feed exists and player is enabled) -->
+    <?php 
+    $podcastPlayerEnabled = isset($page['podcast_player_enabled']) ? (bool)$page['podcast_player_enabled'] : false;
+    $hasRssFeed = !empty($page['rss_feed_url']);
+    $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
+    ?>
+    <?php if ($showPodcastPlayer): ?>
+        <link rel="stylesheet" href="/css/podcast-player.css">
+        <link rel="stylesheet" href="/css/podcast-player-controls.css">
+    <?php endif; ?>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
+    <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
+    <meta property="og:description" content="<?php echo h(truncate($page['podcast_description'] ?: '', 160)); ?>">
+    <meta property="og:image" content="<?php echo h($page['cover_image_url'] ?: ''); ?>">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <?php echo $cssGenerator->generateCompleteStyleBlock(); ?>
+    
+    <!-- Additional widget-specific styles -->
+    <style>
+        :root {
+            <?php
+            // Check if this is a preview request with specific width
+            $previewWidth = isset($_GET['preview_width']) ? (int)$_GET['preview_width'] : null;
+            if ($previewWidth && $previewWidth > 0 && $previewWidth <= 1000) {
+                // Preview mode: use exact device width
+                $mobilePageWidth = $previewWidth . 'px';
+            } else {
+                // Normal mode: responsive with max width
+                $mobilePageWidth = 'min(100vw, 420px)';
+            }
+            ?>
+            --mobile-page-width: <?php echo $mobilePageWidth; ?>;
+            --mobile-page-offset: max(0px, calc((100vw - var(--mobile-page-width)) / 2));
+            --episode-drawer-width: var(--mobile-page-width);
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--shell-background, color-mix(in srgb, #f5f7fb 94%, #0f172a 6%));
+        }
+
+        @media (min-width: 600px) {
+            body {
+                padding: var(--space-xl, 2.5rem) 0;
+            }
+        }
+
+        /* Page container and layout */
+        .page-container {
+            width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
+            max-width: 420px;
+            <?php endif; ?>
+            margin: 0 auto;
+            padding: var(--space-lg) var(--space-md);
+            box-sizing: border-box;
+        }
+        
+        .profile-header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .profile-image {
+            object-fit: cover;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .profile-image-size-small {
+            width: 6.25rem;
+            height: 6.25rem;
+        }
+        
+        .profile-image-size-medium {
+            width: 8.75rem;
+            height: 8.75rem;
+        }
+        
+        .profile-image-size-large {
+            width: 11.25rem;
+            height: 11.25rem;
+        }
+        
+        .profile-image-shape-circle {
+            border-radius: 50%;
+        }
+        
+        .profile-image-shape-rounded {
+            border-radius: 1.125rem;
+        }
+        
+        .profile-image-shape-square {
+            border-radius: 0;
+        }
+        
+        .profile-image-shadow-none {
+            box-shadow: none;
+        }
+        
+        .profile-image-shadow-subtle {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-image-shadow-strong {
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .profile-image-border-none {
+            border: none;
+        }
+        
+        .profile-image-border-thin {
+            border: 2.625px solid rgba(15, 23, 42, 0.15);
+        }
+        
+        .profile-image-border-thick {
+            border: 5.25px solid rgba(15, 23, 42, 0.25);
+        }
+        
+        .cover-image {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .page-title {
+            font-size: var(--type-scale-xl, 2rem);
+            line-height: var(--type-line-height-tight, 1.2);
+            font-family: var(--font-family-heading);
+            font-weight: var(--type-weight-bold, 600);
+            margin: var(--space-xs) 0;
+            color: var(--page-title-color, var(--color-text-primary));
+        }
+        
+        .page-description {
+            color: var(--page-description-color, var(--color-text-secondary));
+            opacity: 0.9;
+            font-size: var(--type-scale-sm, 1rem);
+            line-height: var(--type-line-height-normal, 1.5);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .name-size-large {
+            font-size: 1.125rem;
+        }
+        
+        .name-size-xlarge {
+            font-size: 1.375rem;
+        }
+        
+        .name-size-xxlarge {
+            font-size: 1.625rem;
+        }
+        
+        .bio-size-small {
+            font-size: 0.875rem;
+        }
+        
+        .bio-size-medium {
+            font-size: 1rem;
+        }
+        
+        .bio-size-large {
+            font-size: 1.125rem;
+        }
+        
+        /* Podcast Top Banner - Attached to drawer bottom */
+        .podcast-top-banner {
+            position: fixed;
+            top: 0;
+            left: var(--mobile-page-offset);
+            right: auto;
+            width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
+            max-width: 420px;
+            <?php endif; ?>
+            box-sizing: border-box;
+            background: var(--color-accent-primary);
+            background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10001;
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+            border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
+            opacity: 1;
+            pointer-events: auto;
+            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            /* Banner starts at top of viewport when drawer is closed */
+            transform: translateY(0);
+        }
+        
+        body.theme-aurora-skies .podcast-top-banner {
+            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
+            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
+        }
+        
+        /* When drawer opens, banner moves down and hides */
+        .podcast-top-banner.drawer-open {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(100vh);
+        }
+        
+        /* During peek, banner moves down proportionally */
+        .podcast-top-banner.drawer-peek {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(calc(100vh * 0.3));
+        }
+        
+        .podcast-banner-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2xs, 0.25rem);
+            width: 100%;
+            padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
+            background: transparent;
+            color: #FFFFFF;
+            text-shadow: 0 0 10px rgba(8, 12, 32, 0.65);
+            border: none;
+            font-size: var(--type-scale-xs, 0.889rem);
+            font-weight: var(--type-weight-medium, 500);
+            cursor: pointer;
+            transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            text-align: center;
+        }
+        
+        .podcast-banner-toggle:hover {
+            background: color-mix(in srgb, var(--color-text-inverse) 15%, transparent);
+        }
+        
+        .podcast-banner-toggle:active {
+            background: color-mix(in srgb, var(--color-text-inverse) 25%, transparent);
+        }
+        
+        .podcast-banner-toggle i:first-child {
+            font-size: 11.2px;
+        }
+        
+        .podcast-banner-toggle i:last-child {
+            font-size: 8.8px;
+            opacity: 0.8;
+            transition: transform 0.3s ease;
+        }
+        
+        .podcast-banner-toggle:hover i:last-child {
+            transform: translateY(2px);
+        }
+        
+        
+        /* Podcast Top Drawer */
+        .podcast-top-drawer {
+            position: fixed;
+            top: 0;
+            left: var(--mobile-page-offset);
+            right: auto;
+            width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
+            max-width: 420px;
+            <?php endif; ?>
+            height: 100vh;
+            background-color: var(--color-background-surface-raised, rgba(15, 23, 42, 0.95));
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-100%);
+            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box;
+        }
+        
+        /* Prevent body scrollbars when drawer is open or closing */
+        body:has(.podcast-top-drawer.open),
+        body:has(.podcast-top-drawer.peek) {
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+        }
+        
+        html:has(.podcast-top-drawer.open),
+        html:has(.podcast-top-drawer.peek) {
+            overflow: hidden !important;
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+        }
+        
+        
+        .podcast-top-drawer.open {
+            transform: translateY(0);
+        }
+        
+        .podcast-top-drawer.peek {
+            transform: translateY(-70%);
+        }
+        
+        .podcast-drawer-footer {
+            padding: var(--space-sm, 0.75rem) var(--space-md, 1.25rem) calc(var(--space-sm, 0.75rem) + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-xs, 0.5rem);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(6, 10, 26, 0.65);
+            margin-top: auto;
+            box-shadow: 0 -12px 24px rgba(5, 10, 24, 0.35);
+        }
+        
+        .podcast-drawer-footer-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.65rem 1.35rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--color-text-on-surface, #ffffff);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        
+        .podcast-drawer-footer-button i {
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .podcast-drawer-footer-button:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.28);
+            box-shadow: 0 8px 20px rgba(10, 16, 32, 0.28);
+        }
+        
+        .podcast-drawer-footer-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Page Name Effects */
+        /* Neon Effect */
+        /* Gummy Effect */
+        /* Water Effect */
+        /* Outline Effect */
+        /* Depth Layers Effect */
+        
+        /* Theme-driven overrides for page title effects */
+        .page-title-effect-3d-shadow {
+            color: var(--color-text-inverse);
+            text-shadow:
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 90%, transparent),
+                6px 6px 0 color-mix(in srgb, var(--color-accent-primary) 70%, black 30%),
+                9px 9px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%);
+        }
+        
+        .page-title-effect-stroke-shadow {
+            color: var(--color-accent-primary);
+            -webkit-text-stroke: 0.18rem var(--color-text-inverse);
+            text-stroke: 0.18rem var(--color-text-inverse);
+            text-shadow: 0.35rem 0.35rem 0 color-mix(in srgb, var(--color-accent-primary) 45%, black 55%);
+        }
+        
+        .page-title-effect-slashed .top::before {
+            color: var(--color-text-inverse);
+        }
+        
+        .page-title-effect-slashed .bot::before {
+            color: color-mix(in srgb, var(--color-text-inverse) 75%, var(--color-accent-primary) 25%);
+        }
+        
+        .page-title-effect-sweet-title .sweet-title {
+            color: var(--color-text-inverse);
+            text-shadow:
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                7px 7px 0 color-mix(in srgb, var(--color-accent-primary) 55%, black 45%);
+        }
+        
+        .page-title-effect-sweet-title .sweet-title span::before {
+            color: color-mix(in srgb, var(--color-accent-primary) 60%, var(--color-text-inverse) 40%);
+        }
+        
+        .page-title-effect-3d-extrude {
+            color: var(--color-accent-primary);
+            text-shadow:
+                1px 1px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 65%, black 35%),
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%),
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 35%, black 65%);
+        }
+        
+        .page-title-effect-dragon-text .svg-text__shaded {
+            fill: var(--color-text-inverse);
+            text-shadow: 0 3px 20px color-mix(in srgb, var(--color-accent-primary) 40%, black 60%);
+        }
+        
+        .page-title-effect-dragon-text .svg-text__shaded__stroke {
+            stroke: color-mix(in srgb, var(--color-accent-primary) 45%, transparent);
+            animation: dragon-offset 4s ease-in-out infinite;
+        }
+        
+        .page-title-effect-neon {
+            color: var(--color-accent-primary);
+            border-color: color-mix(in srgb, var(--color-accent-primary) 40%, var(--color-text-inverse) 60%);
+            animation: neon-flicker 2s infinite alternate;
+        }
+        
+        .page-title-effect-gummy {
+            color: color-mix(in srgb, var(--color-accent-primary) 65%, white 35%);
+            text-shadow:
+                0 0.15ch 15px color-mix(in srgb, var(--color-accent-primary) 45%, black 55%),
+                0 -0.15ch 0 var(--color-text-inverse);
+        }
+        
+        .page-title-effect-water {
+            color: var(--color-text-inverse);
+            -webkit-text-stroke: 2px var(--color-accent-primary);
+        }
+        
+        .page-title-effect-water::before {
+            color: var(--color-accent-primary);
+            animation: water-wave 4s ease-in-out infinite;
+        }
+        
+        .page-title-effect-outline {
+            -webkit-text-stroke-color: var(--color-text-inverse);
+            text-shadow: 0.4rem 0.4rem color-mix(in srgb, var(--color-accent-primary) 55%, black 45%);
+        }
+        
+        .page-title-effect-glitch {
+            color: var(--color-text-inverse);
+        }
+        
+        .page-title-effect-glitch::before {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+            animation: title-glitch-shift 0.6s infinite alternate;
+        }
+        
+        .page-title-effect-glitch::after {
+            color: color-mix(in srgb, var(--color-border-focus) 70%, transparent);
+            animation: title-glitch-shift 0.6s infinite alternate reverse;
+        }
+        
+        .page-title-effect-isometric-3d {
+            color: var(--color-text-inverse);
+            text-shadow:
+                1px 1px 0 color-mix(in srgb, var(--color-accent-primary) 80%, transparent),
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 60%, black 40%),
+                3px 3px 0 color-mix(in srgb, var(--color-accent-primary) 45%, black 55%);
+        }
+        
+        .page-title-effect-stencil {
+            -webkit-text-stroke: 3px var(--color-text-inverse);
+            text-stroke: 3px var(--color-text-inverse);
+        }
+        
+        .page-title-effect-stencil::before {
+            background: linear-gradient(to right, transparent 0%, transparent 45%, color-mix(in srgb, var(--color-accent-primary) 70%, transparent) 55%, transparent 100%);
+        }
+        
+        .page-title-effect-cut-text::before {
+            color: var(--color-text-inverse);
+        }
+        
+        .page-title-effect-cut-text::after {
+            color: color-mix(in srgb, var(--color-accent-primary) 70%, var(--color-text-inverse) 30%);
+        }
+        
+        .page-title-effect-cyber-text {
+            color: color-mix(in srgb, var(--color-text-inverse) 85%, transparent);
+        }
+        
+        .page-title-effect-cyber-text::before {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+        }
+        
+        .page-title-effect-cyber-text::after {
+            color: color-mix(in srgb, var(--color-border-focus) 70%, transparent);
+        }
+        
+        .page-title-effect-depth-layers {
+            color: var(--color-text-inverse);
+            text-shadow:
+                2px 2px 0 color-mix(in srgb, var(--color-accent-primary) 90%, transparent),
+                4px 4px 0 color-mix(in srgb, var(--color-accent-primary) 70%, black 30%),
+                6px 6px 0 color-mix(in srgb, var(--color-accent-primary) 50%, black 50%),
+                10px 10px 20px color-mix(in srgb, var(--color-accent-primary) 25%, black 75%);
+        }
+        
+        @keyframes neon-flicker {
+            0%, 20%, 60%, 100% {
+                box-shadow:
+                    0 0 0.5rem var(--color-text-inverse),
+                    0 0 1.5rem color-mix(in srgb, var(--color-accent-primary) 70%, transparent),
+                    0 0 3rem color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+                text-shadow:
+                    0 0 0.5rem var(--color-text-inverse),
+                    0 0 1.5rem color-mix(in srgb, var(--color-accent-primary) 70%, transparent),
+                    0 0 3rem color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+            }
+            30%, 55% {
+                box-shadow: none;
+                text-shadow: none;
+            }
+        }
+        
+        @keyframes dragon-offset {
+            0%, 70% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 3.5em; }
+        }
+        
+        @keyframes title-glitch-shift {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-0.15rem, 0.1rem); }
+            50% { transform: translate(0.2rem, -0.15rem); }
+            75% { transform: translate(-0.2rem, -0.2rem); }
+            100% { transform: translate(0.15rem, 0.15rem); }
+        }
+        
+        @keyframes water-wave {
+            0%, 100% {
+                clip-path: polygon(0% 45%, 16% 44%, 33% 50%, 54% 60%, 70% 61%, 84% 59%, 100% 52%, 100% 100%, 0% 100%);
+            }
+            50% {
+                clip-path: polygon(0% 60%, 15% 65%, 34% 66%, 51% 62%, 67% 50%, 84% 45%, 100% 46%, 100% 100%, 0% 100%);
+            }
+        }
+        
+        .widgets-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--widget-spacing, var(--space-md));
+            position: relative;
+        }
+        
+        .widget-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--widget-background, var(--color-background-surface));
+            border: var(--widget-border-width, var(--border-width-hairline)) solid var(--widget-border-color, var(--color-border-default));
+            border-radius: var(--widget-border-radius, var(--shape-corner-md));
+            text-decoration: none;
+            color: var(--color-text-on-surface);
+            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            box-sizing: border-box;
+            position: relative;
+            z-index: auto;
+            font-family: var(--widget-secondary-font, var(--font-family-body));
+            box-shadow: var(--widget-box-shadow, var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12)));
+        }
+        
+        /* Widgets without thumbnails/icons - center text */
+        .widget-link-simple {
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .widget-link-simple .widget-content {
+            padding: 0 !important;
+        }
+        
+        .widget-link-simple .widget-title {
+            margin: 0 !important;
+            font-size: var(--type-scale-md, 1.333rem);
+            font-weight: var(--type-weight-medium, 500);
+        }
+        
+        /* Thumbnail wrapper for consistent sizing */
+        .widget-thumbnail-wrapper {
+            flex-shrink: 0;
+            width: clamp(3rem, 16vw, 3.75rem);
+            height: clamp(3rem, 16vw, 3.75rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--shape-corner-md, 0.75rem);
+            overflow: hidden;
+        }
+        
+        /* Icon wrapper for consistent sizing */
+        .widget-icon-wrapper {
+            flex-shrink: 0;
+            width: clamp(3rem, 16vw, 3.75rem);
+            height: clamp(3rem, 16vw, 3.75rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Other widgets (podcast, video, etc.) - full width */
+        .widget-podcast,
+        .widget-video,
+        .widget-text,
+        .widget-image {
+            width: 100%;
+        }
+        
+        .widget-item:hover {
+            transform: translateY(calc(var(--space-2xs, 0.25rem) * -1));
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+        }
+        
+        /* Featured Widget Effects */
+        .featured-widget {
+            position: relative;
+        }
+        
+        .featured-widget .widget-item {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Jiggle Effect - triggered randomly */
+        @keyframes jiggle {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-3px) rotate(-1deg); }
+            75% { transform: translateX(3px) rotate(1deg); }
+        }
+        
+        .featured-effect-jiggle .widget-item {
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-jiggle.active .widget-item {
+            animation: jiggle 0.5s ease-in-out;
+        }
+        
+        /* Burn Effect - glowing ember-like glow */
+        @keyframes burn {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 150, 0, 0.8), 0 0 40px rgba(255, 100, 0, 0.5), 0 0 60px rgba(255, 50, 0, 0.3); }
+        }
+        
+        .featured-effect-burn .widget-item {
+            animation: burn 1.5s ease-in-out infinite;
+        }
+        
+        /* Rotating Glow - triggered randomly */
+        @keyframes rotating-glow {
+            0% { box-shadow: 0 0 15px rgba(0, 102, 255, 0.6), 0 0 30px rgba(0, 102, 255, 0.4); filter: hue-rotate(0deg); }
+            25% { box-shadow: 0 0 15px rgba(255, 100, 200, 0.6), 0 0 30px rgba(255, 100, 200, 0.4); filter: hue-rotate(90deg); }
+            50% { box-shadow: 0 0 15px rgba(100, 255, 100, 0.6), 0 0 30px rgba(100, 255, 100, 0.4); filter: hue-rotate(180deg); }
+            75% { box-shadow: 0 0 15px rgba(255, 200, 100, 0.6), 0 0 30px rgba(255, 200, 100, 0.4); filter: hue-rotate(270deg); }
+            100% { box-shadow: 0 0 15px rgba(0, 102, 255, 0.6), 0 0 30px rgba(0, 102, 255, 0.4); filter: hue-rotate(360deg); }
+        }
+        
+        .featured-effect-rotating-glow .widget-item {
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-rotating-glow.active .widget-item {
+            animation: rotating-glow 2s linear;
+        }
+        
+        /* Blink Effect */
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+        
+        .featured-effect-blink .widget-item {
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        
+        /* Pulse Effect - triggered randomly */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            50% { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3); }
+        }
+        
+        .featured-effect-pulse .widget-item {
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-pulse.active .widget-item {
+            animation: pulse 1s ease-in-out;
+        }
+        
+        /* Shake Effect - triggered randomly */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        
+        .featured-effect-shake .widget-item {
+            animation: none; /* Animation triggered via JavaScript */
+        }
+        
+        .featured-effect-shake.active .widget-item {
+            animation: shake 0.6s ease-in-out;
+        }
+        
+        /* Sparkles Effect */
+        .featured-effect-sparkles {
+            position: relative;
+            overflow: visible;
+        }
+        
+        .featured-effect-sparkles .sparkle {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+        }
+        
+        .featured-effect-sparkles .sparkle svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+        }
+        
+        .featured-effect-sparkles .sparkle.active {
+            opacity: 1;
+            animation: sparkleAnim 2s ease-in-out forwards;
+        }
+        
+        @keyframes sparkleAnim {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) rotate(360deg);
+            }
+        }
+        
+        .widget-thumbnail {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--widget-border-radius, 8px);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .widget-icon {
+            font-size: 1.5rem;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .widget-content {
+            flex: 1;
+            min-width: 0; /* Allow flex item to shrink below content size */
+            font-family: var(--widget-secondary-font, var(--font-family-body));
+            font-size: var(--type-scale-sm, 1rem);
+            line-height: var(--type-line-height-normal, 1.5);
+        }
+        
+        .widget-title {
+            font-weight: var(--type-weight-medium, 500);
+            margin: 0 0 var(--space-2xs, 0.25rem) 0;
+            font-family: var(--widget-primary-font, var(--font-family-heading));
+            color: var(--color-text-on-surface);
+            font-size: var(--type-scale-md, 1.333rem);
+        }
+        
+        .widget-description {
+            font-size: var(--type-scale-sm, 1rem);
+            color: var(--color-text-secondary);
+            opacity: 0.9;
+            margin: var(--space-2xs, 0.25rem) 0 0 0;
+            font-family: var(--widget-secondary-font, var(--font-family-body));
+            min-width: 0; /* Allow text to be constrained in flex container */
+        }
+        
+        /* Marquee animation for Custom Link widget descriptions only */
+        .widget-item .widget-description.marquee {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .widget-item .widget-description .marquee-content {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: widget-marquee-scroll linear infinite;
+            animation-duration: var(--marquee-duration, 12s);
+            will-change: transform; /* Optimize animation performance */
+        }
+        
+        .widget-item .widget-description .marquee-content .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 2em; /* Space between duplicates for better visual separation */
+        }
+        
+        @keyframes widget-marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(var(--marquee-distance, -100px)); }
+        }
+        
+        
+        /* Video widget styles */
+        .widget-video {
+            padding: 0;
+            display: block;
+            /* Border, shadow, and border-radius inherited from .widget-item */
+            align-items: stretch;
+        }
+        
+        .widget-video .widget-content {
+            display: none; /* Hide any content wrapper if present */
+        }
+        
+        .widget-video-embed {
+            width: 100%;
+            border-radius: inherit;
+            overflow: hidden;
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        
+        .widget-video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: inherit;
+        }
+        
+        /* Text/HTML widget styles */
+        .widget-text {
+            text-align: left;
+        }
+        
+        .widget-text-content {
+            padding: 1rem;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        /* Image widget styles */
+        .widget-image {
+            padding: 0;
+            border: none;
+            background: transparent;
+            display: block;
+        }
+        
+        .widget-image-content {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+        
+        /* Podcast Player widget styles */
+        .widget-podcast {
+            /* Inherits standard widget styling from .widget-item */
+            /* No overrides - uses same padding, border, colors, and font as other widgets */
+            position: relative;
+        }
+        
+        .widget-podcast .widget-content {
+            width: 100%;
+        }
+        
+        .podcast-widget-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        /* PodNBio Player - Custom Compact Widget Styles */
+        .widget-podcast-custom {
+            position: relative;
+            overflow: visible;
+            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            isolation: isolate;
+            z-index: 1;
+        }
+        
+        .widget-podcast-custom .widget-content {
+            position: relative;
+            overflow: visible;
+            z-index: 1;
+        }
+        
+        .podcast-compact-player {
+            position: relative;
+            padding: 0.875rem;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .podcast-header-compact {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            z-index: 10;
+        }
+        
+        .rss-icon {
+            color: var(--color-accent-primary);
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .rss-icon:hover {
+            opacity: 1;
+        }
+        
+        .podcast-main-content {
+            display: flex;
+            gap: 0.875rem;
+            align-items: flex-start;
+            min-height: 110px;
+        }
+        
+        .podcast-cover-compact {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 100%);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .podcast-info-compact {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        
+        .podcast-title-compact {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-text-on-surface);
+            line-height: 1.25;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+        
+        .episode-title-compact {
+            font-size: 0.8125rem;
+            font-weight: 400;
+            color: var(--color-text-secondary);
+            line-height: 1.3;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .podcast-controls-compact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.625rem;
+            margin-top: 0.375rem;
+        }
+        
+        .skip-back-btn,
+        .skip-forward-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            font-size: 0.75rem;
+            padding: 0;
+            position: relative;
+            gap: 0.05rem;
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .skip-back-btn::before,
+        .skip-forward-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+        
+        .skip-back-btn:hover::before,
+        .skip-forward-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .play-pause-btn {
+            width: 56px;
+            height: 56px;
+            font-size: 1.125rem;
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            padding: 0;
+            position: relative;
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+            z-index: 2;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .play-pause-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+        
+        .play-pause-btn:hover::after {
+            width: 120%;
+            height: 120%;
+        }
+        
+        .skip-label {
+            font-size: 0.625rem;
+            line-height: 1;
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            opacity: 0.9;
+            z-index: 1;
+        }
+        
+        .skip-back-btn:hover,
+        .play-pause-btn:hover,
+        .skip-forward-btn:hover {
+            transform: scale(1.08) translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
+        }
+        
+        .skip-back-btn:active,
+        .play-pause-btn:active,
+        .skip-forward-btn:active {
+            transform: scale(1.02) translateY(0);
+            transition: transform 0.1s ease;
+        }
+        
+        .skip-back-btn i,
+        .skip-forward-btn i {
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+        
+        .skip-back-btn:hover i,
+        .skip-forward-btn:hover i {
+            transform: scale(1.15);
+        }
+        
+        .play-pause-btn i {
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+        
+        .play-pause-btn:hover i {
+            transform: scale(1.1);
+        }
+        
+        .volume-btn,
+        .expand-drawer-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--color-accent-primary);
+            cursor: pointer;
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            font-size: 0.8125rem;
+            padding: 0;
+            position: relative;
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+        }
+        
+        .expand-drawer-btn {
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+            border-color: var(--color-accent-primary);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+        }
+        
+        .expand-drawer-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        .expand-drawer-btn:hover::before {
+            width: 140%;
+            height: 140%;
+        }
+        
+        .expand-drawer-btn:hover {
+            transform: scale(1.1) translateY(-1px);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+        }
+        
+        .expand-drawer-btn:active {
+            transform: scale(1.05) translateY(0);
+        }
+        
+        .drawer-icon-toggle {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+            position: relative;
+        }
+        
+        .expand-drawer-btn.active .drawer-icon-toggle {
+            transform: rotate(180deg);
+        }
+        
+        .expand-drawer-btn.active {
+            background: color-mix(in srgb, var(--color-accent-primary) 90%, transparent);
+            opacity: 0.95;
+        }
+        
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(0, 0, 0, 0.12);
+            transform: scale(1.08);
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+        }
+        
+        .volume-btn:active {
+            transform: scale(0.96);
+        }
+        
+        .volume-btn i,
+        .expand-drawer-btn i {
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .volume-btn:hover i {
+            transform: scale(1.2);
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        
+        .current-time,
+        .total-time {
+            font-size: 0.6875rem;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+            min-width: 36px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+        
+        .progress-bar-wrapper {
+            flex: 1;
+            position: relative;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+        }
+        
+        .progress-bar {
+            position: relative;
+            width: calc(100% - 12px);
+            height: 4px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 2px;
+            cursor: pointer;
+            z-index: 2;
+            overflow: visible;
+            margin: 0 auto;
+        }
+        
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--progress-width, 0%);
+            background: var(--color-accent-primary);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+            pointer-events: none;
+        }
+        
+        
+        .progress-scrubber {
+            position: absolute;
+            top: 50%;
+            left: var(--progress-width, 0%);
+            width: 12px;
+            height: 12px;
+            background: var(--color-text-on-background);
+            border-radius: 50%;
+            border: 2px solid var(--color-accent-primary);
+            cursor: grab;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
+            pointer-events: auto;
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+            touch-action: none;
+        }
+        
+        .progress-scrubber:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.4);
+            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        
+        .progress-scrubber.dragging {
+            transition: none;
+        }
+        
+        .progress-bar-wrapper:hover .progress-scrubber {
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+        
+        .progress-bar-wrapper:hover .progress-fill {
+            opacity: 0.9;
+        }
+        
+        /* Compact Drawer Tray - Expands from widget, pushes content down */
+        .podcast-bottom-sheet {
+            position: relative;
+            width: 100%;
+            height: 0;
+            overflow: hidden;
+            background: var(--color-background-surface, var(--color-background-base));
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            margin-top: 0.5rem;
+            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            will-change: height;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            z-index: 1;
+        }
+        
+        .podcast-bottom-sheet:not(.hidden) {
+            height: 400px;
+        }
+        
+        .drawer-backdrop {
+            display: none; /* No backdrop needed for compact tray */
+        }
+        
+        .drawer-content-wrapper {
+            padding: 0;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .drawer-drag-handle {
+            width: 36px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            margin: 12px auto 8px;
+            cursor: grab;
+            transition: background 0.2s ease;
+        }
+        
+        .drawer-drag-handle:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .drawer-tabs {
+            display: flex;
+            gap: 0;
+            margin: 0;
+            padding: 0 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(0, 0, 0, 0.02);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 14px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0.6;
+        }
+        
+        .tab-btn::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 60%;
+            height: 3px;
+            background: var(--color-accent-primary);
+            border-radius: 3px 3px 0 0;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tab-btn.active {
+            opacity: 1;
+            color: var(--color-accent-primary);
+        }
+        
+        .tab-btn.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+        
+        .tab-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.02);
+        }
+        
+        .drawer-panels {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem;
+            min-height: 0;
+        }
+        
+        .drawer-panels::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .drawer-panels::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .show-notes-content {
+            color: var(--text-color);
+            line-height: 1.65;
+            font-size: 0.9375rem;
+            padding: 0.5rem 0;
+        }
+        
+        .chapters-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .chapter-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .chapter-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--color-accent-primary);
+            border-radius: 0 2px 2px 0;
+            transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .chapter-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateX(4px);
+        }
+        
+        .chapter-item.active {
+            background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+            border-color: color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+        }
+        
+        .chapter-item.active::before {
+            height: 60%;
+        }
+        
+        .chapter-time {
+            font-weight: 600;
+            color: var(--color-accent-primary);
+            min-width: 56px;
+            font-size: 0.8125rem;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .chapter-title {
+            flex: 1;
+            color: var(--text-color);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+        
+        .chapters-empty {
+            color: var(--text-color);
+            opacity: 0.5;
+            text-align: center;
+            padding: 3rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .episodes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .episode-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .episode-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .episode-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .episode-item:hover::after {
+            left: 100%;
+        }
+        
+        .episode-item.active {
+            background: rgba(0, 102, 255, 0.08);
+            border-color: rgba(0, 102, 255, 0.2);
+            box-shadow: 0 0 0 1px rgba(0, 102, 255, 0.1);
+        }
+        
+        .episode-thumbnail {
+            width: 64px;
+            height: 64px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .episode-item:hover .episode-thumbnail {
+            transform: scale(1.05);
+        }
+        
+        .episode-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .episode-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-color);
+            font-size: 0.9375rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .episode-desc {
+            font-size: 0.8125rem;
+            color: var(--text-color);
+            opacity: 0.6;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Follow Tab Styles */
+        .follow-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        
+        .follow-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            color: var(--color-accent-primary);
+            text-decoration: none;
+            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .follow-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--color-accent-primary);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .follow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            border-color: var(--color-accent-primary);
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+        }
+        
+        .follow-button:hover::before {
+            opacity: 0.1;
+        }
+        
+        .follow-button i {
+            font-size: 1.125rem;
+            width: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.2s ease;
+        }
+        
+        .follow-button:hover i {
+            transform: scale(1.1);
+        }
+        
+        .follow-button-label {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .follow-empty {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-color);
+            opacity: 0.6;
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 768px) {
+            .follow-buttons {
+                grid-template-columns: 1fr;
+                gap: 0.625rem;
+            }
+            
+            .follow-button {
+                padding: 1rem 1.125rem;
+            }
+            
+            .podcast-compact-player {
+                padding: 0.75rem;
+                min-height: 110px;
+            }
+            
+            .podcast-main-content {
+                min-height: 110px;
+                gap: 0.75rem;
+            }
+            
+            .podcast-cover-compact {
+                width: 90px;
+                height: 90px;
+            }
+            
+            .skip-back-btn,
+            .skip-forward-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.6875rem;
+            }
+            
+            .play-pause-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 1rem;
+            }
+            
+            .expand-drawer-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 0.75rem;
+            }
+            
+            .podcast-bottom-sheet {
+                max-height: 90vh;
+                border-radius: 0;
+            }
+        }
+        
+        /* Minimal Collapsed View */
+        .podcast-widget-minimal {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .podcast-widget-minimal .podcast-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--shape-corner-md, 0.75rem);
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--color-background-surface, var(--color-background-base));
+        }
+        
+        .podcast-widget-minimal .podcast-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .podcast-widget-minimal .podcast-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .podcast-widget-minimal .episode-title {
+            font-size: 0.875rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .podcast-widget-minimal .minimal-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+        
+        .podcast-widget-minimal .minimal-play-pause {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--color-accent-primary);
+            background: var(--color-background-surface, rgba(255, 255, 255, 0.95));
+            color: var(--color-accent-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .podcast-widget-minimal .minimal-play-pause:hover {
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+            transform: scale(1.05);
+        }
+        
+        .podcast-widget-minimal .minimal-progress {
+            flex: 1;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .podcast-widget-minimal .minimal-progress-bar {
+            height: 100%;
+            background: var(--color-accent-primary);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+            width: 0%;
+        }
+        
+        .podcast-widget-minimal .minimal-time {
+            font-size: 0.75rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            min-width: 40px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        
+        .podcast-widget-minimal .minimal-expand {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--color-accent-primary);
+            background: transparent;
+            color: var(--color-accent-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .podcast-widget-minimal .minimal-expand:hover {
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+        }
+        
+        .podcast-error {
+            padding: 1rem;
+            color: var(--color-state-danger);
+            text-align: center;
+        }
+        
+        /* Expanded Drawer */
+        .podcast-widget-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-background-surface, var(--color-background-base));
+            border-top: 2px solid var(--color-accent-primary);
+            border-radius: 20px 20px 0 0;
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .podcast-widget-drawer.hidden {
+            transform: translateY(100%);
+            pointer-events: none;
+            visibility: hidden;
+        }
+        
+        .podcast-widget-drawer .drawer-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            background: var(--color-background-surface, var(--color-background-base));
+            z-index: 10;
+        }
+        
+        .podcast-widget-drawer .drawer-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--color-accent-primary);
+            background: transparent;
+            color: var(--color-accent-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .podcast-widget-drawer .drawer-close:hover {
+            background: var(--color-accent-primary);
+            color: var(--color-text-on-accent);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .podcast-widget-minimal {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .podcast-widget-minimal .podcast-cover {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+            
+            .podcast-widget-drawer {
+                max-height: 90vh;
+                border-radius: 0;
+            }
+            
+            .podcast-header-full {
+                flex-direction: column;
+            }
+            
+            .podcast-cover-full {
+                width: 100%;
+                height: auto;
+                max-height: 250px;
+            }
+        }
+        
+        .social-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+        
+        .social-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--color-accent-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+        
+        .social-icon i {
+            display: block;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-2px);
+            opacity: 0.8;
+        }
+        
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+        
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .episode-drawer {
+            position: fixed;
+            top: 0;
+            right: calc(-1 * (var(--mobile-page-offset) + var(--episode-drawer-width, min(90vw, 26rem))));
+            width: var(--episode-drawer-width, min(90vw, 26rem));
+            max-width: var(--episode-drawer-width, min(90vw, 26rem));
+            height: 100vh;
+            background: var(--color-background-surface-raised, var(--color-background-base));
+            border-left: 2px solid var(--color-accent-primary);
+            box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+        
+        .episode-drawer.open {
+            right: var(--mobile-page-offset);
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+        }
+        
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-accent-primary);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 1rem;
+            }
+            
+            .profile-image {
+                width: 100px;
+                height: 100px;
+            }
+            
+        }
+
+        /* Aurora Theme Styling */
+        body.theme-aurora-skies {
+            background: var(--gradient-page, var(--page-background));
+            color: var(--color-text-on-background, var(--text-color));
+            font-family: var(--font-family-body, var(--body-font), sans-serif);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.theme-aurora-skies .page-container {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        body.theme-aurora-skies::before,
+        body.theme-aurora-skies::after {
+            content: "";
+            position: fixed;
+            inset: auto;
+            width: 65vw;
+            height: 65vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, color-mix(in srgb, var(--gradient-accent, var(--color-accent-primary)) 35%, transparent) 0%, rgba(0,0,0,0) 70%);
+            opacity: 0.4;
+            pointer-events: none;
+            filter: blur(24px);
+            z-index: -2;
+        }
+
+        body.theme-aurora-skies::before {
+            top: -20vw;
+            left: -15vw;
+        }
+
+        body.theme-aurora-skies::after {
+            bottom: -25vw;
+            right: -10vw;
+        }
+
+        body.theme-aurora-skies .profile-image {
+            border: 3px solid color-mix(in srgb, var(--color-border-default) 55%, transparent);
+            box-shadow: 0 16px 36px rgba(6, 10, 45, 0.35);
+        }
+
+        body.theme-aurora-skies .page-title {
+            position: relative;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: transparent;
+            background-image: var(--gradient-accent, linear-gradient(120deg, #7affd8 0%, #64a0ff 50%, #b174ff 100%));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+            margin-bottom: var(--space-sm);
+        }
+
+        body.theme-aurora-skies .page-title::after {
+            content: "";
+            display: block;
+            margin: var(--space-xs) auto 0;
+            width: clamp(6rem, 50%, 12rem);
+            height: 2px;
+            background: var(--gradient-accent, var(--color-accent-primary));
+            border-radius: 999px;
+            opacity: 0.85;
+        }
+
+        body.theme-aurora-skies .page-description {
+            color: color-mix(in srgb, var(--color-text-secondary) 80%, #f3fbff 20%);
+        }
+
+        body.theme-aurora-skies .widget-item {
+            background: color-mix(in srgb, var(--color-background-surface) 80%, transparent);
+            border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
+            box-shadow: 0 18px 38px rgba(4, 9, 38, 0.32);
+        }
+
+        body.theme-aurora-skies .widget-item::before {
+            display: none;
+        }
+
+        body.theme-aurora-skies .widget-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 44px rgba(4, 9, 38, 0.36);
+        }
+
+        body.theme-aurora-skies .widget-title {
+            color: color-mix(in srgb, var(--color-text-primary) 92%, #ffffff 8%);
+        }
+
+        body.theme-aurora-skies .widget-description {
+            color: color-mix(in srgb, var(--color-text-secondary) 78%, #d7e7ff 22%);
+        }
+
+        body.theme-aurora-skies .social-icon {
+            color: var(--color-accent-primary);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+        }
+
+        body.theme-aurora-skies .social-icon:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 30px color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+        }
+
+        /* Podcast banner and toggle */
+        body.theme-aurora-skies .podcast-top-banner {
+            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
+            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
+            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
+        }
+
+        body.theme-aurora-skies .podcast-banner-toggle {
+            color: #FFFFFF;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            background: transparent;
+        }
+
+        body.theme-aurora-skies .podcast-banner-toggle:hover {
+            background: rgba(20, 34, 64, 0.22);
+            color: #FFFFFF;
+        }
+
+        /* Podcast drawer (dark mode enforced) */
+        body.theme-aurora-skies .podcast-top-drawer,
+        body.theme-aurora-skies .episode-drawer,
+        body.theme-aurora-skies .podcast-bottom-sheet {
+            background: linear-gradient(160deg, rgba(8, 10, 25, 0.98) 0%, rgba(12, 18, 42, 0.95) 65%, rgba(9, 14, 30, 0.92) 100%);
+            color: #f4f8ff;
+            border-top: 1px solid rgba(122, 255, 216, 0.15);
+        }
+
+        body.theme-aurora-skies .podcast-drawer-footer-button,
+        body.theme-aurora-skies .episode-drawer .drawer-close {
+            color: color-mix(in srgb, var(--color-accent-primary) 80%, #ffffff 20%);
+        }
+
+        body.theme-aurora-skies .podcast-compact-player {
+            background: rgba(8, 12, 30, 0.92);
+            border: 1px solid rgba(122, 255, 216, 0.12);
+            box-shadow: 0 22px 54px rgba(3, 6, 24, 0.45);
+        }
+
+        body.theme-aurora-skies .podcast-title-compact {
+            color: #f4f8ff;
+        }
+
+        body.theme-aurora-skies .episode-title-compact {
+            color: rgba(207, 215, 255, 0.85);
+        }
+
+        body.theme-aurora-skies .play-pause-btn,
+        body.theme-aurora-skies .skip-back-btn,
+        body.theme-aurora-skies .skip-forward-btn {
+            background: var(--gradient-accent, var(--color-accent-primary));
+            color: var(--color-text-on-accent);
+            border: none;
+        }
+
+        body.theme-aurora-skies .play-pause-btn {
+            box-shadow: 0 12px 30px rgba(8, 16, 52, 0.55);
+        }
+
+        body.theme-aurora-skies .progress-bar {
+            background: rgba(122, 255, 216, 0.2);
+        }
+
+        body.theme-aurora-skies .progress-fill {
+            background: var(--gradient-accent, var(--color-accent-primary));
+            box-shadow: 0 0 12px rgba(122, 255, 216, 0.45);
+        }
+
+        body.theme-aurora-skies .progress-scrubber {
+            border-color: rgba(122, 255, 216, 0.6);
+            background: #ffffff;
+        }
+
+        body.theme-aurora-skies .volume-btn,
+        body.theme-aurora-skies .expand-drawer-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: var(--color-accent-primary);
+        }
+
+        @keyframes auroraPulse {
+            0%, 100% { box-shadow: 0 12px 32px rgba(8, 16, 52, 0.4), 0 0 14px rgba(122, 255, 216, 0.25); }
+            50% { box-shadow: 0 14px 36px rgba(8, 16, 52, 0.55), 0 0 20px rgba(122, 255, 216, 0.4); }
+        }
+
+        @keyframes auroraFlow {
+            0% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
+            50% { transform: translate3d(2%, -1%, 0) scale(1.03); opacity: 1; }
+            100% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
+        }
+
+        body.theme-aurora-skies .podcast-top-banner::before {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
+            opacity: 0.45;
+            animation: auroraFlow 14s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .widget-heading {
+            width: 100%;
+            padding: var(--space-sm, 1rem) var(--space-md, 1.25rem);
+            text-align: center;
+        }
+
+        .widget-heading-text {
+            margin: 0;
+            font-family: var(--heading-font, var(--font-family-heading));
+        }
+
+        .widget-heading-h1 .widget-heading-text {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: var(--type-weight-bold, 700);
+        }
+
+        .widget-heading-h2 .widget-heading-text {
+            font-size: clamp(1.6rem, 3.25vw, 2.2rem);
+            font-weight: var(--type-weight-semibold, 600);
+        }
+
+        .widget-heading-h3 .widget-heading-text {
+            font-size: clamp(1.3rem, 2.75vw, 1.8rem);
+            font-weight: var(--type-weight-medium, 500);
+        }
+
+        .widget-text-note {
+            width: 100%;
+            padding: var(--space-xs, 0.75rem) var(--space-sm, 1rem);
+            font-size: 0.9rem;
+            font-style: italic;
+            color: rgba(15, 23, 42, 0.75);
+            text-align: center;
+        }
+
+        .widget-text-note p {
+            margin: 0;
+        }
+
+        .widget-divider {
+            width: 100%;
+            padding: var(--space-xs, 0.75rem) var(--space-md, 1.25rem);
+        }
+
+        .widget-divider-line {
+            border: none;
+            height: 3px;
+            width: 100%;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        .widget-divider-line-shadow {
+            background: rgba(71, 85, 105, 0.6);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        .widget-divider-line-gradient {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.85), rgba(124, 58, 237, 0.85));
+        }
+    </style>
+</head>
+<body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass); ?>">
+    <div class="page-container">
+        <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
+        <div class="profile-header">
+            <?php if ($page['profile_image']): 
+                $imageShape = $page['profile_image_shape'] ?? 'circle';
+                $imageShadow = $page['profile_image_shadow'] ?? 'subtle';
+                $imageSize = $page['profile_image_size'] ?? 'medium';
+                $imageBorder = $page['profile_image_border'] ?? 'none';
+                $shapeClass = 'profile-image-shape-' . $imageShape;
+                $shadowClass = 'profile-image-shadow-' . $imageShadow;
+                $sizeClass = 'profile-image-size-' . $imageSize;
+                $borderClass = 'profile-image-border-' . $imageBorder;
+            ?>
+                <img src="<?php echo h($page['profile_image']); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>">
+            <?php endif; ?>
+            
+            <?php if ($page['cover_image_url']): ?>
+                <img src="<?php echo h($page['cover_image_url']); ?>" alt="Cover" class="cover-image">
+            <?php endif; ?>
+            
+            <?php if ($page['podcast_name']): 
+                $nameAlignment = $page['name_alignment'] ?? 'center';
+                $nameTextSize = $page['name_text_size'] ?? 'large';
+                $alignmentStyle = 'text-align: ' . h($nameAlignment) . ';';
+                $sizeClass = 'name-size-' . h($nameTextSize);
+                // Allow safe HTML tags (strong, em, u, br) but sanitize the rest
+                $nameContent = $page['podcast_name'];
+                // First convert newlines to <br>, then strip unwanted tags
+                $nameContent = nl2br($nameContent);
+                $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
+            ?>
+                <h1 class="page-title <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle; ?>"><?php echo $nameContent; ?></h1>
+            <?php elseif ($page['username']): ?>
+                <h1 class="page-title"><?php echo h($page['username']); ?></h1>
+            <?php endif; ?>
+            
+            <?php if ($page['podcast_description']): 
+                $bioAlignment = $page['bio_alignment'] ?? 'center';
+                $bioTextSize = $page['bio_text_size'] ?? 'medium';
+                $alignmentStyle = 'text-align: ' . h($bioAlignment) . ';';
+                $sizeClass = 'bio-size-' . h($bioTextSize);
+                // Allow safe HTML tags (strong, em, u, br) but sanitize the rest
+                $bioContent = $page['podcast_description'];
+                // First convert newlines to <br>, then strip unwanted tags
+                $bioContent = nl2br($bioContent);
+                $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
+            ?>
+                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle; ?>"><?php echo $bioContent; ?></p>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+        
+        <!-- Podcast Player Top Banner (positioned independently, moves with drawer) -->
+        <?php if ($showPodcastPlayer): ?>
+            <div class="podcast-top-banner" id="podcast-top-banner">
+                <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
+                    <i class="fas fa-podcast"></i>
+                    <span>Tap to Listen</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Podcast Player Top Drawer -->
+        <?php if ($showPodcastPlayer): ?>
+            <div class="podcast-top-drawer" id="podcast-top-drawer">
+                
+                <!-- Tab Navigation -->
+                <nav class="tab-navigation" id="tab-navigation">
+                    <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
+                    <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
+                    <button class="tab-button" data-tab="details" id="tab-details">Details</button>
+                    <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
+                </nav>
+
+                <!-- Tab Content Container -->
+                <div class="tab-content-container" id="tab-content-container">
+                    <!-- Now Playing Tab -->
+                    <div class="tab-panel active" id="now-playing-panel">
+                        <div class="now-playing-content">
+                            <!-- Full Width Cover Artwork -->
+                            <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
+                                <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
+                                <div class="artwork-placeholder" id="artwork-placeholder">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                            </div>
+
+                            <!-- Progress Section (Below Artwork, Above Controls) -->
+                            <div class="progress-section-large" id="progress-section-now-playing">
+                                <div class="time-display">
+                                    <span id="current-time-display">0:00</span>
+                                    <span id="remaining-time-display">-0:00</span>
+                                </div>
+                                <div class="progress-bar-now-playing" id="progress-bar-now-playing">
+                                    <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
+                                    <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                                </div>
+                            </div>
+
+                            <!-- Player Controls (Below Progress) -->
+                            <div class="player-controls-section">
+                                <!-- Primary Controls -->
+                                <div class="primary-controls">
+                                    <button class="control-button-large skip-back-large" id="skip-back-large" aria-label="Skip back 10 seconds">
+                                        <span class="skip-label-large">10</span>
+                                        <i class="fas fa-backward"></i>
+                                    </button>
+                                    <button class="control-button-large play-pause-large-now" id="play-pause-large-now" aria-label="Play/Pause">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="control-button-large skip-forward-large" id="skip-forward-large" aria-label="Skip forward 45 seconds">
+                                        <span class="skip-label-large">45</span>
+                                        <i class="fas fa-forward"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Secondary Controls Bar -->
+                                <div class="secondary-controls-bar">
+                                    <button class="secondary-control-btn speed-control-btn" id="speed-control-btn" aria-label="Playback Speed">
+                                        <span id="speed-display">1x</span>
+                                    </button>
+                                    <button class="secondary-control-btn timer-control-btn" id="timer-control-btn" aria-label="Sleep Timer">
+                                        <i class="fas fa-moon"></i>
+                                        <span id="timer-display">Off</span>
+                                    </button>
+                                    <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                    <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Speed Selector (Inline) -->
+                                <div class="inline-speed-selector" id="inline-speed-selector" style="display: none;">
+                                    <h3 class="inline-selector-title">Playback Speed</h3>
+                                    <div class="speed-options-inline" id="speed-options-inline">
+                                        <!-- Speed options will be inserted here -->
+                                    </div>
+                                </div>
+
+                                <!-- Timer Selector (Inline) -->
+                                <div class="inline-timer-selector" id="inline-timer-selector" style="display: none;">
+                                    <h3 class="inline-selector-title">Sleep Timer</h3>
+                                    <div class="timer-options-inline" id="timer-options-inline">
+                                        <!-- Timer options will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Tab -->
+                    <div class="tab-panel" id="follow-panel">
+                        <div class="details-content">
+                            <!-- Follow & Share Section -->
+                            <div class="details-section" id="follow-section">
+                                <h2 class="section-title">Follow & Share</h2>
+                                <div id="follow-content">
+                                    <!-- Follow content will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Tab -->
+                    <div class="tab-panel" id="details-panel">
+                        <div class="details-content">
+                            <!-- Show Notes Section -->
+                            <div class="details-section" id="shownotes-section">
+                                <h2 class="section-title">Show Notes</h2>
+                                <div class="shownotes-content" id="shownotes-content">
+                                    <p class="empty-message">No episode selected</p>
+                                </div>
+                            </div>
+
+                            <!-- Chapters Section -->
+                            <div class="details-section" id="chapters-section">
+                                <h2 class="section-title">Chapters</h2>
+                                <div class="chapters-list" id="chapters-list">
+                                    <div class="empty-state">No chapters available</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Episodes Tab -->
+                    <div class="tab-panel" id="episodes-panel">
+                        <div class="episodes-content">
+                            <!-- Loading Skeleton -->
+                            <div class="loading-skeleton" id="loading-skeleton">
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                            </div>
+
+                            <!-- Episodes List -->
+                            <div class="episodes-list" id="episodes-list" style="display: none;">
+                                <!-- Episodes will be inserted here -->
+                            </div>
+
+                            <!-- Error State -->
+                            <div class="error-state" id="error-state" style="display: none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Failed to load episodes</p>
+                                <button class="retry-button" id="retry-button">Retry</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Notification -->
+                <div class="toast" id="toast" style="display: none;">
+                    <span id="toast-message"></span>
+                </div>
+
+                <!-- Audio Element -->
+                <audio id="podcast-audio-player" preload="metadata"></audio>
+
+                <!-- Drawer Footer Close Button -->
+                <div class="podcast-drawer-footer">
+                    <button type="button" class="podcast-drawer-footer-button" id="podcast-drawer-close" aria-label="Close Podcast Player">
+                        <i class="fas fa-chevron-up"></i>
+                        <span>Close Player</span>
+                    </button>
+                </div>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Social Icons -->
+        <?php if (!empty($socialIcons)): ?>
+            <div class="social-icons">
+                <?php foreach ($socialIcons as $icon): ?>
+                    <a href="<?php echo h($icon['url']); ?>" 
+                       class="social-icon" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       title="<?php echo h($icon['platform_name']); ?>">
+                        <?php
+                        // Icon mapping for platforms (social media + podcast platforms)
+                        // All icons use Font Awesome for consistency
+                        $platformIcons = [
+                            // Podcast Platforms
+                            'apple_podcasts' => '<i class="fas fa-podcast"></i>',
+                            'spotify' => '<i class="fab fa-spotify"></i>',
+                            'youtube_music' => '<i class="fab fa-youtube"></i>',
+                            'iheart_radio' => '<i class="fas fa-heart"></i>',
+                            'amazon_music' => '<i class="fab fa-amazon"></i>',
+                            // Social Media Platforms
+                            'facebook' => '<i class="fab fa-facebook"></i>',
+                            'twitter' => '<i class="fab fa-twitter"></i>',
+                            'instagram' => '<i class="fab fa-instagram"></i>',
+                            'linkedin' => '<i class="fab fa-linkedin"></i>',
+                            'youtube' => '<i class="fab fa-youtube"></i>',
+                            'tiktok' => '<i class="fab fa-tiktok"></i>',
+                            'snapchat' => '<i class="fab fa-snapchat"></i>',
+                            'pinterest' => '<i class="fab fa-pinterest"></i>',
+                            'reddit' => '<i class="fab fa-reddit"></i>',
+                            'discord' => '<i class="fab fa-discord"></i>',
+                            'twitch' => '<i class="fab fa-twitch"></i>',
+                            'github' => '<i class="fab fa-github"></i>',
+                            'behance' => '<i class="fab fa-behance"></i>',
+                            'dribbble' => '<i class="fab fa-dribbble"></i>',
+                            'medium' => '<i class="fab fa-medium"></i>'
+                        ];
+                        $iconHtml = $platformIcons[strtolower($icon['platform_name'])] ?? '<i class="fas fa-link"></i>';
+                        echo $iconHtml;
+                        ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <div class="widgets-container">
+            <?php 
+            // Render widgets using WidgetRenderer
+            if (!empty($widgets)):
+                foreach ($widgets as $widget): 
+                    $widget['page_id'] = $page['id']; // Ensure page_id is set for renderer
+                    $isFeatured = !empty($widget['is_featured']);
+                    $featuredEffect = $widget['featured_effect'] ?? '';
+                    
+                    try {
+                        $rendered = WidgetRenderer::render($widget, $page);
+                        if (!empty($rendered)) {
+                            // Wrap in featured container if featured
+                            if ($isFeatured && $featuredEffect) {
+                                echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
+                            }
+                            echo $rendered;
+                            if ($isFeatured && $featuredEffect) {
+                                echo '</div>';
+                            }
+                        } else {
+                            // Log when widget returns empty but exists in DB
+                            error_log("Widget " . ($widget['id'] ?? 'unknown') . " (type: " . ($widget['widget_type'] ?? 'unknown') . ") returned empty render");
+                        }
+                    } catch (Exception $e) {
+                        // Log error but don't break the page
+                        error_log("Widget render error for widget ID " . ($widget['id'] ?? 'unknown') . ": " . $e->getMessage());
+                        echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
+                    }
+                endforeach;
+            // Fallback to legacy links if no widgets exist
+            elseif (!empty($links)):
+                foreach ($links as $link): ?>
+                    <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
+                       class="widget-item" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                        <?php if ($link['thumbnail_image']): ?>
+                            <img src="<?php echo h($link['thumbnail_image']); ?>" 
+                                 alt="<?php echo h($link['title']); ?>" 
+                                 class="widget-thumbnail">
+                        <?php endif; ?>
+                        <div class="widget-content">
+                            <div class="widget-title"><?php echo h($link['title']); ?></div>
+                        </div>
+                    </a>
+                <?php endforeach;
+            endif; ?>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <?php if ((!isset($page['footer_visible']) || $page['footer_visible']) && (!empty($page['footer_text']) || !empty($page['footer_copyright']) || !empty($page['footer_privacy_link']) || !empty($page['footer_terms_link']))): ?>
+        <footer class="page-footer" style="margin-top: 2rem; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid rgba(15, 23, 42, 0.1);">
+            <?php if (!empty($page['footer_text'])): ?>
+                <p style="margin: 0 0 1rem 0; color: var(--color-text-secondary, #6b7280); font-size: 0.9rem;"><?php echo nl2br(h($page['footer_text'])); ?></p>
+            <?php endif; ?>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--color-text-secondary, #6b7280);">
+                <?php if (!empty($page['footer_copyright'])): ?>
+                    <span><?php echo h($page['footer_copyright']); ?></span>
+                <?php endif; ?>
+                <?php if (!empty($page['footer_privacy_link'])): ?>
+                    <a href="<?php echo h($page['footer_privacy_link']); ?>" target="_blank" rel="noopener noreferrer" style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Privacy Policy</a>
+                <?php endif; ?>
+                <?php if (!empty($page['footer_terms_link'])): ?>
+                    <a href="<?php echo h($page['footer_terms_link']); ?>" target="_blank" rel="noopener noreferrer" style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Terms of Service</a>
+                <?php endif; ?>
+            </div>
+        </footer>
+    <?php endif; ?>
+    
+    <!-- Email Subscription Drawer -->
+    <?php if (!empty($page['email_service_provider'])): ?>
+        <div class="drawer-overlay" id="email-overlay" onclick="closeEmailDrawer()"></div>
+        <div class="episode-drawer" id="email-drawer">
+            <div class="drawer-header">
+                <h2 style="margin: 0; color: var(--color-text-primary);">Subscribe to Email List</h2>
+                <button class="drawer-close" onclick="closeEmailDrawer()" aria-label="Close">×</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Get notified about new episodes and updates.</p>
+                <form id="email-subscribe-form" onsubmit="subscribeEmail(event)">
+                    <div class="form-group">
+                        <label for="subscribe-email" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Address</label>
+                        <input type="email" 
+                               id="subscribe-email" 
+                               name="email" 
+                               required 
+                               placeholder="your@email.com"
+                               style="width: 100%; padding: 0.75rem; border: 2px solid var(--color-accent-primary); border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                    <button type="submit" 
+                            class="widget-item" 
+                            style="margin-top: 1rem; width: 100%; text-align: center; cursor: pointer;">
+                        Subscribe
+                    </button>
+                </form>
+                <div id="subscribe-message" style="margin-top: 1rem; display: none;"></div>
+            </div>
+        </div>
+    <?php endif; ?>
+    
+    <script>
+        function openEmailDrawer() {
+            const drawer = document.getElementById('email-drawer');
+            const overlay = document.getElementById('email-overlay');
+            if (drawer && overlay) {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeEmailDrawer() {
+            const drawer = document.getElementById('email-drawer');
+            const overlay = document.getElementById('email-overlay');
+            if (drawer && overlay) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function subscribeEmail(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const email = form.querySelector('#subscribe-email').value;
+            const messageDiv = document.getElementById('subscribe-message');
+            
+            if (!email) {
+                messageDiv.textContent = 'Please enter an email address';
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = 'var(--color-accent-primary)';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('page_id', <?php echo $page['id']; ?>);
+            formData.append('email', email);
+            
+            fetch('/api/subscribe.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageDiv.style.display = 'block';
+                if (data.success) {
+                    messageDiv.textContent = data.message || 'Successfully subscribed!';
+                    messageDiv.style.color = 'green';
+                    form.reset();
+                } else {
+                    messageDiv.textContent = data.error || 'Failed to subscribe';
+                    messageDiv.style.color = 'red';
+                }
+            })
+            .catch(() => {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.style.color = 'red';
+            });
+        }
+        
+        // Close drawer on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEmailDrawer();
+            }
+        });
+    </script>
+    <script>
+        // Random timing for movement-based Featured Widget effects
+        // Creates illusion of "something alive" inside occasionally causing movement
+        (function() {
+            const movementEffects = ['jiggle', 'shake', 'pulse', 'rotating-glow'];
+            const featuredWidgets = document.querySelectorAll('.featured-widget');
+            
+            featuredWidgets.forEach(widget => {
+                const effectClass = Array.from(widget.classList).find(cls => cls.startsWith('featured-effect-'));
+                if (!effectClass) return;
+                
+                const effect = effectClass.replace('featured-effect-', '');
+                if (!movementEffects.includes(effect)) return; // Static effects (burn, blink) continue as normal
+                
+                function triggerAnimation() {
+                    widget.classList.add('active');
+                    setTimeout(() => {
+                        widget.classList.remove('active');
+                    }, effect === 'rotating-glow' ? 2000 : (effect === 'pulse' ? 1000 : 600));
+                }
+                
+                // Initial trigger after random delay (0.5-2 seconds)
+                setTimeout(triggerAnimation, 500 + Math.random() * 1500);
+                
+                // Continue triggering at random intervals (2-8 seconds)
+                function scheduleNext() {
+                    const delay = 2000 + Math.random() * 6000; // 2-8 seconds
+                    setTimeout(() => {
+                        triggerAnimation();
+                        scheduleNext();
+                    }, delay);
+                }
+                scheduleNext();
+            });
+        })();
+        
+        // Sparkles Effect for Featured Widgets
+        (function() {
+            // SVG sparkle path (star shape)
+            const sparkleSVG = `
+                <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.438 31.781-8.938 8.908-31.781 10.422-31.781 10.422C1 44.031 0 45.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.843 1.514 31.781 10.422 8.938 8.911 10.438 31.781 10.438 31.781C45.031 95 46.625 96 48 96s2.969-1 3.578-2.219c0 0 1.514-22.87 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422C94 51.031 95 49.359 95 48c0-1.375-1-2.969-2.219-3.578z" fill="var(--color-accent-primary)"/>
+                </svg>
+            `;
+            
+            const sparklesWidgets = document.querySelectorAll('.featured-widget.featured-effect-sparkles');
+            
+            sparklesWidgets.forEach(widget => {
+                const widgetItem = widget.querySelector('.widget-item');
+                if (!widgetItem) return;
+                
+                function createSparkle() {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.innerHTML = sparkleSVG;
+                    
+                    // Get widget dimensions
+                    const widgetRect = widgetItem.getBoundingClientRect();
+                    const maxX = widgetRect.width;
+                    const maxY = widgetRect.height;
+                    
+                    // Position sparkle randomly but ensure it's visible
+                    const x = Math.random() * (maxX - 48) + 24;
+                    const y = Math.random() * (maxY - 48) + 24;
+                    
+                    sparkle.style.left = x + 'px';
+                    sparkle.style.top = y + 'px';
+                    
+                    // Random delay and duration
+                    const delay = Math.random() * 2;
+                    const duration = 1.5 + Math.random() * 1;
+                    sparkle.style.animationDelay = delay + 's';
+                    sparkle.style.animationDuration = duration + 's';
+                    
+                    widgetItem.appendChild(sparkle);
+                    
+                    // Activate sparkle
+                    setTimeout(() => {
+                        sparkle.classList.add('active');
+                    }, 10);
+                    
+                    // Remove sparkle after animation
+                    setTimeout(() => {
+                        if (sparkle.parentNode) {
+                            sparkle.parentNode.removeChild(sparkle);
+                        }
+                    }, (delay + duration) * 1000);
+                }
+                
+                // Create initial sparkles
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        createSparkle();
+                    }, i * 400);
+                }
+                
+                // Continue creating sparkles at random intervals
+                setInterval(() => {
+                    if (Math.random() > 0.3) { // 70% chance to create a sparkle
+                        createSparkle();
+                    }
+                }, 800 + Math.random() * 1200);
+            });
+        })();
+    </script>
+    <script>
+        // Accelerometer-based Tilt Effect
+        // Only activate if spatial-tilt class is present
+        (function() {
+            if (!document.body.classList.contains('spatial-tilt')) {
+                return; // Exit if tilt effect is not enabled
+            }
+            
+            // Check if Device Orientation API is available
+            if (typeof DeviceOrientationEvent === 'undefined' || 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // iOS 13+ requires permission
+                const permissionButton = document.createElement('button');
+                permissionButton.textContent = 'Enable Tilt Effect';
+                permissionButton.style.position = 'fixed';
+                permissionButton.style.bottom = '20px';
+                permissionButton.style.right = '20px';
+                permissionButton.style.padding = '12px 24px';
+                permissionButton.style.background = 'var(--color-accent-primary)';
+                permissionButton.style.color = 'var(--color-text-inverse)';
+                permissionButton.style.border = 'none';
+                permissionButton.style.borderRadius = 'var(--shape-corner-md, 0.75rem)';
+                permissionButton.style.cursor = 'pointer';
+                permissionButton.style.zIndex = '1000';
+                permissionButton.style.fontWeight = '600';
+                permissionButton.style.boxShadow = 'var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16))';
+                permissionButton.onclick = function() {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response === 'granted') {
+                                permissionButton.remove();
+                                initTiltEffect();
+                            }
+                        })
+                        .catch(() => {
+                            permissionButton.textContent = 'Permission Denied';
+                            permissionButton.style.background = 'var(--color-state-danger)';
+                        });
+                };
+                document.body.appendChild(permissionButton);
+            } else {
+                // API available, initialize immediately
+                initTiltEffect();
+            }
+            
+            function initTiltEffect() {
+                const widgets = document.querySelectorAll('.widget-item');
+                if (widgets.length === 0) return;
+                
+                let lastUpdate = 0;
+                const throttleMs = 16; // ~60fps
+                let rafId = null;
+                
+                function handleOrientation(event) {
+                    const now = Date.now();
+                    if (now - lastUpdate < throttleMs) {
+                        return; // Throttle updates
+                    }
+                    lastUpdate = now;
+                    
+                    // Cancel previous animation frame
+                    if (rafId) {
+                        cancelAnimationFrame(rafId);
+                    }
+                    
+                    // Schedule update
+                    rafId = requestAnimationFrame(() => {
+                        applyTiltTransforms(event, widgets);
+                    });
+                }
+                
+                function applyTiltTransforms(event, widgetElements) {
+                    // Get tilt values (beta: front-to-back, gamma: left-to-right)
+                    const beta = event.beta || 0;  // -180 to 180
+                    const gamma = event.gamma || 0; // -90 to 90
+                    
+                    // Normalize values and scale for subtle movement
+                    const maxTilt = 15; // Maximum pixels to move
+                    const xOffset = (gamma / 90) * maxTilt;  // Left-right tilt
+                    const yOffset = (beta / 180) * maxTilt;   // Front-back tilt
+                    
+                    // Apply transforms with parallax effect (each widget moves slightly differently)
+                    widgetElements.forEach((widget, index) => {
+                        // Create subtle parallax by varying movement amount
+                        const parallaxFactor = 0.7 + (index % 3) * 0.1; // 0.7, 0.8, or 0.9
+                        const widgetX = xOffset * parallaxFactor;
+                        const widgetY = yOffset * parallaxFactor;
+                        
+                        widget.style.transform = `translate(${widgetX}px, ${widgetY}px)`;
+                    });
+                }
+                
+                // Listen for device orientation events
+                window.addEventListener('deviceorientation', handleOrientation, true);
+                
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', () => {
+                    window.removeEventListener('deviceorientation', handleOrientation, true);
+                    if (rafId) {
+                        cancelAnimationFrame(rafId);
+                    }
+                });
+            }
+        })();
+        
+        // Marquee scrolling for Custom Link widget descriptions only
+        (function() {
+            function initWidgetMarquee(element) {
+                // Only process widget descriptions within Custom Link widgets
+                if (!element.closest('.widget-item') || !element.classList.contains('widget-description')) {
+                    return;
+                }
+                
+                // Reset processed flag to allow re-evaluation
+                delete element.dataset.marqueeProcessed;
+                
+                // Skip if element contains SVG
+                if (element.querySelector('svg')) {
+                    return;
+                }
+                
+                // Unwrap content first to get accurate measurements
+                const contentSpan = element.querySelector('.marquee-content');
+                if (contentSpan) {
+                    // Extract original content from first marquee-text if it exists
+                    const firstText = contentSpan.querySelector('.marquee-text');
+                    if (firstText) {
+                        element.innerHTML = firstText.innerHTML;
+                    } else {
+                        element.innerHTML = contentSpan.innerHTML;
+                    }
+                    element.classList.remove('marquee');
+                }
+                
+                // Skip if already has marquee-text (already processed)
+                if (element.querySelector('.marquee-text')) {
+                    return;
+                }
+                
+                // Get container width - measure parent container to know available space
+                // Do this BEFORE any style changes
+                const parentContainer = element.parentElement; // .widget-content
+                const containerWidth = parentContainer ? parentContainer.clientWidth : element.clientWidth;
+                
+                if (containerWidth <= 0) {
+                    // Container not ready yet, skip
+                    return;
+                }
+                
+                // Use a temporary span to measure text width without affecting layout
+                const tempSpan = document.createElement('span');
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.whiteSpace = 'nowrap';
+                tempSpan.style.fontSize = window.getComputedStyle(element).fontSize;
+                tempSpan.style.fontFamily = window.getComputedStyle(element).fontFamily;
+                tempSpan.style.fontWeight = window.getComputedStyle(element).fontWeight;
+                tempSpan.style.letterSpacing = window.getComputedStyle(element).letterSpacing;
+                tempSpan.textContent = element.textContent;
+                
+                document.body.appendChild(tempSpan);
+                const textWidth = tempSpan.offsetWidth;
+                document.body.removeChild(tempSpan);
+                
+                if (textWidth > containerWidth && containerWidth > 0) {
+                    // Text overflows when on single line - apply marquee
+                    element.classList.add('marquee');
+                    
+                    // Wrap content in marquee-content span and duplicate for seamless loop
+                    const content = element.innerHTML;
+                    // Duplicate content for seamless scrolling
+                    element.innerHTML = '<span class="marquee-content"><span class="marquee-text">' + content + '</span><span class="marquee-text">' + content + '</span></span>';
+                    
+                    const newContentSpan = element.querySelector('.marquee-content');
+                    if (newContentSpan) {
+                        // Force a reflow to get accurate measurements
+                        void newContentSpan.offsetWidth;
+                        const firstText = newContentSpan.querySelector('.marquee-text');
+                        if (firstText) {
+                            const textWidth = firstText.scrollWidth;
+                            const duration = Math.max(8, Math.min(20, (textWidth / 40))); // 8-20 seconds based on length
+                            
+                            // Set CSS variables for animation
+                            // Scroll by exactly one text width so the duplicate seamlessly continues
+                            newContentSpan.style.setProperty('--marquee-distance', `-${textWidth}px`);
+                            newContentSpan.style.setProperty('--marquee-duration', `${duration}s`);
+                        }
+                    }
+                }
+                
+                element.dataset.marqueeProcessed = 'true';
+            }
+            
+            let isProcessing = false;
+            let debounceTimer = null;
+            
+            function applyWidgetMarquee() {
+                // Prevent infinite loops
+                if (isProcessing) {
+                    return;
+                }
+                
+                isProcessing = true;
+                
+                try {
+                    // Only target widget descriptions within Custom Link widgets
+                    document.querySelectorAll('.widget-item .widget-description').forEach(element => {
+                        // Skip if already has marquee-text (already fully processed)
+                        if (element.querySelector('.marquee-text')) {
+                            return;
+                        }
+                        // Skip if already processed and has marquee-content
+                        if (element.dataset.marqueeProcessed === 'true' && element.querySelector('.marquee-content')) {
+                            return;
+                        }
+                        initWidgetMarquee(element);
+                    });
+                } finally {
+                    isProcessing = false;
+                }
+            }
+            
+            // Debounced version for observer
+            function debouncedApplyWidgetMarquee() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    // Only reset flags for elements that actually changed
+                    document.querySelectorAll('.widget-item .widget-description').forEach(el => {
+                        // Only reset if it's not currently being processed
+                        if (!isProcessing) {
+                            delete el.dataset.marqueeProcessed;
+                        }
+                    });
+                    applyWidgetMarquee();
+                }, 100); // 100ms debounce
+            }
+            
+            // Run on page load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyWidgetMarquee);
+            } else {
+                applyWidgetMarquee();
+            }
+            
+            // Watch for dynamic content changes (only Custom Link widget descriptions)
+            // Use debounced version to prevent infinite loops
+            const observer = new MutationObserver((mutations) => {
+                // Only process if mutations are not from our own code
+                let shouldProcess = false;
+                for (const mutation of mutations) {
+                    // Skip if the mutation is just attribute changes (like dataset)
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'data-marquee-processed') {
+                        continue;
+                    }
+                    // Skip if mutation is from adding marquee-content or marquee-text (our own changes)
+                    if (mutation.addedNodes.length > 0) {
+                        for (const node of mutation.addedNodes) {
+                            if (node.nodeType === 1) {
+                                // Skip our own marquee elements
+                                if (node.classList && (node.classList.contains('marquee-content') || node.classList.contains('marquee-text'))) {
+                                    continue;
+                                }
+                                // Also check if it's a child of a marquee element
+                                if (node.closest && (node.closest('.marquee-content') || node.closest('.marquee-text'))) {
+                                    continue;
+                                }
+                            }
+                            shouldProcess = true;
+                            break;
+                        }
+                    } else {
+                        shouldProcess = true;
+                    }
+                    if (shouldProcess) break;
+                }
+                
+                if (shouldProcess) {
+                    debouncedApplyWidgetMarquee();
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: false // Don't watch attributes to avoid our own changes
+            });
+        })();
+    </script>
+    
+    <!-- Podcast Player JavaScript (only load if RSS feed exists and player is enabled) -->
+    <?php if ($showPodcastPlayer): ?>
+        <script src="/js/podcast-player-utils.js"></script>
+        <script src="/js/podcast-player-rss-parser.js"></script>
+        <script src="/js/podcast-player-audio.js"></script>
+        <script src="/js/podcast-player-app.js"></script>
+        <script>
+            // Initialize Podcast Player Drawer - Namespaced
+            (function() {
+                'use strict';
+                
+                const drawer = document.getElementById('podcast-top-drawer');
+                const toggleBtn = document.getElementById('podcast-drawer-toggle');
+                const closeBtn = document.getElementById('podcast-drawer-close');
+                const banner = document.getElementById('podcast-top-banner');
+                
+                if (!drawer || !toggleBtn) return;
+                
+                // Namespace for drawer functions
+                const PodcastDrawerController = {
+                    isPeeking: false,
+                    
+                    openDrawer: function() {
+                        drawer.style.display = 'flex';
+                        // Force reflow
+                        void drawer.offsetWidth;
+                        drawer.classList.remove('peek');
+                        drawer.classList.add('open');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-peek');
+                            banner.classList.add('drawer-open');
+                        }
+                        document.body.style.overflow = 'hidden';
+                        this.isPeeking = false;
+                    },
+                    
+                    closeDrawer: function() {
+                        // Force hide scrollbars immediately
+                        document.body.style.overflow = 'hidden';
+                        document.body.style.overflowY = 'hidden';
+                        document.body.style.overflowX = 'hidden';
+                        document.documentElement.style.overflow = 'hidden';
+                        document.documentElement.style.overflowY = 'hidden';
+                        document.documentElement.style.overflowX = 'hidden';
+                        
+                        drawer.classList.remove('open');
+                        drawer.classList.remove('peek');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-open', 'drawer-peek');
+                        }
+                        setTimeout(() => {
+                            if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
+                                drawer.style.display = 'flex';
+                            }
+                            // Restore body overflow after animation completes
+                            document.body.style.overflow = '';
+                            document.body.style.overflowY = '';
+                            document.body.style.overflowX = '';
+                            document.documentElement.style.overflow = '';
+                            document.documentElement.style.overflowY = '';
+                            document.documentElement.style.overflowX = '';
+                        }, 350); // Slightly longer than transition to ensure it's complete
+                        this.isPeeking = false;
+                    },
+                    
+                    peekDrawer: function() {
+                        if (this.isPeeking || drawer.classList.contains('open')) return;
+                        
+                        drawer.style.display = 'flex';
+                        // Force reflow
+                        void drawer.offsetWidth;
+                        drawer.classList.add('peek');
+                        // Update banner state
+                        if (banner) {
+                            banner.classList.remove('drawer-open');
+                            banner.classList.add('drawer-peek');
+                        }
+                        this.isPeeking = true;
+                        
+                        // Close after showing peek
+                        setTimeout(() => {
+                            if (drawer.classList.contains('peek') && !drawer.classList.contains('open')) {
+                                drawer.classList.remove('peek');
+                                // Update banner state
+                                if (banner) {
+                                    banner.classList.remove('drawer-peek');
+                                }
+                                setTimeout(() => {
+                                    if (!drawer.classList.contains('open') && !drawer.classList.contains('peek')) {
+                                        drawer.style.display = 'flex';
+                                    }
+                                }, 300);
+                                this.isPeeking = false;
+                            }
+                        }, 1500); // Show peek for 1.5 seconds
+                    }
+                };
+                
+                // Initialize player when drawer opens
+                let playerInitialized = false;
+                const initPlayer = function() {
+                    if (!playerInitialized) {
+                        // Prepare config with RSS feed and social icons
+                        const rssFeedUrl = '<?php echo h($page['rss_feed_url']); ?>';
+                        
+                        if (!rssFeedUrl) {
+                            console.error('RSS feed URL is not set');
+                            return;
+                        }
+                        
+                        const config = {
+                            rssFeedUrl: rssFeedUrl,
+                            rssProxyUrl: '/api/rss-proxy.php',
+                            imageProxyUrl: '/api/podcast-image-proxy.php',
+                            savedCoverImage: '<?php echo h($page['cover_image_url'] ?? ''); ?>',
+                            platformLinks: {
+                                apple: null,
+                                spotify: null,
+                                google: null
+                            },
+                            reviewLinks: {
+                                apple: null,
+                                spotify: null,
+                                google: null
+                            },
+                            socialIcons: <?php echo json_encode($socialIcons ?? []); ?>,
+                            cacheTTL: 3600000
+                        };
+                        
+                        // Initialize player
+                        try {
+                            console.log('Initializing podcast player with RSS feed:', rssFeedUrl);
+                            window.podcastPlayerApp = new PodcastPlayerApp(config, drawer);
+                            playerInitialized = true;
+                            console.log('Podcast player initialized successfully');
+                        } catch (error) {
+                            console.error('Failed to initialize podcast player:', error);
+                        }
+                    }
+                };
+                
+                // Open drawer and initialize player when toggle is clicked
+                toggleBtn.addEventListener('click', function() {
+                    PodcastDrawerController.openDrawer();
+                    // Wait for scripts to load before initializing
+                    if (typeof PodcastPlayerApp === 'undefined') {
+                        console.error('PodcastPlayerApp class not loaded. Check script loading order.');
+                        return;
+                    }
+                    // Small delay to ensure drawer is visible before initializing
+                    setTimeout(initPlayer, 100);
+                });
+                
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        PodcastDrawerController.closeDrawer();
+                    });
+                }
+                
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && (drawer.classList.contains('open') || drawer.classList.contains('peek'))) {
+                        PodcastDrawerController.closeDrawer();
+                    }
+                });
+                
+                // Peek animation: Open drawer 30% after 4 seconds, then close
+                const shouldAutoPeek = window.matchMedia('(max-width: 600px)').matches;
+                const alreadyPeeked = (typeof sessionStorage !== 'undefined') && sessionStorage.getItem('podcastDrawerAutoPeeked') === 'true';
+                if (shouldAutoPeek && !alreadyPeeked) {
+                setTimeout(function() {
+                    PodcastDrawerController.peekDrawer();
+                        try {
+                            sessionStorage.setItem('podcastDrawerAutoPeeked', 'true');
+                        } catch (err) {
+                            console.warn('Unable to persist auto-peek flag:', err);
+                        }
+                }, 4000);
+                }
+                
+                // Expose controller to window for debugging (optional)
+                window.PodcastDrawerController = PodcastDrawerController;
+            })();
+        </script>
+    <?php endif; ?>
+    </body>
+</html>
 

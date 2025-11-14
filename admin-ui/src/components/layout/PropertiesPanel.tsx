@@ -6,6 +6,7 @@ import { WidgetInspector } from '../panels/WidgetInspector';
 import { ProfileInspector } from '../panels/ProfileInspector';
 import { PodcastPlayerInspector } from '../panels/PodcastPlayerInspector';
 import { BlogPostInspector } from '../panels/BlogPostInspector';
+import { FeaturedBlockInspector } from '../panels/FeaturedBlockInspector';
 import { useThemeInspector } from '../../state/themeInspector';
 import { ThemeEditorPanel } from '../panels/ThemeEditorPanel';
 import { useThemeLibraryQuery, type ThemeLibraryResult } from '../../api/themes';
@@ -58,6 +59,14 @@ export function PropertiesPanel({ activeColor }: PropertiesPanelProps): JSX.Elem
     [themeLibrary, snapshot?.page?.theme_id]
   );
 
+  // Find selected widget to check if it's featured
+  const selectedWidget = useMemo(() => {
+    if (!selectedWidgetId || !snapshot?.widgets) return undefined;
+    return snapshot.widgets.find((widget) => String(widget.id) === selectedWidgetId);
+  }, [selectedWidgetId, snapshot?.widgets]);
+
+  const isFeaturedWidget = selectedWidget?.is_featured === 1;
+
   let inspector: JSX.Element | null = null;
 
   // Show blog post inspector if a blog post is selected
@@ -91,7 +100,13 @@ export function PropertiesPanel({ activeColor }: PropertiesPanelProps): JSX.Elem
       }
     }
   } else if (selectedWidgetId) {
-    inspector = <WidgetInspector activeColor={activeColor} />;
+    // Show FeaturedBlockInspector if widget is featured, otherwise show WidgetInspector
+    // Users can mark widgets as featured from FeaturedBlockInspector
+    if (isFeaturedWidget) {
+      inspector = <FeaturedBlockInspector activeColor={activeColor} />;
+    } else {
+      inspector = <WidgetInspector activeColor={activeColor} />;
+    }
   }
 
   return (

@@ -27,6 +27,7 @@ export interface LayerItem {
   displayOrder?: number;
   isActive?: boolean;
   isLocked?: boolean;
+  isFeatured?: boolean;
 }
 
 interface DraggableLayerListProps {
