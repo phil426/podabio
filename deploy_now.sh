@@ -1,12 +1,12 @@
 #!/bin/bash
-# Quick Deployment Script for Hostinger
+# Quick Deployment Script for Hostinger (getphily.com)
 # Run this script from your local machine - it will SSH into Hostinger and deploy
 
 set -e
 
 echo "=========================================="
 echo "Hostinger Deployment Script"
-echo "Deploying Social Icons Migration"
+echo "Deploying to getphily.com"
 echo "=========================================="
 echo ""
 
@@ -15,11 +15,30 @@ SSH_HOST="u810635266@82.198.236.40"
 SSH_PORT="65002"
 PROJECT_DIR="/home/u810635266/domains/getphily.com/public_html/"
 
+# Check if sshpass is available
+SSHPASS_CMD="/opt/homebrew/bin/sshpass"
+if [ ! -f "$SSHPASS_CMD" ]; then
+    SSHPASS_CMD="sshpass"
+    if ! command -v sshpass &> /dev/null; then
+        echo "❌ Error: sshpass is not installed."
+        echo "   Install it with: brew install hudochenkov/sshpass/sshpass"
+        echo "   Or use manual deployment: ssh -p $SSH_PORT $SSH_HOST"
+        exit 1
+    fi
+fi
+
+# Get SSH password
+if [ -z "$SSH_PASS" ]; then
+    echo "🔐 Enter SSH password for $SSH_HOST:"
+    read -s SSH_PASS
+    echo ""
+fi
+
 echo "📡 Connecting to Hostinger server..."
 echo ""
 
-# Deploy via SSH
-ssh -p $SSH_PORT $SSH_HOST << 'ENDSSH'
+# Deploy via SSH using sshpass
+$SSHPASS_CMD -p "$SSH_PASS" ssh -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'ENDSSH'
     set -e
     cd /home/u810635266/domains/getphily.com/public_html/
     
