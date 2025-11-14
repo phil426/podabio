@@ -307,6 +307,10 @@ require_once __DIR__ . '/includes/helpers.php';
                 font-size: 2rem;
             }
             
+            .domain {
+                font-size: 1.2rem;
+            }
+            
             h1 {
                 font-size: 2.5rem;
             }
