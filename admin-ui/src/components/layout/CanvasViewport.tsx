@@ -24,13 +24,14 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
 
   const page = data?.page;
 
-  // Construct the public page URL
+  // Construct the public page URL with preview dimensions
   const publicPageUrl = useMemo(() => {
     if (!page?.username) return null;
     // Use the current origin and construct the public page URL
     const baseUrl = window.location.origin;
-    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}`;
-  }, [page?.username]);
+    // Pass device width as query parameter so page renders at exact device width
+    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_width=${selectedDevice.width}`;
+  }, [page?.username, selectedDevice.width]);
 
   const previewDimensions = useMemo(() => {
     const scaledWidth = selectedDevice.width * 0.75;
@@ -150,9 +151,13 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
                 onLoad={handleIframeLoad}
                 onError={handleIframeError}
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                width={selectedDevice.width}
+                height={selectedDevice.height}
                 style={{
                   opacity: iframeLoading || iframeError ? 0 : 1,
-                  transition: 'opacity 0.3s ease-in-out'
+                  transition: 'opacity 0.3s ease-in-out',
+                  width: `${selectedDevice.width}px`,
+                  height: `${selectedDevice.height}px`
                 }}
               />
             </>

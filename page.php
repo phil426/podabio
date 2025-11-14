@@ -145,7 +145,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <!-- Additional widget-specific styles -->
     <style>
         :root {
-            --mobile-page-width: min(100vw, 420px);
+            <?php
+            // Check if this is a preview request with specific width
+            $previewWidth = isset($_GET['preview_width']) ? (int)$_GET['preview_width'] : null;
+            if ($previewWidth && $previewWidth > 0 && $previewWidth <= 1000) {
+                // Preview mode: use exact device width
+                $mobilePageWidth = $previewWidth . 'px';
+            } else {
+                // Normal mode: responsive with max width
+                $mobilePageWidth = 'min(100vw, 420px)';
+            }
+            ?>
+            --mobile-page-width: <?php echo $mobilePageWidth; ?>;
             --mobile-page-offset: max(0px, calc((100vw - var(--mobile-page-width)) / 2));
             --episode-drawer-width: var(--mobile-page-width);
         }
@@ -169,7 +180,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         /* Page container and layout */
         .page-container {
             width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
             max-width: 420px;
+            <?php endif; ?>
             margin: 0 auto;
             padding: var(--space-lg) var(--space-md);
             box-sizing: border-box;
@@ -296,7 +311,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: var(--mobile-page-offset);
             right: auto;
             width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
             max-width: 420px;
+            <?php endif; ?>
             box-sizing: border-box;
             background: var(--color-accent-primary);
             background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
@@ -380,7 +399,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: var(--mobile-page-offset);
             right: auto;
             width: var(--mobile-page-width);
+            <?php if ($previewWidth): ?>
+            max-width: <?php echo $previewWidth; ?>px;
+            <?php else: ?>
             max-width: 420px;
+            <?php endif; ?>
             height: 100vh;
             background-color: var(--color-background-surface-raised, rgba(15, 23, 42, 0.95));
             z-index: 10000;
