@@ -93,9 +93,19 @@ require_once __DIR__ . '/includes/helpers.php';
             font-size: 3rem;
             font-weight: 800;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             animation: fadeInDown 1s ease-out;
+        }
+        
+        .domain {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeInDown 1s ease-out 0.1s both;
+            letter-spacing: 0.1em;
         }
         
         @keyframes fadeInDown {
@@ -336,7 +346,8 @@ require_once __DIR__ . '/includes/helpers.php';
     <div class="particles" id="particles"></div>
     
     <div class="container">
-        <div class="logo"><?php echo h(APP_NAME); ?></div>
+        <div class="logo">Pod A Bio</div>
+        <div class="domain">poda.bio</div>
         
         <div class="construction-icon">🚧</div>
         
