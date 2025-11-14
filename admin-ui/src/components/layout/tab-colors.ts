@@ -9,40 +9,40 @@ export interface TabColorTheme {
 
 export const tabColors: Record<TabValue, TabColorTheme> = {
   structure: {
-    primary: 'rgba(239, 68, 68, 0.15)', // Pastel red
-    light: 'rgba(239, 68, 68, 0.06)',
-    border: 'rgba(239, 68, 68, 0.25)',
-    text: '#dc2626'
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
+    text: '#2563eb'
   },
   design: {
-    primary: 'rgba(249, 115, 22, 0.15)', // Pastel orange
-    light: 'rgba(249, 115, 22, 0.06)',
-    border: 'rgba(249, 115, 22, 0.25)',
-    text: '#ea580c'
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
+    text: '#2563eb'
   },
   analytics: {
-    primary: 'rgba(234, 179, 8, 0.15)', // Pastel yellow
-    light: 'rgba(234, 179, 8, 0.06)',
-    border: 'rgba(234, 179, 8, 0.25)',
-    text: '#ca8a04'
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
+    text: '#2563eb'
   },
   blog: {
-    primary: 'rgba(34, 197, 94, 0.15)', // Pastel green
-    light: 'rgba(34, 197, 94, 0.06)',
-    border: 'rgba(34, 197, 94, 0.25)',
-    text: '#16a34a'
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
+    text: '#2563eb'
   },
   integrations: {
-    primary: 'rgba(59, 130, 246, 0.15)', // Pastel blue
-    light: 'rgba(59, 130, 246, 0.06)',
-    border: 'rgba(59, 130, 246, 0.25)',
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
     text: '#2563eb'
   },
   settings: {
-    primary: 'rgba(139, 92, 246, 0.15)', // Pastel violet
-    light: 'rgba(139, 92, 246, 0.06)',
-    border: 'rgba(139, 92, 246, 0.25)',
-    text: '#7c3aed'
+    primary: 'rgba(37, 99, 235, 0.12)', // Blue
+    light: 'rgba(37, 99, 235, 0.06)',
+    border: 'rgba(37, 99, 235, 0.2)',
+    text: '#2563eb'
   }
 };
 

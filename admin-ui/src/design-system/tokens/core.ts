@@ -101,7 +101,7 @@ export const coreTokens: CoreTokenGroup = {
       level0: 'none',
       level1: '0 8px 18px rgba(9, 18, 39, 0.12)',
       level2: '0 20px 48px rgba(9, 18, 39, 0.22)',
-      focus: '0 0 0 3px rgba(95, 215, 255, 0.4)'
+      focus: '0 0 0 3px rgba(37, 99, 235, 0.4)'
     },
     zIndex: {
       base: 0,

@@ -63,7 +63,7 @@ function extractThemeColors(theme: ThemeRecord): string[] {
   
   // Ensure we have at least some colors
   if (palette.length === 0) {
-    palette.push('#2563eb', '#7c3aed', '#0f172a', '#ffffff');
+    palette.push('#2563eb', '#3b82f6', '#0f172a', '#ffffff');
   }
   
   return palette.slice(0, 5); // Max 5 colors

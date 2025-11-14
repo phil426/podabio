@@ -75,7 +75,7 @@ function extractColorValue(tokens: TokenBundle, path: string): string {
   
   // Fallback to defaults based on path
   if (path.includes('accent.primary')) return '#2563eb';
-  if (path.includes('accent.secondary')) return '#7c3aed';
+    if (path.includes('accent.secondary')) return '#3b82f6';
   if (path.includes('text.primary')) return '#0f172a';
   if (path.includes('text.secondary')) return '#64748b';
   if (path.includes('surface.canvas')) return '#ffffff';

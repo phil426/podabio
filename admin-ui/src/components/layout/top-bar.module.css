@@ -44,7 +44,7 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  box-shadow: 0 6px 16px rgba(95, 215, 255, 0.35);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
 .brandMeta {
@@ -167,8 +167,8 @@
 .action_primary:hover:enabled {
   background: linear-gradient(
     135deg,
-    rgba(255, 117, 209, 0.95) 0%,
-    rgba(95, 215, 255, 0.95) 100%
+    rgba(37, 99, 235, 0.95) 0%,
+    rgba(59, 130, 246, 0.95) 100%
   );
 }
 
@@ -199,16 +199,16 @@
 }
 
 .iconAction[data-state='copied'] {
-  background: rgba(79, 227, 255, 0.24);
+  background: rgba(37, 99, 235, 0.24);
   color: var(--pod-semantic-text-primary, #091227);
-  border-color: rgba(79, 227, 255, 0.32);
+  border-color: rgba(37, 99, 235, 0.32);
 }
 
 .iconAction:not(:disabled):hover {
   transform: translateY(-1px);
   background: var(--pod-app-color-icon-hover-bg);
   color: var(--pod-app-color-icon-hover-foreground);
-  border-color: rgba(255, 117, 209, 0.28);
+  border-color: rgba(37, 99, 235, 0.28);
 }
 
 .iconAction:disabled {
@@ -288,7 +288,7 @@
 
 .accountToggle:focus-visible {
   outline: none;
-  box-shadow: var(--pod-core-elevation-shadow-focus, 0 0 0 2px rgba(95, 215, 255, 0.4));
+  box-shadow: var(--pod-core-elevation-shadow-focus, 0 0 0 2px rgba(37, 99, 235, 0.4));
 }
 
 .accountToggle svg {

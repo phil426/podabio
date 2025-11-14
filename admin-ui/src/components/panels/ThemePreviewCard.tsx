@@ -26,7 +26,7 @@ function parseColorSwatches(theme: ThemeRecord): string[] {
       .filter((value): value is string => typeof value === 'string' && value.trim().startsWith('#'))
       .slice(0, 5);
   }
-  return ['#2563eb', '#7c3aed', '#14b8a6', '#f97316', '#facc15'];
+    return ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe'];
 }
 
 function safeParse(input: string | null | undefined): Record<string, unknown> | null {

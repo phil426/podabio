@@ -147,7 +147,7 @@
   place-items: center;
   font-weight: 700;
   color: var(--pod-semantic-text-inverse, #ffffff);
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
 }
 
 .canvasHeader h1 {

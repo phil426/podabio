@@ -96,7 +96,7 @@
   padding: 0.65rem 1rem;
   border-radius: var(--pod-core-shape-radius-lg, 16px);
   border: none;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;

@@ -32,7 +32,7 @@ function extractThemeProperties(theme: ThemeRecord) {
   const shapeTokens = typeof theme.shape_tokens === 'string' ? safeParse(theme.shape_tokens) : theme.shape_tokens;
   
   const primaryColor = (colors?.primary_color as string) ?? '#2563eb';
-  const secondaryColor = (colors?.secondary_color as string) ?? '#7c3aed';
+  const secondaryColor = (colors?.secondary_color as string) ?? '#3b82f6';
   const accentColor = (colors?.accent_color as string) ?? '#14b8a6';
   const textColor = (colors?.text_color as string) ?? '#0f172a';
   
