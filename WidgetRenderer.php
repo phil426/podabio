@@ -103,24 +103,33 @@ class WidgetRenderer {
      * Render YouTube video widget
      */
     private static function renderYouTubeVideo($widget, $configData) {
-        $videoId = $configData['video_id'] ?? '';
-        $title = $widget['title'] ?? 'Video';
+        // Support both video_url (new) and video_id (legacy) for backward compatibility
+        $videoUrl = $configData['video_url'] ?? $configData['video_id'] ?? '';
+        $autoplay = isset($configData['autoplay']) && $configData['autoplay'];
         
-        if (!$videoId) {
+        if (!$videoUrl) {
             return '';
         }
         
-        // Extract video ID from URL if full URL provided
-        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $videoId, $matches)) {
+        // Extract video ID from URL if full URL provided, otherwise assume it's already a video ID
+        $videoId = $videoUrl;
+        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $videoUrl, $matches)) {
             $videoId = $matches[1];
+        } elseif (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $videoUrl)) {
+            // If it's not a valid video ID format (11 alphanumeric chars), return empty
+            return '';
         }
         
+        // Build embed URL with autoplay if enabled
+        $embedUrl = 'https://www.youtube.com/embed/' . htmlspecialchars($videoId);
+        if ($autoplay) {
+            $embedUrl .= '?autoplay=1';
+        }
+        
+        // Render only the video iframe, wrapped in widget-item to inherit border and shadow styles
         $html = '<div class="widget-item widget-video">';
-        $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
         $html .= '<div class="widget-video-embed">';
-        $html .= '<iframe width="100%" height="315" src="https://www.youtube.com/embed/' . htmlspecialchars($videoId) . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-        $html .= '</div>';
+        $html .= '<iframe src="' . $embedUrl . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         $html .= '</div>';
         $html .= '</div>';
         
