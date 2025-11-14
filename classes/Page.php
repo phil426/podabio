@@ -436,6 +436,80 @@ class Page {
     }
     
     /**
+     * Get or create social icon (skip if URL already exists)
+     * @param int $pageId
+     * @param string $platformName
+     * @param string $url
+     * @return array ['success' => bool, 'icon_id' => int|null, 'created' => bool, 'skipped' => bool, 'error' => string|null]
+     */
+    public function getOrCreateSocialIcon($pageId, $platformName, $url) {
+        if (empty($platformName)) {
+            return ['success' => false, 'icon_id' => null, 'created' => false, 'skipped' => false, 'error' => 'Platform name is required'];
+        }
+        
+        // Check if icon with this platform and URL already exists
+        $existing = fetchOne(
+            "SELECT id, url FROM social_icons WHERE page_id = ? AND platform_name = ? AND url = ?",
+            [$pageId, $platformName, $url]
+        );
+        
+        if ($existing) {
+            // Icon with this URL already exists, skip
+            return [
+                'success' => true,
+                'icon_id' => (int)$existing['id'],
+                'created' => false,
+                'skipped' => true,
+                'error' => null
+            ];
+        }
+        
+        // Check if icon with this platform exists but different URL (update it)
+        $existingPlatform = fetchOne(
+            "SELECT id, url FROM social_icons WHERE page_id = ? AND platform_name = ?",
+            [$pageId, $platformName]
+        );
+        
+        if ($existingPlatform) {
+            // Update existing icon with new URL
+            $isValidUrl = !empty($url) && filter_var($url, FILTER_VALIDATE_URL) !== false && 
+                          (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+            $isActive = $isValidUrl ? 1 : 0;
+            
+            try {
+                $stmt = $this->pdo->prepare("
+                    UPDATE social_icons 
+                    SET url = ?, is_active = ?
+                    WHERE id = ? AND page_id = ?
+                ");
+                $stmt->execute([$url, $isActive, $existingPlatform['id'], $pageId]);
+                
+                return [
+                    'success' => true,
+                    'icon_id' => (int)$existingPlatform['id'],
+                    'created' => false,
+                    'skipped' => false,
+                    'error' => null
+                ];
+            } catch (PDOException $e) {
+                error_log("Social icon update failed: " . $e->getMessage());
+                return ['success' => false, 'icon_id' => null, 'created' => false, 'skipped' => false, 'error' => 'Failed to update social icon'];
+            }
+        }
+        
+        // Create new icon
+        $result = $this->addSocialIcon($pageId, $platformName, $url);
+        
+        return [
+            'success' => $result['success'],
+            'icon_id' => $result['icon_id'],
+            'created' => $result['success'],
+            'skipped' => false,
+            'error' => $result['error']
+        ];
+    }
+    
+    /**
      * Add social icon link
      * @param int $pageId
      * @param string $platformName

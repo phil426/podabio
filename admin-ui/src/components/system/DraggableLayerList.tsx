@@ -113,7 +113,8 @@ interface SortableLayerItemProps {
 
 function SortableLayerItem({ item, renderActions, onSelect, isSelected }: SortableLayerItemProps): JSX.Element {
   const isPodcastPlayer = item.id === 'page:podcast-player';
-  const isDraggable = !item.isLocked && !isPodcastPlayer;
+  const isProfileOrFooter = item.id === 'page:profile' || item.id === 'page:footer';
+  const isDraggable = !item.isLocked && !isPodcastPlayer && !isProfileOrFooter;
   
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -134,13 +135,14 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
     <li
       ref={setNodeRef}
       style={style}
-      className={`${styles.item} ${isSelected ? styles.itemSelected : ''} ${item.isLocked ? styles.itemLocked : ''} ${isPodcastPlayer ? styles.itemNoGrip : ''}`}
+      className={`${styles.item} ${isSelected ? styles.itemSelected : ''} ${item.isLocked ? styles.itemLocked : ''} ${isPodcastPlayer || isProfileOrFooter ? styles.itemNoGrip : ''} ${isPodcastPlayer ? styles.itemPodcastPlayer : ''}`}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       data-dnd-kit-dragging={isDragging ? 'true' : undefined}
       data-locked={item.isLocked ? 'true' : undefined}
-      data-no-grip={isPodcastPlayer ? 'true' : undefined}
+      data-no-grip={isPodcastPlayer || isProfileOrFooter ? 'true' : undefined}
+      data-podcast-player={isPodcastPlayer ? 'true' : undefined}
     >
-      {!isPodcastPlayer && (
+      {!isPodcastPlayer && !isProfileOrFooter && (
       <span className={styles.gripIcon} aria-hidden="true">
         <LuGripHorizontal />
       </span>

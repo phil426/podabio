@@ -151,13 +151,9 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
                 onLoad={handleIframeLoad}
                 onError={handleIframeError}
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-                width={selectedDevice.width}
-                height={selectedDevice.height}
                 style={{
                   opacity: iframeLoading || iframeError ? 0 : 1,
-                  transition: 'opacity 0.3s ease-in-out',
-                  width: `${selectedDevice.width}px`,
-                  height: `${selectedDevice.height}px`
+                  transition: 'opacity 0.3s ease-in-out'
                 }}
               />
             </>

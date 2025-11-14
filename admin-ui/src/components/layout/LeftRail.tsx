@@ -52,7 +52,7 @@ import type { ApiResponse } from '../../api/types';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { ThemeLibraryPanel } from '../panels/ThemeLibraryPanel';
 import { IntegrationsPanel } from '../panels/IntegrationsPanel';
-import { BlogPanel } from '../panels/BlogPanel';
+import { BlogPostList } from '../panels/BlogPostList';
 import { SettingsPanel } from '../panels/SettingsPanel';
 
 import styles from './left-rail.module.css';
@@ -153,7 +153,6 @@ interface LeftRailProps {
 }
 
 export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps): JSX.Element {
-  const [selectedBlogPostId, setSelectedBlogPostId] = useState<number | null>(null);
   const { data: snapshot } = usePageSnapshot();
   const page = snapshot?.page;
   const { data: widgets, isLoading: widgetsLoading, isError: widgetsError, error: widgetsErrorObj } = useWidgetsQuery();
@@ -572,11 +571,6 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                             <LuLock aria-hidden="true" />
                           </button>
                         )}
-                        {isAlwaysLocked && (
-                          <span className={styles.lockIcon} aria-label="Position locked" title="Position locked">
-                            <LuLock aria-hidden="true" />
-                          </span>
-                        )}
                         {/* Visibility icon for Profile, Footer, and widgets */}
                         <button
                           type="button"
@@ -690,23 +684,13 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
           </ScrollArea.Root>
         </Tabs.Content>
         <Tabs.Content value="analytics" className={styles.tabContent}>
-          <p className={styles.tabDescription}>Monitor block performance and engagement.</p>
           <div className={styles.analyticsPlaceholder}>
-            <p>Layer analytics coming soon.</p>
+            <p>Analytics dashboard is displayed in the center panel</p>
           </div>
         </Tabs.Content>
 
         <Tabs.Content value="blog" className={styles.tabContent}>
-          <BlogPanel 
-            onSelectPost={(post) => {
-              setSelectedBlogPostId(post?.id ?? null);
-              // Store in window for PropertiesPanel access
-              if (typeof window !== 'undefined') {
-                (window as any).__SELECTED_BLOG_POST_ID__ = post?.id ?? null;
-              }
-            }}
-            selectedPostId={selectedBlogPostId}
-          />
+          <BlogPostList activeColor={activeColor} />
         </Tabs.Content>
 
         <Tabs.Content value="integrations" className={styles.tabContent}>

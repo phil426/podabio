@@ -321,7 +321,13 @@ class PodcastAudioPlayer {
     }
 
     onLoadedMetadata() {
-        this.updateProgress();
+        // Progress and time displays are handled by app.js's updateProgress and updateTimeDisplays
+        if (window.podcastPlayerApp && window.podcastPlayerApp.updateProgress) {
+            window.podcastPlayerApp.updateProgress();
+        }
+        if (window.podcastPlayerApp && window.podcastPlayerApp.updateTimeDisplays) {
+            window.podcastPlayerApp.updateTimeDisplays();
+        }
     }
 
     onError(error) {

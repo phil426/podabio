@@ -187,7 +187,16 @@ class WidgetRenderer {
         if ($thumbnail) {
             // Thumbnail takes priority - display on left side
             $html .= '<div class="widget-thumbnail-wrapper">';
-            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
+            // Add error handler to hide broken images and show fallback
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail" onerror="this.onerror=null; this.style.display=\'none\'; var wrapper=this.closest(\'.widget-thumbnail-wrapper\'); if(wrapper){var fallback=wrapper.querySelector(\'.widget-thumbnail-fallback\'); if(fallback)fallback.style.display=\'flex\';}">';
+            // Fallback placeholder if image fails to load
+            $html .= '<div class="widget-thumbnail-fallback" style="display:none; width:100%; height:100%; background:rgba(0,0,0,0.05); border-radius:inherit; align-items:center; justify-content:center; color:rgba(0,0,0,0.3); font-size:1.5rem;">';
+            if ($icon) {
+                $html .= '<i class="' . htmlspecialchars($icon) . '"></i>';
+            } else {
+                $html .= '<i class="fas fa-link"></i>';
+            }
+            $html .= '</div>';
             $html .= '</div>';
         } elseif ($icon) {
             // Icon only shown if no thumbnail exists

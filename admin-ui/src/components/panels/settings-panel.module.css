@@ -86,71 +86,118 @@
 .iconsList {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .iconCard {
-  padding: 1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: var(--active-tab-light, rgba(37, 99, 235, 0.04));
+  border: 1px solid var(--active-tab-light, rgba(37, 99, 235, 0.08));
+  transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease, background 150ms ease;
+  cursor: pointer;
 }
 
-.iconHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+.iconCard[data-dnd-kit-dragging='true'] {
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  cursor: grabbing;
 }
 
-.iconInfo {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
+.iconCard:hover {
+  border-color: var(--active-tab-light, rgba(37, 99, 235, 0.12));
+  background: var(--active-tab-light, rgba(37, 99, 235, 0.06));
 }
 
-.iconIcon {
-  display: flex;
+.iconCardSelected {
+  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.35));
+  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
+  box-shadow: 0 0 0 2px var(--active-tab-bg, rgba(37, 99, 235, 0.2));
+}
+
+.gripIcon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: #ffffff;
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  color: var(--pod-semantic-text-secondary, #64748b);
-}
-
-.iconIcon svg {
   width: 20px;
   height: 20px;
+  color: var(--active-tab-color, rgba(71, 85, 105, 0.7));
+  opacity: 0.35;
+  cursor: grab;
+  transition: color 150ms ease, opacity 150ms ease;
+  flex-shrink: 0;
+}
+
+.gripIcon:active {
+  cursor: grabbing;
+}
+
+.iconCard:hover .gripIcon {
+  opacity: 0.6;
+}
+
+.iconCard[data-dnd-kit-dragging='true'] .gripIcon {
+  opacity: 1;
+  cursor: grabbing;
+}
+
+
+.iconIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.9rem;
+  color: var(--active-tab-color, rgba(15, 23, 42, 0.8));
+  opacity: 0.4;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+.iconIcon[data-active='true'] {
+  color: var(--active-tab-color, rgba(15, 23, 42, 1));
+  opacity: 1;
+}
+
+.iconCard:hover .iconIcon {
+  opacity: 0.6;
+}
+
+.iconCard:hover .iconIcon[data-active='true'] {
+  color: var(--active-tab-color, rgba(15, 23, 42, 1));
+  opacity: 1;
+}
+
+.iconCardSelected .iconIcon {
+  opacity: 1;
+}
+
+.iconCardSelected .iconIcon[data-active='true'] {
+  color: var(--active-tab-color, rgba(15, 23, 42, 1));
+  opacity: 1;
 }
 
 .iconDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
+  display: grid;
+  gap: 0.1rem;
   min-width: 0;
 }
 
 .iconName {
   margin: 0;
-  font-size: 0.9rem;
   font-weight: 600;
+  font-size: 0.8rem;
   color: var(--pod-semantic-text-primary, #0f172a);
-  line-height: 1.4;
 }
 
 .iconUrl {
   margin: 0;
-  font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
-  line-height: 1.4;
+  font-size: 0.68rem;
+  color: var(--pod-semantic-text-secondary, #475569);
   word-break: break-all;
 }
 
@@ -159,11 +206,47 @@
   font-style: italic;
 }
 
-.editForm {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
+.visibilityButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--active-tab-color, rgba(59, 130, 246, 0.9));
+  opacity: 0.4;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  cursor: pointer;
+  transition: color 150ms ease, transform 150ms ease, opacity 150ms ease;
+  flex-shrink: 0;
+}
+
+.visibilityButton:hover:not(:disabled) {
+  color: var(--active-tab-color, rgba(30, 64, 175, 1));
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.visibilityButton:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.visibilityButton[data-active='true'] {
+  color: var(--active-tab-color, rgba(37, 99, 235, 1));
+  opacity: 1;
+}
+
+.visibilityButton[data-active='true']:not(:disabled):hover {
+  color: var(--active-tab-color, rgba(37, 99, 235, 1));
+  opacity: 1;
+}
+
+.visibilityButton svg {
+  width: 0.82em;
+  height: 0.82em;
 }
 
 .platformSelect,
@@ -185,187 +268,122 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.editActions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.iconActions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.toggleSwitch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  cursor: pointer;
-}
-
-.toggleSwitch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggleSlider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
-  border-radius: 24px;
-  transition: background-color 0.2s ease;
-}
-
-.toggleSlider:before {
-  position: absolute;
-  content: '';
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  transition: transform 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.toggleSwitch input:checked + .toggleSlider {
-  background-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
-}
-
-.toggleSwitch input:checked + .toggleSlider:before {
-  transform: translateX(20px);
-}
-
-.toggleSwitch input:disabled + .toggleSlider {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.editButton,
-.deleteButton,
-.saveButton,
-.cancelButton,
-.addButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--pod-core-shape-radius-sm, 6px);
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
-  cursor: pointer;
-  transition: all 150ms ease;
-  border: none;
-  font-family: inherit;
-}
-
-.editButton {
-  background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-}
-
-.editButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--pod-semantic-text-primary, #0f172a);
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
-}
-
-.deleteButton {
-  background: transparent;
-  color: #dc2626;
-  border: 1px solid rgba(220, 38, 38, 0.2);
-}
-
-.deleteButton:hover {
-  background: rgba(220, 38, 38, 0.1);
-  border-color: rgba(220, 38, 38, 0.3);
-}
-
-.deleteButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.saveButton {
-  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
-  color: #ffffff;
-}
-
-.saveButton:hover {
-  opacity: 0.9;
-}
-
-.saveButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.cancelButton {
-  background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-}
-
-.cancelButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-}
-
 .buttonSpinner {
   width: 14px;
   height: 14px;
   animation: spin 1s linear infinite;
 }
 
-.addSection {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+.addCard {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%);
+  border: 1.5px dashed var(--active-tab-border, rgba(37, 99, 235, 0.25));
+  margin-bottom: 0.5rem;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.addTitle {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+.addCard:hover {
+  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.4));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
 }
 
-.addForm {
+.addCardHeader {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.addButton {
+.addCardIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  opacity: 0.9;
+}
+
+.addCardTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  letter-spacing: -0.01em;
+}
+
+.addCardForm {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.addCardField {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.addCardSelect,
+.addCardInput {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1px solid var(--active-tab-light, rgba(37, 99, 235, 0.2));
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: #ffffff;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  transition: all 150ms ease;
+}
+
+.addCardSelect:focus,
+.addCardInput:focus {
+  outline: none;
+  border-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.addCardSelect {
+  cursor: pointer;
+}
+
+.addCardButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: none;
   background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
   color: #ffffff;
-  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
+  margin-top: 0.1rem;
 }
 
-.addButton:hover {
+.addCardButton:hover:not(:disabled) {
+  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
-.addButton:active {
+.addCardButton:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
 }
 
-.addButton:disabled {
+.addCardButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.addCardButton svg {
+  width: 1em;
+  height: 1em;
 }
 
 .allAdded {

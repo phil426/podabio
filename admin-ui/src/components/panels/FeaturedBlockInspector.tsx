@@ -38,22 +38,19 @@ export function FeaturedBlockInspector({ activeColor }: FeaturedBlockInspectorPr
     return snapshot.widgets.find((widget) => String(widget.id) === selectedWidgetId);
   }, [selectedWidgetId, snapshot?.widgets]);
 
-  const [isFeatured, setIsFeatured] = useState(false);
   const [featuredEffect, setFeaturedEffect] = useState<FeaturedEffect>('');
 
   useEffect(() => {
     if (selectedWidget) {
-      setIsFeatured(selectedWidget.is_featured === 1);
       setFeaturedEffect((selectedWidget.featured_effect as FeaturedEffect) || 'jiggle');
     }
   }, [selectedWidget]);
 
   const hasChanges = useMemo(() => {
     if (!selectedWidget) return false;
-    const currentFeatured = selectedWidget.is_featured === 1;
     const currentEffect = (selectedWidget.featured_effect as FeaturedEffect) || '';
-    return isFeatured !== currentFeatured || featuredEffect !== currentEffect;
-  }, [selectedWidget, isFeatured, featuredEffect]);
+    return featuredEffect !== currentEffect;
+  }, [selectedWidget, featuredEffect]);
 
   const handleSave = async () => {
     if (!selectedWidget) return;
@@ -61,8 +58,7 @@ export function FeaturedBlockInspector({ activeColor }: FeaturedBlockInspectorPr
     try {
       await updateWidget({
         widget_id: String(selectedWidget.id),
-        is_featured: isFeatured ? '1' : '0',
-        featured_effect: isFeatured ? featuredEffect : ''
+        featured_effect: featuredEffect
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
     } catch (error) {
@@ -72,7 +68,6 @@ export function FeaturedBlockInspector({ activeColor }: FeaturedBlockInspectorPr
 
   const handleReset = () => {
     if (selectedWidget) {
-      setIsFeatured(selectedWidget.is_featured === 1);
       setFeaturedEffect((selectedWidget.featured_effect as FeaturedEffect) || 'jiggle');
     }
   };
@@ -107,47 +102,25 @@ export function FeaturedBlockInspector({ activeColor }: FeaturedBlockInspectorPr
       </header>
 
       <div className={styles.fieldset}>
-        <label className={styles.checkboxLabel}>
-          <input
-            type="checkbox"
-            className={styles.checkbox}
-            checked={isFeatured}
-            onChange={(e) => {
-              setIsFeatured(e.target.checked);
-              if (e.target.checked && !featuredEffect) {
-                setFeaturedEffect('jiggle');
-              }
-            }}
-          />
-          <span>Mark as featured block</span>
-        </label>
+        <div className={styles.control}>
+          <span>Effect</span>
+          <select
+            className={styles.select}
+            value={featuredEffect}
+            onChange={(e) => setFeaturedEffect(e.target.value as FeaturedEffect)}
+          >
+            {FEATURED_EFFECTS.map((effect) => (
+              <option key={effect.value} value={effect.value}>
+                {effect.label} {effect.emoji}
+              </option>
+            ))}
+          </select>
+        </div>
         <p className={styles.help}>
-          When enabled, this block will be highlighted with special effects. Only one block can be featured at a time.
+          Apply a special effect to your featured block to make it stand out. Movement effects (Jiggle, Shake, Pulse,
+          Rotating Glow) animate at random intervals.
         </p>
       </div>
-
-      {isFeatured && (
-        <div className={styles.fieldset}>
-          <label className={styles.label}>
-            <span>Effect</span>
-            <select
-              className={styles.select}
-              value={featuredEffect}
-              onChange={(e) => setFeaturedEffect(e.target.value as FeaturedEffect)}
-            >
-              {FEATURED_EFFECTS.map((effect) => (
-                <option key={effect.value} value={effect.value}>
-                  {effect.label} {effect.emoji}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className={styles.help}>
-            Apply a special effect to your featured block to make it stand out. Movement effects (Jiggle, Shake, Pulse,
-            Rotating Glow) animate at random intervals.
-          </p>
-        </div>
-      )}
 
       <div className={styles.footer}>
         <button

@@ -4,6 +4,7 @@ import { LuCheck, LuX, LuLoader, LuShoppingBag, LuTrendingUp, LuStore, LuTicket 
 import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useIntegrationsStatus, useDisconnectInstagramMutation } from '../../api/account';
 import { SecurityActionDrawer } from '../overlays/SecurityActionDrawer';
 import type { SecurityAction } from '../overlays/SecurityActionDrawer';
+import { useIntegrationSelection } from '../../state/integrationSelection';
 
 import styles from './integrations-panel.module.css';
 
@@ -117,6 +118,8 @@ function parseError(error: unknown): string | null {
 }
 
 export function IntegrationsPanel(): JSX.Element {
+  const selectIntegration = useIntegrationSelection((state) => state.selectIntegration);
+  const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
   const { data: methods, isLoading: methodsLoading } = useAuthMethods();
   const { data: integrations, isLoading: integrationsLoading } = useIntegrationsStatus();
   const { mutateAsync: unlinkGoogle, isPending: unlinkPending, error: unlinkError, reset: resetUnlink } = useUnlinkGoogleMutation();
@@ -201,7 +204,18 @@ export function IntegrationsPanel(): JSX.Element {
           </div>
         )}
 
-        <div className={styles.integrationCard}>
+        <div 
+          className={`${styles.integrationCard} ${selectedIntegrationId === 'google' ? styles.integrationCardSelected : ''}`}
+          onClick={() => selectIntegration('google')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectIntegration('google');
+            }
+          }}
+        >
           <div className={styles.integrationHeader}>
             <div className={styles.integrationInfo}>
               <div className={styles.integrationIcon}>
@@ -241,7 +255,7 @@ export function IntegrationsPanel(): JSX.Element {
                 </p>
               </div>
             </div>
-            <div className={styles.integrationActions}>
+            <div className={styles.integrationActions} onClick={(e) => e.stopPropagation()}>
               {methods.has_google ? (
                 <button
                   type="button"
@@ -384,7 +398,19 @@ export function IntegrationsPanel(): JSX.Element {
 
         <div className={styles.integrationsGrid}>
           {integrationPlaceholders.filter(p => p.id !== 'instagram').map((integration) => (
-            <div key={integration.id} className={styles.placeholderCard}>
+            <div 
+              key={integration.id} 
+              className={`${styles.placeholderCard} ${selectedIntegrationId === integration.id ? styles.placeholderCardSelected : ''}`}
+              onClick={() => selectIntegration(integration.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  selectIntegration(integration.id);
+                }
+              }}
+            >
               <div className={styles.placeholderHeader}>
                 <div className={styles.placeholderIcon}>{integration.icon}</div>
                 <div className={styles.placeholderDetails}>

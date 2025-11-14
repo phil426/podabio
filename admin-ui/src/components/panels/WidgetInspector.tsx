@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { LuUpload, LuX } from 'react-icons/lu';
 
 import { useAvailableWidgetsQuery, useUpdateWidgetMutation } from '../../api/widgets';
 import { usePageSnapshot } from '../../api/page';
@@ -17,8 +18,6 @@ type ConfigValue = string | number | boolean | null | undefined;
 interface WidgetFormState {
   title: string;
   isActive: boolean;
-  isFeatured: boolean;
-  featuredEffect: string;
   config: Record<string, ConfigValue>;
 }
 
@@ -65,8 +64,6 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setFormState({
       title: selectedWidget.title,
       isActive: selectedWidget.is_active === 1,
-      isFeatured: selectedWidget.is_featured === 1,
-      featuredEffect: (selectedWidget.featured_effect as string) || 'jiggle',
       config: normalizedConfig
     });
     setSaveStatus('idle');
@@ -104,11 +101,9 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
 
     const sameTitle = formState.title === selectedWidget.title;
     const sameActive = formState.isActive === (selectedWidget.is_active === 1);
-    const sameFeatured = formState.isFeatured === (selectedWidget.is_featured === 1);
-    const sameFeaturedEffect = formState.featuredEffect === ((selectedWidget.featured_effect as string) || 'jiggle');
     const sameConfig = JSON.stringify(formState.config ?? {}) === JSON.stringify(initialConfig ?? {});
 
-    return !(sameTitle && sameActive && sameFeatured && sameFeaturedEffect && sameConfig);
+    return !(sameTitle && sameActive && sameConfig);
   }, [formState, selectedWidget]);
 
   if (isLoading) {
@@ -177,15 +172,6 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setSaveStatus('idle');
   };
 
-  const handleFeaturedToggle = (checked: boolean) => {
-    if (!formState) return;
-    setFormState({
-      ...formState,
-      isFeatured: checked,
-      featuredEffect: checked && !formState.featuredEffect ? 'jiggle' : formState.featuredEffect
-    });
-    setSaveStatus('idle');
-  };
 
   const handleReset = () => {
     if (!selectedWidget) return;
@@ -194,8 +180,6 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setFormState({
       title: selectedWidget.title,
       isActive: selectedWidget.is_active === 1,
-      isFeatured: selectedWidget.is_featured === 1,
-      featuredEffect: (selectedWidget.featured_effect as string) || 'jiggle',
       config: normalizedConfig
     });
     setSaveStatus('idle');
@@ -209,7 +193,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     currentThumbnail ||
     (widgetType === 'youtube_video' ? getYouTubeThumbnail(videoUrlConfig ?? '') ?? '' : '');
 
-  const handleThumbnailUploadClick = () => {
+  const handleChooseThumbnailFile = () => {
     thumbnailInputRef.current?.click();
   };
 
@@ -217,16 +201,30 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !selectedWidget) return;
     setThumbnailError(null);
     setUploadingThumbnail(true);
     try {
       const result = await uploadWidgetThumbnail(file);
       if (result.url) {
         handleInputChange('thumbnail_image', result.url);
+        setSaveStatus('success');
+        // Auto-save the widget after thumbnail upload
+        if (formState) {
+          await updateWidget({
+            widget_id: String(selectedWidget.id),
+            title: formState.title,
+            is_active: formState.isActive ? '1' : '0',
+            config_data: JSON.stringify({
+              ...formState.config,
+              thumbnail_image: result.url
+            })
+          });
+        }
       }
     } catch (error) {
       setThumbnailError(error instanceof Error ? error.message : 'Unable to upload thumbnail.');
+      setSaveStatus('error');
     } finally {
       setUploadingThumbnail(false);
       if (thumbnailInputRef.current) {
@@ -235,9 +233,26 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     }
   };
 
-  const handleThumbnailRemove = () => {
+  const handleThumbnailRemove = async () => {
     handleInputChange('thumbnail_image', '');
     setThumbnailError(null);
+    // Auto-save after removing thumbnail
+    if (formState && selectedWidget) {
+      try {
+        await updateWidget({
+          widget_id: String(selectedWidget.id),
+          title: formState.title,
+          is_active: formState.isActive ? '1' : '0',
+          config_data: JSON.stringify({
+            ...formState.config,
+            thumbnail_image: ''
+          })
+        });
+        setSaveStatus('success');
+      } catch (error) {
+        setSaveStatus('error');
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -248,8 +263,6 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
         widget_id: String(selectedWidget.id),
         title: formState.title,
         is_active: formState.isActive ? '1' : '0',
-        is_featured: formState.isFeatured ? '1' : '0',
-        featured_effect: formState.isFeatured ? formState.featuredEffect : '',
         config_data: JSON.stringify(formState.config ?? {})
       });
       setSaveStatus('success');
@@ -289,45 +302,6 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
             onChange={(event) => handleTitleChange(event.target.value)}
           />
         </label>
-        <label className={styles.toggle}>
-          <input
-            type="checkbox"
-            checked={formState?.isActive ?? false}
-            onChange={(event) => handleActiveToggle(event.target.checked)}
-          />
-          <span>Show block on page</span>
-        </label>
-        <label className={styles.toggle}>
-          <input
-            type="checkbox"
-            checked={formState?.isFeatured ?? false}
-            onChange={(event) => handleFeaturedToggle(event.target.checked)}
-          />
-          <span>Mark as featured block</span>
-        </label>
-        {formState?.isFeatured && (
-          <label className={styles.control}>
-            <span>Featured Effect</span>
-            <select
-              className={styles.input}
-              value={formState.featuredEffect}
-              onChange={(e) => {
-                if (formState) {
-                  setFormState({ ...formState, featuredEffect: e.target.value });
-                  setSaveStatus('idle');
-                }
-              }}
-            >
-              <option value="jiggle">Jiggle 🎯</option>
-              <option value="burn">Burn 🔥</option>
-              <option value="rotating-glow">Rotating Glow 💫</option>
-              <option value="blink">Blink 👁️</option>
-              <option value="pulse">Pulse 💓</option>
-              <option value="shake">Shake 📳</option>
-              <option value="sparkles">Sparkles ✨</option>
-            </select>
-          </label>
-        )}
       </div>
 
       <div className={styles.fieldset}>
@@ -351,51 +325,64 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
         {(widgetType === 'custom_link' || widgetType === 'youtube_video') && (
           <div className={styles.thumbnailSection}>
             <span className={styles.thumbnailLabel}>Thumbnail</span>
-            <div className={styles.thumbnailPreview}>
-              {resolvedThumbnail ? (
-                <img src={normalizeImageUrl(resolvedThumbnail)} alt="" />
-              ) : (
-                <div className={styles.thumbnailPlaceholder}>No thumbnail</div>
-              )}
-            </div>
-
-            {widgetType === 'custom_link' && (
+            {widgetType === 'custom_link' ? (
               <>
-                <div className={styles.thumbnailActions}>
-                  <button
-                    type="button"
-                    onClick={handleThumbnailUploadClick}
-                    className={styles.thumbnailButton}
-                    disabled={isUploadingThumbnail}
-                  >
-                    {isUploadingThumbnail ? 'Uploading…' : 'Upload thumbnail'}
-                  </button>
-                  {resolvedThumbnail && (
+                <div
+                  className={styles.thumbnailPreview}
+                  data-has-image={resolvedThumbnail ? 'true' : 'false'}
+                >
+                  {resolvedThumbnail ? (
+                    <img src={normalizeImageUrl(resolvedThumbnail)} alt="Thumbnail preview" />
+                  ) : (
+                    <span>No image</span>
+                  )}
+                  <div className={styles.thumbnailOverlay}>
                     <button
                       type="button"
-                      onClick={handleThumbnailRemove}
-                      className={styles.thumbnailButtonSecondary}
+                      className={styles.thumbnailActionButton}
+                      onClick={handleChooseThumbnailFile}
                       disabled={isUploadingThumbnail}
+                      title={isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
                     >
-                      Remove
+                      <LuUpload aria-hidden="true" />
                     </button>
-                  )}
+                    {resolvedThumbnail && (
+                      <button
+                        type="button"
+                        className={styles.thumbnailActionButton}
+                        onClick={handleThumbnailRemove}
+                        disabled={isUploadingThumbnail}
+                        title="Remove thumbnail"
+                      >
+                        <LuX aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <input
                   ref={thumbnailInputRef}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
-                  hidden
+                  className={styles.hiddenInput}
                   onChange={handleThumbnailFileChange}
                 />
                 {thumbnailError && <p className={styles.thumbnailError}>{thumbnailError}</p>}
               </>
-            )}
-
-            {widgetType === 'youtube_video' && resolvedThumbnail && (
-              <p className={styles.help}>
-                We automatically pull the preview from YouTube. Update the video URL to refresh it.
-              </p>
+            ) : (
+              <>
+                <div className={styles.thumbnailPreview}>
+                  {resolvedThumbnail ? (
+                    <img src={normalizeImageUrl(resolvedThumbnail)} alt="YouTube thumbnail" />
+                  ) : (
+                    <div className={styles.thumbnailPlaceholder}>No thumbnail</div>
+                  )}
+                </div>
+                {resolvedThumbnail && (
+                  <p className={styles.help}>
+                    We automatically pull the preview from YouTube. Update the video URL to refresh it.
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}

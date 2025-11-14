@@ -150,3 +150,33 @@
   color: var(--pod-semantic-text-primary, #0f172a);
 }
 
+/* Podcast Player Color Emphasis */
+.itemPodcastPlayer {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+.itemPodcastPlayer:hover {
+  background: rgba(15, 23, 42, 0.08) !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+
+.itemPodcastPlayer .icon {
+  color: rgba(37, 99, 235, 0.8) !important;
+  opacity: 1 !important;
+}
+
+.itemPodcastPlayer .icon[data-active='true'] {
+  color: rgba(37, 99, 235, 1) !important;
+}
+
+.itemPodcastPlayer .label {
+  color: rgba(15, 23, 42, 0.9);
+  font-weight: 600;
+}
+
+.itemPodcastPlayer.itemSelected {
+  background: rgba(15, 23, 42, 0.1) !important;
+  border-color: rgba(37, 99, 235, 0.35) !important;
+}
+

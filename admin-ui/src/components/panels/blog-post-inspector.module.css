@@ -1,52 +1,68 @@
-.inspector {
+.wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
-  border-left: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  padding: 0.45rem 0.55rem;
+  border-radius: 0;
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  border: 1px solid var(--active-tab-border, var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08)));
+  gap: 0.5rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 0.875rem;
 }
 
 .header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+.header > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .header h3 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+}
+
+.header p {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #475569);
 }
 
 .closeButton {
-  padding: 0.35rem;
+  padding: 0.4rem 0.85rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.12));
   background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
   color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.closeButton:hover {
-  background: var(--active-tab-bg, rgba(15, 23, 42, 0.08));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  font-size: 0.8rem;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.65rem;
 }
 
 .errorBanner {
@@ -63,13 +79,27 @@
 }
 
 .fieldset {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  gap: 0.65rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  border: 1px solid var(--active-tab-light, transparent);
+  padding: 0.6rem 0.7rem;
+}
+
+.control {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.control span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
 }
 
 .label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--pod-semantic-text-primary, #0f172a);
 }
@@ -79,49 +109,44 @@
 }
 
 .helpText {
+  margin: 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
-  margin-top: -0.25rem;
+  color: var(--pod-semantic-text-secondary, #475569);
 }
 
 .input,
 .textarea,
 .select {
-  padding: 0.6rem 0.75rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   font-size: 0.85rem;
-  font-family: inherit;
-  transition: all 0.2s ease;
+  background: #ffffff;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  transition: border-color 150ms ease;
 }
 
 .input:focus,
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.1));
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
+  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
 }
 
 .textarea {
   resize: vertical;
-  min-height: 120px;
-  line-height: 1.6;
 }
 
 .select {
   cursor: pointer;
 }
 
-.checkboxLabel {
-  display: flex;
+.checkboxRow {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  cursor: pointer;
   font-size: 0.85rem;
-  color: var(--pod-semantic-text-primary, #0f172a);
 }
 
 .checkbox {
@@ -133,60 +158,35 @@
 
 .footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-}
-
-.resetButton {
-  padding: 0.6rem 1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: transparent;
-  color: var(--pod-semantic-text-primary, #0f172a);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.resetButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-}
-
-.resetButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  flex-wrap: wrap;
 }
 
 .saveButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0.55rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
-  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.saveButton:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--pod-component-button-primary-background, #2563eb);
+  color: var(--pod-component-button-primary-color, #ffffff);
 }
 
 .saveButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
+}
+
+.resetButton {
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.resetButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 

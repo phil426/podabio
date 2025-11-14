@@ -15,6 +15,16 @@ require_once __DIR__ . '/classes/ThemeCSSGenerator.php';
 
 // Allow page to be embedded in iframe (for admin preview)
 header('X-Frame-Options: SAMEORIGIN');
+// Prevent caching in preview mode to ensure latest changes are visible
+// Also prevent caching when username parameter is present (admin preview uses this)
+if (isset($_GET['preview_width']) || isset($_GET['username'])) {
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    // Add ETag based on file modification time to force revalidation
+    $etag = md5_file(__FILE__);
+    header("ETag: \"$etag\"");
+}
 
 // Check if request is for custom domain or username
 $domain = $_SERVER['HTTP_HOST'];
@@ -128,8 +138,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     ?>
     <?php if ($showPodcastPlayer): ?>
-        <link rel="stylesheet" href="/css/podcast-player.css">
-        <link rel="stylesheet" href="/css/podcast-player-controls.css">
+        <link rel="stylesheet" href="/css/podcast-player.css?v=<?php echo filemtime(__DIR__ . '/css/podcast-player.css'); ?>&_nocache=<?php echo time(); ?>">
     <?php endif; ?>
     
     <!-- SEO Meta Tags -->
@@ -163,12 +172,16 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
 
         html, body {
             height: 100%;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
         }
 
         body {
             margin: 0;
             min-height: 100vh;
             background-color: var(--shell-background, color-mix(in srgb, #f5f7fb 94%, #0f172a 6%));
+            box-sizing: border-box;
         }
 
         /* Mobile-only: No responsive breakpoints - page is always mobile */
@@ -185,6 +198,13 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             padding: 1rem;
             box-sizing: border-box;
         }
+        
+        /* Add top padding when podcast banner is present to prevent content from being hidden */
+        <?php if ($showPodcastPlayer): ?>
+        body:has(.podcast-top-banner) .page-container {
+            padding-top: calc(1rem + 60px); /* 1rem base + banner height (approx 60px) */
+        }
+        <?php endif; ?>
         
         .profile-header {
             text-align: center;
@@ -300,186 +320,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-size: 1.125rem;
         }
         
-        /* Podcast Top Banner - Attached to drawer bottom */
-        .podcast-top-banner {
-            position: fixed;
-            top: 0;
-            left: var(--mobile-page-offset);
-            right: auto;
-            width: var(--mobile-page-width);
-            <?php if ($previewWidth): ?>
-            max-width: <?php echo $previewWidth; ?>px;
-            <?php else: ?>
-            max-width: 420px;
-            <?php endif; ?>
-            box-sizing: border-box;
-            background: var(--color-accent-primary);
-            background: linear-gradient(135deg, var(--color-accent-primary) 0%, color-mix(in srgb, var(--color-accent-primary) 75%, black 25%) 100%);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 10001;
-            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-            border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
-            opacity: 1;
-            pointer-events: auto;
-            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), opacity var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            /* Banner starts at top of viewport when drawer is closed */
-            transform: translateY(0);
-        }
-        
-        body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
-            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
-            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
-        }
-        
-        /* When drawer opens, banner moves down and hides */
-        .podcast-top-banner.drawer-open {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(100vh);
-        }
-        
-        /* During peek, banner moves down proportionally */
-        .podcast-top-banner.drawer-peek {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(calc(100vh * 0.3));
-        }
-        
-        .podcast-banner-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-2xs, 0.25rem);
-            width: 100%;
-            padding: var(--space-xs, 0.5rem) var(--space-sm, 0.75rem);
-            background: transparent;
-            color: #FFFFFF;
-            text-shadow: 0 0 10px rgba(8, 12, 32, 0.65);
-            border: none;
-            font-size: var(--type-scale-xs, 0.889rem);
-            font-weight: var(--type-weight-medium, 500);
-            cursor: pointer;
-            transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            text-align: center;
-        }
-        
-        .podcast-banner-toggle:hover {
-            background: color-mix(in srgb, var(--color-text-inverse) 15%, transparent);
-        }
-        
-        .podcast-banner-toggle:active {
-            background: color-mix(in srgb, var(--color-text-inverse) 25%, transparent);
-        }
-        
-        .podcast-banner-toggle i:first-child {
-            font-size: 11.2px;
-        }
-        
-        .podcast-banner-toggle i:last-child {
-            font-size: 8.8px;
-            opacity: 0.8;
-            transition: transform 0.3s ease;
-        }
-        
-        .podcast-banner-toggle:hover i:last-child {
-            transform: translateY(2px);
-        }
-        
-        
-        /* Podcast Top Drawer */
-        .podcast-top-drawer {
-            position: fixed;
-            top: 0;
-            left: var(--mobile-page-offset);
-            right: auto;
-            width: var(--mobile-page-width);
-            <?php if ($previewWidth): ?>
-            max-width: <?php echo $previewWidth; ?>px;
-            <?php else: ?>
-            max-width: 420px;
-            <?php endif; ?>
-            height: 100vh;
-            background-color: var(--color-background-surface-raised, rgba(15, 23, 42, 0.95));
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            transform: translateY(-100%);
-            transition: transform var(--motion-duration-standard, 250ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            overflow: hidden !important;
-            overflow-y: hidden !important;
-            overflow-x: hidden !important;
-            box-sizing: border-box;
-        }
-        
-        /* Prevent body scrollbars when drawer is open or closing */
-        body:has(.podcast-top-drawer.open),
-        body:has(.podcast-top-drawer.peek) {
-            overflow: hidden !important;
-            overflow-y: hidden !important;
-            overflow-x: hidden !important;
-        }
-        
-        html:has(.podcast-top-drawer.open),
-        html:has(.podcast-top-drawer.peek) {
-            overflow: hidden !important;
-            overflow-y: hidden !important;
-            overflow-x: hidden !important;
-        }
-        
-        
-        .podcast-top-drawer.open {
-            transform: translateY(0);
-        }
-        
-        .podcast-top-drawer.peek {
-            transform: translateY(-70%);
-        }
-        
-        .podcast-drawer-footer {
-            padding: var(--space-sm, 0.75rem) var(--space-md, 1.25rem) calc(var(--space-sm, 0.75rem) + env(safe-area-inset-bottom));
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: var(--space-xs, 0.5rem);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(6, 10, 26, 0.65);
-            margin-top: auto;
-            box-shadow: 0 -12px 24px rgba(5, 10, 24, 0.35);
-        }
-        
-        .podcast-drawer-footer-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.65rem 1.35rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--color-text-on-surface, #ffffff);
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-        }
-        
-        .podcast-drawer-footer-button i {
-            font-size: 0.9rem;
-            transition: transform 0.2s ease;
-        }
-        
-        .podcast-drawer-footer-button:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.28);
-            box-shadow: 0 8px 20px rgba(10, 16, 32, 0.28);
-        }
-        
-        .podcast-drawer-footer-button:active {
-            transform: translateY(0);
-        }
+        /* Podcast Player CSS has been moved to /css/podcast-player.css */
         
         /* Page Name Effects */
         /* Neon Effect */
@@ -886,6 +727,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             flex-shrink: 0;
         }
         
+        .widget-thumbnail-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: var(--widget-border-radius, 8px);
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+        }
+        
         .widget-icon {
             font-size: 1.5rem;
             color: inherit;
@@ -998,1069 +851,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: block;
         }
         
-        /* Podcast Player widget styles */
-        .widget-podcast {
-            /* Inherits standard widget styling from .widget-item */
-            /* No overrides - uses same padding, border, colors, and font as other widgets */
-            position: relative;
-        }
-        
-        .widget-podcast .widget-content {
-            width: 100%;
-        }
-        
-        .podcast-widget-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-color);
-        }
-        
-        /* PodNBio Player - Custom Compact Widget Styles */
-        .widget-podcast-custom {
-            position: relative;
-            overflow: visible;
-            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-            isolation: isolate;
-            z-index: 1;
-        }
-        
-        .widget-podcast-custom .widget-content {
-            position: relative;
-            overflow: visible;
-            z-index: 1;
-        }
-        
-        .podcast-compact-player {
-            position: relative;
-            padding: 0.875rem;
-            min-height: 110px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .podcast-header-compact {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            z-index: 10;
-        }
-        
-        .rss-icon {
-            color: var(--color-accent-primary);
-            font-size: 1rem;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
-        }
-        
-        .rss-icon:hover {
-            opacity: 1;
-        }
-        
-        .podcast-main-content {
-            display: flex;
-            gap: 0.875rem;
-            align-items: flex-start;
-            min-height: 110px;
-        }
-        
-        .podcast-cover-compact {
-            width: 100px;
-            height: 100px;
-            border-radius: 10px;
-            object-fit: cover;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 100%);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .podcast-info-compact {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.375rem;
-        }
-        
-        .podcast-title-compact {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--color-text-on-surface);
-            line-height: 1.25;
-            margin: 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            letter-spacing: -0.01em;
-        }
-        
-        .episode-title-compact {
-            font-size: 0.8125rem;
-            font-weight: 400;
-            color: var(--color-text-secondary);
-            line-height: 1.3;
-            margin: 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .podcast-controls-compact {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.625rem;
-            margin-top: 0.375rem;
-        }
-        
-        .skip-back-btn,
-        .skip-forward-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: none;
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            font-size: 0.75rem;
-            padding: 0;
-            position: relative;
-            gap: 0.05rem;
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        
-        .skip-back-btn::before,
-        .skip-forward-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
-            transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
-        }
-        
-        .skip-back-btn:hover::before,
-        .skip-forward-btn:hover::before {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .play-pause-btn {
-            width: 56px;
-            height: 56px;
-            font-size: 1.125rem;
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            padding: 0;
-            position: relative;
-            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-            z-index: 2;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        
-        .play-pause-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            transition: width 0.5s ease, height 0.5s ease;
-        }
-        
-        .play-pause-btn:hover::after {
-            width: 120%;
-            height: 120%;
-        }
-        
-        .skip-label {
-            font-size: 0.625rem;
-            line-height: 1;
-            margin: 0;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            opacity: 0.9;
-            z-index: 1;
-        }
-        
-        .skip-back-btn:hover,
-        .play-pause-btn:hover,
-        .skip-forward-btn:hover {
-            transform: scale(1.08) translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
-        }
-        
-        .skip-back-btn:active,
-        .play-pause-btn:active,
-        .skip-forward-btn:active {
-            transform: scale(1.02) translateY(0);
-            transition: transform 0.1s ease;
-        }
-        
-        .skip-back-btn i,
-        .skip-forward-btn i {
-            transition: transform 0.3s ease;
-            z-index: 1;
-        }
-        
-        .skip-back-btn:hover i,
-        .skip-forward-btn:hover i {
-            transform: scale(1.15);
-        }
-        
-        .play-pause-btn i {
-            transition: transform 0.3s ease;
-            z-index: 1;
-        }
-        
-        .play-pause-btn:hover i {
-            transform: scale(1.1);
-        }
-        
-        .volume-btn,
-        .expand-drawer-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            min-height: 32px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(0, 0, 0, 0.08);
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--color-accent-primary);
-            cursor: pointer;
-            display: flex;
-            flex-shrink: 0;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            font-size: 0.8125rem;
-            padding: 0;
-            position: relative;
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-        }
-        
-        .expand-drawer-btn {
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-            border-color: var(--color-accent-primary);
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-        }
-        
-        .expand-drawer-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            transition: width 0.3s ease, height 0.3s ease;
-        }
-        
-        .expand-drawer-btn:hover::before {
-            width: 140%;
-            height: 140%;
-        }
-        
-        .expand-drawer-btn:hover {
-            transform: scale(1.1) translateY(-1px);
-            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-        }
-        
-        .expand-drawer-btn:active {
-            transform: scale(1.05) translateY(0);
-        }
-        
-        .drawer-icon-toggle {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
-            position: relative;
-        }
-        
-        .expand-drawer-btn.active .drawer-icon-toggle {
-            transform: rotate(180deg);
-        }
-        
-        .expand-drawer-btn.active {
-            background: color-mix(in srgb, var(--color-accent-primary) 90%, transparent);
-            opacity: 0.95;
-        }
-        
-        .volume-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            border-color: rgba(0, 0, 0, 0.12);
-            transform: scale(1.08);
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-        }
-        
-        .volume-btn:active {
-            transform: scale(0.96);
-        }
-        
-        .volume-btn i,
-        .expand-drawer-btn i {
-            transition: transform 0.3s ease;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .volume-btn:hover i {
-            transform: scale(1.2);
-        }
-        
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-        
-        .current-time,
-        .total-time {
-            font-size: 0.6875rem;
-            color: var(--color-text-secondary);
-            white-space: nowrap;
-            min-width: 36px;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-            font-weight: 500;
-        }
-        
-        .progress-bar-wrapper {
-            flex: 1;
-            position: relative;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            padding: 0 6px;
-        }
-        
-        .progress-bar {
-            position: relative;
-            width: calc(100% - 12px);
-            height: 4px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 2px;
-            cursor: pointer;
-            z-index: 2;
-            overflow: visible;
-            margin: 0 auto;
-        }
-        
-        .progress-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: var(--progress-width, 0%);
-            background: var(--color-accent-primary);
-            border-radius: 2px;
-            transition: width 0.1s linear;
-            pointer-events: none;
-        }
-        
-        
-        .progress-scrubber {
-            position: absolute;
-            top: 50%;
-            left: var(--progress-width, 0%);
-            width: 12px;
-            height: 12px;
-            background: var(--color-text-on-background);
-            border-radius: 50%;
-            border: 2px solid var(--color-accent-primary);
-            cursor: grab;
-            z-index: 10;
-            transform: translate(-50%, -50%);
-            transition: left 0.1s linear, transform 0.2s ease, box-shadow 0.2s ease;
-            pointer-events: auto;
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-            touch-action: none;
-        }
-        
-        .progress-scrubber:active {
-            cursor: grabbing;
-            transform: translate(-50%, -50%) scale(1.4);
-            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        
-        .progress-scrubber.dragging {
-            transition: none;
-        }
-        
-        .progress-bar-wrapper:hover .progress-scrubber {
-            transform: translate(-50%, -50%) scale(1.3);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-        }
-        
-        .progress-bar-wrapper:hover .progress-fill {
-            opacity: 0.9;
-        }
-        
-        /* Compact Drawer Tray - Expands from widget, pushes content down */
-        .podcast-bottom-sheet {
-            position: relative;
-            width: 100%;
-            height: 0;
-            overflow: hidden;
-            background: var(--color-background-surface, var(--color-background-base));
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            margin-top: 0.5rem;
-            transition: height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-            will-change: height;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            z-index: 1;
-        }
-        
-        .podcast-bottom-sheet:not(.hidden) {
-            height: 400px;
-        }
-        
-        .drawer-backdrop {
-            display: none; /* No backdrop needed for compact tray */
-        }
-        
-        .drawer-content-wrapper {
-            padding: 0;
-            max-height: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .drawer-drag-handle {
-            width: 36px;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-            margin: 12px auto 8px;
-            cursor: grab;
-            transition: background 0.2s ease;
-        }
-        
-        .drawer-drag-handle:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        
-        .drawer-tabs {
-            display: flex;
-            gap: 0;
-            margin: 0;
-            padding: 0 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            background: rgba(0, 0, 0, 0.02);
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 14px 16px;
-            background: transparent;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            opacity: 0.6;
-        }
-        
-        .tab-btn::after {
-            content: "";
-            position: absolute;
-            bottom: -1px;
-            left: 50%;
-            transform: translateX(-50%) scaleX(0);
-            width: 60%;
-            height: 3px;
-            background: var(--color-accent-primary);
-            border-radius: 3px 3px 0 0;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .tab-btn.active {
-            opacity: 1;
-            color: var(--color-accent-primary);
-        }
-        
-        .tab-btn.active::after {
-            transform: translateX(-50%) scaleX(1);
-        }
-        
-        .tab-btn:hover {
-            opacity: 1;
-            background: rgba(0, 0, 0, 0.02);
-        }
-        
-        .drawer-panels {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 1rem;
-            min-height: 0;
-        }
-        
-        .drawer-panels::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .drawer-panels::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .drawer-panels::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-        
-        .drawer-panels::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        
-        .tab-panel {
-            display: none;
-            animation: fadeIn 0.25s ease-in-out;
-        }
-        
-        .tab-panel.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .show-notes-content {
-            color: var(--text-color);
-            line-height: 1.65;
-            font-size: 0.9375rem;
-            padding: 0.5rem 0;
-        }
-        
-        .chapters-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .chapter-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 12px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-bottom: 6px;
-            background: rgba(0, 0, 0, 0.02);
-            border: 1px solid transparent;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        
-        .chapter-item::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 0;
-            background: var(--color-accent-primary);
-            border-radius: 0 2px 2px 0;
-            transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .chapter-item:hover {
-            background: rgba(0, 0, 0, 0.04);
-            transform: translateX(4px);
-        }
-        
-        .chapter-item.active {
-            background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
-            border-color: color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
-        }
-        
-        .chapter-item.active::before {
-            height: 60%;
-        }
-        
-        .chapter-time {
-            font-weight: 600;
-            color: var(--color-accent-primary);
-            min-width: 56px;
-            font-size: 0.8125rem;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .chapter-title {
-            flex: 1;
-            color: var(--text-color);
-            font-size: 0.9375rem;
-            font-weight: 500;
-        }
-        
-        .chapters-empty {
-            color: var(--text-color);
-            opacity: 0.5;
-            text-align: center;
-            padding: 3rem 1rem;
-            font-size: 0.875rem;
-        }
-        
-        .episodes-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .episode-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-bottom: 8px;
-            background: rgba(0, 0, 0, 0.02);
-            border: 1px solid transparent;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .episode-item::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .episode-item:hover {
-            background: rgba(0, 0, 0, 0.04);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .episode-item:hover::after {
-            left: 100%;
-        }
-        
-        .episode-item.active {
-            background: rgba(0, 102, 255, 0.08);
-            border-color: rgba(0, 102, 255, 0.2);
-            box-shadow: 0 0 0 1px rgba(0, 102, 255, 0.1);
-        }
-        
-        .episode-thumbnail {
-            width: 64px;
-            height: 64px;
-            border-radius: 10px;
-            object-fit: cover;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-        }
-        
-        .episode-item:hover .episode-thumbnail {
-            transform: scale(1.05);
-        }
-        
-        .episode-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .episode-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--text-color);
-            font-size: 0.9375rem;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .episode-desc {
-            font-size: 0.8125rem;
-            color: var(--text-color);
-            opacity: 0.6;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        /* Follow Tab Styles */
-        .follow-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-        }
-        
-        .follow-button {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 1rem;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1.5px solid rgba(0, 0, 0, 0.08);
-            border-radius: 12px;
-            color: var(--color-accent-primary);
-            text-decoration: none;
-            transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            font-size: 0.875rem;
-            font-weight: 500;
-            box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .follow-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--color-accent-primary);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        
-        .follow-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            border-color: var(--color-accent-primary);
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-        }
-        
-        .follow-button:hover::before {
-            opacity: 0.1;
-        }
-        
-        .follow-button i {
-            font-size: 1.125rem;
-            width: 20px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-            transition: transform 0.2s ease;
-        }
-        
-        .follow-button:hover i {
-            transform: scale(1.1);
-        }
-        
-        .follow-button-label {
-            position: relative;
-            z-index: 1;
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .follow-empty {
-            text-align: center;
-            padding: 2rem 1rem;
-            color: var(--text-color);
-            opacity: 0.6;
-            font-size: 0.875rem;
-        }
-        
-        /* Mobile-only styles - always applied */
-            .follow-buttons {
-                grid-template-columns: 1fr;
-                gap: 0.625rem;
-            }
-            
-            .follow-button {
-                padding: 1rem 1.125rem;
-            }
-            
-            .podcast-compact-player {
-                padding: 0.75rem;
-                min-height: 110px;
-            }
-            
-            .podcast-main-content {
-                min-height: 110px;
-                gap: 0.75rem;
-            }
-            
-            .podcast-cover-compact {
-                width: 90px;
-                height: 90px;
-            }
-            
-            .skip-back-btn,
-            .skip-forward-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 0.6875rem;
-            }
-            
-            .play-pause-btn {
-                width: 52px;
-                height: 52px;
-                font-size: 1rem;
-            }
-            
-            .expand-drawer-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 0.75rem;
-            }
-            
-            .podcast-bottom-sheet {
-                max-height: 90vh;
-                border-radius: 0;
-        }
-        
-        /* Minimal Collapsed View - Mobile-only */
-        .podcast-widget-minimal {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-            width: 100%;
-        }
-        
-        .podcast-widget-minimal .podcast-cover {
-            width: 100%;
-            height: auto;
-            max-height: 200px;
-            border-radius: var(--shape-corner-md, 0.75rem);
-            object-fit: cover;
-            flex-shrink: 0;
-            background: var(--color-background-surface, var(--color-background-base));
-        }
-        
-        .podcast-widget-minimal .podcast-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .podcast-widget-minimal .podcast-title {
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-            color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .podcast-widget-minimal .episode-title {
-            font-size: 0.875rem;
-            color: var(--text-color);
-            opacity: 0.8;
-            margin-bottom: 0.5rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .podcast-widget-minimal .minimal-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            width: 100%;
-        }
-        
-        .podcast-widget-minimal .minimal-play-pause {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--color-accent-primary);
-            background: var(--color-background-surface, rgba(255, 255, 255, 0.95));
-            color: var(--color-accent-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-        
-        .podcast-widget-minimal .minimal-play-pause:hover {
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-            transform: scale(1.05);
-        }
-        
-        .podcast-widget-minimal .minimal-progress {
-            flex: 1;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .podcast-widget-minimal .minimal-progress-bar {
-            height: 100%;
-            background: var(--color-accent-primary);
-            border-radius: 2px;
-            transition: width 0.1s linear;
-            width: 0%;
-        }
-        
-        .podcast-widget-minimal .minimal-time {
-            font-size: 0.75rem;
-            color: var(--text-color);
-            opacity: 0.7;
-            min-width: 40px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        
-        .podcast-widget-minimal .minimal-expand {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid var(--color-accent-primary);
-            background: transparent;
-            color: var(--color-accent-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-        
-        .podcast-widget-minimal .minimal-expand:hover {
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-        }
-        
-        .podcast-error {
-            padding: 1rem;
-            color: var(--color-state-danger);
-            text-align: center;
-        }
-        
-        /* Expanded Drawer */
-        .podcast-widget-drawer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--color-background-surface, var(--color-background-base));
-            border-top: 2px solid var(--color-accent-primary);
-            border-radius: 20px 20px 0 0;
-            max-height: 85vh;
-            overflow-y: auto;
-            z-index: 1000;
-            transform: translateY(0);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-        
-        .podcast-widget-drawer.hidden {
-            transform: translateY(100%);
-            pointer-events: none;
-            visibility: hidden;
-        }
-        
-        .podcast-widget-drawer .drawer-header {
-            display: flex;
-            justify-content: flex-end;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            background: var(--color-background-surface, var(--color-background-base));
-            z-index: 10;
-        }
-        
-        .podcast-widget-drawer .drawer-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 1px solid var(--color-accent-primary);
-            background: transparent;
-            color: var(--color-accent-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-        
-        .podcast-widget-drawer .drawer-close:hover {
-            background: var(--color-accent-primary);
-            color: var(--color-text-on-accent);
-        }
-        
-        /* Mobile-only styles - always applied */
-            .podcast-widget-drawer {
-                max-height: 90vh;
-                border-radius: 0;
-            }
-            
-            .podcast-header-full {
-                flex-direction: column;
-            }
-            
-            .podcast-cover-full {
-                width: 100%;
-                height: auto;
-                max-height: 250px;
-        }
-        
+        /* Podcast Player widget styles - MOVED TO /css/podcast-player.css */
         .social-icons {
             display: flex;
             flex-wrap: wrap;
@@ -2088,6 +879,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             display: block;
         }
         
+        .social-icon svg {
+            display: block;
+            color: inherit;
+        }
+        
         .social-icon:hover {
             transform: translateY(-2px);
             opacity: 0.8;
@@ -2111,26 +907,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             pointer-events: all;
         }
         
-        .episode-drawer {
-            position: fixed;
-            top: 0;
-            right: calc(-1 * (var(--mobile-page-offset) + var(--episode-drawer-width, min(90vw, 26rem))));
-            width: var(--episode-drawer-width, min(90vw, 26rem));
-            max-width: var(--episode-drawer-width, min(90vw, 26rem));
-            height: 100vh;
-            background: var(--color-background-surface-raised, var(--color-background-base));
-            border-left: 2px solid var(--color-accent-primary);
-            box-shadow: -4px 0 12px rgba(0,0,0,0.2);
-            transition: right 0.3s ease;
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 2rem 1rem;
-            box-sizing: border-box;
-        }
-        
-        .episode-drawer.open {
-            right: var(--mobile-page-offset);
-        }
+        /* Episode drawer styles - MOVED TO /css/podcast-player.css */
         
         .drawer-header {
             display: flex;
@@ -2156,10 +933,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         }
         
         /* Mobile-only styles - always applied */
-            .profile-image {
-                width: 100px;
-                height: 100px;
-        }
+        /* Profile image size is controlled by .profile-image-size-* classes */
 
         /* Aurora Theme Styling */
         body.theme-aurora-skies {
@@ -2268,106 +1042,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             box-shadow: 0 14px 30px color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
         }
 
-        /* Podcast banner and toggle */
-        body.theme-aurora-skies .podcast-top-banner {
-            background: var(--gradient-podcast, linear-gradient(135deg, #040610 0%, #101730 65%, #1c2854 100%));
-            border-bottom: 1px solid rgba(122, 255, 216, 0.18);
-            box-shadow: 0 26px 60px rgba(3, 6, 30, 0.55);
-        }
-
-        body.theme-aurora-skies .podcast-banner-toggle {
-            color: #FFFFFF;
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            background: transparent;
-        }
-
-        body.theme-aurora-skies .podcast-banner-toggle:hover {
-            background: rgba(20, 34, 64, 0.22);
-            color: #FFFFFF;
-        }
-
-        /* Podcast drawer (dark mode enforced) */
-        body.theme-aurora-skies .podcast-top-drawer,
-        body.theme-aurora-skies .episode-drawer,
-        body.theme-aurora-skies .podcast-bottom-sheet {
-            background: linear-gradient(160deg, rgba(8, 10, 25, 0.98) 0%, rgba(12, 18, 42, 0.95) 65%, rgba(9, 14, 30, 0.92) 100%);
-            color: #f4f8ff;
-            border-top: 1px solid rgba(122, 255, 216, 0.15);
-        }
-
-        body.theme-aurora-skies .podcast-drawer-footer-button,
-        body.theme-aurora-skies .episode-drawer .drawer-close {
-            color: color-mix(in srgb, var(--color-accent-primary) 80%, #ffffff 20%);
-        }
-
-        body.theme-aurora-skies .podcast-compact-player {
-            background: rgba(8, 12, 30, 0.92);
-            border: 1px solid rgba(122, 255, 216, 0.12);
-            box-shadow: 0 22px 54px rgba(3, 6, 24, 0.45);
-        }
-
-        body.theme-aurora-skies .podcast-title-compact {
-            color: #f4f8ff;
-        }
-
-        body.theme-aurora-skies .episode-title-compact {
-            color: rgba(207, 215, 255, 0.85);
-        }
-
-        body.theme-aurora-skies .play-pause-btn,
-        body.theme-aurora-skies .skip-back-btn,
-        body.theme-aurora-skies .skip-forward-btn {
-            background: var(--gradient-accent, var(--color-accent-primary));
-            color: var(--color-text-on-accent);
-            border: none;
-        }
-
-        body.theme-aurora-skies .play-pause-btn {
-            box-shadow: 0 12px 30px rgba(8, 16, 52, 0.55);
-        }
-
-        body.theme-aurora-skies .progress-bar {
-            background: rgba(122, 255, 216, 0.2);
-        }
-
-        body.theme-aurora-skies .progress-fill {
-            background: var(--gradient-accent, var(--color-accent-primary));
-            box-shadow: 0 0 12px rgba(122, 255, 216, 0.45);
-        }
-
-        body.theme-aurora-skies .progress-scrubber {
-            border-color: rgba(122, 255, 216, 0.6);
-            background: #ffffff;
-        }
-
-        body.theme-aurora-skies .volume-btn,
-        body.theme-aurora-skies .expand-drawer-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.15);
-            color: var(--color-accent-primary);
-        }
-
-        @keyframes auroraPulse {
-            0%, 100% { box-shadow: 0 12px 32px rgba(8, 16, 52, 0.4), 0 0 14px rgba(122, 255, 216, 0.25); }
-            50% { box-shadow: 0 14px 36px rgba(8, 16, 52, 0.55), 0 0 20px rgba(122, 255, 216, 0.4); }
-        }
-
-        @keyframes auroraFlow {
-            0% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
-            50% { transform: translate3d(2%, -1%, 0) scale(1.03); opacity: 1; }
-            100% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.75; }
-        }
-
-        body.theme-aurora-skies .podcast-top-banner::before {
-            content: "";
-            position: absolute;
-            inset: -30%;
-            background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--aurora-glow-color, var(--color-accent-primary)) 45%, transparent) 0%, rgba(0,0,0,0) 65%);
-            opacity: 0.45;
-            animation: auroraFlow 14s ease-in-out infinite;
-            pointer-events: none;
-        }
+        /* Podcast Player theme overrides - MOVED TO /css/podcast-player.css */
 
         .widget-heading {
             width: 100%;
@@ -2445,7 +1120,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 $sizeClass = 'profile-image-size-' . $imageSize;
                 $borderClass = 'profile-image-border-' . $imageBorder;
             ?>
-                <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>">
+                <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>" onerror="this.onerror=null; this.style.display='none';">
             <?php endif; ?>
             
             <?php if ($page['cover_image_url']): ?>
@@ -2674,32 +1349,47 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                        title="<?php echo h($icon['platform_name']); ?>">
                         <?php
                         // Icon mapping for platforms (social media + podcast platforms)
-                        // All icons use Font Awesome for consistency
-                        $platformIcons = [
-                            // Podcast Platforms
-                            'apple_podcasts' => '<i class="fas fa-podcast"></i>',
-                            'spotify' => '<i class="fab fa-spotify"></i>',
-                            'youtube_music' => '<i class="fab fa-youtube"></i>',
-                            'iheart_radio' => '<i class="fas fa-heart"></i>',
-                            'amazon_music' => '<i class="fab fa-amazon"></i>',
-                            // Social Media Platforms
-                            'facebook' => '<i class="fab fa-facebook"></i>',
-                            'twitter' => '<i class="fab fa-twitter"></i>',
-                            'instagram' => '<i class="fab fa-instagram"></i>',
-                            'linkedin' => '<i class="fab fa-linkedin"></i>',
-                            'youtube' => '<i class="fab fa-youtube"></i>',
-                            'tiktok' => '<i class="fab fa-tiktok"></i>',
-                            'snapchat' => '<i class="fab fa-snapchat"></i>',
-                            'pinterest' => '<i class="fab fa-pinterest"></i>',
-                            'reddit' => '<i class="fab fa-reddit"></i>',
-                            'discord' => '<i class="fab fa-discord"></i>',
-                            'twitch' => '<i class="fab fa-twitch"></i>',
-                            'github' => '<i class="fab fa-github"></i>',
-                            'behance' => '<i class="fab fa-behance"></i>',
-                            'dribbble' => '<i class="fab fa-dribbble"></i>',
-                            'medium' => '<i class="fab fa-medium"></i>'
-                        ];
-                        $iconHtml = $platformIcons[strtolower($icon['platform_name'])] ?? '<i class="fas fa-link"></i>';
+                        // Most icons use Font Awesome, but some use custom SVG files
+                        $platformName = strtolower($icon['platform_name']);
+                        $iconHtml = '';
+                        
+                        // Custom SVG icons for podcast platforms (inline SVG for color control)
+                        // Size matches Font Awesome icons: 1em (inherits from .social-icon font-size: 1.5rem)
+                        if ($platformName === 'pocket_casts') {
+                            $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><circle cx="16" cy="15" r="15" fill="currentColor" opacity="0.1" /><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z"/></svg>';
+                        } elseif ($platformName === 'castro') {
+                            $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z"/></svg>';
+                        } elseif ($platformName === 'overcast') {
+                            $iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clip-rule="evenodd"/></svg>';
+                        } else {
+                            // Font Awesome icons for other platforms
+                            $platformIcons = [
+                                // Podcast Platforms
+                                'apple_podcasts' => '<i class="fas fa-podcast"></i>',
+                                'spotify' => '<i class="fab fa-spotify"></i>',
+                                'youtube_music' => '<i class="fab fa-youtube"></i>',
+                                'iheart_radio' => '<i class="fas fa-heart"></i>',
+                                'amazon_music' => '<i class="fab fa-amazon"></i>',
+                                // Social Media Platforms
+                                'facebook' => '<i class="fab fa-facebook"></i>',
+                                'twitter' => '<i class="fab fa-twitter"></i>',
+                                'instagram' => '<i class="fab fa-instagram"></i>',
+                                'linkedin' => '<i class="fab fa-linkedin"></i>',
+                                'youtube' => '<i class="fab fa-youtube"></i>',
+                                'tiktok' => '<i class="fab fa-tiktok"></i>',
+                                'snapchat' => '<i class="fab fa-snapchat"></i>',
+                                'pinterest' => '<i class="fab fa-pinterest"></i>',
+                                'reddit' => '<i class="fab fa-reddit"></i>',
+                                'discord' => '<i class="fab fa-discord"></i>',
+                                'twitch' => '<i class="fab fa-twitch"></i>',
+                                'github' => '<i class="fab fa-github"></i>',
+                                'behance' => '<i class="fab fa-behance"></i>',
+                                'dribbble' => '<i class="fab fa-dribbble"></i>',
+                                'medium' => '<i class="fab fa-medium"></i>',
+                                'substack' => '<i class="fas fa-newspaper"></i>'
+                            ];
+                            $iconHtml = $platformIcons[$platformName] ?? '<i class="fas fa-link"></i>';
+                        }
                         echo $iconHtml;
                         ?>
                     </a>
@@ -2745,9 +1435,15 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                        target="_blank" 
                        rel="noopener noreferrer">
                         <?php if ($link['thumbnail_image']): ?>
-                            <img src="<?php echo h(normalizeImageUrl($link['thumbnail_image'])); ?>" 
-                                 alt="<?php echo h($link['title']); ?>" 
-                                 class="widget-thumbnail">
+                            <div class="widget-thumbnail-wrapper">
+                                <img src="<?php echo h(normalizeImageUrl($link['thumbnail_image'])); ?>" 
+                                     alt="<?php echo h($link['title']); ?>" 
+                                     class="widget-thumbnail"
+                                     onerror="this.onerror=null; this.style.display='none'; var wrapper=this.closest('.widget-thumbnail-wrapper'); if(wrapper){var fallback=wrapper.querySelector('.widget-thumbnail-fallback'); if(fallback)fallback.style.display='flex';}">
+                                <div class="widget-thumbnail-fallback" style="display:none; width:100%; height:100%; background:rgba(0,0,0,0.05); border-radius:inherit; align-items:center; justify-content:center; color:rgba(0,0,0,0.3); font-size:1.5rem;">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                            </div>
                         <?php endif; ?>
                         <div class="widget-content">
                             <div class="widget-title"><?php echo h($link['title']); ?></div>

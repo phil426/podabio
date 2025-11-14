@@ -147,3 +147,24 @@ export async function removeProfileImage() {
   );
 }
 
+export interface PodlinksResponse extends ApiResponse {
+  data?: {
+    podcast_name: string;
+    platforms: Record<string, {
+      found: boolean;
+      url?: string | null;
+      error?: string;
+      skipped?: boolean;
+    }>;
+  };
+}
+
+export async function generatePodlinks() {
+  return requestJson<PodlinksResponse>(
+    '/api/podlinks.php',
+    formPostInit({
+      action: 'generate_podlinks'
+    })
+  );
+}
+

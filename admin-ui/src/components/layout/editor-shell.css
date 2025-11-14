@@ -45,6 +45,7 @@
 .editor-shell__panel--left {
   border-right: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
   background: var(--pod-semantic-surface-panel, #ffffff);
+  min-height: 100%;
 }
 
 .editor-shell__panel--center {
@@ -71,6 +72,7 @@
   width: 8px;
   background: transparent;
   position: relative;
+  z-index: 10;
   cursor: col-resize;
   transition: background-color 150ms ease;
 }
@@ -86,6 +88,7 @@
   background: transparent;
   border-radius: var(--pod-core-shape-radius-pill, 9999px);
   transition: background 150ms ease;
+  z-index: 11;
 }
 
 .editor-shell__resizer:hover {

@@ -1,0 +1,256 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--pod-component-layout-left-rail-background, #ffffff);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.header > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.header h3 {
+  margin: 0 0 0.2rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  line-height: 1.3;
+}
+
+.header p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+  line-height: 1.4;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  cursor: pointer;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.closeButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.loadingState,
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 0.875rem;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.3;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.statusBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: var(--active-tab-light, rgba(34, 197, 94, 0.1));
+  color: var(--active-tab-color, var(--pod-semantic-state-success, #16a34a));
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.statusBanner svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.statusCard {
+  padding: 0.6rem 0.7rem;
+  background: #ffffff;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: var(--active-tab-light, rgba(37, 99, 235, 0.06));
+  flex-shrink: 0;
+}
+
+.statusIconCheck {
+  width: 18px;
+  height: 18px;
+  color: var(--pod-semantic-state-success, #16a34a);
+}
+
+.statusIconX {
+  width: 18px;
+  height: 18px;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.statusDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.statusText {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.statusDescription {
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  line-height: 1.3;
+}
+
+.connectButton,
+.disconnectButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 150ms ease;
+  border: none;
+  font-family: inherit;
+}
+
+.connectButton {
+  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: #ffffff;
+}
+
+.connectButton:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.connectButton:active {
+  transform: translateY(0);
+}
+
+.disconnectButton {
+  background: transparent;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+}
+
+.disconnectButton:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  color: var(--pod-semantic-text-primary, #0f172a);
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
+}
+
+.disconnectButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonSpinner {
+  width: 14px;
+  height: 14px;
+  animation: spin 1s linear infinite;
+}
+
+.helpText {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  line-height: 1.4;
+}
+

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
 import { AccountSummaryPanel } from '../account/AccountSummaryPanel';
 import { AccountWorkspace } from '../account/AccountWorkspace';
@@ -10,6 +10,7 @@ import { PropertiesPanel } from './PropertiesPanel';
 import { TopBar } from './TopBar';
 import { TabBar } from './TabBar';
 import { MobilePreviewBar } from './MobilePreviewBar';
+import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
 import { tabColors, type TabValue } from './tab-colors';
 
 import './editor-shell.css';
@@ -65,16 +66,63 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
   const wrapperRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const centerPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const leftPanelHandleRef = useRef<ImperativePanelHandle>(null);
+  const centerPanelHandleRef = useRef<ImperativePanelHandle>(null);
+  const rightPanelHandleRef = useRef<ImperativePanelHandle>(null);
   const [barStyle, setBarStyle] = useState<React.CSSProperties>({});
+
+  // Calculate panel sizes based on active tab
+  const panelSizes = useMemo(() => {
+    if (activeTab === 'analytics') {
+      return {
+        left: 0,
+        center: 100,
+        right: 0
+      };
+    }
+    if (activeTab === 'blog') {
+      return {
+        left: 28,
+        center: 0,
+        right: 72
+      };
+    }
+    return {
+      left: 22,
+      center: 46,
+      right: 32
+    };
+  }, [activeTab]);
+
+  // Reset panel sizes when tab changes
+  useEffect(() => {
+    if (leftPanelHandleRef.current && rightPanelHandleRef.current && centerPanelHandleRef.current) {
+      if (activeTab === 'analytics') {
+        leftPanelHandleRef.current.collapse();
+        rightPanelHandleRef.current.collapse();
+      } else if (activeTab === 'blog') {
+        leftPanelHandleRef.current.resize(panelSizes.left);
+        centerPanelHandleRef.current.collapse();
+        rightPanelHandleRef.current.resize(panelSizes.right);
+      } else {
+        leftPanelHandleRef.current.resize(panelSizes.left);
+        rightPanelHandleRef.current.resize(panelSizes.right);
+      }
+    }
+  }, [activeTab, panelSizes]);
 
   useEffect(() => {
     const updateBarPosition = () => {
-      if (leftPanelRef.current && centerPanelRef.current && wrapperRef.current) {
-        const leftRect = leftPanelRef.current.getBoundingClientRect();
+      if (leftPanelRef.current && centerPanelRef.current && rightPanelRef.current && wrapperRef.current) {
         const centerRect = centerPanelRef.current.getBoundingClientRect();
+        const rightRect = rightPanelRef.current.getBoundingClientRect();
         const wrapperRect = wrapperRef.current.getBoundingClientRect();
         
-        const left = leftRect.left - wrapperRect.left + leftRect.width;
+        // Position bar to span only the center panel, not overlaying resizers
+        // Start from the left edge of the center panel (after left resizer)
+        // End at the right edge of the center panel (before right resizer)
+        const left = centerRect.left - wrapperRect.left;
         const right = wrapperRect.right - centerRect.right;
         
         setBarStyle({
@@ -89,6 +137,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
     
     if (leftPanelRef.current) resizeObserver.observe(leftPanelRef.current);
     if (centerPanelRef.current) resizeObserver.observe(centerPanelRef.current);
+    if (rightPanelRef.current) resizeObserver.observe(rightPanelRef.current);
     if (wrapperRef.current) resizeObserver.observe(wrapperRef.current);
 
     window.addEventListener('resize', updateBarPosition);
@@ -101,9 +150,20 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
 
   return (
     <div ref={wrapperRef} className="editor-shell__panels-wrapper">
-      <MobilePreviewBar selectedDevice={selectedDevice} onDeviceChange={onDeviceChange} style={barStyle} />
+      {activeTab !== 'analytics' && activeTab !== 'blog' && (
+        <MobilePreviewBar selectedDevice={selectedDevice} onDeviceChange={onDeviceChange} style={barStyle} />
+      )}
       <PanelGroup direction="horizontal" className="editor-shell__panels">
-        <Panel defaultSize={22} minSize={18} className="editor-shell__panel editor-shell__panel--left">
+        <Panel 
+          id="left-panel"
+          order={1}
+          ref={leftPanelHandleRef}
+          defaultSize={panelSizes.left} 
+          minSize={activeTab === 'analytics' ? 0 : 18}
+          maxSize={activeTab === 'analytics' ? 0 : undefined}
+          collapsible={activeTab === 'analytics'}
+          className="editor-shell__panel editor-shell__panel--left"
+        >
           <div ref={leftPanelRef} style={{ width: '100%', height: '100%' }}>
             <LeftRail 
               activeTab={activeTab} 
@@ -112,15 +172,47 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
             />
           </div>
         </Panel>
-        <PanelResizeHandle className="editor-shell__resizer" />
-        <Panel defaultSize={46} minSize={36} className="editor-shell__panel editor-shell__panel--center">
+        <PanelResizeHandle 
+          id="left-resizer"
+          className="editor-shell__resizer"
+          style={{ display: activeTab === 'analytics' ? 'none' : 'block' }}
+        />
+        <Panel 
+          id="center-panel"
+          order={2}
+          ref={centerPanelHandleRef}
+          defaultSize={panelSizes.center} 
+          minSize={activeTab === 'analytics' ? 100 : activeTab === 'blog' ? 0 : 36}
+          maxSize={activeTab === 'blog' ? 0 : undefined}
+          collapsible={activeTab === 'blog'}
+          className="editor-shell__panel editor-shell__panel--center"
+        >
           <div ref={centerPanelRef} style={{ width: '100%', height: '100%' }}>
-            <CanvasViewport selectedDevice={selectedDevice} />
+            {activeTab === 'analytics' ? (
+              <AnalyticsDashboard activeColor={activeColor} />
+            ) : (
+              <CanvasViewport selectedDevice={selectedDevice} />
+            )}
           </div>
         </Panel>
-        <PanelResizeHandle className="editor-shell__resizer" />
-        <Panel defaultSize={32} minSize={26} className="editor-shell__panel editor-shell__panel--right">
-          <PropertiesPanel activeColor={activeColor} activeTab={activeTab} />
+        <PanelResizeHandle 
+          id="right-resizer"
+          className="editor-shell__resizer"
+          style={{ display: activeTab === 'analytics' ? 'none' : 'block' }}
+        />
+        <Panel 
+          id="right-panel"
+          order={3}
+          ref={rightPanelHandleRef}
+          defaultSize={panelSizes.right} 
+          minSize={activeTab === 'analytics' ? 0 : 26}
+          maxSize={activeTab === 'analytics' ? 0 : undefined}
+          collapsible={activeTab === 'analytics'}
+          className="editor-shell__panel editor-shell__panel--right"
+        >
+          <div ref={rightPanelRef} style={{ width: '100%', height: '100%' }}>
+            <PropertiesPanel activeColor={activeColor} activeTab={activeTab} />
+          </div>
         </Panel>
       </PanelGroup>
     </div>

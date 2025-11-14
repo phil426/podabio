@@ -42,7 +42,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const nameTextLength = useMemo(() => name.replace(/<[^>]*>/g, '').length, [name]);
   const bioTextLength = useMemo(() => bio.replace(/<[^>]*>/g, '').length, [bio]);
   const maxBioLength = 150;
-  const maxNameLength = 100;
+  const maxNameLength = 30;
 
   useEffect(() => {
     setName(page?.podcast_name ?? '');
@@ -224,6 +224,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     <section 
       className={styles.wrapper} 
       aria-label="Profile settings"
+      data-active={focus === 'image' || focus === 'bio' || focus === 'profile'}
       style={{ 
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
@@ -231,169 +232,189 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
         '--active-tab-border': activeColor.border
       } as React.CSSProperties}
     >
-      <div className={styles.section} data-active={focus === 'image' || focus === 'bio' || focus === 'profile'}>
-        <header className={styles.sectionHeader}>
+      <header className={styles.header}>
+        <div>
           <h3>Profile</h3>
           <p>Manage your profile image and bio.</p>
-        </header>
+        </div>
+      </header>
 
+      <div className={styles.fieldset}>
         {/* Profile Image Section */}
-        <div className={styles.profileImageSection}>
-          <div className={styles.imagePreviewWrapper}>
-            <div
-              className={styles.imagePreview}
-              data-shape={imageShape}
-              data-shadow={imageShadow}
-              data-size={imageSize}
-              data-border={imageBorder}
-              data-has-image={profileImage ? 'true' : 'false'}
+        <div
+          className={styles.imagePreview}
+          data-shape={imageShape}
+          data-shadow={imageShadow}
+          data-size={imageSize}
+          data-border={imageBorder}
+          data-has-image={profileImage ? 'true' : 'false'}
+        >
+          {profileImage ? <img src={normalizeImageUrl(profileImage)} alt="Current profile" /> : <span>PB</span>}
+          <div className={styles.imageOverlay}>
+            <button
+              type="button"
+              className={styles.imageActionButton}
+              onClick={handleChooseFile}
+              disabled={isUploading}
+              title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
             >
-              {profileImage ? <img src={normalizeImageUrl(profileImage)} alt="Current profile" /> : <span>PB</span>}
-              <div className={styles.imageOverlay}>
-                <button
-                  type="button"
-                  className={styles.imageActionButton}
-                  onClick={handleChooseFile}
-                  disabled={isUploading}
-                  title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                >
-                  <LuUpload aria-hidden="true" />
-                </button>
-                {profileImage && (
-                  <button
-                    type="button"
-                    className={styles.imageActionButton}
-                    onClick={handleRemoveImage}
-                    disabled={isUploading}
-                    title="Remove image"
-                  >
-                    <LuX aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className={styles.imageControls}>
-            <div className={styles.imageOptionsCompact}>
-              <div className={styles.optionGroup}>
-                <span className={styles.optionGroupLabel}>Shape</span>
-                <div className={styles.optionButtons}>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShape === 'circle' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShape('circle')}
-                    title="Circle"
-                  >
-                    <div className={styles.shapePreview} data-shape="circle" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShape === 'rounded' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShape('rounded')}
-                    title="Rounded"
-                  >
-                    <div className={styles.shapePreview} data-shape="rounded" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShape === 'square' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShape('square')}
-                    title="Square"
-                  >
-                    <div className={styles.shapePreview} data-shape="square" />
-                  </button>
-                </div>
-              </div>
-              <div className={styles.optionGroup}>
-                <span className={styles.optionGroupLabel}>Shadow</span>
-                <div className={styles.optionButtons}>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShadow === 'none' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShadow('none')}
-                    title="None"
-                  >
-                    <div className={styles.shadowPreview} data-shadow="none" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShadow === 'subtle' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShadow('subtle')}
-                    title="Subtle"
-                  >
-                    <div className={styles.shadowPreview} data-shadow="subtle" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageShadow === 'strong' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageShadow('strong')}
-                    title="Strong"
-                  >
-                    <div className={styles.shadowPreview} data-shadow="strong" />
-                  </button>
-                </div>
-              </div>
-              <div className={styles.optionGroup}>
-                <span className={styles.optionGroupLabel}>Size</span>
-                <div className={styles.optionButtons}>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageSize === 'small' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageSize('small')}
-                    title="Small"
-                  >
-                    <span className={styles.sizeLabel}>S</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageSize === 'medium' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageSize('medium')}
-                    title="Medium"
-                  >
-                    <span className={styles.sizeLabel}>M</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageSize === 'large' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageSize('large')}
-                    title="Large"
-                  >
-                    <span className={styles.sizeLabel}>L</span>
-                  </button>
-                </div>
-              </div>
-              <div className={styles.optionGroup}>
-                <span className={styles.optionGroupLabel}>Border</span>
-                <div className={styles.optionButtons}>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageBorder === 'none' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageBorder('none')}
-                    title="None"
-                  >
-                    <div className={styles.borderPreview} data-border="none" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageBorder === 'thin' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageBorder('thin')}
-                    title="Thin"
-                  >
-                    <div className={styles.borderPreview} data-border="thin" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.optionButton} ${imageBorder === 'thick' ? styles.optionButtonActive : ''}`}
-                    onClick={() => setImageBorder('thick')}
-                    title="Thick"
-                  >
-                    <div className={styles.borderPreview} data-border="thick" />
-                  </button>
-                </div>
-              </div>
-            </div>
+              <LuUpload aria-hidden="true" />
+            </button>
+            {profileImage && (
+              <button
+                type="button"
+                className={styles.imageActionButton}
+                onClick={handleRemoveImage}
+                disabled={isUploading}
+                title="Remove image"
+              >
+                <LuX aria-hidden="true" />
+              </button>
+            )}
           </div>
         </div>
+        <div className={styles.imageOptionsCompact}>
+            <div className={styles.optionGroup}>
+              <h4 className={styles.optionGroupLabel}>Shape</h4>
+              <div className={styles.optionButtons}>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShape === 'circle' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShape('circle')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shapePreview} data-shape="circle" />
+                    <span className={styles.optionButtonLabel}>Circle</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShape === 'rounded' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShape('rounded')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shapePreview} data-shape="rounded" />
+                    <span className={styles.optionButtonLabel}>Rounded</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShape === 'square' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShape('square')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shapePreview} data-shape="square" />
+                    <span className={styles.optionButtonLabel}>Square</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className={styles.optionGroup}>
+              <h4 className={styles.optionGroupLabel}>Shadow</h4>
+              <div className={styles.optionButtons}>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShadow === 'none' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShadow('none')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shadowPreview} data-shadow="none" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>None</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShadow === 'subtle' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShadow('subtle')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shadowPreview} data-shadow="subtle" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>Subtle</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageShadow === 'strong' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageShadow('strong')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.shadowPreview} data-shadow="strong" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>Strong</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className={styles.optionGroup}>
+              <h4 className={styles.optionGroupLabel}>Size</h4>
+              <div className={styles.optionButtons}>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageSize === 'small' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageSize('small')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <span className={styles.sizeLabel}>S</span>
+                    <span className={styles.optionButtonLabel}>Small</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageSize === 'medium' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageSize('medium')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <span className={styles.sizeLabel}>M</span>
+                    <span className={styles.optionButtonLabel}>Medium</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageSize === 'large' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageSize('large')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <span className={styles.sizeLabel}>L</span>
+                    <span className={styles.optionButtonLabel}>Large</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className={styles.optionGroup}>
+              <h4 className={styles.optionGroupLabel}>Border</h4>
+              <div className={styles.optionButtons}>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageBorder === 'none' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageBorder('none')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.borderPreview} data-border="none" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>None</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageBorder === 'thin' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageBorder('thin')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.borderPreview} data-border="thin" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>Thin</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.optionButton} ${imageBorder === 'thick' ? styles.optionButtonActive : ''}`}
+                  onClick={() => setImageBorder('thick')}
+                >
+                  <div className={styles.optionButtonContent}>
+                    <div className={styles.borderPreview} data-border="thick" data-shape={imageShape} />
+                    <span className={styles.optionButtonLabel}>Thick</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -401,7 +422,9 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
           className={styles.hiddenInput}
           onChange={handleFileChange}
         />
+      </div>
 
+      <div className={styles.fieldset}>
         {/* Name Section */}
         <div className={styles.nameSection}>
           <div className={styles.nameHeader}>
@@ -505,7 +528,9 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
             />
           </div>
         </div>
+      </div>
 
+      <div className={styles.fieldset}>
         {/* Bio Section */}
         <div className={styles.bioSection}>
           <div className={styles.bioHeader}>
@@ -608,22 +633,22 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               maxLength={maxBioLength + 100} // Allow HTML tags
             />
           </div>
-          <div className={styles.bioActions}>
-            <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile}>
-              {isSavingProfile ? 'Saving…' : 'Save profile'}
-            </button>
-          </div>
         </div>
         <div className={styles.profileNote}>
           <p>Fonts are set in Themes</p>
         </div>
       </div>
 
-      {status && (
-        <p className={styles[`status_${statusTone}`]} role="status">
-          {status}
-        </p>
-      )}
+      <div className={styles.footer}>
+        <button type="button" className={styles.saveButton} onClick={handleSaveProfile} disabled={isSavingProfile}>
+          {isSavingProfile ? 'Saving…' : 'Save changes'}
+        </button>
+        {status && (
+          <span className={statusTone === 'success' ? styles.statusOk : styles.statusError} role="status">
+            {status}
+          </span>
+        )}
+      </div>
     </section>
   );
 }

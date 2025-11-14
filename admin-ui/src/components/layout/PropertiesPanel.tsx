@@ -2,11 +2,16 @@ import { useMemo, useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useWidgetSelection } from '../../state/widgetSelection';
+import { useSocialIconSelection } from '../../state/socialIconSelection';
+import { useIntegrationSelection } from '../../state/integrationSelection';
+import { useBlogPostSelection } from '../../state/blogPostSelection';
 import { WidgetInspector } from '../panels/WidgetInspector';
 import { ProfileInspector } from '../panels/ProfileInspector';
 import { PodcastPlayerInspector } from '../panels/PodcastPlayerInspector';
 import { BlogPostInspector } from '../panels/BlogPostInspector';
 import { FeaturedBlockInspector } from '../panels/FeaturedBlockInspector';
+import { SocialIconInspector } from '../panels/SocialIconInspector';
+import { IntegrationInspector } from '../panels/IntegrationInspector';
 import { useThemeInspector } from '../../state/themeInspector';
 import { ThemeEditorPanel } from '../panels/ThemeEditorPanel';
 import { useThemeLibraryQuery, type ThemeLibraryResult } from '../../api/themes';
@@ -26,34 +31,13 @@ interface PropertiesPanelProps {
 
 export function PropertiesPanel({ activeColor, activeTab = 'structure' }: PropertiesPanelProps): JSX.Element {
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
+  const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
+  const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
+  const selectedBlogPostId = useBlogPostSelection((state) => state.selectedBlogPostId);
   const showThemeInspector = useThemeInspector((state) => state.isThemeInspectorVisible);
   const queryClient = useQueryClient();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const { data: snapshot } = usePageSnapshot();
-  
-  // Get selected blog post ID from window (set by BlogPanel)
-  const [selectedBlogPostId, setSelectedBlogPostId] = useState<number | null>(
-    typeof window !== 'undefined' 
-      ? ((window as any).__SELECTED_BLOG_POST_ID__ as number | null | undefined) ?? null
-      : null
-  );
-
-  useEffect(() => {
-    const handleBlogPostSelected = (e: CustomEvent) => {
-      setSelectedBlogPostId(e.detail.postId);
-    };
-    const handleBlogPostDeselected = () => {
-      setSelectedBlogPostId(null);
-    };
-
-    window.addEventListener('blogPostSelected', handleBlogPostSelected as EventListener);
-    window.addEventListener('blogPostDeselected', handleBlogPostDeselected);
-
-    return () => {
-      window.removeEventListener('blogPostSelected', handleBlogPostSelected as EventListener);
-      window.removeEventListener('blogPostDeselected', handleBlogPostDeselected);
-    };
-  }, []);
 
   const activeTheme = useMemo(
     () => deriveActiveTheme(themeLibrary, snapshot?.page?.theme_id ?? null),
@@ -70,21 +54,17 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
 
   let inspector: JSX.Element | null = null;
 
-  // Show blog post inspector if a blog post is selected
-  if (selectedBlogPostId !== null) {
-    inspector = (
-      <BlogPostInspector 
-        postId={selectedBlogPostId} 
-        activeColor={activeColor}
-        onClose={() => {
-          setSelectedBlogPostId(null);
-          if (typeof window !== 'undefined') {
-            (window as any).__SELECTED_BLOG_POST_ID__ = null;
-          }
-          window.dispatchEvent(new CustomEvent('blogPostDeselected'));
-        }}
-      />
-    );
+  // Priority order:
+  // 1. Integration inspector (if integration selected) - highest priority
+  // 2. Social icon inspector (if social icon selected)
+  // 3. Widget/page inspectors (if widget/page selected) - show before blog
+  // 4. Blog post inspector (if blog post selected OR on blog tab)
+  // 5. Default inspectors based on active tab
+
+  if (selectedIntegrationId !== null) {
+    inspector = <IntegrationInspector activeColor={activeColor} />;
+  } else if (selectedSocialIconId !== null) {
+    inspector = <SocialIconInspector activeColor={activeColor} />;
   } else if (selectedWidgetId?.startsWith('page:')) {
     if (selectedWidgetId === 'page:profile') {
       inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
@@ -104,10 +84,19 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
     // Show FeaturedBlockInspector if widget is featured, otherwise show WidgetInspector
     // Users can mark widgets as featured from FeaturedBlockInspector
     if (isFeaturedWidget) {
-      inspector = <FeaturedBlockInspector activeColor={activeColor} />;
+      // Show both FeaturedBlockInspector and WidgetInspector for featured blocks
+      inspector = (
+        <>
+          <FeaturedBlockInspector activeColor={activeColor} />
+          <WidgetInspector activeColor={activeColor} />
+        </>
+      );
     } else {
       inspector = <WidgetInspector activeColor={activeColor} />;
     }
+  } else if (selectedBlogPostId !== null || activeTab === 'blog') {
+    // Show blog post inspector if a blog post is selected, or if we're on blog tab
+    inspector = <BlogPostInspector activeColor={activeColor} />;
   } else if (activeTab === 'structure') {
     // Default to Profile inspector when on structure tab and nothing is selected
     inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;

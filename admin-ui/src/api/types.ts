@@ -146,9 +146,31 @@ export interface AnalyticsWidgetEntry {
 }
 
 export interface WidgetAnalyticsResponse extends ApiResponse {
-  widgets: AnalyticsWidgetEntry[];
-  page_views: number;
-  total_clicks: number;
+  widgets?: AnalyticsWidgetEntry[];
+  page_views?: number;
+  total_clicks?: number;
+}
+
+export interface LinkAnalyticsTimeSeries {
+  date: string;
+  clicks: number;
+}
+
+export interface TopLinkEntry {
+  id: number;
+  title: string;
+  type: string;
+  url: string;
+  clicks: number;
+  ctr: number;
+}
+
+export interface LinkAnalyticsResponse extends ApiResponse {
+  page_views?: number;
+  total_clicks?: number;
+  ctr?: number;
+  time_series?: LinkAnalyticsTimeSeries[];
+  top_links?: TopLinkEntry[];
 }
 
 export interface PublishStateResponse extends ApiResponse {

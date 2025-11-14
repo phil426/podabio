@@ -2,19 +2,21 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { LuX, LuSave, LuUpload, LuTrash2 } from 'react-icons/lu';
 
 import { useBlogPost, useCreateBlogPostMutation, useUpdateBlogPostMutation, useBlogCategories } from '../../api/blog';
+import { useBlogPostSelection } from '../../state/blogPostSelection';
 import type { BlogPost } from '../../api/blog';
 import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './blog-post-inspector.module.css';
 
 interface BlogPostInspectorProps {
-  postId: number | null;
   activeColor: TabColorTheme;
-  onClose: () => void;
 }
 
-export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInspectorProps): JSX.Element {
-  const { data: postData } = useBlogPost(postId);
+export function BlogPostInspector({ activeColor }: BlogPostInspectorProps): JSX.Element {
+  const selectedBlogPostId = useBlogPostSelection((state) => state.selectedBlogPostId);
+  const selectBlogPost = useBlogPostSelection((state) => state.selectBlogPost);
+  const postId = selectedBlogPostId;
+  const { data: postData } = useBlogPost(postId ?? null);
   const { data: categoriesData } = useBlogCategories();
   const createMutation = useCreateBlogPostMutation();
   const updateMutation = useUpdateBlogPostMutation();
@@ -102,7 +104,7 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
 
     try {
       if (isNewPost) {
-        await createMutation.mutateAsync({
+        const result = await createMutation.mutateAsync({
           title: title.trim(),
           slug: slug.trim(),
           content: content.trim(),
@@ -111,6 +113,11 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
           published,
           featured_image: featuredImage.trim() || undefined
         });
+        setSaveStatus('success');
+        // Update the selected post ID to the newly created post
+        if (result?.post?.id) {
+          selectBlogPost(result.post.id);
+        }
       } else {
         await updateMutation.mutateAsync({
           post_id: postId!,
@@ -122,8 +129,8 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
           published,
           featured_image: featuredImage.trim() || undefined
         });
+        setSaveStatus('success');
       }
-      setSaveStatus('success');
       setTimeout(() => {
         setSaveStatus('idle');
       }, 2000);
@@ -157,7 +164,7 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
 
   return (
     <div
-      className={styles.inspector}
+      className={styles.wrapper}
       style={
         {
           '--active-tab-color': activeColor.text,
@@ -167,12 +174,19 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
         } as React.CSSProperties
       }
     >
-      <div className={styles.header}>
-        <h3>{isNewPost ? 'New Blog Post' : 'Edit Blog Post'}</h3>
-        <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
+      <header className={styles.header}>
+        <div>
+          <h3>{isNewPost ? 'New Blog Post' : 'Edit Blog Post'}</h3>
+        </div>
+        <button 
+          type="button" 
+          className={styles.closeButton} 
+          onClick={() => selectBlogPost(null)} 
+          aria-label="Close"
+        >
           <LuX aria-hidden="true" />
         </button>
-      </div>
+      </header>
 
       <div className={styles.content}>
         {errorMessage && (
@@ -182,101 +196,101 @@ export function BlogPostInspector({ postId, activeColor, onClose }: BlogPostInsp
         )}
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-title" className={styles.label}>
-            Title <span className={styles.required}>*</span>
+          <label htmlFor="blog-title" className={styles.control}>
+            <span>Title <span className={styles.required}>*</span></span>
+            <input
+              ref={titleInputRef}
+              id="blog-title"
+              type="text"
+              className={styles.input}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter post title"
+            />
           </label>
-          <input
-            ref={titleInputRef}
-            id="blog-title"
-            type="text"
-            className={styles.input}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter post title"
-          />
         </div>
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-slug" className={styles.label}>
-            Slug <span className={styles.required}>*</span>
+          <label htmlFor="blog-slug" className={styles.control}>
+            <span>Slug <span className={styles.required}>*</span></span>
+            <input
+              ref={slugInputRef}
+              id="blog-slug"
+              type="text"
+              className={styles.input}
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="url-friendly-slug"
+              pattern="[a-z0-9-]+"
+            />
           </label>
-          <input
-            ref={slugInputRef}
-            id="blog-slug"
-            type="text"
-            className={styles.input}
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="url-friendly-slug"
-            pattern="[a-z0-9-]+"
-          />
-          <small className={styles.helpText}>Used in the URL (e.g., my-blog-post-title)</small>
+          <p className={styles.helpText}>Used in the URL (e.g., my-blog-post-title)</p>
         </div>
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-category" className={styles.label}>
-            Category
+          <label htmlFor="blog-category" className={styles.control}>
+            <span>Category</span>
+            <select
+              id="blog-category"
+              className={styles.select}
+              value={categoryId ?? ''}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">No Category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </label>
-          <select
-            id="blog-category"
-            className={styles.select}
-            value={categoryId ?? ''}
-            onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">No Category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-excerpt" className={styles.label}>
-            Excerpt
+          <label htmlFor="blog-excerpt" className={styles.control}>
+            <span>Excerpt</span>
+            <textarea
+              id="blog-excerpt"
+              className={styles.textarea}
+              rows={3}
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="Brief summary of the post (optional)"
+            />
           </label>
-          <textarea
-            id="blog-excerpt"
-            className={styles.textarea}
-            rows={3}
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            placeholder="Brief summary of the post (optional)"
-          />
         </div>
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-content" className={styles.label}>
-            Content <span className={styles.required}>*</span>
+          <label htmlFor="blog-content" className={styles.control}>
+            <span>Content <span className={styles.required}>*</span></span>
+            <textarea
+              ref={contentTextareaRef}
+              id="blog-content"
+              className={styles.textarea}
+              rows={12}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Write your blog post content here..."
+            />
           </label>
-          <textarea
-            ref={contentTextareaRef}
-            id="blog-content"
-            className={styles.textarea}
-            rows={12}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your blog post content here..."
-          />
         </div>
 
         <div className={styles.fieldset}>
-          <label htmlFor="blog-featured-image" className={styles.label}>
-            Featured Image URL
+          <label htmlFor="blog-featured-image" className={styles.control}>
+            <span>Featured Image URL</span>
+            <input
+              id="blog-featured-image"
+              type="url"
+              className={styles.input}
+              value={featuredImage}
+              onChange={(e) => setFeaturedImage(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+            />
           </label>
-          <input
-            id="blog-featured-image"
-            type="url"
-            className={styles.input}
-            value={featuredImage}
-            onChange={(e) => setFeaturedImage(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
         </div>
 
         <div className={styles.fieldset}>
-          <label className={styles.checkboxLabel}>
+          <label className={styles.checkboxRow}>
             <input
               type="checkbox"
               className={styles.checkbox}
