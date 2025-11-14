@@ -804,13 +804,18 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         /* Video widget styles */
         .widget-video {
             padding: 0;
-            border: none;
-            background: transparent;
+            display: block;
+            /* Border, shadow, and border-radius inherited from .widget-item */
+            align-items: stretch;
+        }
+        
+        .widget-video .widget-content {
+            display: none; /* Hide any content wrapper if present */
         }
         
         .widget-video-embed {
-            margin-top: 0.5rem;
-            border-radius: 8px;
+            width: 100%;
+            border-radius: inherit;
             overflow: hidden;
             position: relative;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
@@ -823,6 +828,8 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             left: 0;
             width: 100%;
             height: 100%;
+            border: none;
+            border-radius: inherit;
         }
         
         /* Text/HTML widget styles */
