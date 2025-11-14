@@ -14,7 +14,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo h(APP_NAME); ?> - Coming Soon</title>
-    <meta name="description" content="Pod A Bio is under construction. Join our beta to be the first to experience the future of podcast link-in-bio pages.">
+    <meta name="description" content="PodaBio is under construction. Join our beta to be the first to experience the future of podcast link-in-bio pages.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -350,7 +350,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <div class="particles" id="particles"></div>
     
     <div class="container">
-        <div class="logo">Pod A Bio</div>
+        <div class="logo">PodaBio</div>
         <div class="domain">poda.bio</div>
         
         <div class="construction-icon">🚧</div>
@@ -361,7 +361,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         <p class="description">
             We're working hard to bring you the best podcast link-in-bio platform. 
-            Join our beta program to get early access and help shape the future of Pod A Bio!
+            Join our beta program to get early access and help shape the future of PodaBio!
         </p>
         
         <div class="cta-buttons">
