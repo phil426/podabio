@@ -44,7 +44,7 @@ import {
 } from '../../api/widgets';
 import { usePageSnapshot, usePageSettingsMutation } from '../../api/page';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../api/utils';
+import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList';
 import { WidgetGalleryDrawer } from '../overlays/WidgetGalleryDrawer';
@@ -221,10 +221,11 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
         description:
           availableWidgets?.find((option) => option.type === widget.widget_type)?.description ?? widget.widget_type,
         icon: <IconComponent aria-hidden="true" />,
-        thumbnail,
+        thumbnail: thumbnail ? normalizeImageUrl(thumbnail) : undefined,
         displayOrder: widget.display_order,
         isActive: widget.is_active === 1,
-        isLocked: lockedItems.has(String(widget.id))
+        isLocked: lockedItems.has(String(widget.id)),
+        isFeatured: widget.is_featured === 1
       };
     }) : [];
 
@@ -394,6 +395,46 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
     selectWidget(item.id);
   };
 
+  const handleToggleFeatured = (id: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
+    const widget = widgets?.find((entry) => String(entry.id) === id);
+    if (!widget) return;
+
+    const isCurrentlyFeatured = widget.is_featured === 1;
+    const newFeaturedState = !isCurrentlyFeatured;
+
+    // If marking as featured, unfeature all other widgets first
+    if (newFeaturedState) {
+      widgets?.forEach((w) => {
+        if (String(w.id) !== id && w.is_featured === 1) {
+          updateMutation.mutate({
+            widget_id: String(w.id),
+            is_featured: '0',
+            featured_effect: ''
+          });
+        }
+      });
+
+      // Mark this widget as featured with default effect if none set
+      updateMutation.mutate({
+        widget_id: id,
+        is_featured: '1',
+        featured_effect: widget.featured_effect || 'jiggle'
+      });
+    } else {
+      // Unfeature this widget
+      updateMutation.mutate({
+        widget_id: id,
+        is_featured: '0',
+        featured_effect: ''
+      });
+    }
+  };
+
 
   useEffect(() => {
     // Auto-open theme inspector when Design tab is active
@@ -405,8 +446,12 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   }, [activeTab, setThemeInspectorVisible]);
 
   useEffect(() => {
-    // Clear selections when switching tabs
-    selectWidget(null);
+    // Set initial selection for structure tab, clear for others
+    if (activeTab === 'structure') {
+      selectWidget('page:profile');
+    } else {
+      selectWidget(null);
+    }
   }, [activeTab, selectWidget]);
 
   return (
@@ -569,9 +614,22 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                             <button
                               type="button"
                               className={styles.layerActionButton}
-                              aria-label="Mark as featured"
-                              title="Featured"
-                              disabled
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleToggleFeatured(item.id, e);
+                              }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }}
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                              }}
+                              aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
+                              title={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
+                              disabled={updateMutation.isPending}
+                              data-featured={item.isFeatured ? 'true' : 'false'}
                             >
                               <LuStar aria-hidden="true" />
                             </button>

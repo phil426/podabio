@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 
 import type { AvailableWidget } from '../../api/types';
+import { normalizeImageUrl } from '../../api/utils';
 
 import styles from './widget-gallery-drawer.module.css';
 
@@ -102,7 +103,7 @@ export function WidgetGalleryDrawer({ open, widgets, onClose, onAdd, isAdding }:
                 <li key={item.id} className={styles.card}>
                   <div className={styles.cardPreview}>
                     {item.thumbnail ? (
-                      <img src={item.thumbnail} alt="" />
+                      <img src={normalizeImageUrl(item.thumbnail)} alt="" />
                     ) : (
                       <div className={styles.previewPlaceholder} aria-hidden="true">
                         {item.name.slice(0, 2).toUpperCase()}

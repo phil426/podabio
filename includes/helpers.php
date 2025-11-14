@@ -141,6 +141,58 @@ function baseUrl() {
 }
 
 /**
+ * Get current base URL based on request (for local development)
+ * @return string
+ */
+function getCurrentBaseUrl() {
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    
+    // If running on localhost, use local URL
+    if (in_array(strtolower($host), ['localhost', '127.0.0.1']) || strpos($host, 'localhost:') === 0) {
+        $port = $_SERVER['SERVER_PORT'] ?? ($protocol === 'https' ? 443 : 80);
+        if ($port != 80 && $port != 443) {
+            return $protocol . '://' . $host;
+        }
+        return $protocol . '://' . $host;
+    }
+    
+    // Otherwise use configured APP_URL
+    return APP_URL;
+}
+
+/**
+ * Convert image URL to work in current environment (local vs production)
+ * @param string $url
+ * @return string
+ */
+function normalizeImageUrl($url) {
+    if (empty($url)) {
+        return $url;
+    }
+    
+    // If already a relative path, make it absolute
+    if (strpos($url, '/') === 0 && strpos($url, '//') !== 0) {
+        return getCurrentBaseUrl() . $url;
+    }
+    
+    // If it's a full URL with production domain, convert to current base URL
+    $productionUrl = APP_URL;
+    if (strpos($url, $productionUrl) === 0) {
+        $path = substr($url, strlen($productionUrl));
+        return getCurrentBaseUrl() . $path;
+    }
+    
+    // If it's already a full URL with different domain, return as-is
+    if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
+        return $url;
+    }
+    
+    // Otherwise assume it's a relative path
+    return getCurrentBaseUrl() . '/' . ltrim($url, '/');
+}
+
+/**
  * Check if user is logged in
  * @return bool
  */

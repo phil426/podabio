@@ -1,8 +1,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
   height: 100%;
+  overflow: hidden;
   background: var(--pod-component-layout-properties-background, #ffffff);
   border-left: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
   border-left-width: 2px;
@@ -11,11 +11,12 @@
 .scrollArea {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1.25rem;
   display: grid;
   gap: 1.25rem;
   background: var(--pod-component-layout-properties-background, #ffffff);
-  border-left: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  min-height: 0;
 }
 
 .sectionHeader h3 {

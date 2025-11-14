@@ -13,29 +13,26 @@ echo ""
 # Server details
 SSH_HOST="u925957603@195.179.237.142"
 SSH_PORT="65002"
-# Password with special characters - use single quotes to prevent expansion
-SSH_PASS='[REDACTED]'
+SSH_KEY_FILE="$HOME/.ssh/id_ed25519_podabio"
 PROJECT_DIR="/home/u925957603/domains/poda.bio/public_html/"
 
 echo "📡 Connecting to Hostinger server (poda.bio)..."
 echo ""
 
-# Check if sshpass is installed
-if ! command -v sshpass &> /dev/null; then
-    echo "❌ sshpass not found. Please install it:"
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "   brew install hudochenkov/sshpass/sshpass"
-    else
-        echo "   sudo apt-get install sshpass"
-    fi
-    exit 1
+# Check if SSH key exists
+if [ -f "$SSH_KEY_FILE" ]; then
+    SSH_OPTS="-i $SSH_KEY_FILE"
+    echo "✅ Using SSH key authentication"
+else
+    SSH_OPTS=""
+    echo "⚠️  SSH key not found. Using password authentication."
+    echo "   Run ./setup_ssh_key_manual.sh to set up SSH keys for passwordless access."
+    echo ""
+    read -p "Press Enter to continue with password authentication..."
 fi
 
-# Deploy via SSH with password authentication
-# Note: If this fails, you may need to:
-# 1. Manually connect once: ssh -p $SSH_PORT $SSH_HOST (to accept host key)
-# 2. Or set up SSH keys: ssh-copy-id -p $SSH_PORT $SSH_HOST
-sshpass -p "$SSH_PASS" ssh -p $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts $SSH_HOST << 'ENDSSH'
+# Deploy via SSH
+ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'ENDSSH'
     set -e
     cd /home/u925957603/domains/poda.bio/public_html/
     

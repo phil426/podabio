@@ -16,6 +16,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useState, type ReactNode } from 'react';
 import { LuGripHorizontal } from 'react-icons/lu';
 
+import { normalizeImageUrl } from '../../api/utils';
 import styles from './draggable-layer-list.module.css';
 
 export interface LayerItem {
@@ -27,6 +28,7 @@ export interface LayerItem {
   displayOrder?: number;
   isActive?: boolean;
   isLocked?: boolean;
+  isFeatured?: boolean;
 }
 
 interface DraggableLayerListProps {
@@ -145,7 +147,7 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
       )}
       {item.thumbnail ? (
         <span className={styles.thumbnail} aria-hidden="true">
-          <img src={item.thumbnail} alt="" />
+          <img src={normalizeImageUrl(item.thumbnail)} alt="" />
         </span>
       ) : item.icon ? (
         <span 

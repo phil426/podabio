@@ -120,7 +120,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
         </Panel>
         <PanelResizeHandle className="editor-shell__resizer" />
         <Panel defaultSize={32} minSize={26} className="editor-shell__panel editor-shell__panel--right">
-          <PropertiesPanel activeColor={activeColor} />
+          <PropertiesPanel activeColor={activeColor} activeTab={activeTab} />
         </Panel>
       </PanelGroup>
     </div>

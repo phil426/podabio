@@ -136,7 +136,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
     <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
     <meta property="og:description" content="<?php echo h(truncate($page['podcast_description'] ?: '', 160)); ?>">
-    <meta property="og:image" content="<?php echo h($page['cover_image_url'] ?: ''); ?>">
+    <meta property="og:image" content="<?php echo h(normalizeImageUrl($page['cover_image_url'] ?: '')); ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     
@@ -171,13 +171,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             background-color: var(--shell-background, color-mix(in srgb, #f5f7fb 94%, #0f172a 6%));
         }
 
-        @media (min-width: 600px) {
-            body {
-                padding: var(--space-xl, 2.5rem) 0;
-            }
-        }
+        /* Mobile-only: No responsive breakpoints - page is always mobile */
 
-        /* Page container and layout */
+        /* Page container and layout - Mobile-only */
         .page-container {
             width: var(--mobile-page-width);
             <?php if ($previewWidth): ?>
@@ -186,7 +182,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             max-width: 420px;
             <?php endif; ?>
             margin: 0 auto;
-            padding: var(--space-lg) var(--space-md);
+            padding: 1rem;
             box-sizing: border-box;
         }
         
@@ -1820,7 +1816,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-size: 0.875rem;
         }
         
-        @media (max-width: 768px) {
+        /* Mobile-only styles - always applied */
             .follow-buttons {
                 grid-template-columns: 1fr;
                 gap: 0.625rem;
@@ -1867,20 +1863,21 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             .podcast-bottom-sheet {
                 max-height: 90vh;
                 border-radius: 0;
-            }
         }
         
-        /* Minimal Collapsed View */
+        /* Minimal Collapsed View - Mobile-only */
         .podcast-widget-minimal {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 1rem;
             width: 100%;
         }
         
         .podcast-widget-minimal .podcast-cover {
-            width: 80px;
-            height: 80px;
+            width: 100%;
+            height: auto;
+            max-height: 200px;
             border-radius: var(--shape-corner-md, 0.75rem);
             object-fit: cover;
             flex-shrink: 0;
@@ -2048,19 +2045,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: var(--color-text-on-accent);
         }
         
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .podcast-widget-minimal {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .podcast-widget-minimal .podcast-cover {
-                width: 100%;
-                height: auto;
-                max-height: 200px;
-            }
-            
+        /* Mobile-only styles - always applied */
             .podcast-widget-drawer {
                 max-height: 90vh;
                 border-radius: 0;
@@ -2074,7 +2059,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 width: 100%;
                 height: auto;
                 max-height: 250px;
-            }
         }
         
         .social-icons {
@@ -2171,16 +2155,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             justify-content: center;
         }
         
-        @media (max-width: 600px) {
-            .page-container {
-                padding: 1rem;
-            }
-            
+        /* Mobile-only styles - always applied */
             .profile-image {
                 width: 100px;
                 height: 100px;
-            }
-            
         }
 
         /* Aurora Theme Styling */
@@ -2467,11 +2445,11 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 $sizeClass = 'profile-image-size-' . $imageSize;
                 $borderClass = 'profile-image-border-' . $imageBorder;
             ?>
-                <img src="<?php echo h($page['profile_image']); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>">
+                <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>">
             <?php endif; ?>
             
             <?php if ($page['cover_image_url']): ?>
-                <img src="<?php echo h($page['cover_image_url']); ?>" alt="Cover" class="cover-image">
+                <img src="<?php echo h(normalizeImageUrl($page['cover_image_url'])); ?>" alt="Cover" class="cover-image">
             <?php endif; ?>
             
             <?php if ($page['podcast_name']): 
@@ -2767,7 +2745,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                        target="_blank" 
                        rel="noopener noreferrer">
                         <?php if ($link['thumbnail_image']): ?>
-                            <img src="<?php echo h($link['thumbnail_image']); ?>" 
+                            <img src="<?php echo h(normalizeImageUrl($link['thumbnail_image'])); ?>" 
                                  alt="<?php echo h($link['title']); ?>" 
                                  class="widget-thumbnail">
                         <?php endif; ?>

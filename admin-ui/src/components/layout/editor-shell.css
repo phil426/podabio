@@ -39,6 +39,7 @@
   flex-direction: column;
   border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
   border-radius: 0;
+  position: relative;
 }
 
 .editor-shell__panel--left {

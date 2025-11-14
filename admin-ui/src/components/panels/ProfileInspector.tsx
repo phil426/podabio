@@ -4,7 +4,7 @@ import { LuBold, LuItalic, LuUnderline, LuAlignLeft, LuAlignCenter, LuAlignRight
 
 import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../api/page';
 import { uploadProfileImage } from '../../api/uploads';
-import { queryKeys } from '../../api/utils';
+import { queryKeys, normalizeImageUrl } from '../../api/utils';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -248,7 +248,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               data-border={imageBorder}
               data-has-image={profileImage ? 'true' : 'false'}
             >
-              {profileImage ? <img src={profileImage} alt="Current profile" /> : <span>PB</span>}
+              {profileImage ? <img src={normalizeImageUrl(profileImage)} alt="Current profile" /> : <span>PB</span>}
               <div className={styles.imageOverlay}>
                 <button
                   type="button"

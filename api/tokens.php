@@ -5,6 +5,14 @@
  * Exposes design tokens for the React admin and future clients.
  */
 
+// Suppress errors and warnings to ensure clean JSON output
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Start output buffering to catch any unexpected output
+ob_start();
+
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/session.php';
@@ -14,6 +22,9 @@ require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/feature-flags.php';
 require_once __DIR__ . '/../classes/Page.php';
 
+// Clear any output that may have been generated
+ob_clean();
+
 header('Content-Type: application/json');
 
 if (!feature_flag('tokens_api')) {
@@ -22,7 +33,12 @@ if (!feature_flag('tokens_api')) {
     exit;
 }
 
-requireAuth();
+// Check authentication without redirecting (for API)
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Authentication required']);
+    exit;
+}
 
 $user = getCurrentUser();
 $pageClass = new Page();

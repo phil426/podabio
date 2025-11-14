@@ -68,6 +68,8 @@ export interface WidgetRecord {
   config_data: WidgetConfig | string | null;
   display_order: number;
   is_active: 0 | 1;
+  is_featured?: 0 | 1;
+  featured_effect?: string | null;
   created_at: string;
   updated_at: string;
 }

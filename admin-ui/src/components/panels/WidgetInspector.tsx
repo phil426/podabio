@@ -6,6 +6,7 @@ import type { WidgetRecord } from '../../api/types';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { uploadWidgetThumbnail } from '../../api/uploads';
 import { getYouTubeThumbnail } from '../../utils/media';
+import { normalizeImageUrl } from '../../api/utils';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -16,6 +17,8 @@ type ConfigValue = string | number | boolean | null | undefined;
 interface WidgetFormState {
   title: string;
   isActive: boolean;
+  isFeatured: boolean;
+  featuredEffect: string;
   config: Record<string, ConfigValue>;
 }
 
@@ -62,6 +65,8 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setFormState({
       title: selectedWidget.title,
       isActive: selectedWidget.is_active === 1,
+      isFeatured: selectedWidget.is_featured === 1,
+      featuredEffect: (selectedWidget.featured_effect as string) || 'jiggle',
       config: normalizedConfig
     });
     setSaveStatus('idle');
@@ -99,9 +104,11 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
 
     const sameTitle = formState.title === selectedWidget.title;
     const sameActive = formState.isActive === (selectedWidget.is_active === 1);
+    const sameFeatured = formState.isFeatured === (selectedWidget.is_featured === 1);
+    const sameFeaturedEffect = formState.featuredEffect === ((selectedWidget.featured_effect as string) || 'jiggle');
     const sameConfig = JSON.stringify(formState.config ?? {}) === JSON.stringify(initialConfig ?? {});
 
-    return !(sameTitle && sameActive && sameConfig);
+    return !(sameTitle && sameActive && sameFeatured && sameFeaturedEffect && sameConfig);
   }, [formState, selectedWidget]);
 
   if (isLoading) {
@@ -170,6 +177,16 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setSaveStatus('idle');
   };
 
+  const handleFeaturedToggle = (checked: boolean) => {
+    if (!formState) return;
+    setFormState({
+      ...formState,
+      isFeatured: checked,
+      featuredEffect: checked && !formState.featuredEffect ? 'jiggle' : formState.featuredEffect
+    });
+    setSaveStatus('idle');
+  };
+
   const handleReset = () => {
     if (!selectedWidget) return;
     const normalizedConfig = normalizeConfig(selectedWidget.config_data);
@@ -177,6 +194,8 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
     setFormState({
       title: selectedWidget.title,
       isActive: selectedWidget.is_active === 1,
+      isFeatured: selectedWidget.is_featured === 1,
+      featuredEffect: (selectedWidget.featured_effect as string) || 'jiggle',
       config: normalizedConfig
     });
     setSaveStatus('idle');
@@ -229,6 +248,8 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
         widget_id: String(selectedWidget.id),
         title: formState.title,
         is_active: formState.isActive ? '1' : '0',
+        is_featured: formState.isFeatured ? '1' : '0',
+        featured_effect: formState.isFeatured ? formState.featuredEffect : '',
         config_data: JSON.stringify(formState.config ?? {})
       });
       setSaveStatus('success');
@@ -276,6 +297,37 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
           />
           <span>Show block on page</span>
         </label>
+        <label className={styles.toggle}>
+          <input
+            type="checkbox"
+            checked={formState?.isFeatured ?? false}
+            onChange={(event) => handleFeaturedToggle(event.target.checked)}
+          />
+          <span>Mark as featured block</span>
+        </label>
+        {formState?.isFeatured && (
+          <label className={styles.control}>
+            <span>Featured Effect</span>
+            <select
+              className={styles.input}
+              value={formState.featuredEffect}
+              onChange={(e) => {
+                if (formState) {
+                  setFormState({ ...formState, featuredEffect: e.target.value });
+                  setSaveStatus('idle');
+                }
+              }}
+            >
+              <option value="jiggle">Jiggle 🎯</option>
+              <option value="burn">Burn 🔥</option>
+              <option value="rotating-glow">Rotating Glow 💫</option>
+              <option value="blink">Blink 👁️</option>
+              <option value="pulse">Pulse 💓</option>
+              <option value="shake">Shake 📳</option>
+              <option value="sparkles">Sparkles ✨</option>
+            </select>
+          </label>
+        )}
       </div>
 
       <div className={styles.fieldset}>
@@ -301,7 +353,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
             <span className={styles.thumbnailLabel}>Thumbnail</span>
             <div className={styles.thumbnailPreview}>
               {resolvedThumbnail ? (
-                <img src={resolvedThumbnail} alt="" />
+                <img src={normalizeImageUrl(resolvedThumbnail)} alt="" />
               ) : (
                 <div className={styles.thumbnailPlaceholder}>No thumbnail</div>
               )}

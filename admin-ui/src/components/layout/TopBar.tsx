@@ -15,6 +15,7 @@ import { usePageSnapshot } from '../../api/page';
 import { useAccountProfile } from '../../api/account';
 import { useFeatureFlag } from '../../store/featureFlags';
 import { trackTelemetry } from '../../services/telemetry';
+import { normalizeImageUrl } from '../../api/utils';
 import styles from './top-bar.module.css';
 
 export function TopBar(): JSX.Element {
@@ -174,7 +175,7 @@ export function TopBar(): JSX.Element {
             aria-haspopup="menu"
             aria-expanded={menuOpen}
           >
-            {avatarUrl ? <img src={avatarUrl} alt="" aria-hidden="true" className={styles.accountAvatarImage} /> : initials}
+            {avatarUrl ? <img src={normalizeImageUrl(avatarUrl)} alt="" aria-hidden="true" className={styles.accountAvatarImage} /> : initials}
           </button>
           <div className={styles.accountDetails}>
             <p className={styles.accountPlan}>{plan}</p>

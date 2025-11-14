@@ -63,10 +63,12 @@ function useWidgetMutation(action: string) {
       requestJson<ApiResponse>(WIDGETS_ENDPOINT, formPostInit({ action, ...payload })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.widgets() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics('month') });
     },
     onError: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.widgets() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
     }
   });
 }

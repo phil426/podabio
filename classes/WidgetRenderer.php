@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/WidgetRegistry.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 class WidgetRenderer {
     
@@ -186,7 +187,7 @@ class WidgetRenderer {
         if ($thumbnail) {
             // Thumbnail takes priority - display on left side
             $html .= '<div class="widget-thumbnail-wrapper">';
-            $html .= '<img src="' . htmlspecialchars($thumbnail) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
             $html .= '</div>';
         } elseif ($icon) {
             // Icon only shown if no thumbnail exists
@@ -239,7 +240,7 @@ class WidgetRenderer {
         
         $html = '<div class="widget-item widget-video">';
         $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        // Do not show title for YouTube widgets
         $html .= '<div class="widget-video-embed">';
         $html .= '<iframe width="100%" height="315" src="' . $embedUrl . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         $html .= '</div>';
@@ -353,7 +354,7 @@ class WidgetRenderer {
             $html .= '<div class="widget-item widget-image">';
         }
         
-        $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="' . htmlspecialchars($title) . '" class="widget-image-content">';
+        $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="' . htmlspecialchars($title) . '" class="widget-image-content">';
         
         if ($linkUrl) {
             $html .= '</a>';
@@ -1217,7 +1218,7 @@ class WidgetRenderer {
             if ($layout === 'grid') {
                 $html .= '<div class="blog-post-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
                 if (!empty($post['featured_image'])) {
-                    $html .= '<img src="' . h($post['featured_image']) . '" alt="' . h($post['title']) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                    $html .= '<img src="' . h(normalizeImageUrl($post['featured_image'])) . '" alt="' . h($post['title']) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
                 }
             } else {
                 $html .= '<div class="blog-post-item-content" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
@@ -1428,7 +1429,7 @@ class WidgetRenderer {
         
         if ($productImage) {
             $html .= '<div class="shopify-product-image">';
-            $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '">';
             $html .= '</div>';
         }
         
@@ -1504,12 +1505,12 @@ class WidgetRenderer {
             if ($layout === 'grid') {
                 $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
                 if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
                 }
             } else {
                 $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
                 if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
+                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
                 }
             }
             
@@ -1603,12 +1604,12 @@ class WidgetRenderer {
             if ($layout === 'grid') {
                 $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
                 if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
+                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
                 }
             } else {
                 $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
                 if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars($productImage) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
+                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
                 }
             }
             

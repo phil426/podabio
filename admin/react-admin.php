@@ -33,7 +33,18 @@ if (file_exists($manifestPath)) {
     }
 }
 
+// Check if Vite dev server is running (for development)
+// If dev server is accessible, use it to get latest code with hot reload
 $isDev = !$scriptSrc;
+if (!$isDev) {
+    // Check if Vite dev server is running on port 5174
+    $devServerRunning = @fsockopen('localhost', 5174, $errno, $errstr, 0.1);
+    if ($devServerRunning) {
+        fclose($devServerRunning);
+        $isDev = true;
+        $scriptSrc = null; // Will be set below
+    }
+}
 if ($isDev) {
     $scriptSrc = 'http://localhost:5174/src/main.tsx';
 }
