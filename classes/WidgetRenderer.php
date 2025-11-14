@@ -241,6 +241,7 @@ class WidgetRenderer {
         $html .= '<div class="widget-video-embed">';
         $html .= '<iframe src="' . $embedUrl . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         $html .= '</div>';
+        $html .= '</div>';
         
         return $html;
     }
