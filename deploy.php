@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Deploy to Production</h1>
+        <h1>🚀 Deploy to Production (poda.bio)</h1>
         
         <div class="warning">
             <strong>⚠️ Security Warning</strong>
@@ -222,10 +222,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="info">
                 <strong>Next steps:</strong><br>
-                1. Test the editor at: <a href="<?php echo APP_URL; ?>/editor.php" target="_blank"><?php echo APP_URL; ?>/editor.php</a><br>
-                2. Verify 'Social Icons' tab appears in the sidebar<br>
-                3. Test adding a social icon<br>
-                4. <strong>Delete this deploy.php file for security</strong>
+                1. Test PHP backend: <a href="https://poda.bio/index.php" target="_blank">https://poda.bio/index.php</a><br>
+                2. Test admin panel: <a href="https://poda.bio/admin/react-admin.php" target="_blank">https://poda.bio/admin/react-admin.php</a><br>
+                3. Verify React app loads (check browser console)<br>
+                4. Test database connectivity<br>
+                5. Test file uploads<br>
+                6. <strong>Delete this deploy.php file for security</strong>
             </div>
         <?php endif; ?>
         
