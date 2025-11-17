@@ -12,6 +12,8 @@ import { TabBar } from './TabBar';
 import { MobilePreviewBar } from './MobilePreviewBar';
 import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
 import { tabColors, type TabValue } from './tab-colors';
+import { useSocialIconSelection } from '../../state/socialIconSelection';
+import { useIntegrationSelection } from '../../state/integrationSelection';
 
 import './editor-shell.css';
 
@@ -30,6 +32,22 @@ export function EditorShell(): JSX.Element {
     ];
     return DEVICE_PRESETS[0];
   });
+
+  // Clear selections when switching tabs to prevent stale inspectors
+  const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
+  const selectIntegration = useIntegrationSelection((state) => state.selectIntegration);
+
+  useEffect(() => {
+    // Clear social icon selection when leaving settings tab
+    if (activeTab !== 'settings') {
+      selectSocialIcon(null);
+    }
+    // Clear integration selection when leaving integrations tab
+    if (activeTab !== 'integrations') {
+      selectIntegration(null);
+    }
+    // Note: Widget selection is already cleared in LeftRail when leaving structure/design tabs
+  }, [activeTab, selectSocialIcon, selectIntegration]);
 
   return (
     <div className="editor-shell">

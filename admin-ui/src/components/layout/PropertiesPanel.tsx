@@ -49,50 +49,60 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
 
   const isFeaturedWidget = selectedWidget?.is_featured === 1;
 
+  // Determine which inspector to show based on activeTab and selection state
+  // This ensures inspectors from other tabs don't persist when switching tabs
   let inspector: JSX.Element | null = null;
 
-  // Priority order:
-  // 1. Integration inspector (if integration selected) - highest priority
-  // 2. Social icon inspector (if social icon selected)
-  // 3. Widget/page inspectors (if widget/page selected)
-  // 4. Default inspectors based on active tab
-
-  if (selectedIntegrationId !== null) {
-    inspector = <IntegrationInspector activeColor={activeColor} />;
-  } else if (selectedSocialIconId !== null) {
-    inspector = <SocialIconInspector activeColor={activeColor} />;
-  } else if (selectedWidgetId?.startsWith('page:')) {
-    if (selectedWidgetId === 'page:profile') {
-      inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
-    } else if (selectedWidgetId === 'page:footer') {
-      inspector = <ProfileInspector focus="footer" activeColor={activeColor} />;
-    } else if (selectedWidgetId === 'page:podcast-player') {
-      inspector = <PodcastPlayerInspector activeColor={activeColor} />;
-    } else {
-      // Legacy support for old IDs
-      if (selectedWidgetId === 'page:short-bio') {
-        inspector = <ProfileInspector focus="bio" activeColor={activeColor} />;
+  // Gate inspectors by activeTab to prevent stale inspectors from other tabs
+  if (activeTab === 'structure' || activeTab === 'design') {
+    // Style tab: Show widget/page inspectors or default to Profile
+    if (selectedWidgetId?.startsWith('page:')) {
+      if (selectedWidgetId === 'page:profile') {
+        inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
+      } else if (selectedWidgetId === 'page:footer') {
+        inspector = <ProfileInspector focus="footer" activeColor={activeColor} />;
+      } else if (selectedWidgetId === 'page:podcast-player') {
+        inspector = <PodcastPlayerInspector activeColor={activeColor} />;
       } else {
-        inspector = <ProfileInspector focus="image" activeColor={activeColor} />;
+        // Legacy support for old IDs
+        if (selectedWidgetId === 'page:short-bio') {
+          inspector = <ProfileInspector focus="bio" activeColor={activeColor} />;
+        } else {
+          inspector = <ProfileInspector focus="image" activeColor={activeColor} />;
+        }
       }
+    } else if (selectedWidgetId) {
+      // Show FeaturedBlockInspector if widget is featured, otherwise show WidgetInspector
+      if (isFeaturedWidget) {
+        inspector = (
+          <>
+            <FeaturedBlockInspector activeColor={activeColor} />
+            <WidgetInspector activeColor={activeColor} />
+          </>
+        );
+      } else {
+        inspector = <WidgetInspector activeColor={activeColor} />;
+      }
+    } else if (activeTab === 'structure') {
+      // Default to Profile inspector when on structure tab and nothing is selected
+      inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
     }
-  } else if (selectedWidgetId) {
-    // Show FeaturedBlockInspector if widget is featured, otherwise show WidgetInspector
-    // Users can mark widgets as featured from FeaturedBlockInspector
-    if (isFeaturedWidget) {
-      // Show both FeaturedBlockInspector and WidgetInspector for featured blocks
-      inspector = (
-        <>
-          <FeaturedBlockInspector activeColor={activeColor} />
-          <WidgetInspector activeColor={activeColor} />
-        </>
-      );
-    } else {
-      inspector = <WidgetInspector activeColor={activeColor} />;
+    // Note: ThemeEditorPanel is handled separately via showThemeInspector state
+  } else if (activeTab === 'integrations') {
+    // Integrations tab: Show IntegrationInspector only if integration is selected
+    if (selectedIntegrationId !== null) {
+      inspector = <IntegrationInspector activeColor={activeColor} />;
     }
-  } else if (activeTab === 'structure') {
-    // Default to Profile inspector when on structure tab and nothing is selected
-    inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
+    // No default inspector for integrations tab
+  } else if (activeTab === 'settings') {
+    // Settings tab: Show SocialIconInspector only if social icon is selected
+    if (selectedSocialIconId !== null) {
+      inspector = <SocialIconInspector activeColor={activeColor} />;
+    }
+    // No default inspector for settings tab
+  } else if (activeTab === 'analytics') {
+    // Analytics tab: No inspector (right panel is collapsed)
+    inspector = null;
   }
 
   return (
