@@ -36,6 +36,22 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     set -e
     cd /home/u925957603/domains/poda.bio/public_html/
     
+    echo "🔍 Step 0: Verifying git remote configuration..."
+    CURRENT_REMOTE=$(git remote get-url origin)
+    EXPECTED_REMOTE="https://github.com/phil426/podabio.git"
+    
+    if [ "$CURRENT_REMOTE" != "$EXPECTED_REMOTE" ]; then
+        echo "⚠️  Warning: Git remote is incorrect!"
+        echo "   Current: $CURRENT_REMOTE"
+        echo "   Expected: $EXPECTED_REMOTE"
+        echo "   Fixing remote URL..."
+        git remote set-url origin "$EXPECTED_REMOTE"
+        echo "✅ Remote URL updated"
+    else
+        echo "✅ Git remote is correct"
+    fi
+    echo ""
+    
     echo "📦 Step 1: Pulling latest code from GitHub..."
     git pull origin main
     
