@@ -1,12 +1,15 @@
 #!/bin/bash
 # Quick Deployment Script for Hostinger (getphily.com)
+# ⚠️  DEPRECATED: This script is for the old getphily.com server
+# Use ./deploy_poda_bio.sh for poda.bio deployments
 # Run this script from your local machine - it will SSH into Hostinger and deploy
 
 set -e
 
 echo "=========================================="
 echo "Hostinger Deployment Script"
-echo "Deploying to getphily.com"
+echo "⚠️  DEPRECATED: Deploying to getphily.com (old server)"
+echo "Use ./deploy_poda_bio.sh for poda.bio"
 echo "=========================================="
 echo ""
 
