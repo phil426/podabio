@@ -83,7 +83,7 @@ Following these practices keeps theming centralized, accessible, and maintainabl
 
 The Aurora Skies system theme showcases layered gradients, neon accents, and glassmorphism touches designed for the mobile link-in-bio experience.
 
-- **Install:** Run `https://getphily.com/database/add_theme_aurora.php` (idempotent; it quietly exits if the theme already exists).
+- **Install:** Run `https://poda.bio/database/add_theme_aurora.php` (idempotent; it quietly exits if the theme already exists).
 - **Token Highlights:**
   - `colors.gradient.page` combines a midnight base with cyan/purple light blooms.
   - `colors.glow.primary` powers ambient widget and podcast halos.

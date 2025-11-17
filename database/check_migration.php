@@ -2,7 +2,7 @@
 /**
  * Database Migration Status Checker
  * Run this file in your browser to check if migration was successful
- * URL: https://getphily.com/database/check_migration.php
+ * URL: https://poda.bio/database/check_migration.php
  */
 
 require_once __DIR__ . '/../config/database.php';

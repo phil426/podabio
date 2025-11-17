@@ -1,34 +1,34 @@
-# Quick Deployment Instructions
+# Quick Deployment Instructions - poda.bio
 
 ## Option 1: Run Deployment Script (Easiest)
 
 From your local machine:
 ```bash
-./deploy_now.sh
+./deploy_poda_bio.sh
 ```
 
 This will:
-1. SSH into Hostinger
+1. SSH into Hostinger (poda.bio server)
 2. Pull latest code from GitHub
-3. Run database migration automatically
-4. Verify everything works
+3. Verify files and permissions
+4. Show deployment status
 
-**Note:** You'll need to enter your SSH password when prompted.
+**Note:** Uses SSH key authentication (no password needed if key is set up)
 
 ## Option 2: Manual SSH Deployment
 
 ```bash
 # 1. Connect to server
-ssh -p 65002 u810635266@82.198.236.40
+ssh -i ~/.ssh/id_ed25519_podabio -p 65002 u925957603@195.179.237.142
 
 # 2. Navigate to project
-cd /home/u810635266/domains/getphily.com/public_html/
+cd /home/u925957603/domains/poda.bio/public_html/
 
 # 3. Pull code
 git pull origin main
 
-# 4. Run migration via web browser:
-#    Visit: https://getphily.com/database/migrate.php
+# 4. Run migration via web browser (if needed):
+#    Visit: https://poda.bio/database/migrate.php
 #    Click "Run Migration"
 
 # OR run migration via PHP CLI:
@@ -39,13 +39,13 @@ php database/migrate.php
 
 1. **Pull Code via SSH:**
    ```bash
-   ssh -p 65002 u810635266@82.198.236.40
-   cd /home/u810635266/domains/getphily.com/public_html/
+   ssh -i ~/.ssh/id_ed25519_podabio -p 65002 u925957603@195.179.237.142
+   cd /home/u925957603/domains/poda.bio/public_html/
    git pull origin main
    ```
 
 2. **Run Migration via Browser:**
-   - Visit: `https://getphily.com/database/migrate.php`
+   - Visit: `https://poda.bio/database/migrate.php`
    - Click "Run Migration"
    - Verify success
    - **Delete the migrate.php file after migration**
@@ -53,8 +53,8 @@ php database/migrate.php
 ## Verification
 
 After deployment:
-1. Visit: `https://getphily.com/editor.php`
-2. Check sidebar for "Social Icons" tab (with share icon)
-3. Test adding a social icon
-4. Verify it displays on your public page
+1. Visit: `https://poda.bio/admin/react-admin.php`
+2. Verify Studio loads correctly
+3. Test admin functionality
+4. Verify public pages work
 

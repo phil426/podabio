@@ -8,7 +8,7 @@
 // Developer Account: phil@redwoodempiremedia.com
 // Project: My First Project (fine-glow-467202-u1)
 // OAuth Client: Podn.Bio Web Client
-// Redirect URI: https://getphily.com/auth/google/callback.php
+// Redirect URI: https://poda.bio/auth/google/callback.php
 // Created: October 30, 2025
 // Status: Configured and ready to use
 
