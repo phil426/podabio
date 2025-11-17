@@ -1,0 +1,132 @@
+.container {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.status_draft,
+.status_published,
+.status_scheduled {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status_draft {
+  background: rgba(148, 163, 184, 0.25);
+  color: #334155;
+}
+
+.status_published {
+  background: rgba(34, 197, 94, 0.18);
+  color: #166534;
+}
+
+.status_scheduled {
+  background: rgba(249, 115, 22, 0.18);
+  color: #9a3412;
+}
+
+.actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.actions > button,
+.scheduleForm button {
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--pod-semantic-accent-primary, #2563eb);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions > button:disabled,
+.scheduleForm button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.scheduleForm {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.scheduleForm label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.scheduleForm input {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.statusMessage_success,
+.statusMessage_error {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  font-size: 0.8rem;
+}
+
+.statusMessage_success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #166534;
+}
+
+.statusMessage_error {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+.metaList {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.metaList div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.metaList dt {
+  font-weight: 600;
+}
+
+.metaList dd {
+  margin: 0;
+}

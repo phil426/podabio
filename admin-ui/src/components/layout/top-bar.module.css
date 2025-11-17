@@ -1,0 +1,407 @@
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--pod-core-elevation-zIndex-panel, 10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  height: var(--pod-component-layout-topbar-height, 64px);
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-bottom: 1px solid var(--pod-component-layout-topbar-borderBottom, var(--pod-app-divider-soft, rgba(9, 18, 39, 0.1)));
+  box-shadow: var(--pod-core-elevation-shadow-level0, none);
+  backdrop-filter: blur(12px);
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brandLogo {
+  width: 44px;
+  height: 44px;
+  border-radius: 0;
+}
+
+.brandName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.brandBadge {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  background: var(--pod-app-brand-gradient);
+  color: var(--pod-semantic-text-inverse, #ffffff);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.brandMeta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.projectMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: var(--pod-app-color-chip-bg);
+  border: 1px solid var(--pod-app-color-chip-border);
+  box-shadow: 0 14px 28px rgba(9, 18, 39, 0.08);
+}
+
+.metaColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.metaActionsCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.metaActions {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.pageTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.pageTitle a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pageTitle a:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.pageSubline {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.pageSubline a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pageSubline a:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.timeLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pod-semantic-text-tertiary, #94a3b8);
+}
+
+.timeValue {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.metaDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--pod-app-divider-soft, rgba(9, 18, 39, 0.12));
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.action_ghost {
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--pod-app-color-icon-border);
+  border-radius: var(--pod-component-button-ghost-radius, 12px);
+}
+
+.action_ghost:hover:enabled {
+  background: var(--pod-app-color-icon-bg);
+}
+
+.action_primary {
+  padding: 0.55rem 1.3rem;
+  background: var(--pod-component-button-primary-background, #2563eb);
+  color: var(--pod-component-button-primary-color, #ffffff);
+  border-radius: var(--pod-component-button-primary-radius, 12px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.action_primary:hover:enabled {
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.95) 0%,
+    rgba(59, 130, 246, 0.95) 100%
+  );
+}
+
+.action_ghost:disabled,
+.action_primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.iconAction {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  border: 1px solid var(--pod-app-color-icon-border);
+  background: var(--pod-app-color-icon-bg);
+  color: var(--pod-app-color-icon-foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.projectMeta .iconAction {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+}
+
+.iconAction[data-state='copied'] {
+  background: rgba(37, 99, 235, 0.24);
+  color: var(--pod-semantic-text-primary, #091227);
+  border-color: rgba(37, 99, 235, 0.32);
+}
+
+.iconAction:not(:disabled):hover {
+  transform: translateY(-1px);
+  background: var(--pod-app-color-icon-hover-bg);
+  color: var(--pod-app-color-icon-hover-foreground);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.iconAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.iconAction svg {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.accountCluster {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+  gap: 0.65rem;
+  border-radius: var(--pod-core-shape-radius-lg, 18px);
+  background: var(--pod-app-color-account-bg);
+  border: 1px solid var(--pod-app-color-account-border);
+  position: relative;
+  box-shadow: 0 10px 24px rgba(9, 18, 39, 0.12);
+}
+
+.accountAvatarButton {
+  background: var(--pod-app-brand-gradient);
+  border: none;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(79, 227, 255, 0.35);
+  overflow: hidden;
+}
+
+.accountAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.accountDetails {
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.accountEmail {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.accountPlan {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.accountToggle {
+  background: transparent;
+  border: none;
+  color: var(--pod-semantic-text-primary, #111827);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accountToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--pod-core-elevation-shadow-focus, 0 0 0 2px rgba(37, 99, 235, 0.4));
+}
+
+.accountToggle svg {
+  width: 1.15em;
+  height: 1.15em;
+  transition: transform 150ms ease;
+}
+
+.accountToggle[data-open='true'] svg {
+  transform: rotate(180deg);
+}
+
+.accountMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 45px rgba(15, 23, 42, 0.22);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+  z-index: 11;
+}
+
+.menuHeader {
+  display: grid;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--pod-app-divider-soft, rgba(9, 18, 39, 0.1));
+  padding-bottom: 0.5rem;
+}
+
+.menuName {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.menuEmail {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.menuBody {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.menuLink {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: var(--pod-app-color-menu-item-bg);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuLink[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menuLink:hover {
+  background: var(--pod-app-color-icon-hover-bg);
+}
+
+.menuLink[disabled]:hover {
+  background: var(--pod-app-color-menu-item-bg);
+}
+
+.menuFooter {
+  border-top: 1px solid var(--pod-app-divider-soft, rgba(9, 18, 39, 0.1));
+  padding-top: 0.5rem;
+}
+
+.menuIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 1rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.menuIcon svg {
+  width: 1em;
+  height: 1em;
+}
+
+@media (max-width: 1080px) {
+  .topbar {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    height: auto;
+    gap: 1rem;
+  }
+
+  .projectMeta {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+

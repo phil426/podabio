@@ -1,0 +1,254 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem 2rem;
+  gap: 1.5rem;
+  background: var(--pod-semantic-surface-panel, #f8fafc);
+  overflow-y: auto;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.tabsRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tabList {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: var(--pod-core-shape-radius-lg, 18px);
+  width: fit-content;
+}
+
+.tabList button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.tabList button[data-state='active'] {
+  background: var(--pod-semantic-surface-panelElevated, #ffffff);
+  box-shadow: var(--pod-core-elevation-shadow-level1, 0 10px 25px rgba(15, 23, 42, 0.08));
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionStack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--pod-semantic-surface-panelElevated, #ffffff);
+  border-radius: var(--pod-core-shape-radius-xl, 20px);
+  padding: 1.5rem;
+  box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.35);
+  display: grid;
+  gap: 1.25rem;
+}
+
+.card header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.card header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.fieldLabel {
+  font-size: 0.85rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.fieldValue {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.usernameLink {
+  color: var(--pod-semantic-accent-primary, #2563eb);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease;
+}
+
+.usernameLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.fieldAction {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--pod-semantic-accent-primary, #2563eb);
+}
+
+.authList {
+  display: grid;
+  gap: 1rem;
+}
+
+.authRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--pod-core-shape-radius-lg, 18px);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.authTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.authMeta {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.authActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.invoiceList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invoiceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.invoiceAmount {
+  margin: 0;
+  font-weight: 600;
+}
+
+.invoiceMeta {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.invoicePlaceholder {
+  color: var(--pod-semantic-text-secondary, #94a3b8);
+}
+
+.emptyState {
+  font-size: 0.9rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.primaryButton {
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: var(--pod-component-button-primary-background, #2563eb);
+  color: var(--pod-component-button-primary-color, #ffffff);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 0.5rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #111827);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.destructiveButton {
+  padding: 0.5rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.statusBanner {
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-size: 0.85rem;
+}
+
+.helperNote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.destructiveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

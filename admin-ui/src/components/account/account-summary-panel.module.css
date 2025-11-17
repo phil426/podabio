@@ -1,0 +1,102 @@
+.container {
+  height: 100%;
+  padding: 1.5rem 1.25rem;
+  display: grid;
+  gap: 1rem;
+  background: var(--pod-semantic-surface-panelElevated, #ffffff);
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  overflow-y: auto;
+}
+
+.card {
+  padding: 1.25rem;
+  border-radius: var(--pod-core-shape-radius-xl, 20px);
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 0.85rem;
+}
+
+.card header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.statBlock {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.statValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.primaryButton {
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: var(--pod-component-button-primary-background, #2563eb);
+  color: var(--pod-component-button-primary-color, #ffffff);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #111827);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pillRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  font-size: 0.75rem;
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--pod-semantic-text-secondary, #475569);
+}
+
+.pill[data-active='true'] {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--pod-semantic-accent-primary, #2563eb);
+  font-weight: 600;
+}
+
+.summaryRow {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.summaryValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
