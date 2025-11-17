@@ -1,0 +1,134 @@
+import * as Tabs from '@radix-ui/react-tabs';
+import { LuImage, LuSwatchBook, LuSquare } from 'react-icons/lu';
+import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
+import styles from '../theme-editor-panel.module.css';
+
+interface BlockBackgroundSectionProps {
+  backgroundType: 'solid' | 'gradient' | 'image';
+  onBackgroundTypeChange: (type: 'solid' | 'gradient' | 'image') => void;
+  blockBackground: string;
+  onBackgroundChange: (value: string) => void;
+  blockBackgroundImage: string | null;
+  onBackgroundImageUrlChange: (url: string) => void;
+  onBackgroundImageUpload: (file: File) => Promise<void>;
+  onBackgroundImageRemove: () => void;
+}
+
+export function BlockBackgroundSection({
+  backgroundType,
+  onBackgroundTypeChange,
+  blockBackground,
+  onBackgroundChange,
+  blockBackgroundImage,
+  onBackgroundImageUrlChange,
+  onBackgroundImageUpload,
+  onBackgroundImageRemove
+}: BlockBackgroundSectionProps): JSX.Element {
+  return (
+    <Tabs.Root 
+      className={styles.backgroundTabs}
+      value={backgroundType}
+      onValueChange={(value) => onBackgroundTypeChange(value as 'solid' | 'gradient' | 'image')}
+    >
+      <Tabs.List className={styles.backgroundTabList} aria-label="Background type">
+        <Tabs.Trigger value="solid" className={styles.backgroundTabTrigger}>
+          <LuSquare aria-hidden="true" />
+          <span>Solid</span>
+        </Tabs.Trigger>
+        <Tabs.Trigger value="gradient" className={styles.backgroundTabTrigger}>
+          <LuSwatchBook aria-hidden="true" />
+          <span>Gradient</span>
+        </Tabs.Trigger>
+        <Tabs.Trigger value="image" className={styles.backgroundTabTrigger}>
+          <LuImage aria-hidden="true" />
+          <span>Image</span>
+        </Tabs.Trigger>
+      </Tabs.List>
+
+      <Tabs.Content value="solid" className={styles.backgroundTabContent}>
+        <PageBackgroundPicker
+          value={blockBackground}
+          onChange={onBackgroundChange}
+          mode="solid"
+        />
+      </Tabs.Content>
+
+      <Tabs.Content value="gradient" className={styles.backgroundTabContent}>
+        <PageBackgroundPicker
+          value={blockBackground}
+          onChange={onBackgroundChange}
+          mode="gradient"
+        />
+      </Tabs.Content>
+
+      <Tabs.Content value="image" className={styles.backgroundTabContent}>
+        <div className={styles.controlGroup}>
+          <div className={styles.control}>
+            <label>
+              <span>Background Image URL</span>
+              <input
+                type="url"
+                value={blockBackgroundImage || ''}
+                onChange={(e) => onBackgroundImageUrlChange(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className={styles.urlInput}
+              />
+            </label>
+            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--pod-semantic-text-secondary)' }}>or</span>
+            </div>
+            <label style={{ marginTop: '0.5rem', display: 'block' }}>
+              <span>Upload Image</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    onBackgroundImageUpload(file);
+                  }
+                }}
+                style={{ marginTop: '0.25rem', width: '100%' }}
+              />
+            </label>
+            {blockBackgroundImage && (
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img
+                    src={blockBackgroundImage}
+                    alt="Background preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--pod-semantic-divider-subtle)'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={onBackgroundImageRemove}
+                    style={{
+                      position: 'absolute',
+                      top: '0.25rem',
+                      right: '0.25rem',
+                      padding: '0.25rem 0.5rem',
+                      background: 'rgba(0, 0, 0, 0.7)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Tabs.Content>
+    </Tabs.Root>
+  );
+}
+

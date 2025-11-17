@@ -1,0 +1,52 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group {
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  overflow: hidden;
+  transition: all 200ms ease-out;
+}
+
+.group:hover {
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.12));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.groupContent {
+  overflow: hidden;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cornerPreview {
+  margin-top: 8px;
+  width: 60px;
+  height: 60px;
+  background: var(--active-tab-color, #2563eb);
+  opacity: 0.6;
+}
+
+.borderPreview {
+  margin-top: 8px;
+  width: 60px;
+  height: 60px;
+  border-style: solid;
+  border-color: var(--active-tab-color, #2563eb);
+  background: transparent;
+}
+
+.comingSoon {
+  padding: 16px;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 13px;
+  font-style: italic;
+}
+

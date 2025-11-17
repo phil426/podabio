@@ -1,0 +1,175 @@
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  background: var(--pod-semantic-surface-page, #f8fafc);
+  border-radius: 0;
+  /* Prevent editor-shell from scrolling */
+  overflow: hidden;
+  position: relative;
+}
+
+.editor-shell__panels-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0;
+  margin-top: calc(var(--pod-component-layout-topbar-height, 64px) + var(--pod-component-layout-tabbar-height, 48px));
+  height: calc(100vh - var(--pod-component-layout-topbar-height, 64px) - var(--pod-component-layout-tabbar-height, 48px));
+  /* Prevent window scrolling when hovering over panels */
+  overscroll-behavior: contain;
+}
+
+.editor-shell__panels {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.editor-shell__mobile-preview-bar {
+  width: 100%;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-radius: 0;
+}
+
+.editor-shell__panel {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 0;
+  position: relative;
+  min-height: 0;
+  /* Prevent any scrolling on the panel itself - only inner containers scroll */
+  overscroll-behavior: none;
+}
+
+.editor-shell__panel--left {
+  border-right: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  background: transparent;
+  /* DO NOT scroll the panel itself - only inner containers scroll */
+  overflow: hidden;
+  /* Isolate scrolling to this panel only */
+  overscroll-behavior: none;
+  isolation: isolate;
+}
+
+.editor-shell__panel--left::-webkit-scrollbar {
+  width: 12px;
+}
+
+.editor-shell__panel--left::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 6px;
+}
+
+.editor-shell__panel--left::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 6px;
+  border: 2px solid rgba(15, 23, 42, 0.08);
+}
+
+.editor-shell__panel--left::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.editor-shell__panel--center {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  padding-top: 0;
+  /* DO NOT scroll the panel itself - only inner containers scroll */
+  overflow: hidden;
+  /* Isolate scrolling to this panel only */
+  overscroll-behavior: none;
+  isolation: isolate;
+}
+
+.editor-shell__panel--right {
+  border-left: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  /* DO NOT scroll the panel itself - only inner containers scroll */
+  overflow: hidden;
+  /* Isolate scrolling to this panel only */
+  overscroll-behavior: none;
+  isolation: isolate;
+}
+
+.editor-shell__panel--right::-webkit-scrollbar {
+  width: 12px;
+}
+
+.editor-shell__panel--right::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 6px;
+}
+
+.editor-shell__panel--right::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 6px;
+  border: 2px solid rgba(15, 23, 42, 0.08);
+}
+
+.editor-shell__panel--right::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.editor-shell__panel--account-main {
+  background: var(--pod-semantic-surface-canvas, #f1f5f9);
+}
+
+.editor-shell__panel--account-aside {
+  background: var(--pod-semantic-surface-panelElevated, #ffffff);
+}
+
+
+.editor-shell__resizer {
+  width: 8px;
+  background: transparent;
+  position: relative;
+  z-index: 10;
+  cursor: col-resize;
+  transition: background-color 150ms ease;
+}
+
+.editor-shell__resizer::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 40px;
+  background: transparent;
+  border-radius: var(--pod-core-shape-radius-pill, 9999px);
+  transition: background 150ms ease;
+  z-index: 11;
+}
+
+.editor-shell__resizer:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.editor-shell__resizer:hover::before {
+  background: var(--pod-semantic-divider-strong, rgba(15, 23, 42, 0.12));
+}
+
+.editor-shell__resizer:focus-visible {
+  outline: none;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.editor-shell__resizer:focus-visible::before {
+  background: var(--pod-semantic-divider-strong, rgba(15, 23, 42, 0.12));
+}
+

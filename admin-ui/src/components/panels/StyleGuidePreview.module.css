@@ -1,0 +1,285 @@
+.themeLayerItem {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.themeLayerItem.draggable {
+  cursor: grab;
+}
+
+.themeLayerItem.draggable:active {
+  cursor: grabbing;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: white;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
+  margin-top: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  position: relative;
+}
+
+.toggleButton.firstButton {
+  border-top: 2px solid #e0e0e0;
+}
+
+.toggleButton.lastButton {
+  /* No special styling needed when spaced */
+}
+
+.toggleButton:hover {
+  border-color: #999;
+  background: #f9f9f9;
+}
+
+.toggleButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.colorChip {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.themeName {
+  flex: 1;
+  text-align: left;
+}
+
+.toggleIcon {
+  font-size: 0.875rem;
+  transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  color: var(--active-tab-color, #666);
+  opacity: 0.4;
+}
+
+.toggleButton:hover .toggleIcon {
+  opacity: 0.7;
+}
+
+.toggleButton[aria-expanded='true'] .toggleIcon {
+  opacity: 1;
+}
+
+.toggleButton.collapsed .toggleIcon {
+  transform: rotate(-90deg);
+}
+
+.preview {
+  border: 2px solid #f0f0f0;
+  border-top: none;
+  border-radius: 0;
+  padding: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  max-height: 2000px;
+  transition: max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease, border-width 0.4s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.preview.lastPreview:not(.collapsed) {
+  border-radius: 0 0 12px 12px;
+}
+
+.preview.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-width: 0;
+  opacity: 0;
+}
+
+.profilePictureFrame {
+  margin-bottom: 1.5rem;
+}
+
+.profilePictureTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  padding-left: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.profilePictureContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profilePicture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.profilePictureIcon {
+  z-index: 1;
+  width: 2rem;
+  height: 2rem;
+}
+
+.colorPalette {
+  margin-bottom: 1.5rem;
+}
+
+.colorPalettePanel {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.colorPaletteTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.colorSwatches {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.colorSwatch {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.colorSwatchWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.colorSwatchLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+.typographySection {
+  margin-bottom: 1.5rem;
+}
+
+.typographyTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  padding-left: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.typographySample {
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.typographySample h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.typographySample h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.typographySample p {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.buttonSection {
+  margin-bottom: 1.5rem;
+}
+
+.buttonTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  padding-left: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.buttonExamples {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.buttonExample {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.buttonExample:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.buttonExample:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

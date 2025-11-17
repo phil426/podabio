@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link-in-Bio Platform Feature Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 1rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            position: sticky;
+            left: 0;
+            background: #f8f9fa;
+            z-index: 11;
+            min-width: 250px;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 9;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        tr:hover td:first-child {
+            background: #f9fafb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .feature-category {
+            background: #667eea;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 1.25rem 1rem;
+        }
+
+        .feature-category:first-child {
+            border-top: none;
+        }
+
+        .check {
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .partial {
+            color: #f59e0b;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .no {
+            color: #ef4444;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .platform-name {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .feature-name {
+            color: #4b5563;
+        }
+
+        .note {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .legend {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-symbol {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .legend-check { color: #10b981; }
+        .legend-partial { color: #f59e0b; }
+        .legend-no { color: #ef4444; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            th:first-child {
+                min-width: 200px;
+            }
+        }
+
+        .highlight {
+            background: #fef3c7 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Link-in-Bio Platform Feature Comparison</h1>
+            <p>Comprehensive comparison of Linktree, Beacons, Shorby, Campsite, and PodaBio</p>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th class="platform-name">Linktree</th>
+                        <th class="platform-name">Beacons</th>
+                        <th class="platform-name">Shorby</th>
+                        <th class="platform-name">Campsite</th>
+                        <th class="platform-name highlight">PodaBio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Core Features -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Core Features</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Unlimited Links</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Links with Thumbnails</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Drag-and-Drop Link Reordering</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Social Media Integration</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Profile Image Upload</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Background Image Upload</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Podcast-Specific Features -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Podcast-Specific Features</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">RSS Feed Integration</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Auto-Populate from RSS Feed</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Built-in Podcast Player</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Episode Drawer/Navigation</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Podcast Directory Links</td>
+                        <td class="partial">Partial</td>
+                        <td class="partial">Partial</td>
+                        <td class="partial">Partial</td>
+                        <td class="partial">Partial</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Episode Duration Tracking</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Customization & Design -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Customization & Design</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Colors (Primary, Secondary, Accent)</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Fonts (15+ Google Fonts)</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Pre-built Themes</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Live Preview</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Multiple Layout Options</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Branding Removal</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Media & Content -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Media & Content</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">YouTube Video Embeds</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Image Widgets</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Text/HTML Blocks</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Instagram Feed Integration</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Instagram Post Widgets</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Giphy GIF Integration</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Music Player</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+
+                    <!-- E-commerce & Monetization -->
+                    <tr>
+                        <td class="feature-category" colspan="6">E-commerce & Monetization</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Shopify Integration</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Shopify Product Widgets</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Shopify Collection Widgets</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Built-in Payment Processing</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Accept Donations</td>
+                        <td class="partial">Via links</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Membership/Subscription Sales</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Affiliate Link Management</td>
+                        <td class="partial">Basic</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Sponsor Link Disclosure</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Email & Marketing -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Email & Marketing</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Email Subscription Forms</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Mailchimp Integration</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">ConvertKit Integration</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Constant Contact Integration</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">AWeber Integration</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">MailerLite Integration</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">SendinBlue/Brevo Integration</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Double Opt-in Support</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Drawer Slider Subscription UI</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Analytics & Tracking -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Analytics & Tracking</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Page View Tracking</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Link Click Analytics</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Advanced Analytics</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="partial">Limited</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Subscriber Growth Metrics</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Retargeting Pixels (Facebook, Google)</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Google Analytics Integration</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Real-time Tracking</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Domain & Branding -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Domain & Branding</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Domain Support</td>
+                        <td class="partial">Pro only</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">DNS Verification Tool</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Automatic Domain Routing</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">QR Code Generation</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+
+                    <!-- Blog & Content Management -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Blog & Content Management</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Blog System</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Latest Blog Posts Widget</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Blog Category Filter Widget</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Related Posts Widget</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Advanced Features -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Advanced Features</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">AI-Generated Media Kits</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Automated Invoicing</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">WhatsApp Integration</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Facebook Messenger Integration</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Widget System (Modular Blocks)</td>
+                        <td class="no">✗</td>
+                        <td class="partial">Limited</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Heading Blocks</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Divider Blocks</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Text Note Blocks</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+
+                    <!-- Pricing -->
+                    <tr>
+                        <td class="feature-category" colspan="6">Pricing</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Free Plan Available</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="no">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Starting Price (Paid Plans)</td>
+                        <td class="feature-name">$9/month</td>
+                        <td class="feature-name">$8-10/month</td>
+                        <td class="feature-name">$9/month</td>
+                        <td class="feature-name">$7/month</td>
+                        <td class="feature-name">$4.99/month</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Premium/Pro Tier Pricing</td>
+                        <td class="feature-name">$9/month</td>
+                        <td class="feature-name">$25-90/month</td>
+                        <td class="feature-name">$29-99/month</td>
+                        <td class="feature-name">$7/month</td>
+                        <td class="feature-name">$9.99/month</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-symbol legend-check">✓</span>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-symbol legend-partial">Partial</span>
+                <span>Limited or Paid Only</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-symbol legend-no">✗</span>
+                <span>Not Available</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
