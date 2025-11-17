@@ -79,6 +79,17 @@ export async function requestJson<TResponse>(
         ? String((payload as { error?: string }).error)
         : `Request failed with status ${response.status}`;
     
+    // Handle 401 Unauthorized - redirect to login
+    if (response.status === 401) {
+      // Only redirect if we're not already on the login page
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        const currentUrl = window.location.pathname + window.location.search;
+        window.location.href = `/login.php?redirect=${encodeURIComponent(currentUrl)}`;
+        // Return a rejected promise to stop further execution
+        return Promise.reject(new ApiError('Unauthorized - redirecting to login', 401, payload));
+      }
+    }
+    
     // Check if this is a CSRF token error
     const isCsrfError = 
       response.status === 403 && 
