@@ -199,12 +199,10 @@ function convertEnumToCSS($enum, $type) {
             'pronounced' => 'var(--shadow-level-2)'
         ],
         'glow_blur' => [
-            'none' => '0px',
             'subtle' => '8px',
             'pronounced' => '16px'
         ],
         'glow_opacity' => [
-            'none' => '0',
             'subtle' => '0.5',
             'pronounced' => '0.8'
         ],
@@ -284,10 +282,7 @@ function isGradient($value) {
  * @return string CSS for glow animation
  */
 function generateGlowAnimation($color, $intensity) {
-    if ($intensity === 'none') {
-        return '';
-    }
-    
+    // No need to check for 'none' - glow intensity is always 'subtle' or 'pronounced'
     $blur = convertEnumToCSS($intensity, 'glow_blur');
     $opacity = convertEnumToCSS($intensity, 'glow_opacity');
     

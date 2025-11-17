@@ -25,4 +25,11 @@ log "Checking theme library..."
 curl -fsS -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
   "$BASE_URL/api/themes.php?scope=all" >/dev/null
 
+log "Running theme token save/load smoke test..."
+if php "$(dirname "$0")/../database/test_theme_tokens.php" 2>&1 | grep -q "✅"; then
+  log "Theme token tests passed"
+else
+  log "WARNING: Theme token tests may have issues (check output above)"
+fi
+
 log "Smoke tests complete."

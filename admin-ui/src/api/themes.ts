@@ -91,7 +91,16 @@ export interface CreateThemeData {
   typography_tokens?: Record<string, unknown>;
   spacing_tokens?: Record<string, unknown>;
   shape_tokens?: Record<string, unknown>;
+  motion_tokens?: Record<string, unknown>;
+  iconography_tokens?: Record<string, unknown>;
   page_background?: string;
+  widget_background?: string;
+  widget_border_color?: string;
+  page_primary_font?: string;
+  page_secondary_font?: string;
+  widget_primary_font?: string;
+  widget_secondary_font?: string;
+  widget_styles?: Record<string, unknown>;
 }
 
 export interface UpdateThemeData {
@@ -108,7 +117,16 @@ export async function createTheme(data: CreateThemeData) {
       typography_tokens: data.typography_tokens,
       spacing_tokens: data.spacing_tokens,
       shape_tokens: data.shape_tokens,
-      page_background: data.page_background
+      motion_tokens: data.motion_tokens,
+      iconography_tokens: data.iconography_tokens,
+      page_background: data.page_background,
+      widget_background: data.widget_background,
+      widget_border_color: data.widget_border_color,
+      page_primary_font: data.page_primary_font,
+      page_secondary_font: data.page_secondary_font,
+      widget_primary_font: data.widget_primary_font,
+      widget_secondary_font: data.widget_secondary_font,
+      widget_styles: data.widget_styles
     })
   }));
 }
@@ -123,7 +141,16 @@ export async function updateTheme(themeId: number, data: CreateThemeData) {
       typography_tokens: data.typography_tokens,
       spacing_tokens: data.spacing_tokens,
       shape_tokens: data.shape_tokens,
-      page_background: data.page_background
+      motion_tokens: data.motion_tokens,
+      iconography_tokens: data.iconography_tokens,
+      page_background: data.page_background,
+      widget_background: data.widget_background,
+      widget_border_color: data.widget_border_color,
+      page_primary_font: data.page_primary_font,
+      page_secondary_font: data.page_secondary_font,
+      widget_primary_font: data.widget_primary_font,
+      widget_secondary_font: data.widget_secondary_font,
+      widget_styles: data.widget_styles
     })
   }));
 }
@@ -143,7 +170,9 @@ export function useUpdateThemeMutation() {
   return useMutation({
     mutationFn: ({ themeId, data }: UpdateThemeData) => updateTheme(themeId, data),
     onSuccess: () => {
+      // Invalidate and refetch to ensure theme cards update immediately
       queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
+      queryClient.refetchQueries({ queryKey: queryKeys.themes() });
     }
   });
 }

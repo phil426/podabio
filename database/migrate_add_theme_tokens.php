@@ -8,6 +8,7 @@
  *   - spacing_tokens
  *   - shape_tokens
  *   - motion_tokens
+ *   - iconography_tokens
  * and a layout_density column.
  *
  * Safe to run multiple times – it checks for column existence before altering.
@@ -25,6 +26,7 @@ $columnsToAdd = [
     'spacing_tokens' => 'JSON NULL',
     'shape_tokens' => 'JSON NULL',
     'motion_tokens' => 'JSON NULL',
+    'iconography_tokens' => 'JSON NULL',
     'layout_density' => "VARCHAR(32) NULL DEFAULT 'comfortable'"
 ];
 

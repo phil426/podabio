@@ -44,11 +44,44 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const maxBioLength = 150;
   const maxNameLength = 30;
 
+  // Derive a shared text size preset for simple S / M / L controls
+  const [textSizePreset, setTextSizePreset] = useState<'small' | 'medium' | 'large'>('medium');
+
+  useEffect(() => {
+    // Map existing name/bio sizes into a single preset
+    if (nameTextSize === 'large' && bioTextSize === 'small') {
+      setTextSizePreset('small');
+    } else if (nameTextSize === 'xxlarge' && bioTextSize === 'large') {
+      setTextSizePreset('large');
+    } else {
+      setTextSizePreset('medium');
+    }
+  }, [nameTextSize, bioTextSize]);
+
+  const previewName = name.trim() || page?.podcast_name || 'Your show name';
+  const previewBio = bio.trim() || page?.podcast_description || 'Give listeners a one-line reason to follow your show.';
+
+  const previewInitials = useMemo(() => {
+    const source = previewName.replace(/<[^>]*>/g, '');
+    const words = source.split(/\s+/).filter(Boolean);
+    if (!words.length) return 'PB';
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }, [previewName]);
+
+  // Decode HTML entities in text
+  const decodeHtmlEntities = (text: string): string => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
   useEffect(() => {
     setName(page?.podcast_name ?? '');
     setNameAlignment(page?.name_alignment ?? 'center');
     setNameTextSize(page?.name_text_size ?? 'large');
-    setBio(page?.podcast_description ?? '');
+    const rawBio = page?.podcast_description ?? '';
+    setBio(decodeHtmlEntities(rawBio));
     setImageShape(page?.profile_image_shape ?? 'circle');
     setImageShadow(page?.profile_image_shadow ?? 'subtle');
     setImageSize(page?.profile_image_size ?? 'medium');
@@ -219,6 +252,25 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     }
   };
 
+  const handleAlignmentChange = (alignment: 'left' | 'center' | 'right') => {
+    setNameAlignment(alignment);
+    setBioAlignment(alignment);
+  };
+
+  const handleTextSizePresetChange = (preset: 'small' | 'medium' | 'large') => {
+    setTextSizePreset(preset);
+    if (preset === 'small') {
+      setNameTextSize('large');
+      setBioTextSize('small');
+    } else if (preset === 'large') {
+      setNameTextSize('xxlarge');
+      setBioTextSize('large');
+    } else {
+      setNameTextSize('xlarge');
+      setBioTextSize('medium');
+    }
+  };
+
 
   return (
     <section 
@@ -235,9 +287,97 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       <header className={styles.header}>
         <div>
           <h3>Profile</h3>
-          <p>Manage your profile image and bio.</p>
+          <p>Preview and fine‑tune how your avatar, name, and bio appear on your page.</p>
         </div>
       </header>
+
+      {/* Compact live preview */}
+      <div className={styles.previewCard} aria-label="Profile preview">
+        <div className={styles.previewAvatar}>
+          {profileImage ? (
+            <img src={normalizeImageUrl(profileImage)} alt="" aria-hidden="true" />
+          ) : (
+            <span aria-hidden="true">{previewInitials}</span>
+          )}
+        </div>
+        <div className={styles.previewText}>
+          <p className={styles.previewName}>{previewName.replace(/<[^>]*>/g, '')}</p>
+          <p className={styles.previewBio}>{previewBio.replace(/<[^>]*>/g, '')}</p>
+        </div>
+      </div>
+
+      <div className={styles.fieldset}>
+        {/* Layout Section */}
+        <div className={styles.layoutSection}>
+          <div className={styles.layoutHeader}>
+            <span>Layout</span>
+          </div>
+          <div className={styles.layoutRow} aria-label="Text alignment" role="radiogroup">
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${nameAlignment === 'left' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleAlignmentChange('left')}
+              role="radio"
+              aria-checked={nameAlignment === 'left'}
+            >
+              <LuAlignLeft aria-hidden="true" />
+              <span>Left</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${nameAlignment === 'center' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleAlignmentChange('center')}
+              role="radio"
+              aria-checked={nameAlignment === 'center'}
+            >
+              <LuAlignCenter aria-hidden="true" />
+              <span>Center</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${nameAlignment === 'right' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleAlignmentChange('right')}
+              role="radio"
+              aria-checked={nameAlignment === 'right'}
+            >
+              <LuAlignRight aria-hidden="true" />
+              <span>Right</span>
+            </button>
+          </div>
+          <div className={styles.layoutRow} aria-label="Text size" role="radiogroup">
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${textSizePreset === 'small' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleTextSizePresetChange('small')}
+              role="radio"
+              aria-checked={textSizePreset === 'small'}
+            >
+              <span className={styles.sizeLabel}>S</span>
+              <span>Compact</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${textSizePreset === 'medium' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleTextSizePresetChange('medium')}
+              role="radio"
+              aria-checked={textSizePreset === 'medium'}
+            >
+              <span className={styles.sizeLabel}>M</span>
+              <span>Balanced</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.layoutChip} ${textSizePreset === 'large' ? styles.layoutChipActive : ''}`}
+              onClick={() => handleTextSizePresetChange('large')}
+              role="radio"
+              aria-checked={textSizePreset === 'large'}
+            >
+              <span className={styles.sizeLabel}>L</span>
+              <span>Hero</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className={styles.fieldset}>
         {/* Profile Image Section */}
@@ -274,147 +414,115 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
           </div>
         </div>
         <div className={styles.imageOptionsCompact}>
-            <div className={styles.optionGroup}>
-              <h4 className={styles.optionGroupLabel}>Shape</h4>
-              <div className={styles.optionButtons}>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShape === 'circle' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShape('circle')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shapePreview} data-shape="circle" />
-                    <span className={styles.optionButtonLabel}>Circle</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShape === 'rounded' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShape('rounded')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shapePreview} data-shape="rounded" />
-                    <span className={styles.optionButtonLabel}>Rounded</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShape === 'square' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShape('square')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shapePreview} data-shape="square" />
-                    <span className={styles.optionButtonLabel}>Square</span>
-                  </div>
-                </button>
-              </div>
+          <div className={styles.layoutSection}>
+            <div className={styles.layoutHeader}>Avatar</div>
+            <div className={styles.layoutRow} aria-label="Avatar shape" role="radiogroup">
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageShape === 'circle' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageShape('circle')}
+                role="radio"
+                aria-checked={imageShape === 'circle'}
+              >
+                <div className={styles.shapePreview} data-shape="circle" />
+                <span>Circle</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageShape === 'rounded' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageShape('rounded')}
+                role="radio"
+                aria-checked={imageShape === 'rounded'}
+              >
+                <div className={styles.shapePreview} data-shape="rounded" />
+                <span>Rounded</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageShape === 'square' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageShape('square')}
+                role="radio"
+                aria-checked={imageShape === 'square'}
+              >
+                <div className={styles.shapePreview} data-shape="square" />
+                <span>Square</span>
+              </button>
             </div>
-            <div className={styles.optionGroup}>
-              <h4 className={styles.optionGroupLabel}>Shadow</h4>
-              <div className={styles.optionButtons}>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShadow === 'none' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShadow('none')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shadowPreview} data-shadow="none" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>None</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShadow === 'subtle' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShadow('subtle')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shadowPreview} data-shadow="subtle" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>Subtle</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageShadow === 'strong' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageShadow('strong')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.shadowPreview} data-shadow="strong" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>Strong</span>
-                  </div>
-                </button>
-              </div>
+            <div className={styles.layoutRow} aria-label="Avatar size" role="radiogroup">
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageSize === 'small' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageSize('small')}
+                role="radio"
+                aria-checked={imageSize === 'small'}
+              >
+                <span className={styles.sizeLabel}>S</span>
+                <span>Small</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageSize === 'medium' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageSize('medium')}
+                role="radio"
+                aria-checked={imageSize === 'medium'}
+              >
+                <span className={styles.sizeLabel}>M</span>
+                <span>Medium</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageSize === 'large' ? styles.layoutChipActive : ''}`}
+                onClick={() => setImageSize('large')}
+                role="radio"
+                aria-checked={imageSize === 'large'}
+              >
+                <span className={styles.sizeLabel}>L</span>
+                <span>Large</span>
+              </button>
             </div>
-            <div className={styles.optionGroup}>
-              <h4 className={styles.optionGroupLabel}>Size</h4>
-              <div className={styles.optionButtons}>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageSize === 'small' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageSize('small')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <span className={styles.sizeLabel}>S</span>
-                    <span className={styles.optionButtonLabel}>Small</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageSize === 'medium' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageSize('medium')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <span className={styles.sizeLabel}>M</span>
-                    <span className={styles.optionButtonLabel}>Medium</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageSize === 'large' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageSize('large')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <span className={styles.sizeLabel}>L</span>
-                    <span className={styles.optionButtonLabel}>Large</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-            <div className={styles.optionGroup}>
-              <h4 className={styles.optionGroupLabel}>Border</h4>
-              <div className={styles.optionButtons}>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageBorder === 'none' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageBorder('none')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.borderPreview} data-border="none" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>None</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageBorder === 'thin' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageBorder('thin')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.borderPreview} data-border="thin" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>Thin</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.optionButton} ${imageBorder === 'thick' ? styles.optionButtonActive : ''}`}
-                  onClick={() => setImageBorder('thick')}
-                >
-                  <div className={styles.optionButtonContent}>
-                    <div className={styles.borderPreview} data-border="thick" data-shape={imageShape} />
-                    <span className={styles.optionButtonLabel}>Thick</span>
-                  </div>
-                </button>
-              </div>
+            <div className={styles.layoutRow} aria-label="Avatar frame style" role="radiogroup">
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageBorder === 'none' && imageShadow === 'none' ? styles.layoutChipActive : ''}`}
+                onClick={() => {
+                  setImageBorder('none');
+                  setImageShadow('none');
+                }}
+                role="radio"
+                aria-checked={imageBorder === 'none' && imageShadow === 'none'}
+              >
+                <div className={styles.borderPreview} data-border="none" data-shape={imageShape} />
+                <span>Minimal</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageBorder === 'thin' && imageShadow !== 'strong' ? styles.layoutChipActive : ''}`}
+                onClick={() => {
+                  setImageBorder('thin');
+                  setImageShadow('subtle');
+                }}
+                role="radio"
+                aria-checked={imageBorder === 'thin' && imageShadow !== 'strong'}
+              >
+                <div className={styles.borderPreview} data-border="thin" data-shape={imageShape} />
+                <span>Soft frame</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.layoutChip} ${imageBorder === 'thick' || imageShadow === 'strong' ? styles.layoutChipActive : ''}`}
+                onClick={() => {
+                  setImageBorder('thick');
+                  setImageShadow('strong');
+                }}
+                role="radio"
+                aria-checked={imageBorder === 'thick' || imageShadow === 'strong'}
+              >
+                <div className={styles.borderPreview} data-border="thick" data-shape={imageShape} />
+                <span>Bold frame</span>
+              </button>
             </div>
           </div>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -434,84 +542,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
             </span>
           </div>
           <div className={styles.nameEditor}>
-            <div className={styles.formatToolbar}>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatName('bold')}
-                title="Bold"
-              >
-                <LuBold aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatName('italic')}
-                title="Italic"
-              >
-                <LuItalic aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatName('underline')}
-                title="Underline"
-              >
-                <LuUnderline aria-hidden="true" />
-              </button>
-              <div className={styles.formatDivider} />
-              <button
-                type="button"
-                className={`${styles.formatButton} ${nameAlignment === 'left' ? styles.formatButtonActive : ''}`}
-                onClick={() => setNameAlignment('left')}
-                title="Align left"
-              >
-                <LuAlignLeft aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={`${styles.formatButton} ${nameAlignment === 'center' ? styles.formatButtonActive : ''}`}
-                onClick={() => setNameAlignment('center')}
-                title="Align center"
-              >
-                <LuAlignCenter aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={`${styles.formatButton} ${nameAlignment === 'right' ? styles.formatButtonActive : ''}`}
-                onClick={() => setNameAlignment('right')}
-                title="Align right"
-              >
-                <LuAlignRight aria-hidden="true" />
-              </button>
-              <div className={styles.formatDivider} />
-              <div className={styles.textSizeGroup}>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${nameTextSize === 'large' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setNameTextSize('large')}
-                  title="Large"
-                >
-                  <span className={styles.textSizeLabel}>L</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${nameTextSize === 'xlarge' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setNameTextSize('xlarge')}
-                  title="Extra Large"
-                >
-                  <span className={styles.textSizeLabel}>XL</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${nameTextSize === 'xxlarge' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setNameTextSize('xxlarge')}
-                  title="2X Large"
-                >
-                  <span className={styles.textSizeLabel}>2XL</span>
-                </button>
-              </div>
-            </div>
             <textarea
               ref={nameTextareaRef}
               id="name-text"
@@ -540,84 +570,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
             </span>
           </div>
           <div className={styles.bioEditor}>
-            <div className={styles.formatToolbar}>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatBio('bold')}
-                title="Bold"
-              >
-                <LuBold aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatBio('italic')}
-                title="Italic"
-              >
-                <LuItalic aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={styles.formatButton}
-                onClick={() => handleFormatBio('underline')}
-                title="Underline"
-              >
-                <LuUnderline aria-hidden="true" />
-              </button>
-              <div className={styles.formatDivider} />
-              <button
-                type="button"
-                className={`${styles.formatButton} ${bioAlignment === 'left' ? styles.formatButtonActive : ''}`}
-                onClick={() => setBioAlignment('left')}
-                title="Align left"
-              >
-                <LuAlignLeft aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={`${styles.formatButton} ${bioAlignment === 'center' ? styles.formatButtonActive : ''}`}
-                onClick={() => setBioAlignment('center')}
-                title="Align center"
-              >
-                <LuAlignCenter aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={`${styles.formatButton} ${bioAlignment === 'right' ? styles.formatButtonActive : ''}`}
-                onClick={() => setBioAlignment('right')}
-                title="Align right"
-              >
-                <LuAlignRight aria-hidden="true" />
-              </button>
-              <div className={styles.formatDivider} />
-              <div className={styles.textSizeGroup}>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${bioTextSize === 'small' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setBioTextSize('small')}
-                  title="Small"
-                >
-                  <span className={styles.textSizeLabel}>S</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${bioTextSize === 'medium' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setBioTextSize('medium')}
-                  title="Medium"
-                >
-                  <span className={styles.textSizeLabel}>M</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.textSizeButton} ${bioTextSize === 'large' ? styles.textSizeButtonActive : ''}`}
-                  onClick={() => setBioTextSize('large')}
-                  title="Large"
-                >
-                  <span className={styles.textSizeLabel}>L</span>
-                </button>
-              </div>
-            </div>
             <textarea
               ref={bioTextareaRef}
               id="bio-text"
@@ -633,9 +585,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               maxLength={maxBioLength + 100} // Allow HTML tags
             />
           </div>
-        </div>
-        <div className={styles.profileNote}>
-          <p>Fonts are set in Themes</p>
         </div>
       </div>
 

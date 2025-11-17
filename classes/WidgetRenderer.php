@@ -108,14 +108,11 @@ class WidgetRenderer {
             case 'email_subscription':
                 return self::renderEmailSubscription($widget, $configData);
                 
+            // Blog widgets retired - return empty
             case 'blog_latest_posts':
-                return self::renderBlogLatestPosts($widget, $configData);
-                
             case 'blog_category_filter':
-                return self::renderBlogCategoryFilter($widget, $configData);
-                
             case 'blog_related_posts':
-                return self::renderBlogRelatedPosts($widget, $configData);
+                return ''; // Blog feature retired
                 
             case 'shopify_product':
                 return self::renderShopifyProduct($widget, $configData);
@@ -189,8 +186,8 @@ class WidgetRenderer {
             $html .= '<div class="widget-thumbnail-wrapper">';
             // Add error handler to hide broken images and show fallback
             $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail" onerror="this.onerror=null; this.style.display=\'none\'; var wrapper=this.closest(\'.widget-thumbnail-wrapper\'); if(wrapper){var fallback=wrapper.querySelector(\'.widget-thumbnail-fallback\'); if(fallback)fallback.style.display=\'flex\';}">';
-            // Fallback placeholder if image fails to load
-            $html .= '<div class="widget-thumbnail-fallback" style="display:none; width:100%; height:100%; background:rgba(0,0,0,0.05); border-radius:inherit; align-items:center; justify-content:center; color:rgba(0,0,0,0.3); font-size:1.5rem;">';
+            // Fallback placeholder if image fails to load (functionality only - display controlled by JavaScript)
+            $html .= '<div class="widget-thumbnail-fallback" style="display:none;">';
             if ($icon) {
                 $html .= '<i class="' . htmlspecialchars($icon) . '"></i>';
             } else {
@@ -412,13 +409,19 @@ class WidgetRenderer {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
             }
         
-            // Get social icons for this page
+            // Get social icons and page data for this page
             require_once __DIR__ . '/Page.php';
             $pageClass = new Page();
             $socialIcons = [];
+            $page = null;
+            $coverImageUrl = '';
             if ($pageId > 0) {
                 try {
                     $socialIcons = $pageClass->getSocialIcons($pageId);
+                    $page = $pageClass->getById($pageId);
+                    if ($page && !empty($page['cover_image_url'])) {
+                        $coverImageUrl = $page['cover_image_url'];
+                    }
                 } catch (Exception $e) {
                     error_log("Error fetching social icons: " . $e->getMessage());
                     $socialIcons = [];
@@ -438,7 +441,12 @@ class WidgetRenderer {
             $html .= '<i class="fas fa-rss rss-icon" title="RSS Feed"></i>';
             $html .= '</div>';
             $html .= '<div class="podcast-main-content">';
-            $html .= '<img class="podcast-cover-compact" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
+            // Show cover image immediately if available from saved RSS feed data
+            if (!empty($coverImageUrl)) {
+                $html .= '<img class="podcast-cover-compact" id="podcast-cover-' . $widgetId . '" src="' . htmlspecialchars($coverImageUrl) . '" alt="Podcast Cover">';
+            } else {
+                $html .= '<img class="podcast-cover-compact" id="podcast-cover-' . $widgetId . '" src="" alt="Podcast Cover" style="display: none;">';
+            }
             $html .= '<div class="podcast-info-compact">';
             $html .= '<div class="podcast-title-compact" id="podcast-title-' . $widgetId . '">Loading...</div>';
             $html .= '<div class="episode-title-compact" id="episode-title-' . $widgetId . '">Loading episode...</div>';
@@ -1166,7 +1174,7 @@ class WidgetRenderer {
             return ''; // Don't render if email service not configured
         }
         
-        $html = '<button onclick="openEmailDrawer()" class="widget-item" style="cursor: pointer; text-align: left;">';
+        $html = '<button onclick="openEmailDrawer()" class="widget-item">';
         $html .= '<div class="widget-content">';
         $html .= '<div class="widget-title">📧 Subscribe to Email List</div>';
         $html .= '</div>';

@@ -208,6 +208,7 @@ function ProfileTab({
               type="button"
               className={styles.fieldAction}
               onClick={() => copyToClipboard(profile.email)}
+              title="Copy your account email address"
             >
               Copy
             </button>
@@ -258,7 +259,12 @@ function ProfileTab({
         </div>
         <footer className={styles.cardFooter}>
           {pageMissing ? (
-            <button type="button" className={styles.primaryButton} onClick={onCreatePage}>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={onCreatePage}
+              title="Create your first public PodaBio page"
+            >
               Create page
             </button>
           ) : (
@@ -271,6 +277,7 @@ function ProfileTab({
                 }
               }}
               disabled={!livePageUrl}
+              title="Open your live PodaBio page in a new tab"
             >
               View live page
             </button>
@@ -357,7 +364,12 @@ function SecurityTab(): JSX.Element {
             <div className={styles.authActions}>
               {methods.has_password ? (
                 <>
-                  <button type="button" className={styles.secondaryButton} onClick={() => window.open('/forgot-password.php', '_blank')}>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={() => window.open('/forgot-password.php', '_blank')}
+                    title="Open the password reset flow in a new tab"
+                  >
                     Reset password
                   </button>
                   {methods.has_google && (
@@ -366,13 +378,19 @@ function SecurityTab(): JSX.Element {
                       className={styles.destructiveButton}
                       onClick={() => openDrawer('remove_password')}
                       disabled={removePending}
+                      title="Remove your password and rely on Google sign-in only"
                     >
                       Remove password
                     </button>
                   )}
                 </>
               ) : (
-                <button type="button" className={styles.primaryButton} onClick={() => window.open('/forgot-password.php', '_blank')}>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  onClick={() => window.open('/forgot-password.php', '_blank')}
+                  title="Set a password so you can log in with email and password"
+                >
                   Set password
                 </button>
               )}
@@ -391,6 +409,7 @@ function SecurityTab(): JSX.Element {
                   className={styles.secondaryButton}
                   onClick={() => openDrawer('unlink_google')}
                   disabled={unlinkPending}
+                  title="Disconnect Google from this account"
                 >
                   Unlink Google
                 </button>
@@ -403,6 +422,7 @@ function SecurityTab(): JSX.Element {
                       window.location.href = methods.google_link_url;
                     }
                   }}
+                  title="Link your Google account so you can sign in with Google"
                 >
                   Link Google
                 </button>
@@ -478,10 +498,20 @@ function BillingTab(): JSX.Element {
           )}
         </div>
         <footer className={styles.cardFooter}>
-          <button type="button" className={styles.primaryButton} onClick={() => window.open('/payment/checkout.php?plan=premium', '_blank')}>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={() => window.open('/payment/checkout.php?plan=premium', '_blank')}
+            title="Open the upgrade checkout to change your plan"
+          >
             Upgrade plan
           </button>
-          <button type="button" className={styles.secondaryButton} onClick={() => window.open('/payment/support.php', '_blank')}>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => window.open('/payment/support.php', '_blank')}
+            title="Get help with billing and subscription questions"
+          >
             Contact support
           </button>
         </footer>
@@ -503,7 +533,13 @@ function BillingTab(): JSX.Element {
                   </p>
                 </div>
                 {invoice.hosted_invoice_url ? (
-                  <a className={styles.secondaryButton} href={invoice.hosted_invoice_url} target="_blank" rel="noreferrer">
+                  <a
+                    className={styles.secondaryButton}
+                    href={invoice.hosted_invoice_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open this invoice in a new tab"
+                  >
                     View
                   </a>
                 ) : (

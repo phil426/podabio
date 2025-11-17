@@ -1,6 +1,8 @@
 .topbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: var(--pod-core-elevation-zIndex-panel, 10);
   display: flex;
   align-items: center;

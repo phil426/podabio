@@ -58,15 +58,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
   border: none;
   border-radius: var(--pod-core-shape-radius-sm, 5px);
   background: transparent;
   color: var(--pod-semantic-text-secondary, #64748b);
   cursor: pointer;
   transition: all 150ms ease;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .modeButton:hover {

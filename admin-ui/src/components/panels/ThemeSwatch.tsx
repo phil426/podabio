@@ -1,9 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import clsx from 'clsx';
-import { LuUser, LuPencil, LuCopy, LuTrash2, LuCheck } from 'react-icons/lu';
 
 import type { ThemeRecord } from '../../api/types';
-import { StyleGuidePreview } from './StyleGuidePreview';
 
 import styles from './theme-swatch.module.css';
 
@@ -17,6 +15,9 @@ interface ThemeSwatchProps {
   onDelete?: () => void;
   showActions?: boolean;
   isUserTheme?: boolean;
+  currentColors?: string[]; // Override colors for active theme
+  displayName?: string; // Override theme name for display
+  currentValues?: Array<string | { gradient: string }>; // Override values (colors or gradients) for active theme
 }
 
 function safeParse(input: string | null | undefined | Record<string, unknown>): Record<string, unknown> | null {
@@ -30,35 +31,73 @@ function safeParse(input: string | null | undefined | Record<string, unknown>): 
   }
 }
 
-function extractThemeColors(theme: ThemeRecord): string[] {
+export function extractThemeColors(theme: ThemeRecord): Array<string | { gradient: string }> {
   const colorTokens = safeParse(theme.color_tokens);
   const colors = safeParse(theme.colors);
   
-  const palette: string[] = [];
+  const palette: Array<string | { gradient: string }> = [];
   
-  // Try to extract from color_tokens first
+  // Helper to check if value is a gradient
+  const isGradient = (value: string): boolean => {
+    return value.includes('gradient') || value.includes('linear-gradient') || value.includes('radial-gradient');
+  };
+  
+  // Helper to normalize color value (gradient object or solid color string)
+  const normalizeColor = (value: string): string | { gradient: string } => {
+    if (isGradient(value)) {
+      return { gradient: value };
+    }
+    return value;
+  };
+  
+  // PRIORITY 1: page_background column (primary source from Edit Theme Panel)
+  if (theme.page_background && typeof theme.page_background === 'string') {
+    palette.push(normalizeColor(theme.page_background));
+  }
+  
+  // PRIORITY 2: widget_background column (for widget background preview)
+  if (theme.widget_background && typeof theme.widget_background === 'string') {
+    const widgetBg = normalizeColor(theme.widget_background);
+    // Only add if different from page background
+    const pageBgStr = typeof palette[0] === 'string' ? palette[0] : (typeof palette[0] === 'object' ? palette[0].gradient : null);
+    const widgetBgStr = typeof widgetBg === 'string' ? widgetBg : widgetBg.gradient;
+    if (pageBgStr !== widgetBgStr) {
+      palette.push(widgetBg);
+    }
+  }
+  
+  // PRIORITY 3: Extract from color_tokens (for accent and text colors)
   if (colorTokens) {
     const accent = colorTokens.accent as Record<string, unknown> | undefined;
     const text = colorTokens.text as Record<string, unknown> | undefined;
     const background = colorTokens.background as Record<string, unknown> | undefined;
     
-    if (accent?.primary && typeof accent.primary === 'string') palette.push(accent.primary);
-    if (accent?.secondary && typeof accent.secondary === 'string') palette.push(accent.secondary);
-    if (text?.primary && typeof text.primary === 'string') palette.push(text.primary);
-    if (background?.base && typeof background.base === 'string') palette.push(background.base);
+    // Only add accent/text colors if we don't already have them
+    if (accent?.primary && typeof accent.primary === 'string') {
+      const accentColor = normalizeColor(accent.primary);
+      if (palette.length < 4) palette.push(accentColor);
+    }
+    if (accent?.secondary && typeof accent.secondary === 'string' && palette.length < 4) {
+      const accentColor = normalizeColor(accent.secondary);
+      palette.push(accentColor);
+    }
+    if (text?.primary && typeof text.primary === 'string' && palette.length < 4) {
+      const textColor = normalizeColor(text.primary);
+      palette.push(textColor);
+    }
+    
+    // Only use background.base as fallback if page_background wasn't set
+    if (palette.length === 0 && background?.base && typeof background.base === 'string') {
+      palette.push(normalizeColor(background.base));
+    }
   }
   
-  // Fallback to legacy colors
+  // PRIORITY 4: Fallback to legacy colors
   if (palette.length === 0 && colors) {
-    if (colors.primary_color && typeof colors.primary_color === 'string') palette.push(colors.primary_color);
-    if (colors.secondary_color && typeof colors.secondary_color === 'string') palette.push(colors.secondary_color);
-    if (colors.accent_color && typeof colors.accent_color === 'string') palette.push(colors.accent_color);
-    if (colors.text_color && typeof colors.text_color === 'string') palette.push(colors.text_color);
-  }
-  
-  // Add page background
-  if (theme.page_background && typeof theme.page_background === 'string') {
-    palette.push(theme.page_background);
+    if (colors.primary_color && typeof colors.primary_color === 'string') palette.push(normalizeColor(colors.primary_color));
+    if (colors.secondary_color && typeof colors.secondary_color === 'string') palette.push(normalizeColor(colors.secondary_color));
+    if (colors.accent_color && typeof colors.accent_color === 'string') palette.push(normalizeColor(colors.accent_color));
+    if (colors.text_color && typeof colors.text_color === 'string') palette.push(normalizeColor(colors.text_color));
   }
   
   // Ensure we have at least some colors
@@ -88,48 +127,55 @@ export function ThemeSwatch({
   onDuplicate,
   onDelete,
   showActions = true,
-  isUserTheme = false
+  isUserTheme = false,
+  currentColors,
+  displayName,
+  currentValues
 }: ThemeSwatchProps): JSX.Element {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const themeColors = useMemo(() => extractThemeColors(theme), [theme]);
+  const { headingFont, bodyFont } = useMemo(() => extractTypography(theme), [theme]);
   
-  const colors = useMemo(() => extractThemeColors(theme), [theme]);
-  const typography = useMemo(() => extractTypography(theme), [theme]);
-  const pageBackground = theme.page_background ?? '#ffffff';
+  // Use currentValues if provided (for active theme with gradients), otherwise fall back to currentColors or theme colors
+  // themeColors now properly handles gradients, so we can use them directly
+  const displayValues = useMemo(() => {
+    if (isActive && currentValues && currentValues.length > 0) {
+      return currentValues;
+    }
+    if (isActive && currentColors && currentColors.length > 0) {
+      // Convert string array to gradient objects if needed
+      return currentColors.map(c => {
+        if (typeof c === 'string' && (c.includes('gradient') || c.includes('linear-gradient') || c.includes('radial-gradient'))) {
+          return { gradient: c };
+    }
+        return c;
+      });
+    }
+    // themeColors now returns Array<string | { gradient: string }>, so use directly
+    return themeColors;
+  }, [isActive, currentValues, currentColors, themeColors]);
   
-  const handleClick = () => {
-    if (onApply) {
-      onApply();
+  // Use displayName if provided, otherwise use theme name
+  const name = displayName || theme.name;
+  
+  // Helper to check if a value is a gradient
+  const isGradient = (value: string | { gradient: string }): value is { gradient: string } => {
+    return typeof value === 'object' && 'gradient' in value;
+  };
+  
+  // Helper to get the style for a swatch (gradient or solid color)
+  const getSwatchStyle = (value: string | { gradient: string }, index: number) => {
+    if (isGradient(value)) {
+      return {
+        background: value.gradient,
+        zIndex: displayValues.length - index
+      };
+    } else {
+      return {
+        backgroundColor: value,
+        zIndex: displayValues.length - index
+      };
     }
   };
-  
-  const handleExpand = () => {
-    setIsExpanded(true);
-  };
-  
-  if (isExpanded) {
-    return (
-      <div className={styles.expandedWrapper}>
-        <button
-          type="button"
-          className={styles.collapseButton}
-          onClick={() => setIsExpanded(false)}
-          aria-label="Collapse preview"
-        >
-          ×
-        </button>
-        <StyleGuidePreview
-          theme={theme}
-          selected={selected}
-          onSelect={handleClick}
-          disabled={false}
-          isOpen={true}
-          onToggle={() => setIsExpanded(false)}
-          isDraggable={false}
-        />
-      </div>
-    );
-  }
   
   return (
     <div
@@ -138,141 +184,47 @@ export function ThemeSwatch({
         selected && styles.selected,
         isActive && styles.active
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className={styles.preview}
-        style={{ background: pageBackground }}
-        onClick={handleClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-        aria-label={`Preview ${theme.name} theme`}
-      >
-        {/* Color Palette */}
-        <div className={styles.colorPalette}>
-          {colors.map((color, index) => (
-            <div
-              key={index}
-              className={styles.colorSwatch}
-              style={{ backgroundColor: color }}
-              aria-label={`Color ${index + 1}: ${color}`}
-            />
-          ))}
-        </div>
-        
-        {/* Typography Sample */}
-        <div className={styles.typographySample}>
-          <div
-            className={styles.headingSample}
-            style={{ fontFamily: `'${typography.headingFont}', sans-serif` }}
-          >
-            Aa
-          </div>
-          <div
-            className={styles.bodySample}
-            style={{ fontFamily: `'${typography.bodyFont}', sans-serif` }}
-          >
-            Aa
-          </div>
-        </div>
-        
-        {/* Button Example */}
-        <div className={styles.buttonExample}>
-          <div
-            className={styles.buttonPreview}
-            style={{
-              backgroundColor: colors[0] ?? '#2563eb',
-              borderRadius: '6px'
-            }}
-          />
-        </div>
-      </div>
-      
       {/* Theme Name */}
       <div className={styles.footer}>
-        <span className={styles.name}>{theme.name}</span>
-        {isActive && (
-          <span className={styles.activeBadge} aria-label="Active theme">
-            <LuCheck aria-hidden="true" />
-          </span>
-        )}
+        <span className={styles.name}>{name}</span>
       </div>
-      
-      {/* Actions */}
-      {showActions && (isHovered || selected) && (
-        <div className={styles.actions}>
-          {onApply && (
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onApply();
-              }}
-              aria-label={`Apply ${theme.name} theme`}
-            >
-              <LuCheck aria-hidden="true" />
-            </button>
-          )}
-          {onEdit && (
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              aria-label={`Edit ${theme.name} theme`}
-            >
-              <LuPencil aria-hidden="true" />
-            </button>
-          )}
-          {onDuplicate && (
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate();
-              }}
-              aria-label={`Duplicate ${theme.name} theme`}
-            >
-              <LuCopy aria-hidden="true" />
-            </button>
-          )}
-          {onDelete && isUserTheme && (
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              aria-label={`Delete ${theme.name} theme`}
-            >
-              <LuTrash2 aria-hidden="true" />
-            </button>
-          )}
-          <button
-            type="button"
-            className={styles.actionButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExpand();
-            }}
-            aria-label={`Expand ${theme.name} preview`}
-          >
-            ↗
-          </button>
+      <div className={styles.swatchMainRow}>
+        {/* Color Swatches - Overlapping Circles */}
+        <div className={styles.colorPalette}>
+          {displayValues.slice(0, 4).map((value, index) => {
+            const style = getSwatchStyle(value, index);
+            const label = isGradient(value) 
+              ? `Gradient ${index + 1}` 
+              : `Color ${index + 1}: ${value}`;
+            
+            return (
+              <div
+                key={index}
+                className={styles.colorSwatch}
+                style={style}
+                aria-label={label}
+              />
+            );
+          })}
         </div>
-      )}
+
+        {/* Typography Preview */}
+        <div className={styles.typographySample} aria-label="Typography preview">
+          <span
+            className={styles.headingSample}
+            style={{ fontFamily: headingFont }}
+          >
+            Aa
+          </span>
+          <span
+            className={styles.bodySample}
+            style={{ fontFamily: bodyFont }}
+          >
+            Body
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

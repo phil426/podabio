@@ -7,7 +7,8 @@ import {
   LuBookOpen,
   LuPlug,
   LuSettings,
-  LuGripVertical
+  LuGripVertical,
+  LuSparkles
 } from 'react-icons/lu';
 import {
   DndContext,
@@ -40,12 +41,14 @@ interface TabDefinition {
   icon: JSX.Element;
 }
 
-const DEFAULT_TAB_ORDER: TabValue[] = ['structure', 'design', 'analytics', 'blog', 'integrations', 'settings'];
+// Top-level tab bar: we now show Layout, Analytics, Integrations, and Settings.
+// The "Look" experience lives inside the left-rail tablist, so 'design' is omitted here.
+const DEFAULT_TAB_ORDER: TabValue[] = ['structure', 'analytics', 'integrations', 'settings'];
 
 const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
   structure: {
     value: 'structure',
-    label: 'Layout',
+    label: 'Style',
     icon: <LuLayers className={styles.tabIcon} aria-hidden="true" />
   },
   design: {
@@ -58,11 +61,6 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     label: 'Analytics',
     icon: <LuTrendingUp className={styles.tabIcon} aria-hidden="true" />
   },
-  blog: {
-    value: 'blog',
-    label: 'Blog',
-    icon: <LuBookOpen className={styles.tabIcon} aria-hidden="true" />
-  },
   integrations: {
     value: 'integrations',
     label: 'Integrations',
@@ -72,7 +70,7 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     value: 'settings',
     label: 'Settings',
     icon: <LuSettings className={styles.tabIcon} aria-hidden="true" />
-  }
+  },
 };
 
 const STORAGE_KEY = 'tabBarOrder';
@@ -182,7 +180,9 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps): JSX.Element {
     <div className={styles.tabbar} style={{ '--active-tab-color': activeColor.text, '--active-tab-bg': activeColor.primary, '--active-tab-border': activeColor.border } as React.CSSProperties}>
       <Tabs.Root
         className={styles.tabsRoot}
-        value={activeTab}
+        // When the nested "Look" tab is selected, activeTab will be 'design',
+        // but we still want the top-level Style tab (structure) to appear active.
+        value={activeTab === 'design' ? 'structure' : activeTab}
         onValueChange={(value) => {
           const newTab = (value as TabValue) ?? 'structure';
           onTabChange(newTab);

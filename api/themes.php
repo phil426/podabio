@@ -14,6 +14,9 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../classes/Theme.php';
 
+// Suppress any output before JSON (warnings, notices, etc.)
+ob_start();
+
 header('Content-Type: application/json');
 
 requireAuth();
@@ -121,6 +124,8 @@ if ($method === 'POST') {
                 $decoded = json_decode($_POST['theme_data'], true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                     $themeData = $decoded;
+                    // DEBUG: Log what we received
+                    error_log("THEME API CREATE: Parsed theme_data JSON, widget_background=" . ($decoded['widget_background'] ?? 'NOT SET') . " (type: " . gettype($decoded['widget_background'] ?? null) . ")");
                 }
             } else {
                 // Fallback: parse individual fields
@@ -139,7 +144,28 @@ if ($method === 'POST') {
                 if (isset($_POST['page_background'])) {
                     $themeData['page_background'] = $_POST['page_background'];
                 }
+                if (isset($_POST['widget_background'])) {
+                    $themeData['widget_background'] = $_POST['widget_background'];
+                }
+                if (isset($_POST['widget_border_color'])) {
+                    $themeData['widget_border_color'] = $_POST['widget_border_color'];
+                }
+                if (isset($_POST['page_primary_font'])) {
+                    $themeData['page_primary_font'] = $_POST['page_primary_font'];
+                }
+                if (isset($_POST['page_secondary_font'])) {
+                    $themeData['page_secondary_font'] = $_POST['page_secondary_font'];
+                }
+                if (isset($_POST['widget_primary_font'])) {
+                    $themeData['widget_primary_font'] = $_POST['widget_primary_font'];
+                }
+                if (isset($_POST['widget_secondary_font'])) {
+                    $themeData['widget_secondary_font'] = $_POST['widget_secondary_font'];
+                }
             }
+            
+            // DEBUG: Log what we're passing to createTheme
+            error_log("THEME API CREATE: About to call createTheme with widget_background=" . ($themeData['widget_background'] ?? 'NOT SET') . " (type: " . gettype($themeData['widget_background'] ?? null) . ")");
 
             if ($name === '') {
                 echo json_encode(['success' => false, 'error' => 'Theme name is required.']);
@@ -160,6 +186,20 @@ if ($method === 'POST') {
                 $decoded = json_decode($_POST['theme_data'], true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                     $themeData = $decoded;
+                    // DEBUG: Log what we received
+                    error_log("THEME API UPDATE: Parsed theme_data JSON, widget_background=" . ($decoded['widget_background'] ?? 'NOT SET') . " (type: " . gettype($decoded['widget_background'] ?? null) . ")");
+                    // CRITICAL DEBUG: Log widget_styles for glow
+                    error_log("THEME API UPDATE: widget_styles=" . json_encode($decoded['widget_styles'] ?? null));
+                    if (isset($decoded['widget_styles']['border_effect'])) {
+                        error_log("THEME API UPDATE: widget_styles.border_effect=" . $decoded['widget_styles']['border_effect']);
+                        error_log("THEME API UPDATE: widget_styles.border_glow_intensity=" . ($decoded['widget_styles']['border_glow_intensity'] ?? 'NOT SET'));
+                        error_log("THEME API UPDATE: widget_styles.glow_color=" . ($decoded['widget_styles']['glow_color'] ?? 'NOT SET'));
+                    }
+                    // CRITICAL DEBUG: Log shape_tokens
+                    error_log("THEME API UPDATE: shape_tokens=" . json_encode($decoded['shape_tokens'] ?? null));
+                    if (isset($decoded['shape_tokens']['corner'])) {
+                        error_log("THEME API UPDATE: shape_tokens.corner=" . json_encode($decoded['shape_tokens']['corner']));
+                    }
                 }
             } else {
                 // Fallback: parse individual fields
@@ -178,30 +218,73 @@ if ($method === 'POST') {
                 if (isset($_POST['page_background'])) {
                     $themeData['page_background'] = $_POST['page_background'];
                 }
+                if (isset($_POST['widget_background'])) {
+                    $themeData['widget_background'] = $_POST['widget_background'];
+                }
+                if (isset($_POST['widget_border_color'])) {
+                    $themeData['widget_border_color'] = $_POST['widget_border_color'];
+                }
+                if (isset($_POST['page_primary_font'])) {
+                    $themeData['page_primary_font'] = $_POST['page_primary_font'];
+                }
+                if (isset($_POST['page_secondary_font'])) {
+                    $themeData['page_secondary_font'] = $_POST['page_secondary_font'];
+                }
+                if (isset($_POST['widget_primary_font'])) {
+                    $themeData['widget_primary_font'] = $_POST['widget_primary_font'];
+                }
+                if (isset($_POST['widget_secondary_font'])) {
+                    $themeData['widget_secondary_font'] = $_POST['widget_secondary_font'];
+                }
             }
+            
+            // DEBUG: Log what we're passing to updateUserTheme
+            error_log("THEME API UPDATE: About to call updateUserTheme with widget_background=" . ($themeData['widget_background'] ?? 'NOT SET') . " (type: " . gettype($themeData['widget_background'] ?? null) . ")");
 
             if (!$updateId) {
                 echo json_encode(['success' => false, 'error' => 'Theme ID required to update.']);
                 break;
             }
 
-            if ($name === '') {
-                echo json_encode(['success' => false, 'error' => 'Theme name is required.']);
-                break;
+            // DEBUG: Log theme update
+            $hasTypographyTokens = isset($themeData['typography_tokens']);
+            $typographyScale = null;
+            if ($hasTypographyTokens && is_array($themeData['typography_tokens'])) {
+                $typographyScale = $themeData['typography_tokens']['scale'] ?? null;
             }
+            error_log("THEME UPDATE DEBUG: theme_id={$updateId}, userId={$userId}, has_typography_tokens=" . ($hasTypographyTokens ? 'yes' : 'no') . ", scale_xl=" . ($typographyScale['xl'] ?? 'null') . ", scale_sm=" . ($typographyScale['sm'] ?? 'null'));
 
-            $success = $themeClass->updateUserTheme($updateId, $userId, $name, $themeData);
+            // Allow updates without name change (name can be empty if only theme_data is being updated)
+            // Only require name if it's explicitly provided and not empty
+            $nameToUse = $name !== '' ? $name : null;
+
+            $success = $themeClass->updateUserTheme($updateId, $userId, $nameToUse, $themeData);
+            
+            // Clear theme cache after update to ensure fresh data on next load
+            if ($success) {
+                Theme::clearCache($updateId);
+                error_log("THEME UPDATE DEBUG: Theme {$updateId} updated successfully, cache cleared");
+            } else {
+                error_log("THEME UPDATE DEBUG: Theme {$updateId} update failed");
+            }
+            // Clear any output buffer before sending JSON
+            ob_clean();
             echo json_encode(['success' => $success, 'error' => $success ? null : 'Unable to update theme.']);
             break;
 
         default:
             http_response_code(400);
+            ob_clean();
             echo json_encode(['success' => false, 'error' => 'Unsupported theme action.']);
             break;
     }
+    // Discard any buffered output
+    ob_end_flush();
     exit;
 }
 
 http_response_code(405);
+ob_clean();
 echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+ob_end_flush();
 

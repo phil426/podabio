@@ -96,7 +96,12 @@ export function PublishingControls(): JSX.Element {
       </header>
 
       <div className={styles.actions}>
-        <button type="button" onClick={handlePublishNow} disabled={publishStatus === 'published' || isPending}>
+        <button
+          type="button"
+          onClick={handlePublishNow}
+          disabled={publishStatus === 'published' || isPending}
+          title="Make your page live on your PodaBio link right away"
+        >
           {isPending && publishStatus === 'published' ? 'Publishing…' : 'Publish now'}
         </button>
         <form className={styles.scheduleForm} onSubmit={handleSchedule}>
@@ -109,11 +114,20 @@ export function PublishingControls(): JSX.Element {
               min={toLocalInputValue(new Date().toISOString())}
             />
           </label>
-          <button type="submit" disabled={isPending}>
+          <button
+            type="submit"
+            disabled={isPending}
+            title="Pick a future date and time, then click Set to schedule"
+          >
             {isPending && publishStatus === 'scheduled' ? 'Scheduling…' : 'Set'}
           </button>
         </form>
-        <button type="button" onClick={handleRevertDraft} disabled={publishStatus === 'draft' || isPending}>
+        <button
+          type="button"
+          onClick={handleRevertDraft}
+          disabled={publishStatus === 'draft' || isPending}
+          title="Take your page back to draft so it is no longer live"
+        >
           Revert to draft
         </button>
       </div>

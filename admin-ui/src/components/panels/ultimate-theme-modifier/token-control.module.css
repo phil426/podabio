@@ -1,0 +1,103 @@
+.control {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.01));
+  transition: all 200ms ease-out;
+}
+
+.control:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  margin: 0;
+}
+
+.modifiedDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--active-tab-color, #2563eb);
+  animation: fadeIn 200ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.resetButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--pod-core-shape-radius-sm, 4px);
+  background: transparent;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 150ms ease-in-out;
+  animation: fadeIn 200ms ease-out;
+}
+
+.resetButton:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.resetButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tokenPath {
+  font-size: 11px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: var(--pod-semantic-text-secondary, #94a3b8);
+  margin-bottom: 8px;
+}
+
+.controlArea {
+  /* Control content goes here */
+}
+
+.loading {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.error {
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  font-size: 12px;
+}
+

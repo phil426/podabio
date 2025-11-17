@@ -5,6 +5,15 @@
   padding: 0.5rem 0.6rem;
 }
 
+.wrapper {
+  padding: 0.75rem 0.6rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(248, 250, 252, 0.85);
+  border: 1px solid var(--active-tab-border, rgba(148, 163, 184, 0.35));
+  display: grid;
+  gap: 0.75rem;
+}
+
 .loadingState,
 .errorState {
   display: flex;
@@ -38,6 +47,35 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.7rem 0.65rem;
+}
+
+.panelHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+}
+
+.panelDescription {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--pod-semantic-text-secondary, #475569);
 }
 
 .header {

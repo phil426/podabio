@@ -255,21 +255,26 @@ switch ($action) {
                 
                 $updateData['rss_feed_url'] = $rssFeedUrl;
                 
-                // Automatically parse RSS feed and extract cover image
+                // Automatically parse RSS feed and extract podcast metadata
                 try {
                     $parser = new RSSParser();
                     $feedResult = $parser->parseFeed($rssFeedUrl);
                     
-                    if ($feedResult['success'] && !empty($feedResult['data']['cover_image'])) {
-                        // Save cover image URL from parsed feed
-                        $updateData['cover_image_url'] = $feedResult['data']['cover_image'];
+                    if ($feedResult['success'] && !empty($feedResult['data'])) {
+                        $feedData = $feedResult['data'];
+                        
+                        // Only save cover image URL from RSS feed - do NOT populate podcast_name or podcast_description
+                        // RSS feed data should only be used for the podcast player, not the main page
+                        if (!empty($feedData['cover_image'])) {
+                            $updateData['cover_image_url'] = $feedData['cover_image'];
+                        }
                     } else {
                         // Log error but don't fail the update
-                        error_log("Failed to parse RSS feed for cover image: " . ($feedResult['error'] ?? 'Unknown error'));
+                        error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
                     }
                 } catch (Exception $e) {
                     // Log error but don't fail the update - RSS URL will still be saved
-                    error_log("Exception while parsing RSS feed for cover image: " . $e->getMessage());
+                    error_log("Exception while parsing RSS feed: " . $e->getMessage());
                 }
             }
         }
@@ -389,13 +394,25 @@ switch ($action) {
         }
         
         // Handle page background
+        // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['page_background'])) {
-            $updateData['page_background'] = sanitizeInput($_POST['page_background']);
+            $pageBg = $_POST['page_background'];
+            if ($pageBg === '' || $pageBg === null || $pageBg === 'null') {
+                $updateData['page_background'] = null; // Clear override
+            } else {
+                $updateData['page_background'] = sanitizeInput($pageBg);
+            }
         }
         
         // Handle widget background
+        // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['widget_background'])) {
-            $updateData['widget_background'] = sanitizeInput($_POST['widget_background']);
+            $widgetBg = $_POST['widget_background'];
+            if ($widgetBg === '' || $widgetBg === null || $widgetBg === 'null') {
+                $updateData['widget_background'] = null; // Clear override
+            } else {
+                $updateData['widget_background'] = sanitizeInput($widgetBg);
+            }
         }
         
         // Handle widget border color

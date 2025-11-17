@@ -13,9 +13,10 @@ export interface DevicePreset {
 
 interface CanvasViewportProps {
   selectedDevice: DevicePreset;
+  previewScale?: number;
 }
 
-export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Element {
+export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasViewportProps): JSX.Element {
   const { data, isLoading, isError, error } = usePageSnapshot();
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
@@ -39,8 +40,9 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
     // Use the current origin and construct the public page URL
     const baseUrl = window.location.origin;
     // Pass device width as query parameter so page renders at exact device width
-    // Add version for cache-busting to ensure fresh content after updates
-    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_width=${selectedDevice.width}&_v=${dataVersion}`;
+    // Add version and timestamp for cache-busting to ensure fresh content after updates
+    const timestamp = Date.now();
+    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_width=${selectedDevice.width}&_v=${dataVersion}&_t=${timestamp}`;
   }, [page?.username, selectedDevice.width, dataVersion]);
 
   const previewDimensions = useMemo(() => {
@@ -129,7 +131,7 @@ export function CanvasViewport({ selectedDevice }: CanvasViewportProps): JSX.Ele
             ...deviceFrameStyle,
             width: `${selectedDevice.width}px`,
             height: `${selectedDevice.height}px`,
-            transform: 'scale(0.75)',
+            transform: `scale(${previewScale})`,
             transformOrigin: 'top center'
           }}
         >

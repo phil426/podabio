@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { LuSparkles, LuDroplet } from 'react-icons/lu';
 
@@ -11,6 +11,10 @@ interface ColorTokenPickerProps {
   palette?: string[];
   recentColors?: string[];
   onChange?: (value: string) => void;
+  hideModeToggle?: boolean; // Hide solid/gradient mode toggle
+  hideToken?: boolean; // Hide token name display
+  autoClose?: boolean; // Auto-close picker when color is selected
+  hideWrapper?: boolean; // Hide wrapper styling (padding, border, background)
 }
 
 type ColorMode = 'solid' | 'gradient';
@@ -26,7 +30,11 @@ export function ColorTokenPicker({
   value,
   palette = ['#2563EB', '#7C3AED', '#F97316', '#0EA5E9', '#22C55E', '#111827'],
   recentColors = ['#1E293B', '#F1F5F9'],
-  onChange
+  onChange,
+  hideModeToggle = false,
+  hideToken = false,
+  autoClose = false,
+  hideWrapper = false
 }: ColorTokenPickerProps): JSX.Element {
   const [internalValue, setInternalValue] = useState(value ?? '#2563EB');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,12 +44,19 @@ export function ColorTokenPicker({
     { color: '#2563EB', position: 0 },
     { color: '#7C3AED', position: 100 }
   ]);
+  const [isManualModeChange, setIsManualModeChange] = useState(false);
+  const isUpdatingRef = useRef(false);
+  const lastValueRef = useRef<string | undefined>(value);
 
   const currentValue = value ?? internalValue;
   const isGradientValue = isGradient(currentValue);
 
   useEffect(() => {
-    if (value && value !== internalValue) {
+    // Only update from external value changes if not manually changing mode and not in the middle of an update
+    if (isUpdatingRef.current) return;
+    
+    if (value && value !== lastValueRef.current && value !== internalValue && !isManualModeChange) {
+      lastValueRef.current = value;
       setInternalValue(value);
       if (isGradient(value)) {
         setMode('gradient');
@@ -50,16 +65,20 @@ export function ColorTokenPicker({
         setMode('solid');
       }
     }
-  }, [value]);
+  }, [value, isManualModeChange, internalValue]);
 
   useEffect(() => {
+    // Only auto-switch mode if it wasn't manually changed and there's a mismatch
+    // This handles cases where the value changes externally (not from user interaction)
+    if (isUpdatingRef.current || isManualModeChange) return;
+    
     if (isGradientValue && mode === 'solid') {
       setMode('gradient');
       parseGradient(currentValue);
     } else if (!isGradientValue && mode === 'gradient') {
       setMode('solid');
     }
-  }, [currentValue]);
+  }, [currentValue, isManualModeChange, mode, isGradientValue]);
 
   function isGradient(val: string): boolean {
     return val.includes('gradient') || val.includes('linear-gradient') || val.includes('radial-gradient');
@@ -106,35 +125,71 @@ export function ColorTokenPicker({
     if (mode === 'solid') {
       setInternalValue(next);
       onChange?.(next);
+      // Don't auto-close here - let palette/recent color clicks handle that
     }
   };
 
   const handleGradientChange = useCallback(() => {
-    if (mode === 'gradient') {
+    if (mode === 'gradient' && !isUpdatingRef.current) {
+      isUpdatingRef.current = true;
       const gradient = buildGradient();
       setInternalValue(gradient);
+      lastValueRef.current = gradient;
       onChange?.(gradient);
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 50);
     }
   }, [mode, buildGradient, onChange]);
 
   useEffect(() => {
-    if (mode === 'gradient') {
+    if (mode === 'gradient' && !isUpdatingRef.current) {
       handleGradientChange();
     }
-  }, [mode, gradientDirection, gradientStops, handleGradientChange]);
+  }, [mode, gradientDirection, gradientStops]);
 
   const handleModeToggle = (newMode: ColorMode) => {
+    // Prevent switching to the same mode
+    if (newMode === mode) return;
+    
+    if (isUpdatingRef.current) return;
+    
+    isUpdatingRef.current = true;
+    setIsManualModeChange(true);
     setMode(newMode);
+    
     if (newMode === 'gradient') {
-      const gradient = buildGradient();
+      // If switching to gradient, use current value if it's already a gradient, otherwise build new one
+      const gradient = isGradientValue ? currentValue : buildGradient();
       setInternalValue(gradient);
+      lastValueRef.current = gradient;
       onChange?.(gradient);
     } else {
-      // Convert first gradient stop to solid color
-      const solidColor = gradientStops[0].color;
+      // Convert to solid color
+      let solidColor: string;
+      if (isGradientValue) {
+        // Extract color from gradient - use first stop if parsed, otherwise try to extract from gradient string
+        if (gradientStops && gradientStops.length > 0 && gradientStops[0].color) {
+          solidColor = gradientStops[0].color;
+        } else {
+          // Try to extract color from gradient string as fallback
+          const colorMatch = currentValue.match(/#[0-9a-fA-F]{6}/);
+          solidColor = colorMatch ? colorMatch[0] : '#2563EB';
+        }
+      } else {
+        // Already solid, use current value
+        solidColor = currentValue;
+      }
       setInternalValue(solidColor);
+      lastValueRef.current = solidColor;
       onChange?.(solidColor);
     }
+    // Reset flags after a delay to allow value to update and prevent useEffect interference
+    setTimeout(() => {
+      isUpdatingRef.current = false;
+      setIsManualModeChange(false);
+    }, 300);
   };
 
   const handleToggle = () => setIsExpanded((prev) => !prev);
@@ -154,40 +209,44 @@ export function ColorTokenPicker({
   const displayColor = mode === 'gradient' ? gradientStops[0].color : currentValue;
 
   return (
-    <div className={styles.wrapper} aria-label={`${label} color picker`}>
+    <div className={hideWrapper ? '' : styles.wrapper} aria-label={`${label} color picker`}>
       <header className={styles.header}>
         <div className={styles.headerText}>
           <p className={styles.label}>{label}</p>
-          <p className={styles.token}>{token}</p>
+          {!hideToken && <p className={styles.token}>{token}</p>}
         </div>
         <div className={styles.headerActions}>
-          <div className={styles.modeToggle}>
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'solid' ? styles.modeButtonActive : ''}`}
-              onClick={() => handleModeToggle('solid')}
-              aria-label="Solid color mode"
-              title="Solid color"
-            >
-              <LuDroplet aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeButton} ${mode === 'gradient' ? styles.modeButtonActive : ''}`}
-              onClick={() => handleModeToggle('gradient')}
-              aria-label="Gradient mode"
-              title="Gradient"
-            >
-              <LuSparkles aria-hidden="true" />
-            </button>
-          </div>
+          {!hideModeToggle && (
+            <div className={styles.modeToggle}>
+              <button
+                type="button"
+                className={`${styles.modeButton} ${mode === 'solid' ? styles.modeButtonActive : ''}`}
+                onClick={() => handleModeToggle('solid')}
+                aria-label="Solid color mode"
+                title="Solid color"
+              >
+                <LuDroplet aria-hidden="true" />
+                <span>Solid</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.modeButton} ${mode === 'gradient' ? styles.modeButtonActive : ''}`}
+                onClick={() => handleModeToggle('gradient')}
+                aria-label="Gradient mode"
+                title="Gradient"
+              >
+                <LuSparkles aria-hidden="true" />
+                <span>Gradient</span>
+              </button>
+            </div>
+          )}
           <button
             type="button"
             className={`${styles.swatchButton} ${mode === 'gradient' ? styles.swatchButtonGradient : ''}`}
-            style={{ 
-              background: displayValue,
-              backgroundImage: mode === 'gradient' ? displayValue : undefined
-            }}
+            style={mode === 'gradient' 
+              ? { backgroundImage: displayValue }
+              : { backgroundColor: displayValue }
+            }
             onClick={handleToggle}
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? 'Hide' : 'Edit'} ${label} color`}
@@ -197,23 +256,6 @@ export function ColorTokenPicker({
         </div>
       </header>
 
-      {!isExpanded && mode === 'solid' && (
-        <div className={styles.collapsedHintRow}>
-          <p>Quick select</p>
-          <div className={styles.collapsedSwatches}>
-            {palette.slice(0, 5).map((color) => (
-              <button
-                key={`collapsed-${color}`}
-                type="button"
-                className={styles.collapsedSwatch}
-                style={{ backgroundColor: color }}
-                aria-label={`Apply ${color} and open color picker`}
-                onClick={() => handleQuickSelect(color)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       {isExpanded && (
         <>
@@ -348,41 +390,6 @@ export function ColorTokenPicker({
             </div>
           )}
 
-          {mode === 'solid' && (
-            <>
-              <div className={styles.paletteGroup}>
-                <p>Design System Palette</p>
-                <div className={styles.swatchRow}>
-                  {palette.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={styles.paletteSwatch}
-                      style={{ backgroundColor: color }}
-                      aria-label={`Use ${color}`}
-                      onClick={() => handleChange(color)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.paletteGroup}>
-                <p>Recent Colors</p>
-                <div className={styles.swatchRow}>
-                  {recentColors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={styles.paletteSwatch}
-                      style={{ backgroundColor: color }}
-                      aria-label={`Use recent color ${color}`}
-                      onClick={() => handleChange(color)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
         </>
       )}
     </div>

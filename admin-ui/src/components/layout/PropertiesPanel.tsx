@@ -4,11 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { useIntegrationSelection } from '../../state/integrationSelection';
-import { useBlogPostSelection } from '../../state/blogPostSelection';
 import { WidgetInspector } from '../panels/WidgetInspector';
 import { ProfileInspector } from '../panels/ProfileInspector';
 import { PodcastPlayerInspector } from '../panels/PodcastPlayerInspector';
-import { BlogPostInspector } from '../panels/BlogPostInspector';
 import { FeaturedBlockInspector } from '../panels/FeaturedBlockInspector';
 import { SocialIconInspector } from '../panels/SocialIconInspector';
 import { IntegrationInspector } from '../panels/IntegrationInspector';
@@ -33,7 +31,6 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
-  const selectedBlogPostId = useBlogPostSelection((state) => state.selectedBlogPostId);
   const showThemeInspector = useThemeInspector((state) => state.isThemeInspectorVisible);
   const queryClient = useQueryClient();
   const { data: themeLibrary } = useThemeLibraryQuery();
@@ -57,9 +54,8 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
   // Priority order:
   // 1. Integration inspector (if integration selected) - highest priority
   // 2. Social icon inspector (if social icon selected)
-  // 3. Widget/page inspectors (if widget/page selected) - show before blog
-  // 4. Blog post inspector (if blog post selected OR on blog tab)
-  // 5. Default inspectors based on active tab
+  // 3. Widget/page inspectors (if widget/page selected)
+  // 4. Default inspectors based on active tab
 
   if (selectedIntegrationId !== null) {
     inspector = <IntegrationInspector activeColor={activeColor} />;
@@ -94,9 +90,6 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
     } else {
       inspector = <WidgetInspector activeColor={activeColor} />;
     }
-  } else if (selectedBlogPostId !== null || activeTab === 'blog') {
-    // Show blog post inspector if a blog post is selected, or if we're on blog tab
-    inspector = <BlogPostInspector activeColor={activeColor} />;
   } else if (activeTab === 'structure') {
     // Default to Profile inspector when on structure tab and nothing is selected
     inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
@@ -115,13 +108,21 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
     >
       <div className={styles.scrollArea}>
         {showThemeInspector && (
-          <ThemeEditorPanel 
-            activeColor={activeColor} 
-            theme={activeTheme}
-            onSave={() => {
-              queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-            }}
-          />
+          <>
+            {console.log('[PropertiesPanel] Rendering ThemeEditorPanel', { 
+              showThemeInspector, 
+              activeThemeId: activeTheme?.id,
+              activeThemeName: activeTheme?.name 
+            })}
+            <ThemeEditorPanel 
+              activeColor={activeColor} 
+              theme={activeTheme}
+              onSave={async () => {
+                // Explicitly refetch to ensure preview updates immediately
+                await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+              }}
+            />
+          </>
         )}
 
         {inspector}

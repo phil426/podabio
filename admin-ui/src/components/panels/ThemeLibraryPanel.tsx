@@ -5,9 +5,10 @@ import { LuSearch, LuX } from 'react-icons/lu';
 import { useThemeLibraryQuery, useCloneThemeMutation, useRenameThemeMutation, useDeleteThemeMutation } from '../../api/themes';
 import { usePageSnapshot, usePageSettingsMutation } from '../../api/page';
 import type { ThemeRecord } from '../../api/types';
+import type { TokenBundle } from '../../design-system/tokens';
 import { useThemeInspector } from '../../state/themeInspector';
 import { StyleGuidePreview } from './StyleGuidePreview';
-import { ThemeSwatch } from './ThemeSwatch';
+import { ThemeSwatch, extractThemeColors } from './ThemeSwatch';
 import styles from './theme-library-panel.module.css';
 
 interface StatusMessage {
@@ -33,20 +34,8 @@ export function ThemeLibraryPanel(): JSX.Element {
 
   const systemThemes: ThemeRecord[] = data?.system ?? [];
   const userThemes: ThemeRecord[] = data?.user ?? [];
-  const activeTheme: ThemeRecord | null = (() => {
-    if (currentThemeId == null) {
-      return systemThemes[0] ?? userThemes[0] ?? null;
-    }
-    const combined = [...userThemes, ...systemThemes];
-    return combined.find((theme) => theme.id === currentThemeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
-  })();
 
-  const [systemOpen, setSystemOpen] = useState(true);
-  const [userOpen, setUserOpen] = useState(true);
-  const [openThemeId, setOpenThemeId] = useState<number | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const deleteMutation = useDeleteThemeMutation();
   const { setThemeInspectorVisible } = useThemeInspector();
 
@@ -117,35 +106,6 @@ export function ThemeLibraryPanel(): JSX.Element {
     return userThemes.filter((theme) => theme.name.toLowerCase().includes(query));
   }, [userThemes, searchQuery]);
 
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const themeIdStr = e.dataTransfer.getData('text/plain');
-    if (!themeIdStr) return;
-    
-    const themeId = Number.parseInt(themeIdStr, 10);
-    if (Number.isNaN(themeId)) return;
-    
-    const allThemes = [...systemThemes, ...userThemes];
-    const droppedTheme = allThemes.find((t) => t.id === themeId);
-    
-    if (droppedTheme) {
-      await handleApplyTheme(droppedTheme);
-      setThemeInspectorVisible(true);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
 
   if (isLoading) {
     return (
@@ -162,6 +122,156 @@ export function ThemeLibraryPanel(): JSX.Element {
       </section>
     );
   }
+
+  // Combine all themes for a simple list
+  const allThemes = useMemo(() => {
+    return [...filteredUserThemes, ...filteredSystemThemes];
+  }, [filteredUserThemes, filteredSystemThemes]);
+
+  // Extract current colors/values for the active theme
+  // PRIORITY: Theme data (from Edit Theme Panel) > Snapshot tokens (current page state)
+  const currentValues = useMemo(() => {
+    // Find the active theme from theme library
+    const activeTheme = currentThemeId ? [...userThemes, ...systemThemes].find(t => t.id === currentThemeId) : null;
+    
+    // If we have theme data, prioritize it over snapshot tokens
+    if (activeTheme) {
+      const themeColors = extractThemeColors(activeTheme);
+      if (themeColors && themeColors.length > 0) {
+        return themeColors;
+      }
+    }
+    
+    // Fallback to snapshot tokens if theme data not available
+    if (!snapshot?.tokens) return undefined;
+    const tokens = snapshot.tokens as TokenBundle;
+    
+    // Helper to extract color(s) from a value - returns gradient object or solid color string
+    const extractColorValue = (value: string | null | undefined): string | { gradient: string } | null => {
+      if (!value) return null;
+      
+      // Check if it's a solid hex color
+      if (/^#([0-9a-fA-F]{3}){1,2}$/.test(value)) {
+        return value;
+      }
+      
+      // Check if it's a gradient - return the gradient string as an object
+      if (value.includes('gradient') || value.includes('linear-gradient') || value.includes('radial-gradient')) {
+        return { gradient: value };
+      }
+      
+      return null;
+    };
+    
+    const extractFromToken = (path: string): string | { gradient: string } | null => {
+      const parts = path.split('.');
+      let current: any = tokens;
+      for (const part of parts) {
+        if (current && typeof current === 'object' && part in current) {
+          current = current[part];
+        } else {
+          return null;
+        }
+      }
+      if (typeof current === 'string') {
+        return extractColorValue(current);
+      }
+      return null;
+    };
+
+    const extractFromPageValue = (value: string | null | undefined): string | { gradient: string } | null => {
+      return extractColorValue(value);
+    };
+
+    const values: Array<string | { gradient: string }> = [];
+    
+    // Helper to get a single color value from token path with fallback
+    const getSingleValue = (paths: string[], fallback: string): string | { gradient: string } => {
+      for (const path of paths) {
+        const result = extractFromToken(path);
+        if (result) {
+          return result;
+        }
+      }
+      return fallback;
+    };
+    
+    // Helper to check if value already exists (comparing strings and gradient objects)
+    const valueExists = (value: string | { gradient: string }, existing: Array<string | { gradient: string }>): boolean => {
+      if (typeof value === 'string') {
+        return existing.some(v => v === value || (typeof v === 'object' && 'gradient' in v && v.gradient === value));
+      }
+      if (typeof value === 'object' && 'gradient' in value) {
+        return existing.some(v => 
+          (typeof v === 'object' && 'gradient' in v && v.gradient === value.gradient) ||
+          (typeof v === 'string' && v === value.gradient)
+        );
+      }
+      return false;
+    };
+    
+    // 1. Page Name color (heading font color)
+    const headingColor = getSingleValue(
+      ['core.typography.color.heading', 'typography.color.heading'],
+      getSingleValue(['semantic.text.primary'], '#0f172a')
+    );
+    if (headingColor && !valueExists(headingColor, values)) {
+      values.push(headingColor);
+    }
+    
+    // 2. Bio Text color (body font color)
+    const bodyColor = getSingleValue(
+      ['core.typography.color.body', 'typography.color.body'],
+      getSingleValue(['semantic.text.primary'], '#0f172a')
+    );
+    if (bodyColor && !valueExists(bodyColor, values) && values.length < 4) {
+      values.push(bodyColor);
+    }
+    
+    // 3. Icon Color
+    const iconColor = getSingleValue(
+      ['iconography.color', 'core.iconography.color'],
+      getSingleValue(['semantic.accent.primary'], '#6b7280')
+    );
+    if (iconColor && !valueExists(iconColor, values) && values.length < 4) {
+      values.push(iconColor);
+    }
+    
+    // 4. Background color (page background) - can be gradient
+    const pageBgTokenResult = extractFromToken('semantic.surface.canvas');
+    const pageBgPageResult = extractFromPageValue(snapshot?.page?.page_background);
+    const pageBg = pageBgTokenResult || pageBgPageResult || '#ffffff';
+    
+    if (pageBg && !valueExists(pageBg, values) && values.length < 4) {
+      values.push(pageBg);
+    }
+    
+    // 5. Widget title text color (fallback to semantic text if not found)
+    if (values.length < 4) {
+      const widgetTitleColor = getSingleValue(['semantic.text.primary'], '#0f172a');
+      if (widgetTitleColor && !valueExists(widgetTitleColor, values)) {
+        values.push(widgetTitleColor);
+      }
+    }
+    
+    // 6. Widget background color - can be gradient
+    if (values.length < 4) {
+      const widgetBgTokenResult = extractFromToken('semantic.surface.base');
+      const widgetBgPageResult = extractFromPageValue(snapshot?.page?.widget_background);
+      const widgetBg = widgetBgTokenResult || widgetBgPageResult || '#ffffff';
+      
+      if (widgetBg && !valueExists(widgetBg, values)) {
+        values.push(widgetBg);
+      }
+    }
+    
+    // Ensure we have at least some values
+    if (values.length === 0) {
+      return ['#0f172a', '#0f172a', '#6b7280', '#ffffff'];
+    }
+    
+    return values.slice(0, 4); // Max 4 values for overlapping circles
+  }, [currentThemeId, userThemes, systemThemes, snapshot?.tokens, snapshot?.page?.page_background, snapshot?.page?.widget_background]);
 
   return (
     <section className={styles.panel} aria-label="Theme library">
@@ -197,128 +307,37 @@ export function ThemeLibraryPanel(): JSX.Element {
         </div>
       </div>
 
-      {/* Active Theme Section */}
-      <div className={styles.activeThemeSection}>
-        <h4 className={styles.activeThemeLabel}>Active theme</h4>
-        <div
-          className={clsx(styles.activeThemeLanding, isDragOver && styles.dragOver)}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-        {activeTheme ? (
-          <StyleGuidePreview
-            theme={activeTheme}
-            selected
-            onSelect={() => {
-              setThemeInspectorVisible(true);
-            }}
-            disabled={isApplying}
-            isOpen={openThemeId === activeTheme.id}
-            onToggle={() => setOpenThemeId(openThemeId === activeTheme.id ? null : activeTheme.id)}
-            isFirst
-            isLast
-            isDraggable={false}
-          />
+      {/* Simple Theme List */}
+      <div className={styles.themeList}>
+        {allThemes.length === 0 ? (
+          <p className={styles.noResults}>No themes match your search.</p>
         ) : (
-          <div className={styles.landingPlaceholder}>
-            <span>Drag a theme here to set as active</span>
-          </div>
-        )}
-        </div>
-      </div>
-
-      {/* Your Themes Section */}
-      <div className={styles.section}>
-        <div className={styles.sectionHeaderRow}>
-          <div className={styles.userHeaderLeft}>
-            <h4>Your saved themes</h4>
-            <span className={styles.count}>({filteredUserThemes.length})</span>
-            <button
-              type="button"
-              className={styles.toggleButton}
-              onClick={() => setUserOpen((open) => !open)}
-              aria-expanded={userOpen}
-              aria-controls="user-theme-grid"
-            >
-              {userOpen ? 'Hide' : 'Show'}
-            </button>
-          </div>
-          <button
-            type="button"
-            className={styles.createButton}
-            onClick={() => {
-              if (!activeTheme) return;
-              handleCloneTheme(activeTheme);
-            }}
-            disabled={cloneMutation.isPending || !activeTheme}
-          >
-            + Duplicate active
-          </button>
-        </div>
-        {userThemes.length === 0 ? (
-          <p className={styles.placeholder}>Clone a system theme to start your personal theme library.</p>
-        ) : (
-          userOpen && (
-            <div className={clsx(styles.themeGrid, viewMode === 'list' && styles.listView)} id="user-theme-grid">
-              {filteredUserThemes.length === 0 ? (
-                <p className={styles.noResults}>No themes match your search.</p>
-              ) : (
-                filteredUserThemes.map((theme) => (
-                  <ThemeSwatch
-                    key={theme.id}
-                    theme={theme}
-                    selected={currentThemeId === theme.id}
-                    isActive={currentThemeId === theme.id}
-                    onApply={() => handleApplyTheme(theme)}
-                    onEdit={() => handleEditTheme(theme)}
-                    onDuplicate={() => handleCloneTheme(theme)}
-                    onDelete={() => handleDeleteTheme(theme)}
-                    isUserTheme
-                  />
-                ))
-              )}
-            </div>
-          )
-        )}
-      </div>
-
-      {/* System Themes Section */}
-      <div className={styles.section}>
-        <div className={styles.sectionHeaderRow}>
-          <div>
-            <h4>System themes</h4>
-            <span className={styles.count}>({filteredSystemThemes.length})</span>
-          </div>
-          <button
-            type="button"
-            className={styles.toggleButton}
-            onClick={() => setSystemOpen((open) => !open)}
-            aria-expanded={systemOpen}
-            aria-controls="system-theme-grid"
-          >
-            {systemOpen ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {systemOpen && (
-          <div className={clsx(styles.themeGrid, viewMode === 'list' && styles.listView)} id="system-theme-grid">
-            {filteredSystemThemes.length === 0 ? (
-              <p className={styles.noResults}>No themes match your search.</p>
-            ) : (
-              filteredSystemThemes.map((theme) => (
-                <ThemeSwatch
-                  key={theme.id}
-                  theme={theme}
-                  selected={currentThemeId === theme.id}
-                  isActive={currentThemeId === theme.id}
-                  onApply={() => handleApplyTheme(theme)}
-                  onEdit={() => handleEditTheme(theme)}
-                  onDuplicate={() => handleCloneTheme(theme)}
-                  isUserTheme={false}
-                />
-              ))
-            )}
-            </div>
+          allThemes.map((theme) => {
+            const isCurrent = currentThemeId === theme.id;
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                className={clsx(styles.themeListItem, isCurrent && styles.themeListItemActive)}
+                onClick={() => handleApplyTheme(theme)}
+                disabled={isApplying}
+              >
+              <ThemeSwatch
+                theme={theme}
+                selected={isCurrent}
+                isActive={isCurrent}
+                onApply={() => handleApplyTheme(theme)}
+                onEdit={() => handleEditTheme(theme)}
+                onDuplicate={() => handleCloneTheme(theme)}
+                onDelete={() => handleDeleteTheme(theme)}
+                isUserTheme={userThemes.some(t => t.id === theme.id)}
+                showActions={false}
+                currentValues={isCurrent ? currentValues : undefined}
+                displayName={isCurrent && snapshot?.page?.username ? `/${snapshot.page.username}` : undefined}
+              />
+              </button>
+            );
+          })
         )}
       </div>
     </section>

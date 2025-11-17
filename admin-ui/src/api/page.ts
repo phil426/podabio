@@ -29,6 +29,31 @@ export async function updatePageSettings(payload: Payload) {
   );
 }
 
+export async function updatePageThemeId(themeId: number | null, themeData?: { page_background?: string | null; widget_background?: string | null }) {
+  const payload: Record<string, string | null> = {
+    theme_id: themeId !== null ? String(themeId) : ''
+  };
+  
+  // If theme data is provided, set page_background and widget_background
+  // Pass null to clear page-level overrides (so theme values are used)
+  if (themeData) {
+    if (themeData.page_background !== undefined) {
+      payload.page_background = themeData.page_background;
+    }
+    if (themeData.widget_background !== undefined) {
+      payload.widget_background = themeData.widget_background;
+    }
+  }
+  
+  return requestJson<ApiResponse>(
+    PAGE_ENDPOINT,
+    formPostInit({
+      action: 'update_appearance',
+      ...payload
+    })
+  );
+}
+
 export async function updatePageAppearance(payload: Payload) {
   return requestJson<ApiResponse>(
     PAGE_ENDPOINT,

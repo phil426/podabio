@@ -1,0 +1,56 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group {
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  overflow: hidden;
+  transition: all 200ms ease-out;
+}
+
+.group:hover {
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.12));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.groupContent {
+  overflow: hidden;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.colorControl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.comingSoon {
+  padding: 16px;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.subGroup {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+}
+
+.subGroupTitle {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+

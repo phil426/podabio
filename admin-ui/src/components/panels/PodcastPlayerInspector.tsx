@@ -4,7 +4,7 @@ import { LuRss, LuPodcast, LuLoader, LuCheck, LuX, LuCopy, LuCircleCheck, LuHear
 import { FaPodcast, FaSpotify, FaYoutube, FaAmazon, FaInstagram, FaTwitter, FaTiktok, FaFacebook, FaLinkedin, FaReddit, FaDiscord, FaTwitch, FaGithub, FaDribbble, FaMedium, FaSnapchat, FaPinterest } from 'react-icons/fa';
 
 import { usePageSnapshot, usePageSettingsMutation, generatePodlinks } from '../../api/page';
-import { queryKeys } from '../../api/utils';
+import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './podcast-player-inspector.module.css';
@@ -25,6 +25,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<'success' | 'error'>('success');
   const [generatingPodlinks, setGeneratingPodlinks] = useState(false);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [podlinksResults, setPodlinksResults] = useState<{
     podcast_name: string;
     platforms: Record<string, {
@@ -158,6 +159,22 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
     }
   }, [page?.podcast_player_enabled, page?.rss_feed_url, enabled]);
 
+  // Auto-load RSS feed if we have a feed URL but no cover image
+  useEffect(() => {
+    const hasRssFeed = page?.rss_feed_url && page.rss_feed_url.trim() !== '';
+    const hasCoverImage = page?.cover_image_url && page.cover_image_url.trim() !== '';
+    
+    // If we have an RSS feed URL but no cover image, automatically try to load it
+    if (hasRssFeed && !hasCoverImage && !isLoadingFeed && enabled) {
+      // Small delay to avoid multiple rapid calls
+      const timeoutId = setTimeout(() => {
+        handleLoadFeedRef.current();
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [page?.rss_feed_url, page?.cover_image_url, enabled, isLoadingFeed]);
+
   // If player is enabled and we don't have results, try to load from existing social icons
   useEffect(() => {
     if (enabled && !podlinksResults && existingPodlinksResults) {
@@ -198,6 +215,11 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         await pageSettingsMutation.mutateAsync({
           rss_feed_url: rssFeedUrl || undefined
         });
+        
+        // Explicitly refetch the page snapshot to get updated podcast information
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+        await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+        
         setStatusTone('success');
         setStatus('RSS feed URL updated.');
       } catch (error) {
@@ -211,7 +233,8 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         window.clearTimeout(rssFeedTimeoutRef.current);
       }
     };
-  }, [rssFeedUrl, page?.rss_feed_url, pageSettingsMutation]);
+  }, [rssFeedUrl, page?.rss_feed_url, pageSettingsMutation, queryClient]);
+
 
   const handleToggleEnabled = async () => {
     if (pageSettingsMutation.isPending) return;
@@ -234,6 +257,85 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
   const handleRssFeedChange = (value: string) => {
     setRssFeedUrl(value);
   };
+
+  const handleLoadFeed = useRef(async () => {
+    const currentRssUrl = rssFeedUrl || page?.rss_feed_url || '';
+    if (!currentRssUrl) {
+      setStatusTone('error');
+      setStatus('Please enter an RSS feed URL first.');
+      return;
+    }
+
+    setIsLoadingFeed(true);
+    setStatus(null);
+
+    try {
+      // Trigger RSS feed parsing by updating the RSS feed URL (even if it's the same)
+      // The backend will re-parse the feed and update podcast metadata
+      await pageSettingsMutation.mutateAsync({
+        rss_feed_url: currentRssUrl
+      });
+      
+      // Explicitly refetch the page snapshot to get updated podcast information
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+      
+      setStatusTone('success');
+      setStatus('RSS feed loaded successfully.');
+    } catch (error) {
+      setStatusTone('error');
+      setStatus(error instanceof Error ? error.message : 'Failed to load RSS feed.');
+    } finally {
+      setIsLoadingFeed(false);
+    }
+  });
+
+  // Update the ref when dependencies change
+  useEffect(() => {
+    handleLoadFeed.current = async () => {
+      const currentRssUrl = rssFeedUrl || page?.rss_feed_url || '';
+      if (!currentRssUrl) {
+        setStatusTone('error');
+        setStatus('Please enter an RSS feed URL first.');
+        return;
+      }
+
+      setIsLoadingFeed(true);
+      setStatus(null);
+
+      try {
+        await pageSettingsMutation.mutateAsync({
+          rss_feed_url: currentRssUrl
+        });
+        
+        // Wait a bit for the backend to process
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Explicitly refetch to get updated cover image
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+        const newSnapshot = await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+        
+        // Check if cover image was loaded
+        const updatedPage = newSnapshot[0]?.data?.page;
+        if (updatedPage?.cover_image_url) {
+          setStatusTone('success');
+          setStatus('RSS feed loaded successfully. Cover image found.');
+        } else {
+          setStatusTone('success');
+          setStatus('RSS feed loaded, but no cover image found in feed.');
+        }
+      } catch (error) {
+        setStatusTone('error');
+        setStatus(error instanceof Error ? error.message : 'Failed to load RSS feed.');
+      } finally {
+        setIsLoadingFeed(false);
+      }
+    };
+  }, [rssFeedUrl, page?.rss_feed_url, pageSettingsMutation, queryClient]);
+
+  // Check if feed has been parsed (has podcast metadata)
+  const feedParsed = Boolean(page?.podcast_name || page?.podcast_description || page?.cover_image_url);
+
 
   const handleCopyUrl = async (url: string) => {
     try {
@@ -347,23 +449,62 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       <div className={styles.fieldset}>
         <label className={styles.control} htmlFor="rss-feed-url">
           <span>RSS Feed URL</span>
-          <div className={styles.inputWrapper}>
-            <LuRss className={styles.inputIcon} aria-hidden="true" />
-            <input
-              id="rss-feed-url"
-              type="url"
-              className={styles.input}
-              value={rssFeedUrl}
-              onChange={(e) => handleRssFeedChange(e.target.value)}
-              placeholder="https://example.com/feed.xml"
-              disabled={pageSettingsMutation.isPending}
-            />
+          <div className={styles.rssFeedContainer}>
+            <div className={styles.inputWrapper}>
+              <LuRss className={styles.inputIcon} aria-hidden="true" />
+              <input
+                id="rss-feed-url"
+                type="url"
+                className={styles.input}
+                value={rssFeedUrl}
+                onChange={(e) => handleRssFeedChange(e.target.value)}
+                placeholder="https://example.com/feed.xml"
+                disabled={pageSettingsMutation.isPending || isLoadingFeed}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.loadFeedButton}
+              onClick={() => handleLoadFeed.current()}
+              disabled={pageSettingsMutation.isPending || isLoadingFeed || !rssFeedUrl}
+            >
+              {isLoadingFeed ? (
+                <>
+                  <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                  Loading...
+                </>
+              ) : (
+                feedParsed ? 'Refresh' : 'Load'
+              )}
+            </button>
           </div>
         </label>
         <p className={styles.helpText}>
           Enter your podcast RSS feed URL to populate the player with episodes
         </p>
       </div>
+
+      {rssFeedUrl && (
+        <div className={styles.fieldset}>
+          <div className={styles.podcastInfoCompact}>
+            <div className={styles.podcastInfoImage}>
+              {page?.cover_image_url ? (
+                <img src={normalizeImageUrl(page.cover_image_url)} alt="Podcast cover" />
+              ) : (
+                <div className={styles.podcastInfoImagePlaceholder}>No image</div>
+              )}
+            </div>
+            <div className={styles.podcastInfoContent}>
+              <div className={styles.podcastInfoName}>
+                {page?.podcast_name || 'Not available'}
+              </div>
+              <div className={styles.podcastInfoDescription}>
+                {page?.podcast_description || 'Not available'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={styles.fieldset}>
         <button

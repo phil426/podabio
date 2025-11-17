@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
@@ -62,6 +62,7 @@ interface EditorPanelsProps {
 }
 
 function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }: EditorPanelsProps): JSX.Element {
+  const [previewScale, setPreviewScale] = useState(0.75);
   const activeColor = tabColors[activeTab];
   const wrapperRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -81,13 +82,6 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
         right: 0
       };
     }
-    if (activeTab === 'blog') {
-      return {
-        left: 28,
-        center: 0,
-        right: 72
-      };
-    }
     return {
       left: 22,
       center: 46,
@@ -101,16 +95,110 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
       if (activeTab === 'analytics') {
         leftPanelHandleRef.current.collapse();
         rightPanelHandleRef.current.collapse();
-      } else if (activeTab === 'blog') {
-        leftPanelHandleRef.current.resize(panelSizes.left);
-        centerPanelHandleRef.current.collapse();
-        rightPanelHandleRef.current.resize(panelSizes.right);
       } else {
         leftPanelHandleRef.current.resize(panelSizes.left);
         rightPanelHandleRef.current.resize(panelSizes.right);
       }
     }
   }, [activeTab, panelSizes]);
+
+  // Prevent scroll event propagation to isolate panel scrolling
+  // AGGRESSIVE approach: Block ALL wheel events and manually handle scrolling
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Find panels and their scroll containers
+      const leftPanel = document.querySelector('.editor-shell__panel--left') as HTMLElement;
+      const centerPanel = document.querySelector('.editor-shell__panel--center') as HTMLElement;
+      const rightPanel = document.querySelector('.editor-shell__panel--right') as HTMLElement;
+
+      // Find scroll containers - try multiple selectors
+      const findScrollContainer = (panel: HTMLElement | null): HTMLElement | null => {
+        if (!panel) return null;
+        
+        // Try Radix ScrollArea viewport first
+        const radixViewport = panel.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+        if (radixViewport) return radixViewport;
+        
+        // Try .viewport
+        const viewport = panel.querySelector('.viewport') as HTMLElement;
+        if (viewport) return viewport;
+        
+        // Try .scrollArea
+        const scrollArea = panel.querySelector('.scrollArea') as HTMLElement;
+        if (scrollArea) return scrollArea;
+        
+        // Try .container (for center)
+        const container = panel.querySelector('[class*="container"]') as HTMLElement;
+        if (container && container.scrollHeight > container.clientHeight) return container;
+        
+        return null;
+      };
+
+      const leftScrollContainer = findScrollContainer(leftPanel);
+      const centerScrollContainer = findScrollContainer(centerPanel);
+      const rightScrollContainer = findScrollContainer(rightPanel);
+
+      const handleWheel = (e: WheelEvent) => {
+        const target = e.target as HTMLElement;
+        
+        // Find which panel contains the target
+        let scrollContainer: HTMLElement | null = null;
+        let panelElement: HTMLElement | null = null;
+        
+        if (leftPanel?.contains(target)) {
+          scrollContainer = leftScrollContainer;
+          panelElement = leftPanel;
+        } else if (centerPanel?.contains(target)) {
+          scrollContainer = centerScrollContainer;
+          panelElement = centerPanel;
+        } else if (rightPanel?.contains(target)) {
+          scrollContainer = rightScrollContainer;
+          panelElement = rightPanel;
+        }
+
+        // If not over any panel, allow default (might be scrolling something else)
+        if (!scrollContainer || !panelElement) {
+          return;
+        }
+
+        // Check if this container can scroll
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const canScroll = scrollHeight > clientHeight;
+        
+        if (!canScroll) {
+          // Can't scroll this container, allow default behavior
+          return;
+        }
+
+        const isAtTop = scrollTop <= 1;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+        
+        // If at boundaries, allow event to propagate (might scroll parent)
+        if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
+          return;
+        }
+
+        // Stop propagation to prevent other panels from scrolling
+        // But allow native scrolling for smooth performance
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+        // Don't preventDefault - let browser handle native smooth scrolling
+      };
+
+      // Add handler at window level with capture to catch everything
+      window.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+      document.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+
+      return () => {
+        window.removeEventListener('wheel', handleWheel, { capture: true } as EventListenerOptions);
+        document.removeEventListener('wheel', handleWheel, { capture: true } as EventListenerOptions);
+      };
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   useEffect(() => {
     const updateBarPosition = () => {
@@ -150,8 +238,14 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
 
   return (
     <div ref={wrapperRef} className="editor-shell__panels-wrapper">
-      {activeTab !== 'analytics' && activeTab !== 'blog' && (
-        <MobilePreviewBar selectedDevice={selectedDevice} onDeviceChange={onDeviceChange} style={barStyle} />
+      {activeTab !== 'analytics' && (
+        <MobilePreviewBar 
+          selectedDevice={selectedDevice} 
+          onDeviceChange={onDeviceChange} 
+          previewScale={previewScale}
+          onScaleChange={setPreviewScale}
+          style={barStyle} 
+        />
       )}
       <PanelGroup direction="horizontal" className="editor-shell__panels">
         <Panel 
@@ -164,7 +258,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
           collapsible={activeTab === 'analytics'}
           className="editor-shell__panel editor-shell__panel--left"
         >
-          <div ref={leftPanelRef} style={{ width: '100%', height: '100%' }}>
+          <div ref={leftPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
             <LeftRail 
               activeTab={activeTab} 
               onTabChange={onTabChange}
@@ -182,16 +276,14 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
           order={2}
           ref={centerPanelHandleRef}
           defaultSize={panelSizes.center} 
-          minSize={activeTab === 'analytics' ? 100 : activeTab === 'blog' ? 0 : 36}
-          maxSize={activeTab === 'blog' ? 0 : undefined}
-          collapsible={activeTab === 'blog'}
+          minSize={activeTab === 'analytics' ? 100 : 36}
           className="editor-shell__panel editor-shell__panel--center"
         >
-          <div ref={centerPanelRef} style={{ width: '100%', height: '100%' }}>
+          <div ref={centerPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTab === 'analytics' ? (
               <AnalyticsDashboard activeColor={activeColor} />
             ) : (
-              <CanvasViewport selectedDevice={selectedDevice} />
+              <CanvasViewport selectedDevice={selectedDevice} previewScale={previewScale} />
             )}
           </div>
         </Panel>
@@ -210,7 +302,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
           collapsible={activeTab === 'analytics'}
           className="editor-shell__panel editor-shell__panel--right"
         >
-          <div ref={rightPanelRef} style={{ width: '100%', height: '100%' }}>
+          <div ref={rightPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
             <PropertiesPanel activeColor={activeColor} activeTab={activeTab} />
           </div>
         </Panel>

@@ -82,8 +82,20 @@ $socialIcons = $pageClass->getSocialIcons($page['id'], true); // Only get active
 $themeClass = new Theme();
 $theme = null;
 if ($page['theme_id']) {
+    // DEBUG: Log theme loading
+    error_log("PAGE LOAD DEBUG: Loading theme_id={$page['theme_id']} for page username={$page['username']}");
     $theme = $themeClass->getTheme($page['theme_id']);
+    if ($theme) {
+        error_log("PAGE LOAD DEBUG: Theme loaded successfully, has_page_background=" . (!empty($theme['page_background']) ? 'yes' : 'no') . ", theme_page_background=" . ($theme['page_background'] ?? 'NULL') . ", has_color_tokens=" . (!empty($theme['color_tokens']) ? 'yes' : 'no'));
+    } else {
+        error_log("PAGE LOAD DEBUG: Theme {$page['theme_id']} not found or invalid");
+    }
+} else {
+    error_log("PAGE LOAD DEBUG: Page has no theme_id");
 }
+
+// DEBUG: Log page background state
+error_log("PAGE LOAD DEBUG: Page page_background=" . ($page['page_background'] ?? 'NULL') . " (type: " . gettype($page['page_background'] ?? null) . ")");
 
 $colors = getThemeColors($page, $theme);
 $fonts = getThemeFonts($page, $theme);
@@ -145,7 +157,7 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
     <meta name="description" content="<?php echo h(truncate($page['podcast_description'] ?: 'Link in bio page', 160)); ?>">
     <meta property="og:title" content="<?php echo h($page['podcast_name'] ?: $page['username']); ?>">
     <meta property="og:description" content="<?php echo h(truncate($page['podcast_description'] ?: '', 160)); ?>">
-    <meta property="og:image" content="<?php echo h(normalizeImageUrl($page['cover_image_url'] ?: '')); ?>">
+    <meta property="og:image" content="<?php echo h(normalizeImageUrl($page['profile_image'] ?: $page['cover_image_url'] ?: '')); ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     
@@ -175,12 +187,21 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             overflow-x: hidden;
             width: 100%;
             max-width: 100%;
+            /* Hide scrollbars but keep scrolling */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
         }
 
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        /* REMOVED: body background style - now handled directly in ThemeCSSGenerator with !important */
+        /* This prevents any conflicts or CSS variable resolution issues */
         body {
             margin: 0;
             min-height: 100vh;
-            background-color: var(--shell-background, color-mix(in srgb, #f5f7fb 94%, #0f172a 6%));
             box-sizing: border-box;
         }
 
@@ -195,14 +216,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             max-width: 420px;
             <?php endif; ?>
             margin: 0 auto;
-            padding: 1rem;
+            padding: var(--page-padding, 1rem);
             box-sizing: border-box;
         }
         
         /* Add top padding when podcast banner is present to prevent content from being hidden */
         <?php if ($showPodcastPlayer): ?>
         body:has(.podcast-top-banner) .page-container {
-            padding-top: calc(1rem + 60px); /* 1rem base + banner height (approx 60px) */
+            padding-top: calc(var(--page-padding, 1rem) + 60px); /* page padding + banner height (approx 60px) */
         }
         <?php endif; ?>
         
@@ -285,39 +306,44 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             font-family: var(--font-family-heading);
             font-weight: var(--type-weight-bold, 600);
             margin: var(--space-xs) 0;
-            color: var(--page-title-color, var(--color-text-primary));
+            color: var(--heading-font-color, var(--page-title-color, var(--color-text-primary)));
         }
         
         .page-description {
-            color: var(--page-description-color, var(--color-text-secondary));
+            color: var(--body-font-color, var(--page-description-color, var(--color-text-secondary)));
             opacity: 0.9;
             font-size: var(--type-scale-sm, 1rem);
             line-height: var(--type-line-height-normal, 1.5);
             margin-bottom: var(--space-lg);
+            font-family: var(--font-family-body);
         }
         
+        /* Name size classes now use CSS variables from typography scale */
+        /* These classes are applied but the base .page-title already uses --type-scale-xl */
+        /* The size classes can provide relative scaling if needed, but for now we'll let the scale variable handle it */
         .name-size-large {
-            font-size: 1.125rem;
+            font-size: var(--type-scale-xl, 2rem);
         }
         
         .name-size-xlarge {
-            font-size: 1.375rem;
+            font-size: var(--type-scale-xl, 2rem);
         }
         
         .name-size-xxlarge {
-            font-size: 1.625rem;
+            font-size: var(--type-scale-xl, 2rem);
         }
         
+        /* Bio size classes now use CSS variables from typography scale */
         .bio-size-small {
-            font-size: 0.875rem;
+            font-size: var(--type-scale-sm, 1rem);
         }
         
         .bio-size-medium {
-            font-size: 1rem;
+            font-size: var(--type-scale-sm, 1rem);
         }
         
         .bio-size-large {
-            font-size: 1.125rem;
+            font-size: var(--type-scale-sm, 1rem);
         }
         
         /* Podcast Player CSS has been moved to /css/podcast-player.css */
@@ -510,91 +536,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
         }
         
+        /* Widget container - layout only, no styling */
         .widgets-container {
             display: flex;
             flex-direction: column;
-            gap: var(--widget-spacing, var(--space-md));
+            gap: var(--widget-gap, var(--widget-spacing, var(--space-md)));
             position: relative;
         }
         
-        .widget-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            width: 100%;
-            padding: var(--space-sm) var(--space-md);
-            background: var(--widget-background, var(--color-background-surface));
-            border: var(--widget-border-width, var(--border-width-hairline)) solid var(--widget-border-color, var(--color-border-default));
-            border-radius: var(--widget-border-radius, var(--shape-corner-md));
-            text-decoration: none;
-            color: var(--color-text-on-surface);
-            transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
-            box-sizing: border-box;
-            position: relative;
-            z-index: auto;
-            font-family: var(--widget-secondary-font, var(--font-family-body));
-            box-shadow: var(--widget-box-shadow, var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12)));
-        }
-        
-        /* Widgets without thumbnails/icons - center text */
-        .widget-link-simple {
-            justify-content: center;
-            text-align: center;
-        }
-        
-        .widget-link-simple .widget-content {
-            padding: 0 !important;
-        }
-        
-        .widget-link-simple .widget-title {
-            margin: 0 !important;
-            font-size: var(--type-scale-md, 1.333rem);
-            font-weight: var(--type-weight-medium, 500);
-        }
-        
-        /* Thumbnail wrapper for consistent sizing */
-        .widget-thumbnail-wrapper {
-            flex-shrink: 0;
-            width: clamp(3rem, 16vw, 3.75rem);
-            height: clamp(3rem, 16vw, 3.75rem);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--shape-corner-md, 0.75rem);
-            overflow: hidden;
-        }
-        
-        /* Icon wrapper for consistent sizing */
-        .widget-icon-wrapper {
-            flex-shrink: 0;
-            width: clamp(3rem, 16vw, 3.75rem);
-            height: clamp(3rem, 16vw, 3.75rem);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Other widgets (podcast, video, etc.) - full width */
-        .widget-podcast,
-        .widget-video,
-        .widget-text,
-        .widget-image {
-            width: 100%;
-        }
-        
-        .widget-item:hover {
-            transform: translateY(calc(var(--space-2xs, 0.25rem) * -1));
-            box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
-        }
-        
-        /* Featured Widget Effects */
+        /* Featured Widget Effects - functionality only (animation keyframes) */
         .featured-widget {
             position: relative;
-        }
-        
-        .featured-widget .widget-item {
-            position: relative;
-            z-index: 1;
         }
         
         /* Jiggle Effect - triggered randomly */
@@ -719,99 +671,14 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             }
         }
         
-        .widget-thumbnail {
-            width: 100%;
-            height: 100%;
-            border-radius: var(--widget-border-radius, 8px);
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-        
-        .widget-thumbnail-fallback {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: var(--widget-border-radius, 8px);
-            color: rgba(0, 0, 0, 0.3);
-            font-size: 1.5rem;
-        }
-        
-        .widget-icon {
-            font-size: 1.5rem;
-            color: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .widget-content {
-            flex: 1;
-            min-width: 0; /* Allow flex item to shrink below content size */
-            font-family: var(--widget-secondary-font, var(--font-family-body));
-            font-size: var(--type-scale-sm, 1rem);
-            line-height: var(--type-line-height-normal, 1.5);
-        }
-        
-        .widget-title {
-            font-weight: var(--type-weight-medium, 500);
-            margin: 0 0 var(--space-2xs, 0.25rem) 0;
-            font-family: var(--widget-primary-font, var(--font-family-heading));
-            color: var(--color-text-on-surface);
-            font-size: var(--type-scale-md, 1.333rem);
-        }
-        
-        .widget-description {
-            font-size: var(--type-scale-sm, 1rem);
-            color: var(--color-text-secondary);
-            opacity: 0.9;
-            margin: var(--space-2xs, 0.25rem) 0 0 0;
-            font-family: var(--widget-secondary-font, var(--font-family-body));
-            min-width: 0; /* Allow text to be constrained in flex container */
-        }
-        
-        /* Marquee animation for Custom Link widget descriptions only */
-        .widget-item .widget-description.marquee {
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-        }
-        
-        .widget-item .widget-description .marquee-content {
-            display: inline-flex;
-            white-space: nowrap;
-            animation: widget-marquee-scroll linear infinite;
-            animation-duration: var(--marquee-duration, 12s);
-            will-change: transform; /* Optimize animation performance */
-        }
-        
-        .widget-item .widget-description .marquee-content .marquee-text {
-            display: inline-block;
-            white-space: nowrap;
-            padding-right: 2em; /* Space between duplicates for better visual separation */
-        }
-        
+        /* Marquee animation for Custom Link widget descriptions - functionality only */
         @keyframes widget-marquee-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(var(--marquee-distance, -100px)); }
         }
         
-        
-        /* Video widget styles */
-        .widget-video {
-            padding: 0;
-            border: none;
-            background: transparent;
-        }
-        
+        /* Video widget embed structure - layout only */
         .widget-video-embed {
-            margin-top: 0.5rem;
-            border-radius: 8px;
-            overflow: hidden;
             position: relative;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
             height: 0;
@@ -825,54 +692,29 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             height: 100%;
         }
         
-        /* Text/HTML widget styles */
-        .widget-text {
-            text-align: left;
-        }
-        
-        .widget-text-content {
-            padding: 1rem;
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-        
-        /* Image widget styles */
-        .widget-image {
-            padding: 0;
-            border: none;
-            background: transparent;
-            display: block;
-        }
-        
-        .widget-image-content {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            display: block;
-        }
-        
         /* Podcast Player widget styles - MOVED TO /css/podcast-player.css */
         .social-icons {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.75rem;
+            gap: var(--icon-spacing, 0.75rem);
             justify-content: center;
             margin: 1.5rem 0;
         }
         
         .social-icon {
-            width: 48px;
-            height: 48px;
+            width: var(--icon-size, 48px);
+            height: var(--icon-size, 48px);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: transparent;
             border: none;
-            color: var(--color-accent-primary);
+            /* Icon color will be set by theme CSS with higher specificity */
+            color: var(--icon-color, var(--social-icon-color, var(--color-accent-primary)));
             text-decoration: none;
             transition: all 0.3s ease;
-            font-size: 1.5rem;
+            font-size: calc(var(--icon-size, 48px) * 0.625);
         }
         
         .social-icon i {
@@ -936,9 +778,9 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         /* Profile image size is controlled by .profile-image-size-* classes */
 
         /* Aurora Theme Styling */
+        /* REMOVED: background override - now handled by ThemeCSSGenerator with !important */
         body.theme-aurora-skies {
-            background: var(--gradient-page, var(--page-background));
-            color: var(--color-text-on-background, var(--text-color));
+            color: var(--body-font-color, var(--color-text-on-background, var(--text-color)));
             font-family: var(--font-family-body, var(--body-font), sans-serif);
             min-height: 100vh;
             overflow-x: hidden;
@@ -1008,31 +850,10 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
             color: color-mix(in srgb, var(--color-text-secondary) 80%, #f3fbff 20%);
         }
 
-        body.theme-aurora-skies .widget-item {
-            background: color-mix(in srgb, var(--color-background-surface) 80%, transparent);
-            border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
-            box-shadow: 0 18px 38px rgba(4, 9, 38, 0.32);
-        }
-
-        body.theme-aurora-skies .widget-item::before {
-            display: none;
-        }
-
-        body.theme-aurora-skies .widget-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 22px 44px rgba(4, 9, 38, 0.36);
-        }
-
-        body.theme-aurora-skies .widget-title {
-            color: color-mix(in srgb, var(--color-text-primary) 92%, #ffffff 8%);
-        }
-
-        body.theme-aurora-skies .widget-description {
-            color: color-mix(in srgb, var(--color-text-secondary) 78%, #d7e7ff 22%);
-        }
+        /* REMOVED: All widget styling - now handled by ThemeCSSGenerator */
 
         body.theme-aurora-skies .social-icon {
-            color: var(--color-accent-primary);
+            color: var(--icon-color, var(--color-accent-primary));
             background: rgba(255, 255, 255, 0.04);
             border-radius: 14px;
         }
@@ -1040,70 +861,12 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
         body.theme-aurora-skies .social-icon:hover {
             transform: translateY(-6px);
             box-shadow: 0 14px 30px color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+            color: var(--icon-color, var(--color-accent-primary));
         }
 
         /* Podcast Player theme overrides - MOVED TO /css/podcast-player.css */
 
-        .widget-heading {
-            width: 100%;
-            padding: var(--space-sm, 1rem) var(--space-md, 1.25rem);
-            text-align: center;
-        }
-
-        .widget-heading-text {
-            margin: 0;
-            font-family: var(--heading-font, var(--font-family-heading));
-        }
-
-        .widget-heading-h1 .widget-heading-text {
-            font-size: clamp(2rem, 4vw, 2.75rem);
-            font-weight: var(--type-weight-bold, 700);
-        }
-
-        .widget-heading-h2 .widget-heading-text {
-            font-size: clamp(1.6rem, 3.25vw, 2.2rem);
-            font-weight: var(--type-weight-semibold, 600);
-        }
-
-        .widget-heading-h3 .widget-heading-text {
-            font-size: clamp(1.3rem, 2.75vw, 1.8rem);
-            font-weight: var(--type-weight-medium, 500);
-        }
-
-        .widget-text-note {
-            width: 100%;
-            padding: var(--space-xs, 0.75rem) var(--space-sm, 1rem);
-            font-size: 0.9rem;
-            font-style: italic;
-            color: rgba(15, 23, 42, 0.75);
-            text-align: center;
-        }
-
-        .widget-text-note p {
-            margin: 0;
-        }
-
-        .widget-divider {
-            width: 100%;
-            padding: var(--space-xs, 0.75rem) var(--space-md, 1.25rem);
-        }
-
-        .widget-divider-line {
-            border: none;
-            height: 3px;
-            width: 100%;
-            border-radius: 999px;
-            background: rgba(148, 163, 184, 0.45);
-        }
-
-        .widget-divider-line-shadow {
-            background: rgba(71, 85, 105, 0.6);
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
-        }
-
-        .widget-divider-line-gradient {
-            background: linear-gradient(90deg, rgba(37, 99, 235, 0.85), rgba(124, 58, 237, 0.85));
-        }
+        /* REMOVED: All widget-specific styling - now handled by ThemeCSSGenerator */
     </style>
 </head>
 <body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass); ?>">
@@ -1121,10 +884,6 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                 $borderClass = 'profile-image-border-' . $imageBorder;
             ?>
                 <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile" class="profile-image <?php echo h($shapeClass . ' ' . $shadowClass . ' ' . $sizeClass . ' ' . $borderClass); ?>" onerror="this.onerror=null; this.style.display='none';">
-            <?php endif; ?>
-            
-            <?php if ($page['cover_image_url']): ?>
-                <img src="<?php echo h(normalizeImageUrl($page['cover_image_url'])); ?>" alt="Cover" class="cover-image">
             <?php endif; ?>
             
             <?php if ($page['podcast_name']): 
@@ -1189,10 +948,17 @@ $cssGenerator = new ThemeCSSGenerator($page, $theme);
                         <div class="now-playing-content">
                             <!-- Full Width Cover Artwork -->
                             <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
-                                <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
-                                <div class="artwork-placeholder" id="artwork-placeholder">
-                                    <i class="fas fa-music"></i>
-                                </div>
+                                <?php if (!empty($page['cover_image_url'])): ?>
+                                    <img class="episode-artwork-large" id="now-playing-artwork" src="<?php echo h(normalizeImageUrl($page['cover_image_url'])); ?>" alt="Podcast Cover">
+                                    <div class="artwork-placeholder" id="artwork-placeholder" style="display: none;">
+                                        <i class="fas fa-music"></i>
+                                    </div>
+                                <?php else: ?>
+                                    <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork" style="display: none;">
+                                    <div class="artwork-placeholder" id="artwork-placeholder">
+                                        <i class="fas fa-music"></i>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Progress Section (Below Artwork, Above Controls) -->

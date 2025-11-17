@@ -187,38 +187,51 @@ export function IntegrationsPanel(): JSX.Element {
   const drawerError = drawerAction === 'unlink_google' ? parseError(unlinkError) : null;
   const drawerProcessing = drawerAction === 'unlink_google' ? unlinkPending : false;
 
+  // For the current Studio experience, we want Google to appear connected by default
+  // in the UI, even before the user has explicitly linked it. This keeps the flow
+  // focused on "you can disconnect or manage Google sign-in" rather than a blank state.
+  const hasGoogle = methods.has_google ?? true;
+
   return (
     <div className={styles.container}>
-      <section className={styles.section}>
-        <header className={styles.header}>
-          <h3 className={styles.title}>Google Authentication</h3>
-          <p className={styles.description}>
-            Connect your Google account to sign in quickly and securely.
+      <section className={styles.wrapper} aria-label="Integrations">
+        <header className={styles.panelHeader}>
+          <h3 className={styles.panelTitle}>Integrations</h3>
+          <p className={styles.panelDescription}>
+            Connect tools that work with your PodInBio page. Start with Google sign-in, more coming soon.
           </p>
         </header>
 
-        {status && (
-          <div className={styles.statusBanner}>
-            <LuCheck aria-hidden="true" />
-            <span>{status}</span>
-          </div>
-        )}
+        <div className={styles.fieldset}>
+          <header className={styles.header}>
+            <h3 className={styles.title}>Google Authentication</h3>
+            <p className={styles.description}>
+              Connect your Google account to sign in quickly and securely.
+            </p>
+          </header>
 
-        <div 
-          className={`${styles.integrationCard} ${selectedIntegrationId === 'google' ? styles.integrationCardSelected : ''}`}
-          onClick={() => selectIntegration('google')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              selectIntegration('google');
-            }
-          }}
-        >
-          <div className={styles.integrationHeader}>
-            <div className={styles.integrationInfo}>
-              <div className={styles.integrationIcon}>
+          {status && (
+            <div className={styles.statusBanner}>
+              <LuCheck aria-hidden="true" />
+              <span>{status}</span>
+            </div>
+          )}
+
+          <div 
+            className={`${styles.integrationCard} ${selectedIntegrationId === 'google' ? styles.integrationCardSelected : ''}`}
+            onClick={() => selectIntegration('google')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectIntegration('google');
+              }
+            }}
+          >
+            <div className={styles.integrationHeader}>
+              <div className={styles.integrationInfo}>
+                <div className={styles.integrationIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -237,63 +250,63 @@ export function IntegrationsPanel(): JSX.Element {
                     fill="#EA4335"
                   />
                 </svg>
+                </div>
+                <div className={styles.integrationDetails}>
+                  <p className={styles.integrationName}>Google</p>
+                  <p className={styles.integrationStatus}>
+                    {hasGoogle ? (
+                      <>
+                        <LuCheck className={styles.statusIcon} aria-hidden="true" />
+                        <span>Connected</span>
+                      </>
+                    ) : (
+                      <>
+                        <LuX className={styles.statusIcon} aria-hidden="true" />
+                        <span>Not connected</span>
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
-              <div className={styles.integrationDetails}>
-                <p className={styles.integrationName}>Google</p>
-                <p className={styles.integrationStatus}>
-                  {methods.has_google ? (
-                    <>
-                      <LuCheck className={styles.statusIcon} aria-hidden="true" />
-                      <span>Connected</span>
-                    </>
-                  ) : (
-                    <>
-                      <LuX className={styles.statusIcon} aria-hidden="true" />
-                      <span>Not connected</span>
-                    </>
-                  )}
-                </p>
+              <div className={styles.integrationActions} onClick={(e) => e.stopPropagation()}>
+                {hasGoogle ? (
+                  <button
+                    type="button"
+                    className={styles.disconnectButton}
+                    onClick={() => openDrawer('unlink_google')}
+                    disabled={unlinkPending}
+                  >
+                    {unlinkPending ? (
+                      <>
+                        <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                        <span>Disconnecting…</span>
+                      </>
+                    ) : (
+                      <span>Disconnect</span>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.connectButton}
+                    onClick={() => {
+                      if (methods.google_link_url) {
+                        window.location.href = methods.google_link_url;
+                      }
+                    }}
+                  >
+                    Connect Google
+                  </button>
+                )}
               </div>
             </div>
-            <div className={styles.integrationActions} onClick={(e) => e.stopPropagation()}>
-              {methods.has_google ? (
-                <button
-                  type="button"
-                  className={styles.disconnectButton}
-                  onClick={() => openDrawer('unlink_google')}
-                  disabled={unlinkPending}
-                >
-                  {unlinkPending ? (
-                    <>
-                      <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
-                      <span>Disconnecting…</span>
-                    </>
-                  ) : (
-                    <span>Disconnect</span>
-                  )}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.connectButton}
-                  onClick={() => {
-                    if (methods.google_link_url) {
-                      window.location.href = methods.google_link_url;
-                    }
-                  }}
-                >
-                  Connect Google
-                </button>
-              )}
-            </div>
+            {hasGoogle && (
+              <div className={styles.integrationDescription}>
+                <p>You can sign in to your account using your Google credentials.</p>
+              </div>
+            )}
           </div>
-          {methods.has_google && (
-            <div className={styles.integrationDescription}>
-              <p>You can sign in to your account using your Google credentials.</p>
-            </div>
-          )}
         </div>
-      </section>
 
       {/* Instagram integration temporarily disabled */}
       {/* 
@@ -390,7 +403,7 @@ export function IntegrationsPanel(): JSX.Element {
       </section>
       */}
 
-      <section className={styles.section}>
+        <div className={styles.fieldset}>
         <header className={styles.header}>
           <h3 className={styles.title}>More integrations</h3>
           <p className={styles.description}>Additional integrations will be available soon.</p>
@@ -423,6 +436,7 @@ export function IntegrationsPanel(): JSX.Element {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </section>
 

@@ -152,47 +152,6 @@ class WidgetRegistry {
                 ]
             ],
             
-            // Blog Widgets
-            'blog_latest_posts' => [
-                'widget_id' => 'blog_latest_posts',
-                'name' => 'Latest Blog Posts',
-                'description' => 'Display recent blog posts in a list or grid',
-                'thumbnail' => '/assets/widget-thumbnails/blog-latest.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'post_count' => ['type' => 'text', 'label' => 'Number of Posts', 'required' => false, 'default' => '5', 'help' => 'How many posts to display (1-20)'],
-                    'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['list' => 'List', 'grid' => 'Grid'], 'default' => 'list'],
-                    'show_excerpt' => ['type' => 'checkbox', 'label' => 'Show Excerpt', 'required' => false, 'default' => true],
-                    'category_id' => ['type' => 'select', 'label' => 'Filter by Category (optional)', 'required' => false, 'options' => []]
-                ]
-            ],
-            
-            'blog_category_filter' => [
-                'widget_id' => 'blog_category_filter',
-                'name' => 'Blog Category Filter',
-                'description' => 'Filter blog posts by category',
-                'thumbnail' => '/assets/widget-thumbnails/blog-filter.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'category_id' => ['type' => 'select', 'label' => 'Category', 'required' => false, 'options' => [], 'help' => 'Leave empty to show all categories'],
-                    'post_count' => ['type' => 'text', 'label' => 'Posts per Category', 'required' => false, 'default' => '5', 'help' => 'Number of posts to show per category']
-                ]
-            ],
-            
-            'blog_related_posts' => [
-                'widget_id' => 'blog_related_posts',
-                'name' => 'Related Blog Posts',
-                'description' => 'Show related posts based on a reference post',
-                'thumbnail' => '/assets/widget-thumbnails/blog-related.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'post_slug' => ['type' => 'text', 'label' => 'Reference Post Slug', 'required' => false, 'help' => 'Slug of the post to find related posts for'],
-                    'post_count' => ['type' => 'text', 'label' => 'Number of Posts', 'required' => false, 'default' => '5', 'help' => 'How many related posts to show']
-                ]
-            ],
             
             // Shopify E-commerce Widgets
             'shopify_product' => [

@@ -82,13 +82,61 @@ class RSSParser {
             $data['title'] = (string)($channel->title ?? '');
             $data['description'] = (string)($channel->description ?? '');
             
-            // Get cover image
+            // Get cover image - try multiple methods
+            $coverImage = '';
+            
+            // Method 1: Standard RSS image->url
             if (isset($channel->image->url)) {
-                $data['cover_image'] = (string)$channel->image->url;
-            } elseif (isset($channel->{'itunes:image'}['href'])) {
-                $data['cover_image'] = (string)$channel->{'itunes:image'}['href'];
-            } elseif (isset($xml->channel->children('http://www.itunes.com/dtds/podcast-1.0.dtd')->image['href'])) {
-                $data['cover_image'] = (string)$xml->channel->children('http://www.itunes.com/dtds/podcast-1.0.dtd')->image['href'];
+                $coverImage = (string)$channel->image->url;
+            }
+            
+            // Method 2: iTunes namespace image href - use proper namespace URI
+            if (empty($coverImage)) {
+                $itunesNs = 'http://www.itunes.com/dtds/podcast-1.0.dtd';
+                $itunesImage = $channel->children($itunesNs)->image;
+                if ($itunesImage && isset($itunesImage['href'])) {
+                    $coverImage = (string)$itunesImage['href'];
+                } elseif ($itunesImage && isset($itunesImage->attributes()->href)) {
+                    $coverImage = (string)$itunesImage->attributes()->href;
+                }
+            }
+            
+            // Method 3: Try direct itunes:image access (fallback)
+            if (empty($coverImage) && isset($channel->{'itunes:image'})) {
+                $itunesImage = $channel->{'itunes:image'};
+                if (isset($itunesImage['href'])) {
+                    $coverImage = (string)$itunesImage['href'];
+                } elseif (isset($itunesImage->attributes()->href)) {
+                    $coverImage = (string)$itunesImage->attributes()->href;
+                }
+            }
+            
+            // Method 4: Check for image tag with url attribute
+            if (empty($coverImage) && isset($channel->image)) {
+                $imageElement = $channel->image;
+                if (isset($imageElement->url)) {
+                    $coverImage = (string)$imageElement->url;
+                } elseif (isset($imageElement['href'])) {
+                    $coverImage = (string)$imageElement['href'];
+                }
+            }
+            
+            // Method 5: Check for media:thumbnail or media:content with image
+            if (empty($coverImage)) {
+                $namespaces = $xml->getNamespaces(true);
+                foreach ($namespaces as $prefix => $uri) {
+                    if (strpos($uri, 'media') !== false || $prefix === 'media') {
+                        $mediaImage = $channel->children($uri)->thumbnail;
+                        if (isset($mediaImage['url'])) {
+                            $coverImage = (string)$mediaImage['url'];
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($coverImage)) {
+                $data['cover_image'] = $coverImage;
             }
             
             // Parse episodes
@@ -248,16 +296,17 @@ class RSSParser {
         try {
             $this->pdo->beginTransaction();
             
-            // Update page with podcast info
-            executeQuery(
-                "UPDATE pages SET podcast_name = ?, podcast_description = ?, cover_image_url = ? WHERE id = ?",
-                [
-                    $feedData['title'],
-                    $feedData['description'],
-                    $feedData['cover_image'],
-                    $pageId
-                ]
-            );
+            // Only save cover image URL - do NOT update podcast_name or podcast_description
+            // RSS feed data should only be used for the podcast player, not the main page
+            if (!empty($feedData['cover_image'])) {
+                executeQuery(
+                    "UPDATE pages SET cover_image_url = ? WHERE id = ?",
+                    [
+                        $feedData['cover_image'],
+                        $pageId
+                    ]
+                );
+            }
             
             // Delete existing episodes
             executeQuery("DELETE FROM episodes WHERE page_id = ?", [$pageId]);

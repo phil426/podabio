@@ -1,0 +1,267 @@
+.wrapper {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.section {
+  display: grid;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #111827);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.presetSwatch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  border: 2px solid rgba(15, 23, 42, 0.15);
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 150ms ease;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.presetSwatch:hover {
+  transform: scale(1.05);
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.presetSwatchActive {
+  border-color: var(--active-tab-color, #2563eb);
+  border-width: 3px;
+  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(37, 99, 235, 0.2));
+}
+
+.presetSwatchGradient {
+  background-size: cover;
+  background-position: center;
+}
+
+.checkmark {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.customSection {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.customLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.colorPickerRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.colorSwatchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.colorPreviewButton {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid rgba(15, 23, 42, 0.15);
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorPreviewButton:hover {
+  transform: scale(1.05);
+  border-color: var(--active-tab-color, #2563eb);
+  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(37, 99, 235, 0.2));
+}
+
+.colorPreview {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.colorPickerContainer {
+  width: 100%;
+  position: relative;
+}
+
+.colorPicker {
+  width: 100%;
+  height: 200px;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  overflow: hidden;
+}
+
+.hexInput {
+  width: 90px;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  background: #ffffff;
+  transition: border-color 150ms ease;
+}
+
+.hexInput:focus {
+  outline: none;
+  border-color: var(--active-tab-color, #2563eb);
+  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(37, 99, 235, 0.1));
+}
+
+.gradientControl {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.controlLabel {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.controlLabel span {
+  display: block;
+}
+
+.directionRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.directionSlider {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.1);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.directionSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--active-tab-color, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.directionSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--active-tab-color, #2563eb);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.directionInput {
+  width: 70px;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.directionInput:focus {
+  outline: none;
+  border-color: var(--active-tab-color, #2563eb);
+  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(37, 99, 235, 0.1));
+}
+
+.degreeSymbol {
+  font-size: 0.85rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-weight: 500;
+  min-width: 20px;
+}
+
+.colorStopsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.colorStop {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.colorStopLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #111827);
+}
+
+.colorStopControls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.gradientPreview {
+  padding-top: 0.5rem;
+}
+
+.gradientPreviewBox {
+  width: 100%;
+  height: 80px;
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  border: 2px solid rgba(15, 23, 42, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+

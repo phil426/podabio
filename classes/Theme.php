@@ -14,6 +14,13 @@ class Theme {
     private static $cache = [];
     private static $themeColumns = null;
     
+    /**
+     * Clear theme columns cache (useful after migrations)
+     */
+    public static function clearThemeColumnsCache() {
+        self::$themeColumns = null;
+    }
+    
     public function __construct() {
         $this->pdo = getDB();
     }
@@ -39,14 +46,15 @@ class Theme {
     
     /**
      * Get cached theme to reduce database queries
+     * NOTE: This method always fetches fresh data (cache is disabled)
      * @param int $themeId
      * @return array|null
      */
     private function getCachedTheme($themeId) {
-        if (!isset(self::$cache[$themeId])) {
-            self::$cache[$themeId] = $this->getTheme($themeId);
-        }
-        return self::$cache[$themeId];
+        // Always fetch fresh theme data to ensure updates are reflected
+        // Cache is disabled to prevent stale data issues when themes are updated
+        // The static $cache array is kept for potential future use but is not currently used
+        return $this->getTheme($themeId);
     }
     
     /**
@@ -71,12 +79,22 @@ class Theme {
             return null;
         }
         
+        // DEBUG: Log theme fetch
+        error_log("THEME GET DEBUG: Fetching theme_id={$themeId} from database (cache disabled)");
         $theme = fetchOne("SELECT * FROM themes WHERE id = ? AND is_active = 1", [$themeId]);
         
         if ($theme && $this->validateTheme($theme)) {
+            $pageBgValue = $theme['page_background'] ?? 'NULL';
+            $pageBgType = gettype($theme['page_background'] ?? null);
+            $pageBgLength = is_string($pageBgValue) ? strlen($pageBgValue) : 'N/A';
+            $widgetBgValue = $theme['widget_background'] ?? 'NULL';
+            $widgetBgType = gettype($theme['widget_background'] ?? null);
+            $widgetBgLength = is_string($widgetBgValue) ? strlen($widgetBgValue) : 'N/A';
+            error_log("THEME GET DEBUG: Theme {$themeId} loaded, page_background=" . $pageBgValue . " (type: " . $pageBgType . ", length: " . $pageBgLength . "), widget_background=" . $widgetBgValue . " (type: " . $widgetBgType . ", length: " . $widgetBgLength . "), has_color_tokens=" . (!empty($theme['color_tokens']) ? 'yes' : 'no'));
             return $theme;
         }
         
+        error_log("THEME GET DEBUG: Theme {$themeId} not found or invalid");
         return null;
     }
     
@@ -299,8 +317,19 @@ class Theme {
         $result = $defaults;
         
         foreach ($overrides as $override) {
-            if (!empty($override) && is_array($override)) {
-                $result = array_replace_recursive($result, $override);
+            if (is_array($override)) {
+                foreach ($override as $key => $value) {
+                    // If value is explicitly set in override (even if empty string or null), use it
+                    if (array_key_exists($key, $override)) {
+                        if (is_array($value) && isset($result[$key]) && is_array($result[$key])) {
+                            // Recursively merge nested arrays
+                            $result[$key] = $this->mergeTokens($result[$key], $value);
+                        } else {
+                            // For scalar values (including empty strings and null), use the override value
+                            $result[$key] = $value;
+                        }
+                    }
+                }
             }
         }
         
@@ -409,22 +438,31 @@ class Theme {
             ],
             'density_multipliers' => [
                 'compact' => [
-                    '2xs' => 0.75,
-                    'xs' => 0.85,
-                    'sm' => 0.9,
-                    'md' => 1.0,
-                    'lg' => 1.0,
-                    'xl' => 1.0,
-                    '2xl' => 1.0
+                    '2xs' => 1.0,
+                    'xs' => 1.1,
+                    'sm' => 1.2,
+                    'md' => 1.5,
+                    'lg' => 1.75,  // Start where comfortable was (for left/right page padding)
+                    'xl' => 2.0,
+                    '2xl' => 2.25
+                ],
+                'cozy' => [
+                    '2xs' => 1.2,
+                    'xs' => 1.3,
+                    'sm' => 1.4,
+                    'md' => 1.75,
+                    'lg' => 2.25,  // Add more spacing
+                    'xl' => 2.5,
+                    '2xl' => 2.75
                 ],
                 'comfortable' => [
-                    '2xs' => 1.0,
-                    'xs' => 1.0,
-                    'sm' => 1.1,
-                    'md' => 1.25,
-                    'lg' => 1.3,
-                    'xl' => 1.35,
-                    '2xl' => 1.4
+                    '2xs' => 1.4,
+                    'xs' => 1.5,
+                    'sm' => 1.6,
+                    'md' => 2.0,
+                    'lg' => 2.75,  // Even more spacing
+                    'xl' => 3.0,
+                    '2xl' => 3.25
                 ]
             ],
             'modifiers' => []
@@ -494,7 +532,7 @@ class Theme {
             $density = $theme['layout_density'];
         }
         
-        $allowed = ['compact', 'comfortable'];
+        $allowed = ['compact', 'cozy', 'comfortable'];
         return in_array($density, $allowed, true) ? $density : 'comfortable';
     }
     
@@ -538,7 +576,15 @@ class Theme {
         $pageTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
         
-        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        
+        // DEBUG: Log scale values
+        $scale = $merged['scale'] ?? null;
+        if ($scale) {
+            error_log("THEME GET TYPOGRAPHY DEBUG: scale_xl=" . ($scale['xl'] ?? 'null') . ", scale_sm=" . ($scale['sm'] ?? 'null') . ", theme_id=" . ($theme['id'] ?? 'null'));
+        }
+        
+        return $merged;
     }
     
     /**
@@ -582,7 +628,34 @@ class Theme {
         $pageTokens = $this->parseJsonColumn($page['shape_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['shape_tokens'] ?? null, []) : [];
         
-        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        // CRITICAL DEBUG: Log shape token sources
+        error_log("THEME getShapeTokens DEBUG: defaults.corner = " . json_encode($defaults['corner'] ?? null));
+        error_log("THEME getShapeTokens DEBUG: themeTokens.corner = " . json_encode($themeTokens['corner'] ?? null));
+        error_log("THEME getShapeTokens DEBUG: pageTokens.corner = " . json_encode($pageTokens['corner'] ?? null));
+        
+        // CRITICAL: For corner, if theme has corner values, REPLACE the entire corner object
+        // This is because we only save ONE corner value (the active one), not all of them
+        // We don't want to merge with defaults because that keeps all default values
+        $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        
+        // If theme has corner values, replace the merged corner with ONLY the theme's corner values
+        // This ensures the CSS generator only sees the active corner value
+        if (!empty($themeTokens['corner']) && is_array($themeTokens['corner'])) {
+            // Theme has corner values - replace the entire corner object with theme's values only
+            // This prevents defaults from interfering
+            $merged['corner'] = $themeTokens['corner'];
+            error_log("THEME getShapeTokens DEBUG: Replaced merged.corner with themeTokens.corner only");
+        }
+        
+        // Page tokens can still override theme (for per-page customization)
+        if (!empty($pageTokens['corner']) && is_array($pageTokens['corner'])) {
+            $merged['corner'] = $pageTokens['corner'];
+            error_log("THEME getShapeTokens DEBUG: Replaced merged.corner with pageTokens.corner only");
+        }
+        
+        error_log("THEME getShapeTokens DEBUG: merged.corner = " . json_encode($merged['corner'] ?? null));
+        
+        return $merged;
     }
     
     /**
@@ -600,6 +673,32 @@ class Theme {
     }
     
     /**
+     * Get default iconography tokens
+     * @return array
+     */
+    private function getDefaultIconographyTokens() {
+        return [
+            'size' => '48px',
+            'color' => '', // Empty string instead of null to allow override
+            'spacing' => '0.75rem'
+        ];
+    }
+    
+    /**
+     * Get iconography tokens (merged from defaults, theme, and page)
+     * @param array $page
+     * @param array|null $theme
+     * @return array
+     */
+    public function getIconographyTokens($page, $theme = null) {
+        $defaults = $this->getDefaultIconographyTokens();
+        $pageTokens = $this->parseJsonColumn($page['iconography_tokens'] ?? null, []);
+        $themeTokens = $theme ? $this->parseJsonColumn($theme['iconography_tokens'] ?? null, []) : [];
+        
+        return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+    }
+    
+    /**
      * Get consolidated theme token sets
      * @param array $page
      * @param array|null $theme
@@ -611,15 +710,27 @@ class Theme {
         $spacingTokens = $this->getSpacingTokens($page, $theme);
         $shapeTokens = $this->getShapeTokens($page, $theme);
         $motionTokens = $this->getMotionTokens($page, $theme);
+        $iconographyTokens = $this->getIconographyTokens($page, $theme);
         
-        return [
+        $tokens = [
             'colors' => $colorTokens,
             'typography' => $typographyTokens,
             'spacing' => $spacingTokens,
             'shape' => $shapeTokens,
             'motion' => $motionTokens,
+            'iconography' => $iconographyTokens,
             'layout_density' => $spacingTokens['density'] ?? $this->resolveLayoutDensity($page, $theme)
         ];
+        
+        // Apply token_overrides from page if present
+        if (!empty($page['token_overrides'])) {
+            $overrides = $this->parseJsonColumn($page['token_overrides'], null);
+            if (is_array($overrides) && !empty($overrides)) {
+                $tokens = $this->mergeTokens($tokens, $overrides);
+            }
+        }
+        
+        return $tokens;
     }
     
     /**
@@ -635,6 +746,8 @@ class Theme {
             $stmt = $this->pdo->query("SHOW COLUMNS FROM themes");
             $columns = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
             self::$themeColumns = is_array($columns) ? $columns : [];
+            error_log("THEME DEBUG: Loaded theme columns: " . implode(', ', self::$themeColumns));
+            error_log("THEME DEBUG: widget_background in columns: " . (in_array('widget_background', self::$themeColumns, true) ? 'YES' : 'NO'));
         } catch (PDOException $e) {
             error_log("Failed to inspect themes columns: " . $e->getMessage());
             self::$themeColumns = [];
@@ -772,59 +885,33 @@ class Theme {
      */
     public function getWidgetStyles($page, $theme = null) {
         require_once __DIR__ . '/WidgetStyleManager.php';
+        
+        // CRITICAL: Use ONLY theme.widget_styles - no page-level overrides, no legacy fallbacks
+        // Theme widget styles are the ONLY source of truth
+        
+        // Get theme if not provided
+        if (empty($theme) && !empty($page['theme_id'])) {
+            $theme = $this->getCachedTheme($page['theme_id']);
+        }
+        
         $styles = [];
         
-        // First, try page-specific widget styles
-        if (!empty($page['widget_styles'])) {
-            $pageStyles = parseThemeJson($page['widget_styles'], []);
-            if (!empty($pageStyles)) {
-                $styles = $pageStyles;
-            }
-        }
-        
-        // Add widget background and border color from new columns
-        if (!empty($page['widget_background'])) {
-            $styles['widget_background'] = $page['widget_background'];
-        }
-        if (!empty($page['widget_border_color'])) {
-            $styles['widget_border_color'] = $page['widget_border_color'];
-        }
-        
-        // If no page styles and theme is provided, use theme styles
-        if (empty($styles['widget_background']) && $theme && !empty($theme['widget_background'])) {
-            $styles['widget_background'] = $theme['widget_background'];
-        }
-        if (empty($styles['widget_border_color']) && $theme && !empty($theme['widget_border_color'])) {
-            $styles['widget_border_color'] = $theme['widget_border_color'];
-        }
-        
+        // ONLY use theme.widget_styles - nothing else
         if ($theme && !empty($theme['widget_styles'])) {
             $themeStyles = parseThemeJson($theme['widget_styles'], []);
             if (!empty($themeStyles)) {
-                $styles = array_merge($themeStyles, $styles);
+                $styles = $themeStyles;
+                error_log("THEME getWidgetStyles: Using theme.widget_styles");
             }
         }
         
-        // If no theme provided but page has theme_id, fetch it
-        if ((empty($styles['widget_background']) || empty($styles['widget_border_color'])) && empty($theme) && !empty($page['theme_id'])) {
-            $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme) {
-                if (empty($styles['widget_background']) && !empty($theme['widget_background'])) {
-                    $styles['widget_background'] = $theme['widget_background'];
-                }
-                if (empty($styles['widget_border_color']) && !empty($theme['widget_border_color'])) {
-                    $styles['widget_border_color'] = $theme['widget_border_color'];
-                }
-                if (!empty($theme['widget_styles'])) {
-                    $themeStyles = parseThemeJson($theme['widget_styles'], []);
-                    if (!empty($themeStyles)) {
-                        $styles = array_merge($themeStyles, $styles);
-                    }
-                }
-            }
+        // NO FALLBACKS - if theme doesn't have widget_styles, return empty array
+        // CSS generator will use shape_tokens and other token sources instead
+        if (empty($styles)) {
+            error_log("THEME getWidgetStyles: theme.widget_styles is empty/null, returning empty array");
         }
         
-        // Merge with defaults
+        // Merge with defaults only for structure, not for values
         return WidgetStyleManager::mergeWithDefaults($styles);
     }
     
@@ -835,27 +922,23 @@ class Theme {
      * @return string Widget background (color or gradient)
      */
     public function getWidgetBackground($page, $theme = null) {
-        // First, try page-specific widget background
-        if (!empty($page['widget_background'])) {
-            return $page['widget_background'];
+        // CRITICAL: Use ONLY theme.widget_background - no fallbacks, no legacy, no page-level overrides
+        // Theme widget background is the ONLY source of truth
+        
+        // Get theme if not provided
+        if (empty($theme) && !empty($page['theme_id'])) {
+            $theme = $this->getCachedTheme($page['theme_id']);
         }
         
-        // If no page background and theme is provided, use theme background
-        if ($theme && !empty($theme['widget_background'])) {
+        // ONLY use theme.widget_background - nothing else
+        if ($theme && isset($theme['widget_background']) && $theme['widget_background'] !== null && $theme['widget_background'] !== '') {
+            error_log("THEME getWidgetBackground: Using theme.widget_background: " . $theme['widget_background']);
             return $theme['widget_background'];
         }
         
-        // If no theme provided but page has theme_id, fetch it
-        if (empty($theme) && !empty($page['theme_id'])) {
-            $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && !empty($theme['widget_background'])) {
-                return $theme['widget_background'];
-            }
-        }
-        
-        // Fallback to secondary color
-        $colors = $this->getThemeColors($page, $theme);
-        return $colors['secondary'];
+        // NO FALLBACKS - if theme doesn't have widget_background, that's an error
+        error_log("THEME getWidgetBackground ERROR: theme.widget_background is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
+        return null; // Return null to indicate error - let CSS generator handle it
     }
     
     /**
@@ -865,27 +948,23 @@ class Theme {
      * @return string Widget border color (color or gradient)
      */
     public function getWidgetBorderColor($page, $theme = null) {
-        // First, try page-specific widget border color
-        if (!empty($page['widget_border_color'])) {
-            return $page['widget_border_color'];
-        }
+        // CRITICAL: Use ONLY theme.widget_border_color - no fallbacks, no legacy, no page-level overrides
+        // Theme widget border color is the ONLY source of truth
         
-        // If no page border color and theme is provided, use theme border color
-        if ($theme && !empty($theme['widget_border_color'])) {
-            return $theme['widget_border_color'];
-        }
-        
-        // If no theme provided but page has theme_id, fetch it
+        // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && !empty($theme['widget_border_color'])) {
-                return $theme['widget_border_color'];
-            }
         }
         
-        // Fallback to primary color
-        $colors = $this->getThemeColors($page, $theme);
-        return $colors['primary'];
+        // ONLY use theme.widget_border_color - nothing else
+        if ($theme && isset($theme['widget_border_color']) && $theme['widget_border_color'] !== null && $theme['widget_border_color'] !== '') {
+            error_log("THEME getWidgetBorderColor: Using theme.widget_border_color: " . $theme['widget_border_color']);
+                return $theme['widget_border_color'];
+            }
+        
+        // NO FALLBACKS - if theme doesn't have widget_border_color, that's an error
+        error_log("THEME getWidgetBorderColor ERROR: theme.widget_border_color is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
+        return null; // Return null to indicate error - let CSS generator handle it
     }
     
     /**
@@ -955,27 +1034,23 @@ class Theme {
      * @return string Page background (color or gradient)
      */
     public function getPageBackground($page, $theme = null) {
-        // First, try page-specific background
-        if (!empty($page['page_background'])) {
-            return $page['page_background'];
-        }
+        // CRITICAL: Use ONLY theme.page_background - no fallbacks, no legacy, no page-level overrides
+        // Theme background is the ONLY source of truth
         
-        // If no page background and theme is provided, use theme background
-        if ($theme && !empty($theme['page_background'])) {
-            return $theme['page_background'];
-        }
-        
-        // If no theme provided but page has theme_id, fetch it
+        // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
-            if ($theme && !empty($theme['page_background'])) {
-                return $theme['page_background'];
-            }
         }
         
-        // Fallback to secondary color
-        $colors = $this->getThemeColors($page, $theme);
-        return $colors['secondary'];
+        // ONLY use theme.page_background - nothing else
+        if ($theme && isset($theme['page_background']) && $theme['page_background'] !== null && $theme['page_background'] !== '') {
+            error_log("THEME getPageBackground: Using theme.page_background: " . $theme['page_background']);
+                return $theme['page_background'];
+            }
+        
+        // NO FALLBACKS - if theme doesn't have page_background, that's an error
+        error_log("THEME getPageBackground ERROR: theme.page_background is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
+        return null; // Return null to indicate error - let CSS generator handle it
     }
     
     /**
@@ -1124,6 +1199,10 @@ class Theme {
             $themeData['motion_tokens'] = $this->decodeJsonField($theme, 'motion_tokens');
         }
 
+        if ($this->hasThemeColumn('iconography_tokens') && isset($theme['iconography_tokens'])) {
+            $themeData['iconography_tokens'] = $this->decodeJsonField($theme, 'iconography_tokens');
+        }
+
         if ($this->hasThemeColumn('layout_density') && isset($theme['layout_density'])) {
             $themeData['layout_density'] = $theme['layout_density'];
         }
@@ -1185,13 +1264,7 @@ class Theme {
                 'fonts',
                 'page_background',
                 'widget_styles',
-                'spatial_effect',
-                'widget_background',
-                'widget_border_color',
-                'widget_primary_font',
-                'widget_secondary_font',
-                'page_primary_font',
-                'page_secondary_font'
+                'spatial_effect'
             ];
             
             $params = [
@@ -1201,14 +1274,39 @@ class Theme {
                 $fonts,
                 $pageBackground,
                 $widgetStyles,
-                $spatialEffect,
-                $widgetBackground,
-                $widgetBorderColor,
-                $widgetPrimaryFont,
-                $widgetSecondaryFont,
-                $pagePrimaryFont,
-                $pageSecondaryFont
+                $spatialEffect
             ];
+            
+            // Only add widget_background if column exists
+            $allColumns = $this->getThemeColumns();
+            error_log("THEME CREATE DEBUG: Available columns: " . implode(', ', $allColumns));
+            error_log("THEME CREATE DEBUG: Checking widget_background: " . ($this->hasThemeColumn('widget_background') ? 'EXISTS' : 'NOT FOUND'));
+            
+            if ($this->hasThemeColumn('widget_background')) {
+                $columns[] = 'widget_background';
+                $params[] = $widgetBackground;
+                error_log("THEME CREATE DEBUG: Adding widget_background = " . ($widgetBackground ?? 'NULL'));
+            }
+            if ($this->hasThemeColumn('widget_border_color')) {
+                $columns[] = 'widget_border_color';
+                $params[] = $widgetBorderColor;
+            }
+            if ($this->hasThemeColumn('widget_primary_font')) {
+                $columns[] = 'widget_primary_font';
+                $params[] = $widgetPrimaryFont;
+            }
+            if ($this->hasThemeColumn('widget_secondary_font')) {
+                $columns[] = 'widget_secondary_font';
+                $params[] = $widgetSecondaryFont;
+            }
+            if ($this->hasThemeColumn('page_primary_font')) {
+                $columns[] = 'page_primary_font';
+                $params[] = $pagePrimaryFont;
+            }
+            if ($this->hasThemeColumn('page_secondary_font')) {
+                $columns[] = 'page_secondary_font';
+                $params[] = $pageSecondaryFont;
+            }
             
             if ($this->hasThemeColumn('color_tokens')) {
                 $columns[] = 'color_tokens';
@@ -1229,6 +1327,10 @@ class Theme {
             if ($this->hasThemeColumn('motion_tokens')) {
                 $columns[] = 'motion_tokens';
                 $params[] = isset($themeData['motion_tokens']) ? (is_array($themeData['motion_tokens']) ? json_encode($themeData['motion_tokens']) : $themeData['motion_tokens']) : null;
+            }
+            if ($this->hasThemeColumn('iconography_tokens')) {
+                $columns[] = 'iconography_tokens';
+                $params[] = isset($themeData['iconography_tokens']) ? (is_array($themeData['iconography_tokens']) ? json_encode($themeData['iconography_tokens']) : $themeData['iconography_tokens']) : null;
             }
             if ($this->hasThemeColumn('layout_density')) {
                 $columns[] = 'layout_density';
@@ -1329,19 +1431,72 @@ class Theme {
             }
             
             if (isset($themeData['page_background'])) {
+                // Allow null to clear page_background (so color_tokens are used)
+                // But also allow empty string to be saved if explicitly provided
+                $pageBgValue = $themeData['page_background'];
+                if ($pageBgValue === null || $pageBgValue === 'null') {
+                    $updates[] = "page_background = NULL";
+                } else {
                 $updates[] = "page_background = ?";
-                $params[] = $themeData['page_background'];
+                    $params[] = $pageBgValue;
+                }
+                // DEBUG: Log page_background update
+                error_log("THEME UPDATE DEBUG: Updating page_background to: " . ($pageBgValue ?? 'NULL'));
             }
             
             if (isset($themeData['widget_styles'])) {
                 $sanitized = WidgetStyleManager::sanitize($themeData['widget_styles']);
                 $updates[] = "widget_styles = ?";
                 $params[] = json_encode($sanitized);
+                // DEBUG: Log widget_styles being saved
+                error_log("THEME UPDATE DEBUG: Saving widget_styles = " . json_encode($sanitized));
             }
             
             if (isset($themeData['spatial_effect'])) {
                 $updates[] = "spatial_effect = ?";
                 $params[] = $themeData['spatial_effect'];
+            }
+            
+            if (isset($themeData['widget_background'])) {
+                $widgetBgValue = $themeData['widget_background'];
+                error_log("THEME UPDATE DEBUG: Updating widget_background to: " . ($widgetBgValue ?? 'NULL') . " (type: " . gettype($widgetBgValue ?? null) . ", length: " . (is_string($widgetBgValue) ? strlen($widgetBgValue) : 'N/A') . ")");
+                // CRITICAL: Check if column exists before adding to update
+                if ($this->hasThemeColumn('widget_background')) {
+                    if ($widgetBgValue === null || $widgetBgValue === 'null') {
+                        $updates[] = "widget_background = NULL";
+                    } else {
+                $updates[] = "widget_background = ?";
+                        $params[] = $widgetBgValue;
+                    }
+                    error_log("THEME UPDATE DEBUG: Added widget_background to updates array");
+                } else {
+                    error_log("THEME UPDATE ERROR: widget_background column does not exist in themes table!");
+                }
+            }
+            
+            if (isset($themeData['widget_border_color'])) {
+                $updates[] = "widget_border_color = ?";
+                $params[] = $themeData['widget_border_color'];
+            }
+            
+            if (isset($themeData['page_primary_font'])) {
+                $updates[] = "page_primary_font = ?";
+                $params[] = $themeData['page_primary_font'];
+            }
+            
+            if (isset($themeData['page_secondary_font'])) {
+                $updates[] = "page_secondary_font = ?";
+                $params[] = $themeData['page_secondary_font'];
+            }
+            
+            if (isset($themeData['widget_primary_font'])) {
+                $updates[] = "widget_primary_font = ?";
+                $params[] = $themeData['widget_primary_font'];
+            }
+            
+            if (isset($themeData['widget_secondary_font'])) {
+                $updates[] = "widget_secondary_font = ?";
+                $params[] = $themeData['widget_secondary_font'];
             }
             
             if ($this->hasThemeColumn('color_tokens') && isset($themeData['color_tokens'])) {
@@ -1360,13 +1515,23 @@ class Theme {
             }
             
             if ($this->hasThemeColumn('shape_tokens') && isset($themeData['shape_tokens'])) {
+                $shapeTokensJson = is_array($themeData['shape_tokens']) ? json_encode($themeData['shape_tokens']) : $themeData['shape_tokens'];
+                error_log("THEME UPDATE DEBUG: Saving shape_tokens=" . $shapeTokensJson);
+                if (is_array($themeData['shape_tokens']) && isset($themeData['shape_tokens']['corner'])) {
+                    error_log("THEME UPDATE DEBUG: shape_tokens.corner=" . json_encode($themeData['shape_tokens']['corner']));
+                }
                 $updates[] = "shape_tokens = ?";
-                $params[] = is_array($themeData['shape_tokens']) ? json_encode($themeData['shape_tokens']) : $themeData['shape_tokens'];
+                $params[] = $shapeTokensJson;
             }
             
             if ($this->hasThemeColumn('motion_tokens') && isset($themeData['motion_tokens'])) {
                 $updates[] = "motion_tokens = ?";
                 $params[] = is_array($themeData['motion_tokens']) ? json_encode($themeData['motion_tokens']) : $themeData['motion_tokens'];
+            }
+            
+            if ($this->hasThemeColumn('iconography_tokens') && isset($themeData['iconography_tokens'])) {
+                $updates[] = "iconography_tokens = ?";
+                $params[] = is_array($themeData['iconography_tokens']) ? json_encode($themeData['iconography_tokens']) : $themeData['iconography_tokens'];
             }
             
             if ($this->hasThemeColumn('layout_density') && isset($themeData['layout_density'])) {
@@ -1385,14 +1550,18 @@ class Theme {
             }
             
             if (empty($updates)) {
-                return false;
+                error_log("THEME UPDATE DEBUG: No updates to apply - updates array is empty");
+                return false; // Nothing to update
             }
             
+            $sql = "UPDATE themes SET " . implode(', ', $updates) . " WHERE id = ? AND user_id = ?";
             $params[] = $themeId;
             $params[] = $userId;
             
-            $sql = "UPDATE themes SET " . implode(', ', $updates) . " WHERE id = ? AND user_id = ?";
+            error_log("THEME UPDATE DEBUG: Executing SQL: " . $sql);
+            error_log("THEME UPDATE DEBUG: Params: " . json_encode($params));
             executeQuery($sql, $params);
+            error_log("THEME UPDATE DEBUG: Update executed successfully");
             
             // Clear cache
             self::clearCache($themeId);

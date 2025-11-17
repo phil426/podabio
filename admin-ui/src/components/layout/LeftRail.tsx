@@ -45,6 +45,7 @@ import {
 import { usePageSnapshot, usePageSettingsMutation } from '../../api/page';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
+import { useThemeLibraryQuery } from '../../api/themes';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList';
 import { WidgetGalleryDrawer } from '../overlays/WidgetGalleryDrawer';
@@ -52,7 +53,6 @@ import type { ApiResponse } from '../../api/types';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { ThemeLibraryPanel } from '../panels/ThemeLibraryPanel';
 import { IntegrationsPanel } from '../panels/IntegrationsPanel';
-import { BlogPostList } from '../panels/BlogPostList';
 import { SettingsPanel } from '../panels/SettingsPanel';
 
 import styles from './left-rail.module.css';
@@ -78,9 +78,6 @@ const widgetIconMap: Record<string, IconType> = {
   text_html: LuAlignLeft,
   image: LuImage,
   email_subscription: LuMail,
-  blog_latest_posts: LuNewspaper,
-  blog_category_filter: LuFilter,
-  blog_related_posts: LuBookOpen,
   heading_block: LuHeading2,
   text_note: LuItalic,
   divider_rule: LuMinus,
@@ -154,7 +151,22 @@ interface LeftRailProps {
 
 export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
+  const { data: themeLibrary } = useThemeLibraryQuery();
   const page = snapshot?.page;
+  
+  // Derive active theme (same logic as PropertiesPanel)
+  const activeTheme = useMemo(() => {
+    const systemThemes = themeLibrary?.system ?? [];
+    const userThemes = themeLibrary?.user ?? [];
+    const themeId = page?.theme_id ?? null;
+    
+    if (themeId == null) {
+      return systemThemes[0] ?? userThemes[0] ?? null;
+    }
+    
+    const combined = [...userThemes, ...systemThemes];
+    return combined.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
+  }, [themeLibrary, page?.theme_id]);
   const { data: widgets, isLoading: widgetsLoading, isError: widgetsError, error: widgetsErrorObj } = useWidgetsQuery();
   const { data: availableWidgets } = useAvailableWidgetsQuery();
   const reorderMutation = useReorderWidgetMutation();
@@ -196,37 +208,47 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
     };
 
     // Map widgets to layers
-    const widgetLayers: LayerItem[] = widgets ? widgets.map((widget) => {
-      const IconComponent = widgetIconMap[widget.widget_type] ?? fallbackWidgetIcon;
-      const config =
-        widget.config_data && typeof widget.config_data === 'object'
-          ? (widget.config_data as Record<string, unknown>)
-          : {};
-      const rawThumbnail =
-        typeof config.thumbnail_image === 'string' && config.thumbnail_image.trim() !== ''
-          ? (config.thumbnail_image as string)
-          : undefined;
-      const derivedYouTubeThumbnail =
-        widget.widget_type === 'youtube_video'
-          ? getYouTubeThumbnail(
-              typeof config.video_url === 'string' ? (config.video_url as string) : undefined
-            ) ?? undefined
-          : undefined;
-      const thumbnail = rawThumbnail ?? derivedYouTubeThumbnail;
+    // Filter out inactive blog widgets
+        const widgetLayers: LayerItem[] = widgets ? widgets
+          .filter((widget) => {
+            // Hide all blog widgets (feature retired)
+            const isBlogWidget = widget.widget_type.startsWith('blog_');
+            if (isBlogWidget) {
+              return false; // Hide all blog widgets
+            }
+            return true;
+          })
+      .map((widget) => {
+        const IconComponent = widgetIconMap[widget.widget_type] ?? fallbackWidgetIcon;
+        const config =
+          widget.config_data && typeof widget.config_data === 'object'
+            ? (widget.config_data as Record<string, unknown>)
+            : {};
+        const rawThumbnail =
+          typeof config.thumbnail_image === 'string' && config.thumbnail_image.trim() !== ''
+            ? (config.thumbnail_image as string)
+            : undefined;
+        const derivedYouTubeThumbnail =
+          widget.widget_type === 'youtube_video'
+            ? getYouTubeThumbnail(
+                typeof config.video_url === 'string' ? (config.video_url as string) : undefined
+              ) ?? undefined
+            : undefined;
+        const thumbnail = rawThumbnail ?? derivedYouTubeThumbnail;
 
-      return {
-        id: String(widget.id),
-        label: widget.title,
-        description:
-          availableWidgets?.find((option) => option.type === widget.widget_type)?.description ?? widget.widget_type,
-        icon: <IconComponent aria-hidden="true" />,
-        thumbnail: thumbnail ? normalizeImageUrl(thumbnail) : undefined,
-        displayOrder: widget.display_order,
-        isActive: widget.is_active === 1,
-        isLocked: lockedItems.has(String(widget.id)),
-        isFeatured: widget.is_featured === 1
-      };
-    }) : [];
+        return {
+          id: String(widget.id),
+          label: widget.title,
+          description:
+            availableWidgets?.find((option) => option.type === widget.widget_type)?.description ?? widget.widget_type,
+          icon: <IconComponent aria-hidden="true" />,
+          thumbnail: thumbnail ? normalizeImageUrl(thumbnail) : undefined,
+          displayOrder: widget.display_order,
+          isActive: widget.is_active === 1,
+          isLocked: lockedItems.has(String(widget.id)),
+          isFeatured: widget.is_featured === 1
+        };
+      }) : [];
 
     // Add Footer layer at the bottom (always locked)
     const footerLayer: LayerItem = {
@@ -472,6 +494,17 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
           onTabChange(newTab);
         }}
       >
+        {(activeTab === 'structure' || activeTab === 'design') && (
+          <Tabs.List className={styles.innerTabList} aria-label="Page layout and look">
+            <Tabs.Trigger value="structure" className={styles.innerTabTrigger}>
+              Layout
+            </Tabs.Trigger>
+            <Tabs.Trigger value="design" className={styles.innerTabTrigger}>
+              Look
+            </Tabs.Trigger>
+          </Tabs.List>
+        )}
+
         <Tabs.Content value="structure" className={styles.tabContent}>
           <ScrollArea.Root className={styles.scrollArea}>
             <ScrollArea.Viewport className={styles.viewport}>
@@ -565,7 +598,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                             className={styles.layerActionButton}
                             onClick={() => handleToggleLock(item.id)}
                             aria-label={isLocked ? `Unlock ${item.label}` : `Lock ${item.label}`}
-                            title={isLocked ? 'Unlock position' : 'Lock position'}
+                            title={isLocked ? 'Unlock this block so it can move' : 'Lock this block to prevent accidental moves'}
                             data-locked={isLocked ? 'true' : 'false'}
                           >
                             <LuLock aria-hidden="true" />
@@ -577,7 +610,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                           className={styles.layerActionButton}
                           onClick={() => handleToggleVisibility(item.id)}
                           aria-label={item.isActive ? `Hide ${item.label}` : `Show ${item.label}`}
-                          title={item.isActive ? 'Hide' : 'Show'}
+                            title={item.isActive ? 'Hide this block on your live page' : 'Show this block on your live page'}
                           disabled={isPageItem ? pageSettingsMutation.isPending : updateMutation.isPending}
                           data-active={item.isActive ? 'true' : 'false'}
                         >
@@ -590,7 +623,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                               className={styles.layerActionButton}
                               onClick={() => handleEditLayer(item.id)}
                               aria-label={`Edit ${item.label}`}
-                              title="Edit"
+                              title="Open settings for this block in the right-hand panel"
                               disabled={updateMutation.isPending}
                             >
                               <LuPencil aria-hidden="true" />
@@ -600,7 +633,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                               className={styles.layerActionButton}
                               onClick={() => handleDeleteLayer(item.id)}
                               aria-label={`Delete ${item.label}`}
-                              title="Delete"
+                              title="Delete this block from your page"
                               disabled={deleteMutation.isPending}
                             >
                               <LuTrash aria-hidden="true" />
@@ -621,7 +654,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
                                 e.stopPropagation();
                               }}
                               aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
-                              title={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
+                              title={item.isFeatured ? 'Stop highlighting this block on your page' : 'Highlight this block with a featured effect'}
                               disabled={updateMutation.isPending}
                               data-featured={item.isFeatured ? 'true' : 'false'}
                             >
@@ -683,15 +716,18 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
             </ScrollArea.Scrollbar>
           </ScrollArea.Root>
         </Tabs.Content>
+        <Tabs.Content value="style" className={styles.tabContent}>
+          {/* Intentionally left minimal for now – Style tab is driven by the Properties panel */}
+          <div className={styles.analyticsPlaceholder}>
+            <p>Use the right-hand panel to edit typography, spacing, shapes, and motion.</p>
+          </div>
+        </Tabs.Content>
         <Tabs.Content value="analytics" className={styles.tabContent}>
           <div className={styles.analyticsPlaceholder}>
             <p>Analytics dashboard is displayed in the center panel</p>
           </div>
         </Tabs.Content>
 
-        <Tabs.Content value="blog" className={styles.tabContent}>
-          <BlogPostList activeColor={activeColor} />
-        </Tabs.Content>
 
         <Tabs.Content value="integrations" className={styles.tabContent}>
           <ScrollArea.Root className={styles.scrollArea}>

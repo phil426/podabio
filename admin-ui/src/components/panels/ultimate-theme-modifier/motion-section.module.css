@@ -1,0 +1,64 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group {
+  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  overflow: hidden;
+  transition: all 200ms ease-out;
+}
+
+.group:hover {
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.12));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.groupContent {
+  overflow: hidden;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.previewButton {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: rgba(255, 255, 255, 1);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+
+.previewButton:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  color: var(--pod-semantic-text-primary, #0f172a);
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.12));
+}
+
+.easingInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: rgba(255, 255, 255, 1);
+  font-size: 13px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  transition: all 200ms ease-out;
+}
+
+.easingInput:focus {
+  outline: none;
+  border-color: var(--active-tab-color, #2563eb);
+  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(37, 99, 235, 0.1));
+}
+

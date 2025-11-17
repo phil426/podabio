@@ -15,10 +15,9 @@ class WidgetStyleManager {
         'border_width' => 'none',
         'border_effect' => 'shadow',
         'border_shadow_intensity' => 'subtle',
-        'border_glow_intensity' => 'none',
+        'border_glow_intensity' => 'subtle',
         'glow_color' => '#ff00ff',
-        'border_color' => 'var(--primary-color)',
-        'background_color' => 'var(--secondary-color)',
+        // REMOVED: Legacy color references - these are now in theme columns
         'spacing' => 'comfortable',
         'shape' => 'rounded'
     ];
@@ -31,7 +30,7 @@ class WidgetStyleManager {
         'border_width' => ['none', 'thin', 'thick'],
         'border_effect' => ['shadow', 'glow'],
         'border_shadow_intensity' => ['none', 'subtle', 'pronounced'],
-        'border_glow_intensity' => ['none', 'subtle', 'pronounced'],
+        'border_glow_intensity' => ['subtle', 'pronounced'],
         'spacing' => ['tight', 'comfortable', 'spacious'],
         'shape' => ['square', 'rounded', 'round']
     ];

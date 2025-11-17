@@ -174,6 +174,7 @@ export function TopBar(): JSX.Element {
             onClick={handleToggleMenu}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
+            title="Open account menu"
           >
             {avatarUrl ? <img src={normalizeImageUrl(avatarUrl)} alt="" aria-hidden="true" className={styles.accountAvatarImage} /> : initials}
           </button>
@@ -186,6 +187,7 @@ export function TopBar(): JSX.Element {
             className={styles.accountToggle}
             onClick={handleToggleMenu}
             aria-label="Open account menu"
+            title="Open account menu"
             data-open={menuOpen ? 'true' : undefined}
           >
             <LuChevronDown aria-hidden="true" />
