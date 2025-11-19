@@ -48,7 +48,7 @@ This will:
 4. Check that manifest.json exists
 
 ### What Gets Deployed
-- `admin/react-admin.php` (fixed manifest path)
+- `admin/userdashboard.php` (fixed manifest path)
 - `admin-ui/dist/.vite/manifest.json` (production manifest)
 - `admin-ui/dist/assets/*` (built JS/CSS files)
 
@@ -66,7 +66,7 @@ This will:
 
 ### Admin Still Not Loading
 1. Verify manifest exists: `ls -la admin-ui/dist/.vite/manifest.json`
-2. Check PHP file: `grep manifest admin/react-admin.php`
+2. Check PHP file: `grep manifest admin/userdashboard.php`
 3. Check browser console for errors
 4. Verify files are accessible: `https://poda.bio/admin-ui/dist/.vite/manifest.json`
 

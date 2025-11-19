@@ -53,7 +53,7 @@ Create `config/database.php` with the following content:
 <?php
 /**
  * Database Configuration
- * Podn.Bio - poda.bio Production
+ * PodaBio - poda.bio Production
  */
 
 // Database connection settings
@@ -150,7 +150,7 @@ mysql -h srv775.hstgr.io -u u925957603_pab -p'[REDACTED]' u925957603_podabio < d
 #### Step 6: Verify Deployment
 
 1. Test PHP backend: https://poda.bio/index.php
-2. Test admin panel: https://poda.bio/admin/react-admin.php
+2. Test admin panel: https://poda.bio/admin/userdashboard.php
 3. Check browser console for React app errors
 4. Test database connectivity
 5. Test file uploads

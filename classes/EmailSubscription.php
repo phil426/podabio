@@ -1,7 +1,7 @@
 <?php
 /**
  * Email Subscription Class
- * Podn.Bio - Handles email list subscriptions
+ * PodaBio - Handles email list subscriptions
  */
 
 require_once __DIR__ . '/../config/database.php';

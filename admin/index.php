@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin Panel - Dashboard
- * Podn.Bio - Admin main dashboard
+ * PodaBio - Admin main dashboard
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -19,7 +19,7 @@ function isAdmin() {
     }
     
     // Check if user email is admin (or use is_admin field if it exists)
-    $adminEmails = ['phil@redwoodempiremedia.com', 'cursor@poda.bio']; // Add admin emails here
+    $adminEmails = ['phil@redwoodempiremedia.com', 'cursor@poda.bio', 'phil624@gmail.com']; // Add admin emails here
     return in_array(strtolower($user['email']), array_map('strtolower', $adminEmails));
 }
 
@@ -38,10 +38,10 @@ $stats = [
     'total_users' => (int)fetchOne("SELECT COUNT(*) as count FROM users")['count'],
     'total_pages' => (int)fetchOne("SELECT COUNT(*) as count FROM pages")['count'],
     'active_pages' => (int)fetchOne("SELECT COUNT(*) as count FROM pages WHERE is_active = 1")['count'],
-    'total_links' => (int)fetchOne("SELECT COUNT(*) as count FROM links")['count'],
-    'total_subscriptions' => (int)fetchOne("SELECT COUNT(*) as count FROM subscriptions WHERE status = 'active'")['count'],
-    'total_page_views' => (int)fetchOne("SELECT SUM(page_views) as total FROM analytics")['total'] ?? 0,
-    'total_link_clicks' => (int)fetchOne("SELECT SUM(click_count) as total FROM analytics")['total'] ?? 0,
+    'total_links' => (int)fetchOne("SELECT COUNT(*) as count FROM links")['count'] ?? 0,
+    'total_subscriptions' => (int)fetchOne("SELECT COUNT(*) as count FROM subscriptions WHERE status = 'active'")['count'] ?? 0,
+    'total_page_views' => (int)fetchOne("SELECT COUNT(*) as count FROM analytics WHERE event_type = 'view'")['count'] ?? 0,
+    'total_link_clicks' => (int)fetchOne("SELECT COUNT(*) as count FROM analytics WHERE event_type = 'click'")['count'] ?? 0,
 ];
 
 // Recent activity
@@ -259,7 +259,7 @@ $csrfToken = generateCSRFToken();
                 <a href="/admin/blog.php">Blog</a>
                 <a href="/admin/support.php">Support</a>
                 <a href="/admin/settings.php">Settings</a>
-                <a href="/admin/react-admin.php">PodaBio Studio</a>
+                <a href="/admin/select-panel.php">Switch Panel</a>
                 <a href="/logout.php">Logout</a>
             </nav>
         </div>

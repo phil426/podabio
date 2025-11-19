@@ -2,7 +2,7 @@
 /**
  * Theme Class
  * Centralized theme management and operations
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -488,8 +488,8 @@ class Theme {
                 'bold' => '4px'
             ],
             'shadow' => [
-                'level_1' => '0 2px 6px rgba(15, 23, 42, 0.12)',
-                'level_2' => '0 6px 16px rgba(15, 23, 42, 0.16)',
+                'level_1' => '0 1px 2px rgba(15, 23, 42, 0.06)',
+                'level_2' => '0 16px 48px rgba(15, 23, 42, 0.5)',
                 'focus' => '0 0 0 4px rgba(37, 99, 235, 0.35)'
             ]
         ];

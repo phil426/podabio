@@ -2,7 +2,7 @@
 /**
  * API Response Helper
  * Standardized API response formatting
- * Podn.Bio
+ * PodaBio
  */
 
 class APIResponse {

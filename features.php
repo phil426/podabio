@@ -1,7 +1,7 @@
 <?php
 /**
  * Features Page
- * Podn.Bio - Detailed features listing
+ * PodaBio - Detailed features listing
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -14,7 +14,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Features - <?php echo h(APP_NAME); ?></title>
-    <meta name="description" content="Discover all the powerful features Podn.Bio offers for podcasters.">
+    <meta name="description" content="Discover all the powerful features PodaBio offers for podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">

@@ -13,7 +13,7 @@ We've upgraded your editing experience to PodaBio Studio – a faster, token-dri
 - Customize account, security, and billing without leaving Studio.
 - Track block performance with built-in analytics.
 
-👉 **Jump in:** https://poda.bio/admin/react-admin.php
+👉 **Jump in:** https://poda.bio/admin/userdashboard.php
 
 Need a quick tour? Watch the 3‑minute walkthrough: https://poda.bio/studio-migration-guide
 
@@ -26,7 +26,7 @@ The PodaBio Team
 ```
 🚀 PodaBio Studio is now live! All editing, theming, and publishing happens inside the new Studio workspace. Take the guided tour →
 ```
-- CTA 1: `Open Studio` → `/admin/react-admin.php`
+- CTA 1: `Open Studio` → `/admin/userdashboard.php`
 - CTA 2: `Watch tour` → `https://poda.bio/studio-migration-guide`
 
 ## 3. Release Notes (Support Center)

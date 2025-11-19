@@ -1,0 +1,42 @@
+/* Social Icons Styles */
+/* Extracted from page.php - Medium Priority Extraction */
+/* Must load after ThemeCSSGenerator output to use theme CSS variables */
+
+.social-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--icon-spacing, 0.75rem);
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.social-icon {
+    width: var(--icon-size, 48px);
+    height: var(--icon-size, 48px);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    /* Icon color will be set by theme CSS with higher specificity */
+    color: var(--icon-color, var(--social-icon-color, var(--color-accent-primary)));
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: calc(var(--icon-size, 48px) * 0.625);
+}
+
+.social-icon i {
+    display: block;
+}
+
+.social-icon svg {
+    display: block;
+    color: inherit;
+}
+
+.social-icon:hover {
+    transform: translateY(-2px);
+    opacity: 0.8;
+}
+

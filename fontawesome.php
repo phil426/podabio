@@ -1,7 +1,7 @@
 <?php
 /**
  * Font Awesome Integration
- * Podn.Bio - Helper to include Font Awesome icons
+ * PodaBio - Helper to include Font Awesome icons
  * 
  * Font Awesome 6.5.1 via CDN
  * Usage: Include this file in your page head or use the constant below

@@ -4,7 +4,7 @@ _Last updated: 2025-11-10_
 
 ## Feature Flags & Token Storage
 - `config/feature-flags.php` defines boolean flags (currently `admin_new_experience`, `tokens_api`) with environment overrides. The React admin should check these flags via temporary top-bar notices or future `/api/feature-flags` before enabling new flows.
-- `includes/feature-flags.php` exposes `feature_flag($key)` used by `admin/react-admin.php` to gate the SPA while leaving `editor.php` untouched.
+- `includes/feature-flags.php` exposes `feature_flag($key)` used by `admin/userdashboard.php` to gate the SPA while leaving `editor.php` untouched.
 - Design tokens default to `config/tokens.php`. Tokens are grouped (`core`, `semantic`, `component`) and consumed by the React `TokenProvider`. Persistence for overrides is not yet wired; new APIs must merge theme/page overrides with these defaults.
 
 ## REST Endpoints Consumed by the Editor

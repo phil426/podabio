@@ -1,7 +1,7 @@
 <?php
 /**
  * Page Class
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -113,7 +113,7 @@ class Page {
     public function update($pageId, $data) {
         $allowedFields = [
             'username', 'custom_domain', 'rss_feed_url', 'podcast_name',
-            'podcast_description', 'footer_text', 'cover_image_url', 'theme_id', 'colors',
+            'podcast_description', 'footer_text', 'footer_copyright', 'footer_privacy_link', 'footer_terms_link', 'cover_image_url', 'theme_id', 'colors',
             'fonts', 'layout_option', 'background_image', 'profile_image',
             'email_service_provider', 'email_service_api_key', 'email_list_id', 'email_double_optin',
             'page_background', 'widget_styles', 'spatial_effect',

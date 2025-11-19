@@ -467,13 +467,19 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   }, [activeTab, setThemeInspectorVisible]);
 
   useEffect(() => {
-    // Set initial selection for structure tab, clear for others
+    // Set initial selection for structure tab only if nothing is selected, clear for others
+    // CRITICAL: Don't reset if user has explicitly selected something (like Footer)
     if (activeTab === 'structure') {
-      selectWidget('page:profile');
+      const currentSelection = useWidgetSelection.getState().selectedWidgetId;
+      // Only set default if there's truly no selection - don't override user's explicit choice
+      if (!currentSelection) {
+        selectWidget('page:profile');
+      }
     } else {
       selectWidget(null);
     }
-  }, [activeTab, selectWidget]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   return (
     <div 

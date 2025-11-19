@@ -1,7 +1,7 @@
 <?php
 /**
  * Verify Password for Google Account Linking
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     regenerateSession();
                     
                     $successMsg = 'Google account linked successfully!';
-                    redirect('/admin/react-admin.php#/account/profile?success=' . urlencode($successMsg));
+                    redirect('/admin/userdashboard.php#/account/profile?success=' . urlencode($successMsg));
                 } else {
                     $error = $linkResult['error'];
                 }

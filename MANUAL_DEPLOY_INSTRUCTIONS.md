@@ -67,7 +67,7 @@ Paste this content (use Ctrl+X, then Y, then Enter to save in nano):
 <?php
 /**
  * Database Configuration
- * Podn.Bio - poda.bio Production
+ * PodaBio - poda.bio Production
  */
 
 // Database connection settings
@@ -170,7 +170,7 @@ Or run the setup script:
 Exit SSH (type `exit`) and test in your browser:
 
 1. **PHP Backend**: https://poda.bio/index.php
-2. **Admin Panel**: https://poda.bio/admin/react-admin.php
+2. **Admin Panel**: https://poda.bio/admin/userdashboard.php
 3. **Check browser console** for any React app errors
 4. **Test file uploads** if possible
 

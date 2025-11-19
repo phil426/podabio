@@ -22,7 +22,7 @@
 
 5. **Page.php inline styles** (line 200, 963)
    - Line 200: Fallback CSS with `var(--page-background, ...)`
-   - Line 963: Theme-specific override for "aurora-skies" using `var(--gradient-page, var(--page-background))`
+   - Theme-specific overrides have been removed (now handled by ThemeCSSGenerator)
 
 ## Potential Issues
 
@@ -38,8 +38,8 @@
 
 ### Issue 3: Theme-Specific CSS Override
 **Location**: `Page.php` line 963
-**Problem**: Theme-specific CSS for "aurora-skies" uses `var(--gradient-page, var(--page-background))` which might not match current theme
-**Impact**: Low - Only affects if theme name matches "aurora-skies"
+**Problem**: Resolved - Theme-specific CSS has been removed
+**Impact**: None - Theme styling now handled entirely by ThemeCSSGenerator
 
 ### Issue 4: getPageBackground() Fallback Logic
 **Location**: `Theme.php::getPageBackground()` line 1028-1050

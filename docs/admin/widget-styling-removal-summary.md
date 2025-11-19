@@ -28,7 +28,7 @@ All widget styling has been removed from `Page.php` and `WidgetRenderer.php` to 
 - ✅ `.widget-heading` styling
 - ✅ `.widget-text-note` styling
 - ✅ `.widget-divider` styling
-- ✅ Theme-specific widget overrides (`body.theme-aurora-skies .widget-item`, etc.)
+- ✅ Theme-specific widget overrides (removed - now handled by ThemeCSSGenerator)
 - ✅ Marquee animation styles (kept keyframes only)
 
 **Kept (Functionality Only)**:

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Helper script: shows how to start all local dev servers for PodInBio Studio.
+# Helper script: shows how to start all local dev servers for PodaBio Studio.
 # This script is **informational only** – it just prints the commands you should run.
 
 cat <<'EOF'
-To start all dev servers for PodInBio Studio on your machine:
+To start all dev servers for PodaBio Studio on your machine:
 
 1) PHP backend (from project root)
 
@@ -23,7 +23,7 @@ To start all dev servers for PodInBio Studio on your machine:
 
 3) Open the Studio in your browser
 
-   - Admin preview is usually loaded via the PHP route (e.g., /admin/react-admin.php)
+   - Admin preview is usually loaded via the PHP route (e.g., /admin/userdashboard.php)
    - That page will connect to the Vite dev server at http://localhost:5174
 
 If the preview page is stuck on "Loading the new admin experience…":

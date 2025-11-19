@@ -9,7 +9,7 @@ SSH_PORT="65002"
 SSH_KEY_FILE="$HOME/.ssh/id_ed25519_podabio"
 
 echo "=========================================="
-echo "PodInBio Deployment Script"
+echo "PodaBio Deployment Script"
 echo "Deploying to poda.bio (Hostinger)"
 echo "=========================================="
 echo ""
@@ -53,15 +53,15 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     fi
     
     echo ""
-    echo "🔍 Step 3: Verifying admin/react-admin.php..."
-    if [ -f "admin/react-admin.php" ]; then
-        if grep -q "\.vite/manifest\.json" admin/react-admin.php; then
-            echo "✅ admin/react-admin.php has correct manifest path"
+    echo "🔍 Step 3: Verifying admin/userdashboard.php..."
+    if [ -f "admin/userdashboard.php" ]; then
+        if grep -q "\.vite/manifest\.json" admin/userdashboard.php; then
+            echo "✅ admin/userdashboard.php has correct manifest path"
         else
-            echo "⚠️  Warning: admin/react-admin.php may not have updated manifest path"
+            echo "⚠️  Warning: admin/userdashboard.php may not have updated manifest path"
         fi
     else
-        echo "❌ Error: admin/react-admin.php not found"
+        echo "❌ Error: admin/userdashboard.php not found"
         exit 1
     fi
     
@@ -71,7 +71,7 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo "=========================================="
     echo ""
     echo "Next steps:"
-    echo "1. Test admin panel: https://poda.bio/admin/react-admin.php"
+    echo "1. Test admin panel: https://poda.bio/admin/userdashboard.php"
     echo "2. Check browser console for any errors"
     echo "3. Verify React app loads (should not show 'Loading...' message)"
     echo ""
@@ -81,7 +81,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "🎉 Deployment successful!"
     echo ""
-    echo "Visit https://poda.bio/admin/react-admin.php to test"
+    echo "Visit https://poda.bio/admin/userdashboard.php to test"
 else
     echo ""
     echo "❌ Deployment failed. Please check the errors above."

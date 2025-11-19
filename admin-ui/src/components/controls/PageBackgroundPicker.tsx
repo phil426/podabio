@@ -21,17 +21,25 @@ function parseGradient(gradient: string): { direction: number; color1: string; c
   // Try to match various gradient formats
   // Format: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)
   // Format: linear-gradient(135deg, #2563EB, #7C3AED)
+  // Format: linear-gradient(148deg, #ffffe4 0%, #f2fce8 100%) - lowercase hex
   // Format: linear-gradient(135deg, rgb(37, 99, 235) 0%, rgb(124, 58, 237) 100%)
-  const linearMatch = gradient.match(/linear-gradient\((\d+)deg[^)]*\)/i);
+  const linearMatch = gradient.match(/linear-gradient\s*\(\s*(\d+)deg[^)]*\)/i);
   if (linearMatch) {
     const fullMatch = linearMatch[0];
-    // Extract colors - try hex first
-    const hexColors = fullMatch.match(/#[0-9a-fA-F]{6}/gi);
+    // Extract colors - try hex first (case insensitive, 3 or 6 digits)
+    const hexColors = fullMatch.match(/#[0-9a-fA-F]{3,6}/gi);
     if (hexColors && hexColors.length >= 2) {
+      // Normalize 3-digit hex to 6-digit
+      const normalizeHex = (hex: string) => {
+        if (hex.length === 4) {
+          return `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+        }
+        return hex;
+      };
       return {
         direction: parseInt(linearMatch[1], 10),
-        color1: hexColors[0],
-        color2: hexColors[1]
+        color1: normalizeHex(hexColors[0]),
+        color2: normalizeHex(hexColors[1])
       };
     }
     // Try rgb format
@@ -66,10 +74,30 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
     return '#FFFFFF';
   };
   
+  // Initialize from value on mount
+  const getInitialGradient = () => {
+    if (value && isGradient(value)) {
+      const parsed = parseGradient(value);
+      if (parsed) {
+        return {
+          direction: parsed.direction,
+          color1: parsed.color1,
+          color2: parsed.color2
+        };
+      }
+    }
+    return {
+      direction: 135,
+      color1: '#2563EB',
+      color2: '#7C3AED'
+    };
+  };
+
+  const initialGradient = getInitialGradient();
   const [solidColor, setSolidColor] = useState(getInitialSolidColor);
-  const [gradientDirection, setGradientDirection] = useState(135);
-  const [gradientColor1, setGradientColor1] = useState('#2563EB');
-  const [gradientColor2, setGradientColor2] = useState('#7C3AED');
+  const [gradientDirection, setGradientDirection] = useState(initialGradient.direction);
+  const [gradientColor1, setGradientColor1] = useState(initialGradient.color1);
+  const [gradientColor2, setGradientColor2] = useState(initialGradient.color2);
   const [activeMode, setActiveMode] = useState<'solid' | 'gradient'>(() => {
     // Initialize active mode based on value
     return value && isGradient(value) ? 'gradient' : 'solid';
@@ -149,7 +177,8 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
       return;
     }
     
-    if (value && value !== lastValueRef.current) {
+    // Always sync if value exists and is different, or if we haven't initialized yet
+    if (value && (value !== lastValueRef.current || lastValueRef.current === undefined)) {
       lastValueRef.current = value;
       if (isGradient(value)) {
         setActiveMode('gradient');

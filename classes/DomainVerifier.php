@@ -1,7 +1,7 @@
 <?php
 /**
  * Domain Verifier Class
- * Podn.Bio - Verifies DNS configuration for custom domains
+ * PodaBio - Verifies DNS configuration for custom domains
  */
 
 class DomainVerifier {

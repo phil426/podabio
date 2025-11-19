@@ -1,0 +1,62 @@
+.tabTrigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background-color 250ms ease;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 0;
+  position: relative;
+  text-align: left;
+}
+
+.tabTrigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tabTrigger[data-active='true'] {
+  background: var(--active-bg, rgba(34, 211, 238, 0.2));
+  color: var(--active-color, #22d3ee);
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Collapsed state - center icon */
+.tabTrigger:not([data-expanded='true']) {
+  justify-content: center;
+  padding: 0;
+}
+
+.tabTrigger:not([data-expanded='true']) .label {
+  display: none;
+}
+

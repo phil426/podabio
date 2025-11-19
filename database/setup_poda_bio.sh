@@ -5,7 +5,7 @@
 set -e
 
 echo "=========================================="
-echo "PodInBio Database Setup - poda.bio"
+echo "PodaBio Database Setup - poda.bio"
 echo "=========================================="
 echo ""
 
@@ -67,6 +67,10 @@ echo ""
 echo "=========================================="
 echo "✅ Database setup complete!"
 echo "=========================================="
+
+
+
+
 
 
 

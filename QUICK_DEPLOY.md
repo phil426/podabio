@@ -53,7 +53,7 @@ php database/migrate.php
 ## Verification
 
 After deployment:
-1. Visit: `https://poda.bio/admin/react-admin.php`
+1. Visit: `https://poda.bio/admin/userdashboard.php`
 2. Verify Studio loads correctly
 3. Test admin functionality
 4. Verify public pages work

@@ -854,15 +854,6 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const isPageGradient = isGradient(finalPageBackground);
       const isPageImage = isImageUrl(finalPageBackground);
       
-      // DEBUG: Log what we're saving
-      console.log('SAVING PAGE BACKGROUND DEBUG:', {
-        pageBackgroundImage,
-        backgroundBase,
-        finalPageBackground,
-        isPageGradient,
-        isPageImage
-      });
-      
       // Derive additional color values
       const accentMuted = existingColorTokens?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
       const textInverse = existingColorTokens?.text?.inverse || '#ffffff';
@@ -1088,8 +1079,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         shapeTokens.shadow = {
           ...(existingShapeTokens?.shadow || {}),
           [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
-            ? '0 2px 6px rgba(15, 23, 42, 0.12)' 
-            : '0 8px 24px rgba(15, 23, 42, 0.25)',
+            ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
+            : '0 16px 48px rgba(15, 23, 42, 0.5)',
           focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       } else {
@@ -1506,8 +1497,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         shapeTokens.shadow = {
           ...(existingShapeTokens?.shadow || {}),
           [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
-            ? '0 2px 6px rgba(15, 23, 42, 0.12)' 
-            : '0 8px 24px rgba(15, 23, 42, 0.25)',
+            ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
+            : '0 16px 48px rgba(15, 23, 42, 0.5)',
           focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       } else {

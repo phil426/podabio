@@ -2,7 +2,7 @@
 /**
  * Theme Helper Functions
  * Centralized theme-related helper functions
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/../classes/Theme.php';

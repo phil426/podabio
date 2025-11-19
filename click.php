@@ -1,7 +1,7 @@
 <?php
 /**
  * Widget Click Tracker
- * Podn.Bio - Tracks clicks on widgets and redirects
+ * PodaBio - Tracks clicks on widgets and redirects
  * Note: Uses "links" table for backend compatibility, but tracks widget clicks
  */
 

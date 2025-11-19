@@ -1,0 +1,62 @@
+.viewer {
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.panelGroup {
+  width: 100%;
+  height: 100%;
+}
+
+.sidebarPanel {
+  background: #f8fafc;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentPanel {
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.tocPanel {
+  background: #f8fafc;
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.resizeHandle {
+  width: 4px;
+  background: #e5e7eb;
+  cursor: col-resize;
+  transition: background 150ms ease;
+}
+
+.resizeHandle:hover {
+  background: #cbd5e1;
+}
+
+.resizeHandle[data-resize-handle-state='drag'] {
+  background: #94a3b8;
+}
+
+@media (max-width: 1024px) {
+  .tocPanel {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebarPanel {
+    min-size: 0;
+    max-size: 100%;
+  }
+}
+

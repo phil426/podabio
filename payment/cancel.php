@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Cancel Page
- * Podn.Bio - Payment cancellation
+ * PodaBio - Payment cancellation
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -84,7 +84,7 @@ $user = getCurrentUser();
         <div class="cancel-icon">!</div>
         <h1>Payment Cancelled</h1>
         <p>Your payment was cancelled. No charges were made to your account.</p>
-        <a href="/admin/react-admin.php" class="btn">Return to Studio</a>
+        <a href="/admin/userdashboard.php" class="btn">Return to Studio</a>
     </div>
 </body>
 </html>

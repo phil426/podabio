@@ -1,7 +1,7 @@
 <?php
 /**
  * Helper Functions
- * Podn.Bio
+ * PodaBio
  */
 
 /**

@@ -1,7 +1,7 @@
 <?php
 /**
  * Podcast APIs Configuration
- * Podn.Bio
+ * PodaBio
  * 
  * Stores API credentials for podcast platform search services
  */

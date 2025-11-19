@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { LuCheck, LuX, LuLoader, LuShoppingBag, LuTrendingUp, LuStore, LuTicket } from 'react-icons/lu';
+import { LuCheck, LuX, LuLoader, LuShoppingBag, LuTrendingUp, LuStore, LuTicket, LuLink } from 'react-icons/lu';
+import * as ScrollArea from '@radix-ui/react-scroll-area';
 
 import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useIntegrationsStatus, useDisconnectInstagramMutation } from '../../api/account';
+import { usePageSnapshot, updateSocialIcon } from '../../api/page';
+import { useQueryClient } from '@tanstack/react-query';
 import { SecurityActionDrawer } from '../overlays/SecurityActionDrawer';
 import type { SecurityAction } from '../overlays/SecurityActionDrawer';
 import { useIntegrationSelection } from '../../state/integrationSelection';
+import { useSocialIconSelection } from '../../state/socialIconSelection';
+import { queryKeys } from '../../api/utils';
 
 import styles from './integrations-panel.module.css';
 
@@ -117,37 +122,83 @@ function parseError(error: unknown): string | null {
   return 'An error occurred';
 }
 
+// Platform definitions matching SettingsPanel
+const ALL_PLATFORMS: Record<string, string> = {
+  apple_podcasts: 'Apple Podcasts',
+  spotify: 'Spotify',
+  youtube_music: 'YouTube Music',
+  iheart_radio: 'iHeart Radio',
+  amazon_music: 'Amazon Music',
+  pocket_casts: 'Pocket Casts',
+  castro: 'Castro',
+  overcast: 'Overcast',
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  twitter: 'Twitter / X',
+  tiktok: 'TikTok',
+  substack: 'Substack',
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+  reddit: 'Reddit',
+  discord: 'Discord',
+  twitch: 'Twitch',
+  github: 'GitHub',
+  dribbble: 'Dribbble',
+  medium: 'Medium',
+  snapchat: 'Snapchat',
+  pinterest: 'Pinterest'
+};
+
 export function IntegrationsPanel(): JSX.Element {
   const selectIntegration = useIntegrationSelection((state) => state.selectIntegration);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
+  const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
   const { data: methods, isLoading: methodsLoading } = useAuthMethods();
   const { data: integrations, isLoading: integrationsLoading } = useIntegrationsStatus();
+  const { data: snapshot } = usePageSnapshot();
+  const queryClient = useQueryClient();
   const { mutateAsync: unlinkGoogle, isPending: unlinkPending, error: unlinkError, reset: resetUnlink } = useUnlinkGoogleMutation();
   const { mutateAsync: disconnectInstagram, isPending: disconnectInstagramPending, error: disconnectInstagramError } = useDisconnectInstagramMutation();
   const refreshAccount = useRefreshAccountData();
   const [drawerAction, setDrawerAction] = useState<SecurityAction | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [editingIconId, setEditingIconId] = useState<string | null>(null);
+  const [editingUrl, setEditingUrl] = useState<string>('');
 
   const isLoading = methodsLoading || integrationsLoading;
 
   if (isLoading) {
     return (
-      <div className={styles.container}>
-      <div className={styles.loadingState}>
-        <LuLoader className={styles.spinner} />
-        <p>Loading integrations…</p>
-      </div>
-      </div>
+      <ScrollArea.Root className={styles.scrollArea}>
+        <ScrollArea.Viewport className={styles.viewport}>
+          <div className={styles.container}>
+            <div className={styles.loadingState}>
+              <LuLoader className={styles.spinner} />
+              <p>Loading integrations…</p>
+            </div>
+          </div>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+          <ScrollArea.Thumb className={styles.thumb} />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
     );
   }
 
   if (!methods) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorState}>
-          <p>We couldn't load your integrations. Try again later.</p>
-        </div>
-      </div>
+      <ScrollArea.Root className={styles.scrollArea}>
+        <ScrollArea.Viewport className={styles.viewport}>
+          <div className={styles.container}>
+            <div className={styles.errorState}>
+              <p>We couldn't load your integrations. Try again later.</p>
+            </div>
+          </div>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+          <ScrollArea.Thumb className={styles.thumb} />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
     );
   }
 
@@ -192,13 +243,31 @@ export function IntegrationsPanel(): JSX.Element {
   // focused on "you can disconnect or manage Google sign-in" rather than a blank state.
   const hasGoogle = methods.has_google ?? true;
 
+  const handleSaveSocialIcon = async (iconId: number | string, platformName: string, url: string) => {
+    try {
+      await updateSocialIcon({
+        directory_id: String(iconId),
+        platform_name: platformName,
+        url: url
+      });
+      
+      setEditingIconId(null);
+      setEditingUrl('');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+    } catch (error) {
+      console.error('Failed to update social icon:', error);
+    }
+  };
+
   return (
-    <div className={styles.container}>
-      <section className={styles.wrapper} aria-label="Integrations">
+    <ScrollArea.Root className={styles.scrollArea}>
+      <ScrollArea.Viewport className={styles.viewport}>
+        <div className={styles.container}>
+          <section className={styles.wrapper} aria-label="Integrations">
         <header className={styles.panelHeader}>
           <h3 className={styles.panelTitle}>Integrations</h3>
           <p className={styles.panelDescription}>
-            Connect tools that work with your PodInBio page. Start with Google sign-in, more coming soon.
+            Connect tools that work with your PodaBio page. Start with Google sign-in, more coming soon.
           </p>
         </header>
 
@@ -440,15 +509,146 @@ export function IntegrationsPanel(): JSX.Element {
         </div>
       </section>
 
-      <SecurityActionDrawer
-        open={drawerAction !== null}
-        action={drawerAction ?? 'unlink_google'}
-        onClose={closeDrawer}
-        onConfirm={handleConfirm}
-        isProcessing={drawerProcessing}
-        error={drawerError}
-      />
-    </div>
+      {/* Social Icons Section */}
+      <div className={styles.fieldset}>
+        <header className={styles.header}>
+          <h3 className={styles.title}>Social Icons</h3>
+          <p className={styles.description}>
+            Manage your social media links and platform URLs.
+          </p>
+        </header>
+
+        {snapshot?.social_icons && snapshot.social_icons.length > 0 ? (
+          <div className={styles.socialIconsList}>
+            {snapshot.social_icons.map((icon) => {
+              const isEditing = editingIconId === String(icon.id);
+              const platformName = ALL_PLATFORMS[icon.platform_name] || icon.platform_name;
+              
+              return (
+                <div 
+                  key={icon.id}
+                  className={`${styles.socialIconCard} ${selectedIntegrationId === `social-${icon.id}` ? styles.socialIconCardSelected : ''}`}
+                  onClick={() => {
+                    if (!isEditing) {
+                      selectIntegration(`social-${icon.id}`);
+                      selectSocialIcon(String(icon.id));
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if ((e.key === 'Enter' || e.key === ' ') && !isEditing) {
+                      e.preventDefault();
+                      selectIntegration(`social-${icon.id}`);
+                      selectSocialIcon(String(icon.id));
+                    }
+                  }}
+                >
+                  <div className={styles.socialIconHeader}>
+                    <div className={styles.socialIconInfo}>
+                      <div className={styles.socialIconIcon}>
+                        <LuLink aria-hidden="true" />
+                      </div>
+                      <div className={styles.socialIconDetails}>
+                        <p className={styles.socialIconName}>{platformName}</p>
+                        {isEditing ? (
+                          <div className={styles.socialIconUrlEdit}>
+                            <input
+                              type="url"
+                              value={editingUrl}
+                              onChange={(e) => setEditingUrl(e.target.value)}
+                              placeholder="https://..."
+                              className={styles.urlInput}
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleSaveSocialIcon(icon.id, icon.platform_name, editingUrl);
+                                } else if (e.key === 'Escape') {
+                                  e.preventDefault();
+                                  setEditingIconId(null);
+                                  setEditingUrl('');
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <div className={styles.urlEditActions}>
+                              <button
+                                type="button"
+                                className={styles.saveButton}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSaveSocialIcon(icon.id, icon.platform_name, editingUrl);
+                                }}
+                              >
+                                <LuCheck aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.cancelButton}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingIconId(null);
+                                  setEditingUrl('');
+                                }}
+                              >
+                                <LuX aria-hidden="true" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className={styles.socialIconUrl}>
+                            {icon.url || <span className={styles.noUrl}>No URL set</span>}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {!isEditing && (
+                      <div className={styles.socialIconActions} onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className={styles.editButton}
+                          onClick={() => {
+                            setEditingIconId(String(icon.id));
+                            setEditingUrl(icon.url || '');
+                          }}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {icon.is_active === 0 && (
+                    <div className={styles.socialIconStatus}>
+                      <LuX className={styles.statusIcon} aria-hidden="true" />
+                      <span>Hidden</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <p>No social icons added yet. Add them from the Settings tab.</p>
+          </div>
+        )}
+      </div>
+
+          <SecurityActionDrawer
+            open={drawerAction !== null}
+            action={drawerAction ?? 'unlink_google'}
+            onClose={closeDrawer}
+            onConfirm={handleConfirm}
+            isProcessing={drawerProcessing}
+            error={drawerError}
+          />
+        </div>
+      </ScrollArea.Viewport>
+      <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+        <ScrollArea.Thumb className={styles.thumb} />
+      </ScrollArea.Scrollbar>
+    </ScrollArea.Root>
   );
 }
 

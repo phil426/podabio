@@ -33,7 +33,7 @@ Individual pages may also store `colors`, `fonts`, or token JSON. During renderi
 
 ## 2. Token Families & Variable Map
 
-Themes should populate the following semantic buckets. Defaults live in `Theme::getDefault*Tokens()`; Aurora Skies in `database/add_theme_aurora.php` demonstrates custom overrides.
+Themes should populate the following semantic buckets. Defaults live in `Theme::getDefault*Tokens()`.
 
 ### 2.1 Colors (`color_tokens`)
 
@@ -46,7 +46,7 @@ Themes should populate the following semantic buckets. Defaults live in `Theme::
 | `state.success/warning/danger` & `text_state.*` | Status context colors. | `--color-state-*`, `--color-text-state-*`. |
 | `shadow.ambient/focus` | Box-shadow presets. | `--color-shadow-ambient`, `--color-shadow-focus`. |
 | `gradient.page/accent/widget/podcast` | High-level gradients for backgrounds. | `--gradient-page`, `--gradient-accent`, etc. |
-| `glow.primary` | Glow layer accents. | `--aurora-glow-color`. |
+| `glow.primary` | Glow layer accents. | Used for widget and element glows. |
 
 `ThemeCSSGenerator` automatically computes `--page-title-color`, `--page-description-color`, and `--color-text-on-*` variables by testing contrast against the background tokens. Supply base colors with enough contrast; the generator only adjusts as a fallback.
 
@@ -82,7 +82,7 @@ Use `duration.fast/standard`, `easing.standard/decelerate`, and `focus.{ring_wid
 | `.page-title` | `--page-title-color`, `--font-family-heading`, gradient tokens for effects. |
 | `.page-description` | `--page-description-color` (derived from `text.secondary` and contrast checks). |
 | Widgets (`.widget-item`, etc.) | `--widget-background`, `--color-text-on-surface`, `--widget-box-shadow`, spacing tokens. |
-| Social Icons | `--color-accent-primary`, hover uses `--aurora-glow-color` when available. |
+| Social Icons | `--color-accent-primary` with hover effects. |
 | Podcast Banner & Drawer | `--gradient-podcast`, `--color-text-on-accent`, ensures dark-mode drawer per Theme Rules 2–4. |
 | Compact Player | Accent gradient tokens, `--color-text-on-accent`, motion tokens for animations. |
 
@@ -93,7 +93,7 @@ Whenever you add a new component, choose which existing semantic tier it belongs
 ## 4. Theming Rules & Policies
 
 1. **Prime Rule:** Public pages always render the mobile layout inside the framed shell; desktop/tablet sees the same mobile width centered on a subtle contrasting background.
-2. **Theme Rules (Aurora baseline):**
+2. **Theme Rules:**
    - No floating containers; page content sits flush inside the mobile card.
    - Podcast drawer, compact player, and toggles count as theme content and must be styled accordingly.
    - Podcast drawer always runs in dark mode for readability.
@@ -113,7 +113,7 @@ Whenever you add a new component, choose which existing semantic tier it belongs
    - Decide density default and corner/shadow style.
 
 2. **Author Installer Script**
-   - Duplicate `database/add_theme_aurora.php` as a template.
+   - Create a new PHP file in `database/` directory (e.g., `add_theme_yourname.php`).
    - Populate `colors` / `fonts` for legacy fallback.
    - Fill `color_tokens`, `typography_tokens`, `spacing_tokens`, `shape_tokens`, `motion_tokens` arrays.
    - Set `widget_styles` for quick-tune options.
@@ -126,7 +126,7 @@ Whenever you add a new component, choose which existing semantic tier it belongs
 
 4. **Front-End Styling**
    - Add theme-specific CSS blocks inside `page.php` targeting `.theme-{slug}` bodies. Keep overrides token-driven (`color-mix` with theme variables). Avoid hard-coded hex values.
-   - Respect Theme Rules (e.g., Aurora’s drawer styling). Document any new rules in this file.
+   - Respect Theme Rules. Document any new rules in this file.
 
 5. **QA Checklist**
    - **Contrast:** Use browser DevTools/Lighthouse to verify text and control contrast (desktop + mobile). Pay special attention to page description, widget text, and podcast controls.

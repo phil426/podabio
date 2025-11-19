@@ -1,7 +1,7 @@
 <?php
 /**
  * Giphy Configuration
- * Podn.Bio
+ * PodaBio
  * 
  * To set up Giphy integration:
  * 1. Go to https://developers.giphy.com/
@@ -15,6 +15,10 @@
 
 // Giphy API Key (from Giphy Developer Dashboard)
 define('GIPHY_API_KEY', '');
+
+
+
+
 
 
 

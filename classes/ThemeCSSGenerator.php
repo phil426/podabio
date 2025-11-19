@@ -2,7 +2,7 @@
 /**
  * Theme CSS Generator
  * Centralized CSS generation for theme variables and effects
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/Theme.php';
@@ -46,29 +46,9 @@ class ThemeCSSGenerator {
         $this->pageFonts = $this->themeObj->getPageFonts($page, $theme);
         $this->widgetFonts = $this->themeObj->getWidgetFonts($page, $theme);
         $this->pageBackground = $this->themeObj->getPageBackground($page, $theme);
-        // DEBUG: Log what getPageBackground returned with full details
-        error_log("THEME CSS GENERATOR CONSTRUCTOR DEBUG:");
-        error_log("  - page_id: " . ($page['id'] ?? 'unknown'));
-        error_log("  - theme_id: " . ($theme['id'] ?? 'null'));
-        error_log("  - page['page_background']: " . ($page['page_background'] ?? 'NULL') . " (type: " . gettype($page['page_background'] ?? null) . ")");
-        error_log("  - theme['page_background']: " . ($theme['page_background'] ?? 'NULL') . " (type: " . gettype($theme['page_background'] ?? null) . ")");
-        error_log("  - getPageBackground() returned: " . ($this->pageBackground ?? 'NULL') . " (type: " . gettype($this->pageBackground ?? null) . ")");
-        // DEBUG: Log before calling getWidgetBackground
-        error_log("THEME CSS GENERATOR CONSTRUCTOR: About to call getWidgetBackground");
-        error_log("  - page['theme_id']: " . ($page['theme_id'] ?? 'NULL'));
-        error_log("  - theme['id']: " . ($theme['id'] ?? 'NULL'));
-        error_log("  - theme['widget_background'] (raw): " . ($theme['widget_background'] ?? 'NULL') . " (type: " . gettype($theme['widget_background'] ?? null) . ")");
-        
         $this->widgetBackground = $this->themeObj->getWidgetBackground($page, $theme);
-        
-        // DEBUG: Log after calling getWidgetBackground
-        error_log("THEME CSS GENERATOR CONSTRUCTOR: After getWidgetBackground call");
-        error_log("  - this->widgetBackground: " . ($this->widgetBackground ?? 'NULL') . " (type: " . gettype($this->widgetBackground ?? null) . ", is_empty: " . (empty($this->widgetBackground) ? 'yes' : 'no') . ")");
-        
         $this->widgetBorderColor = $this->themeObj->getWidgetBorderColor($page, $theme);
         $this->widgetStyles = $this->themeObj->getWidgetStyles($page, $theme);
-        // DEBUG: Log widget_styles to verify glow settings are loaded
-        error_log("GLOW DEBUG: widget_styles loaded = " . json_encode($this->widgetStyles));
         $this->spatialEffect = $this->themeObj->getSpatialEffect($page, $theme);
         $this->tokens = $this->themeObj->getThemeTokens($page, $theme);
         $this->colorTokens = $this->tokens['colors'] ?? [];
@@ -76,19 +56,6 @@ class ThemeCSSGenerator {
         $this->spacingTokens = $this->tokens['spacing'] ?? [];
         $this->shapeTokens = $this->tokens['shape'] ?? [];
         $this->motionTokens = $this->tokens['motion'] ?? [];
-        
-        // CRITICAL DEBUG: Log shape tokens with full details
-        error_log("THEME CSS GENERATOR CONSTRUCTOR: shapeTokens = " . json_encode($this->shapeTokens));
-        if (isset($this->shapeTokens['corner'])) {
-            error_log("THEME CSS GENERATOR CONSTRUCTOR: shapeTokens.corner = " . json_encode($this->shapeTokens['corner']));
-            error_log("THEME CSS GENERATOR CONSTRUCTOR: shapeTokens.corner type = " . gettype($this->shapeTokens['corner']));
-            if (is_array($this->shapeTokens['corner'])) {
-                error_log("THEME CSS GENERATOR CONSTRUCTOR: shapeTokens.corner keys = " . implode(', ', array_keys($this->shapeTokens['corner'])));
-                error_log("THEME CSS GENERATOR CONSTRUCTOR: shapeTokens.corner values = " . implode(', ', array_values($this->shapeTokens['corner'])));
-            }
-        } else {
-            error_log("THEME CSS GENERATOR CONSTRUCTOR: WARNING - shapeTokens.corner is NOT SET!");
-        }
         $this->iconographyTokens = $this->tokens['iconography'] ?? [];
         $this->layoutDensity = $this->tokens['layout_density'] ?? 'comfortable';
         $this->spacingValues = $this->spacingTokens['values'] ?? [];
@@ -296,12 +263,6 @@ class ThemeCSSGenerator {
         // So we need to check which corner value was explicitly set by the theme
         $borderRadiusValue = '0.75rem'; // Default rounded (md)
         if (!empty($this->shapeTokens['corner']) && is_array($this->shapeTokens['corner'])) {
-            // DEBUG: Log all corner values
-            error_log("THEME CSS DEBUG: shape_tokens.corner = " . json_encode($this->shapeTokens['corner']));
-            error_log("THEME CSS DEBUG: shape_tokens.corner keys = " . implode(', ', array_keys($this->shapeTokens['corner'])));
-            error_log("THEME CSS DEBUG: shape_tokens.corner values = " . implode(', ', array_values($this->shapeTokens['corner'])));
-            
-            // CRITICAL: getShapeTokens replaces corner with only theme's values if theme has corner
             // If theme has no corner, defaults are used (which have all values)
             // So we need to handle both cases:
             // 1. Theme has corner: only one value exists, use it
@@ -313,28 +274,19 @@ class ThemeCSSGenerator {
                 // Theme has corner - only one value exists, use it
                 $borderRadiusValue = $cornerValues[0];
                 $activeKey = $cornerKeys[0];
-                error_log("THEME CSS DEBUG: Using theme corner value: {$activeKey} = {$borderRadiusValue}");
             } elseif (count($cornerValues) > 1) {
                 // Theme has no corner - defaults are used (all values exist)
                 // Use 'md' (rounded) as the default
                 if (isset($this->shapeTokens['corner']['md'])) {
                     $borderRadiusValue = $this->shapeTokens['corner']['md'];
-                    error_log("THEME CSS DEBUG: Using default corner value: md = {$borderRadiusValue}");
                 } else {
                     // Fallback: use first value
                     $borderRadiusValue = $cornerValues[0];
                     $activeKey = $cornerKeys[0];
-                    error_log("THEME CSS DEBUG: Using first corner value: {$activeKey} = {$borderRadiusValue}");
                 }
-            } else {
-                // No corner values found, use default
-                error_log("THEME CSS WARNING: No corner values found in shapeTokens, using default rounded");
             }
-        } else {
-            error_log("THEME CSS WARNING: shape_tokens.corner is empty or not an array!");
         }
         // NO LEGACY FALLBACKS - use only shape_tokens
-        error_log("THEME CSS DEBUG: resolved border radius = " . $borderRadiusValue);
         $this->resolvedBorderRadius = $borderRadiusValue;
         $borderRadius = $this->resolvedBorderRadius; // For CSS variable output
         
@@ -372,7 +324,6 @@ class ThemeCSSGenerator {
         
         // NO FALLBACKS - if theme doesn't have page_background, that's an error
         if (empty($pageBackgroundValue) || $pageBackgroundValue === null || $pageBackgroundValue === '') {
-            error_log("THEME CSS ERROR: theme.page_background is empty/null! Theme should always have a background.");
             // Still output something to prevent broken CSS, but log the error
             $pageBackgroundValue = '#ffffff';
         }
@@ -380,11 +331,6 @@ class ThemeCSSGenerator {
         $this->resolvedPageBackgroundValue = $pageBackgroundValue; // Store for use in generateCompleteStyleBlock
         $backgroundBase = $pageBackgroundValue; // Use the resolved page background as base
         
-        // DEBUG: Log page background resolution with full details
-        error_log("THEME CSS generateCSSVariables DEBUG:");
-        error_log("  - this->pageBackground: " . ($this->pageBackground ?? 'NULL') . " (type: " . gettype($this->pageBackground ?? null) . ", length: " . (is_string($this->pageBackground) ? strlen($this->pageBackground) : 'N/A') . ")");
-        error_log("  - colorTokens[background][base]: " . ($this->colorTokens['background']['base'] ?? 'NULL'));
-        error_log("  - resolved pageBackgroundValue: " . $pageBackgroundValue . " (type: " . gettype($pageBackgroundValue) . ", length: " . (is_string($pageBackgroundValue) ? strlen($pageBackgroundValue) : 'N/A') . ")");
         // NO LEGACY FALLBACKS - use only colorTokens
         $backgroundSurface = $this->colorTokens['background']['surface'] ?? '#f8fafc';
         $backgroundSurfaceRaised = $this->colorTokens['background']['surface_raised'] ?? $backgroundSurface;
@@ -402,36 +348,25 @@ class ThemeCSSGenerator {
         // CRITICAL: Use ONLY theme.widget_border_color - no fallbacks
         $this->resolvedWidgetBorderColor = $this->widgetBorderColor;
         if (empty($this->resolvedWidgetBorderColor) || $this->resolvedWidgetBorderColor === null || $this->resolvedWidgetBorderColor === '') {
-            error_log("THEME CSS ERROR: widget_border_color is empty/null! Using minimal fallback only to prevent broken CSS.");
             $this->resolvedWidgetBorderColor = '#e2e8f0'; // Only to prevent broken CSS
         }
         
         // CRITICAL: Use ONLY theme.widget_background - no fallbacks
         // Priority: theme.widget_background column > colorTokens.background.surface
-        error_log("THEME CSS generateCSSVariables: Starting widget background resolution");
-        error_log("  - this->widgetBackground (from constructor): " . ($this->widgetBackground ?? 'NULL') . " (type: " . gettype($this->widgetBackground ?? null) . ", is_empty: " . (empty($this->widgetBackground) ? 'yes' : 'no') . ", === null: " . ($this->widgetBackground === null ? 'yes' : 'no') . ", === '': " . ($this->widgetBackground === '' ? 'yes' : 'no') . ")");
-        error_log("  - colorTokens[background][surface]: " . ($this->colorTokens['background']['surface'] ?? 'NULL') . " (type: " . gettype($this->colorTokens['background']['surface'] ?? null) . ")");
         
         $this->resolvedWidgetBackgroundValue = $this->widgetBackground;
         
         // If widget_background is empty, try colorTokens.background.surface (this is synced with widget_background in ThemeEditorPanel)
         if (empty($this->resolvedWidgetBackgroundValue) || $this->resolvedWidgetBackgroundValue === null || $this->resolvedWidgetBackgroundValue === '') {
-            error_log("THEME CSS DEBUG: widget_background is empty/null, checking colorTokens.background.surface");
             $surfaceColor = $this->colorTokens['background']['surface'] ?? null;
             if (!empty($surfaceColor) && $surfaceColor !== null && $surfaceColor !== '') {
-                error_log("THEME CSS DEBUG: Using colorTokens.background.surface = " . $surfaceColor);
                 $this->resolvedWidgetBackgroundValue = $surfaceColor;
             } else {
-                error_log("THEME CSS ERROR: Both widget_background and colorTokens.background.surface are empty/null!");
-                error_log("  - Falling back to #ffffff to prevent broken CSS");
-                error_log("  - THIS IS THE SOURCE OF #ffffff - widget_background was not saved or is empty in database!");
                 $this->resolvedWidgetBackgroundValue = '#ffffff'; // Only to prevent broken CSS
             }
         } else {
-            error_log("THEME CSS DEBUG: Using widget_background from theme = " . $this->resolvedWidgetBackgroundValue);
         }
         
-        error_log("THEME CSS DEBUG: Final resolvedWidgetBackgroundValue = " . $this->resolvedWidgetBackgroundValue . " (type: " . gettype($this->resolvedWidgetBackgroundValue) . ", length: " . (is_string($this->resolvedWidgetBackgroundValue) ? strlen($this->resolvedWidgetBackgroundValue) : 'N/A') . ")");
         
         // Check for page-title-color override in token_overrides
         // Check multiple possible paths: semantic.text.title, colors.text.title, or direct page-title-color
@@ -489,7 +424,6 @@ class ThemeCSSGenerator {
         $css .= "    --gradient-accent: " . h($gradientTokens['accent'] ?? $accentPrimary) . ";\n";
         $css .= "    --gradient-widget: " . h($gradientTokens['widget'] ?? $this->resolvedWidgetBackgroundValue ?? '#ffffff') . ";\n";
         $css .= "    --gradient-podcast: " . h($gradientTokens['podcast'] ?? ($gradientTokens['accent'] ?? $accentPrimary)) . ";\n";
-        $css .= "    --aurora-glow-color: " . h($glowTokens['primary'] ?? $accentPrimary) . ";\n";
         $shellBaseColor = $this->getDominantBackgroundColor($backgroundBase);
         $shellBackground = $this->lightenColor($shellBaseColor, 0.85) ?? $shellBaseColor;
         if (!$shellBackground) {
@@ -631,13 +565,21 @@ class ThemeCSSGenerator {
         // Generate type scale CSS variables
         $scaleTokens = $this->typographyTokens['scale'] ?? [];
         if (!empty($scaleTokens)) {
-            error_log("CSS GENERATOR DEBUG: Generating scale variables, xl=" . ($scaleTokens['xl'] ?? 'null') . ", sm=" . ($scaleTokens['sm'] ?? 'null'));
             foreach ($scaleTokens as $name => $value) {
                 $css .= "    --type-scale-" . h($name) . ": " . h($value) . "rem;\n";
             }
         } else {
-            error_log("CSS GENERATOR DEBUG: No scale tokens found in typographyTokens");
         }
+        
+        // Generate typography size CSS variables (direct font sizes from typography_tokens.size)
+        $sizeTokens = $this->typographyTokens['size'] ?? [];
+        if (!empty($sizeTokens['heading'])) {
+            $css .= "    --page-title-size: " . h($sizeTokens['heading']) . "px;\n";
+        }
+        if (!empty($sizeTokens['body'])) {
+            $css .= "    --page-body-size: " . h($sizeTokens['body']) . "px;\n";
+        }
+        
         foreach ($this->typographyTokens['line_height'] ?? [] as $name => $value) {
             $css .= "    --type-line-height-" . h($name) . ": " . h($value) . ";\n";
         }
@@ -668,19 +610,11 @@ class ThemeCSSGenerator {
         $iconColor = $this->iconographyTokens['color'] ?? '';
         $iconSpacing = $this->iconographyTokens['spacing'] ?? '0.75rem';
         
-        // DEBUG: Log iconography tokens
-        error_log("ICONOGRAPHY DEBUG: size=" . ($iconSize ?? 'null') . ", color=" . ($iconColor ?? 'null') . ", spacing=" . ($iconSpacing ?? 'null'));
-        error_log("ICONOGRAPHY DEBUG: iconographyTokens=" . json_encode($this->iconographyTokens));
-        error_log("ICONOGRAPHY DEBUG: iconColor type=" . gettype($iconColor) . ", empty=" . (empty($iconColor) ? 'yes' : 'no') . ", isset=" . (isset($this->iconographyTokens['color']) ? 'yes' : 'no'));
-        
         $css .= "    --icon-size: " . h($iconSize) . ";\n";
         $css .= "    --icon-spacing: " . h($iconSpacing) . ";\n";
         // Generate --icon-color if it's set and not empty
         if (isset($this->iconographyTokens['color']) && $this->iconographyTokens['color'] !== null && $this->iconographyTokens['color'] !== '') {
             $css .= "    --icon-color: " . h($iconColor) . ";\n";
-            error_log("ICONOGRAPHY DEBUG: Generated --icon-color CSS variable: " . h($iconColor));
-        } else {
-            error_log("ICONOGRAPHY DEBUG: No icon color set, skipping --icon-color variable");
         }
         
         // Legacy font variables for backward compatibility
@@ -695,7 +629,6 @@ class ThemeCSSGenerator {
         $css .= "    --widget-secondary-font: '" . h($this->widgetFonts['widget_secondary_font']) . "';\n";
         
         // NO FALLBACKS - use only the theme background value
-        error_log("THEME CSS DEBUG: Setting --page-background CSS variable to: " . $pageBackgroundValue);
         $css .= "    --page-background: " . h($pageBackgroundValue) . ";\n";
         // REMOVED: --widget-background CSS variable - using direct value in .widget-item instead
         // $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
@@ -703,12 +636,28 @@ class ThemeCSSGenerator {
         $css .= "    --widget-border-color: " . h($this->resolvedWidgetBorderColor) . ";\n";
         $css .= "    --widget-spacing: {$spacing};\n";
         $css .= "    --widget-border-radius: " . h($this->resolvedBorderRadius) . ";\n";
+        // Widget width as percentage (default 100%)
+        $widgetWidth = isset($this->widgetStyles['width']) ? (int)$this->widgetStyles['width'] : 100;
+        $css .= "    --widget-width: {$widgetWidth}%;\n";
         $css .= "    --text-color: var(--color-text-primary);\n";
         
         // Page-level spacing based on density
-        // Page padding (left and right sides of page) - use lg spacing token for more density responsiveness
+        // Page padding (left and right sides of page) - use lg spacing token with page_multiplier
         // spacingValues already has density multipliers applied from Theme.php::getSpacingTokens()
-        $pagePadding = $this->spacingValues['lg'] ?? '1.5rem';
+        $basePagePadding = $this->spacingValues['lg'] ?? '1.5rem';
+        
+        // Apply page_multiplier if set (allows fine-tuning page spacing independently of density)
+        $pageMultiplier = $this->spacingTokens['page_multiplier'] ?? 1.0;
+        if (is_numeric($pageMultiplier) && $pageMultiplier > 0) {
+            // Convert base padding to numeric value, apply multiplier, then convert back
+            $baseNumeric = (float)preg_replace('/[^0-9.]/', '', $basePagePadding);
+            $unit = preg_replace('/[0-9.]/', '', $basePagePadding) ?: 'rem';
+            $adjustedPadding = ($baseNumeric * (float)$pageMultiplier) . $unit;
+            $pagePadding = $adjustedPadding;
+        } else {
+            $pagePadding = $basePagePadding;
+        }
+        
         $css .= "    --page-padding: " . h($pagePadding) . ";\n";
         
         // Widget gap (spacing between blocks) - also uses lg spacing token
@@ -890,20 +839,12 @@ class ThemeCSSGenerator {
         $pageBackgroundValue = $this->resolvedPageBackgroundValue ?? $this->pageBackground;
         
         if (empty($pageBackgroundValue) || $pageBackgroundValue === null || $pageBackgroundValue === '') {
-            error_log("THEME CSS ERROR: No page background value available!");
             $pageBackgroundValue = '#ffffff'; // Only to prevent broken CSS
         }
         
         // Check if background is a gradient - use the resolved pageBackgroundValue, not this->pageBackground
         // This ensures we check the actual value being used, not the raw database value
         $isGradient = strpos($pageBackgroundValue, 'gradient') !== false || strpos($pageBackgroundValue, 'linear-gradient') !== false || strpos($pageBackgroundValue, 'radial-gradient') !== false;
-        
-        // DEBUG: Log what we're outputting with full details
-        error_log("THEME CSS generateCompleteStyleBlock DEBUG:");
-        error_log("  - resolvedPageBackgroundValue: " . ($this->resolvedPageBackgroundValue ?? 'NULL'));
-        error_log("  - pageBackgroundValue (used in CSS): " . $pageBackgroundValue . " (type: " . gettype($pageBackgroundValue) . ", length: " . (is_string($pageBackgroundValue) ? strlen($pageBackgroundValue) : 'N/A') . ")");
-        error_log("  - isGradient: " . ($isGradient ? 'yes' : 'no'));
-        error_log("  - CSS will output: background: " . h($pageBackgroundValue) . " !important;");
         
         // Base body styles
         // CRITICAL: Use the resolved pageBackgroundValue directly (not CSS variable) to ensure it's applied
@@ -976,17 +917,17 @@ class ThemeCSSGenerator {
             // Fallback: try to resolve it now if it wasn't set
             $this->resolvedWidgetBackgroundValue = $this->widgetBackground;
             if (empty($this->resolvedWidgetBackgroundValue) || $this->resolvedWidgetBackgroundValue === null || $this->resolvedWidgetBackgroundValue === '') {
-                error_log("THEME CSS ERROR: widget_background is empty/null in generateCompleteStyleBlock! Using fallback.");
                 $this->resolvedWidgetBackgroundValue = '#ffffff'; // Only to prevent broken CSS
             }
         }
-        error_log("THEME CSS DEBUG: Generating .widget-item CSS with background = " . ($this->resolvedWidgetBackgroundValue ?? 'NULL') . " (type: " . gettype($this->resolvedWidgetBackgroundValue ?? null) . ")");
         $css .= ".widget-item {\n";
         // Layout
         $css .= "    display: flex;\n";
         $css .= "    align-items: center;\n";
         $css .= "    gap: var(--widget-space-sm, 0.75rem);\n";
         $css .= "    width: 100%;\n";
+        $css .= "    max-width: var(--widget-width, 100%);\n";
+        $css .= "    margin: 0 auto;\n";
         // CRITICAL: Use widget-specific spacing for interior padding
         $css .= "    padding: var(--widget-space-sm, 0.75rem) var(--widget-space-md, 1rem);\n";
         $css .= "    box-sizing: border-box;\n";
@@ -995,8 +936,6 @@ class ThemeCSSGenerator {
         // Visual styling (from theme) - CRITICAL: Use direct value with !important
         $css .= "    background: " . h($this->resolvedWidgetBackgroundValue) . " !important;\n";
         $css .= "    border: " . h($this->resolvedBorderWidth) . " solid " . h($this->resolvedWidgetBorderColor) . " !important;\n";
-        // CRITICAL DEBUG: Log what border-radius is being applied
-        error_log("THEME CSS GENERATOR: Applying border-radius to .widget-item: " . $this->resolvedBorderRadius);
         $css .= "    border-radius: " . h($this->resolvedBorderRadius) . " !important;\n";
         
         // Get border effect from widget_styles
@@ -1006,13 +945,22 @@ class ThemeCSSGenerator {
         // CRITICAL: For glow, don't set box-shadow here - it will be set later after background
         // For shadow, set it here in the base rule
         if ($borderEffect === 'shadow') {
-            // Get shadow from shape_tokens.shadow - NO LEGACY FALLBACKS
+            // Get shadow intensity from widget_styles to determine which level to use
+            $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
+            
+            // Map shadow intensity to shadow level
+            // 'subtle' → level_1, 'pronounced' → level_2, 'none' → no shadow
             $shadowValue = null;
-            if (!empty($this->shapeTokens['shadow']['level_1'])) {
-                $shadowValue = $this->shapeTokens['shadow']['level_1'];
-            } elseif (!empty($this->shapeTokens['shadow']['level_2'])) {
-                $shadowValue = $this->shapeTokens['shadow']['level_2'];
+            if ($shadowIntensity === 'none') {
+                $shadowValue = null; // No shadow
+            } elseif ($shadowIntensity === 'pronounced') {
+                // Use level_2 for pronounced shadow
+                $shadowValue = $this->shapeTokens['shadow']['level_2'] ?? null;
+            } else {
+                // Default to level_1 for subtle or any other value
+                $shadowValue = $this->shapeTokens['shadow']['level_1'] ?? null;
             }
+            
             // Apply shadow - if none, use 'none', otherwise use the value
             if ($shadowValue) {
                 $css .= "    box-shadow: " . h($shadowValue) . " !important;\n";
@@ -1307,20 +1255,35 @@ class ThemeCSSGenerator {
         
         // Widget hover states
         // Get border effect from widget_styles or default to shadow
+        // Exclude video widgets from hover effects
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
-        $css .= ".widget-item:hover {\n";
+        $css .= ".widget-item:not(.widget-video):hover {\n";
         if ($borderEffect === 'shadow') {
-            // Enhanced shadow on hover - get shadow value again for hover
-            $hoverShadowValue = null;
-            if (!empty($this->shapeTokens['shadow']['level_1'])) {
-                $hoverShadowValue = $this->shapeTokens['shadow']['level_1'];
-            } elseif (!empty($this->shapeTokens['shadow']['level_2'])) {
-                $hoverShadowValue = $this->shapeTokens['shadow']['level_2'];
-            }
-            if ($hoverShadowValue) {
-                // Increase shadow intensity on hover
-                $css .= "    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;\n";
+            // Enhanced shadow on hover - use the same shadow intensity logic
+            $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
+            
+            // Get base shadow value using the same mapping as the base state
+            $baseShadowValue = null;
+            if ($shadowIntensity === 'none') {
+                $baseShadowValue = null;
+            } elseif ($shadowIntensity === 'pronounced') {
+                $baseShadowValue = $this->shapeTokens['shadow']['level_2'] ?? null;
             } else {
+                $baseShadowValue = $this->shapeTokens['shadow']['level_1'] ?? null;
+            }
+            
+            if ($baseShadowValue) {
+                // Increase shadow intensity on hover - use a more pronounced shadow
+                // For subtle, use level_2 on hover; for pronounced, use an even stronger shadow
+                if ($shadowIntensity === 'pronounced') {
+                    $css .= "    box-shadow: 0 20px 56px rgba(15, 23, 42, 0.6) !important;\n";
+                } else {
+                    // For subtle, enhance to level_2 on hover
+                    $hoverShadowValue = $this->shapeTokens['shadow']['level_2'] ?? '0 16px 48px rgba(15, 23, 42, 0.5)';
+                    $css .= "    box-shadow: " . h($hoverShadowValue) . " !important;\n";
+                }
+            } else {
+                // No base shadow, use a minimal hover shadow
                 $css .= "    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;\n";
             }
         } elseif ($borderEffect === 'glow') {
@@ -1334,7 +1297,23 @@ class ThemeCSSGenerator {
             $hoverSpread = $glowIntensity === 'subtle' ? '6px' : '12px';
             $css .= "    box-shadow: 0 0 " . h($hoverBlur) . " " . h($hoverSpread) . " " . h($glowColorRgba) . " !important;\n";
         }
+        // Only apply button-like transform to non-video widgets
         $css .= "    transform: translateY(calc(var(--widget-space-2xs, 0.25rem) * -1));\n";
+        $css .= "}\n\n";
+        
+        // Exclude video widgets from all styling (no border, shadow, glow, background, or button effects)
+        $css .= ".widget-item.widget-video {\n";
+        $css .= "    cursor: default !important;\n";
+        $css .= "    background: transparent !important;\n";
+        $css .= "    border: none !important;\n";
+        $css .= "    border-radius: 0 !important;\n";
+        $css .= "    box-shadow: none !important;\n";
+        $css .= "    padding: 0 !important;\n";
+        $css .= "}\n\n";
+        
+        $css .= ".widget-item.widget-video:hover {\n";
+        $css .= "    transform: none !important;\n";
+        $css .= "    box-shadow: none !important;\n";
         $css .= "}\n\n";
         
         // Add spatial effect CSS (before widget-item so widget-item can override if needed)
@@ -1349,13 +1328,36 @@ class ThemeCSSGenerator {
         $css .= "    background: " . h($this->resolvedWidgetBackgroundValue) . " !important;\n";
         $css .= "}\n\n";
         
-        // Apply glow effect styles to widget items AFTER background (apply to all widgets if glow is enabled)
+        // CRITICAL: Re-apply shadow effect styles AFTER background (similar to glow)
+        // This ensures shadows always appear and aren't overridden by background re-application
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
-        error_log("GLOW DEBUG: Checking border effect - borderEffect=" . $borderEffect . ", widgetStyles=" . json_encode($this->widgetStyles));
+        if ($borderEffect === 'shadow') {
+            $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
+            
+            // Map shadow intensity to shadow level
+            $shadowValue = null;
+            if ($shadowIntensity === 'none') {
+                $shadowValue = null;
+            } elseif ($shadowIntensity === 'pronounced') {
+                $shadowValue = $this->shapeTokens['shadow']['level_2'] ?? '0 16px 48px rgba(15, 23, 42, 0.5)';
+            } else {
+                $shadowValue = $this->shapeTokens['shadow']['level_1'] ?? '0 1px 2px rgba(15, 23, 42, 0.06)';
+            }
+            
+            if ($shadowValue) {
+                // Re-apply shadow with higher specificity to ensure it's always visible
+                // Exclude video widgets from shadow effects
+                $css .= "body .widget-item:not(.widget-video),\n";
+                $css .= ".widget-item:not(.widget-video) {\n";
+                $css .= "    box-shadow: " . h($shadowValue) . " !important;\n";
+                $css .= "}\n\n";
+            }
+        }
+        
+        // Apply glow effect styles to widget items AFTER background (apply to all widgets if glow is enabled)
         if ($borderEffect === 'glow') {
             $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'subtle';
             $glowColor = $this->widgetStyles['glow_color'] ?? '#ff00ff';
-            error_log("GLOW DEBUG: Glow enabled - intensity=" . $glowIntensity . ", color=" . $glowColor);
             
             $glowBlur = convertEnumToCSS($glowIntensity, 'glow_blur');
             $glowOpacity = convertEnumToCSS($glowIntensity, 'glow_opacity');
@@ -1370,15 +1372,11 @@ class ThemeCSSGenerator {
             // Apply glow effect using box-shadow with spread radius for better visibility
             // Format: box-shadow: offset-x offset-y blur-radius spread-radius color
             // CRITICAL: Use higher specificity to ensure glow overrides any other box-shadow rules
-            $css .= "body .widget-item,\n";
-            $css .= ".widget-item {\n";
+            // Exclude video widgets from glow effects
+            $css .= "body .widget-item:not(.widget-video),\n";
+            $css .= ".widget-item:not(.widget-video) {\n";
             $css .= "    box-shadow: 0 0 " . h($glowBlur) . " " . h($glowSpread) . " " . h($glowColorRgba) . " !important;\n";
-            $css .= "    animation: glow-pulse 3s ease-in-out infinite !important;\n";
             $css .= "}\n\n";
-            
-            error_log("GLOW DEBUG: ✅ Applied glow CSS - blur=" . $glowBlur . ", spread=" . $glowSpread . ", color=" . $glowColorRgba);
-        } else {
-            error_log("GLOW DEBUG: ❌ Glow NOT applied - borderEffect=" . $borderEffect);
         }
         
         // Profile elements
@@ -1388,10 +1386,18 @@ class ThemeCSSGenerator {
         
         $css .= ".page-title {\n";
         $css .= "    color: var(--page-title-color);\n";
+        // Apply direct font size if typography_tokens.size.heading is set, otherwise use scale
+        if (!empty($this->typographyTokens['size']['heading'])) {
+            $css .= "    font-size: var(--page-title-size, " . h($this->typographyTokens['size']['heading']) . "px) !important;\n";
+        }
         $css .= "}\n\n";
         
         $css .= ".page-description {\n";
         $css .= "    color: var(--page-description-color);\n";
+        // Apply direct font size if typography_tokens.size.body is set, otherwise use scale
+        if (!empty($this->typographyTokens['size']['body'])) {
+            $css .= "    font-size: var(--page-body-size, " . h($this->typographyTokens['size']['body']) . "px) !important;\n";
+        }
         $css .= "}\n\n";
         
         // Social icons - Always apply iconography settings with higher specificity

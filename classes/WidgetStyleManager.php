@@ -2,7 +2,7 @@
 /**
  * Widget Style Manager
  * Centralized widget style defaults, validation, and sanitization
- * Podn.Bio
+ * PodaBio
  */
 
 class WidgetStyleManager {

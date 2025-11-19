@@ -1,13 +1,13 @@
 <?php
 /**
  * OAuth Configuration
- * Podn.Bio
+ * PodaBio
  */
 
 // Google OAuth 2.0 Settings
 // Developer Account: phil@redwoodempiremedia.com
 // Project: My First Project (fine-glow-467202-u1)
-// OAuth Client: Podn.Bio Web Client
+// OAuth Client: PodaBio Web Client
 // Redirect URI: https://poda.bio/auth/google/callback.php
 // Created: October 30, 2025
 // Status: Configured and ready to use

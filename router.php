@@ -20,6 +20,7 @@ $excludedPaths = [
     'blog',
     'payment',
     'support',
+    'demo',
     'index.php',
     'login.php',
     'signup.php',
@@ -27,6 +28,8 @@ $excludedPaths = [
     'about.php',
     'features.php',
     'pricing.php',
+    'studio-docs',
+    'studio-docs.php',
     'forgot-password.php',
     'reset-password.php',
     'verify-email.php',
@@ -64,6 +67,8 @@ if (preg_match('/^[a-zA-Z0-9_-]{3,30}$/', $path)) {
 
 // Default: let PHP handle it (will show 404 if file doesn't exist)
 return false;
+
+
 
 
 

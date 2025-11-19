@@ -1,0 +1,76 @@
+/* Profile Header & Image Styles */
+/* Extracted from page.php - High Priority Extraction */
+
+.profile-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.profile-image {
+    object-fit: cover;
+    margin: 0 auto;
+    display: block;
+}
+
+.profile-image-size-small {
+    width: 6.25rem;
+    height: 6.25rem;
+}
+
+.profile-image-size-medium {
+    width: 8.75rem;
+    height: 8.75rem;
+}
+
+.profile-image-size-large {
+    width: 11.25rem;
+    height: 11.25rem;
+}
+
+.profile-image-shape-circle {
+    border-radius: 50%;
+}
+
+.profile-image-shape-rounded {
+    border-radius: 1.125rem;
+}
+
+.profile-image-shape-square {
+    border-radius: 0;
+}
+
+.profile-image-shadow-none {
+    box-shadow: none;
+}
+
+.profile-image-shadow-subtle {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-image-shadow-strong {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image-border-none {
+    border: none;
+}
+
+.profile-image-border-thin {
+    border: 2.625px solid rgba(15, 23, 42, 0.15);
+}
+
+.profile-image-border-thick {
+    border: 5.25px solid rgba(15, 23, 42, 0.25);
+}
+
+.cover-image {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+

@@ -1,3 +1,16 @@
+.scrollArea {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -402,5 +415,237 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+}
+
+/* Social Icons Section */
+.socialIconsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.socialIconCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.socialIconCard:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.15));
+}
+
+.socialIconCardSelected {
+  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.35));
+  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
+  box-shadow: 0 0 0 2px var(--active-tab-bg, rgba(37, 99, 235, 0.2));
+}
+
+.socialIconHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.socialIconInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.socialIconIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: #ffffff;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.socialIconIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.socialIconDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.socialIconName {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  line-height: 1.3;
+}
+
+.socialIconUrl {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  line-height: 1.3;
+  word-break: break-all;
+}
+
+.noUrl {
+  color: var(--pod-semantic-text-tertiary, #94a3b8);
+  font-style: italic;
+}
+
+.socialIconUrlEdit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.urlInput {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border-radius: var(--pod-core-shape-radius-sm, 4px);
+  font-size: 0.75rem;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  background: #ffffff;
+  min-width: 0;
+}
+
+.urlInput:focus {
+  outline: none;
+  border-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  box-shadow: 0 0 0 2px var(--active-tab-bg, rgba(37, 99, 235, 0.1));
+}
+
+.urlEditActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.saveButton,
+.cancelButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--pod-core-shape-radius-sm, 4px);
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.saveButton:hover {
+  background: var(--active-tab-light, rgba(34, 197, 94, 0.1));
+  color: var(--pod-semantic-state-success, #16a34a);
+}
+
+.cancelButton:hover {
+  background: var(--active-tab-light, rgba(239, 68, 68, 0.1));
+  color: #dc2626;
+}
+
+.saveButton svg,
+.cancelButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+.socialIconActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-sm, 4px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 150ms ease;
+  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  background: transparent;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.editButton:hover {
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  color: var(--pod-semantic-text-primary, #0f172a);
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
+}
+
+.socialIconStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  font-size: 0.7rem;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.socialIconStatus .statusIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.emptyState {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 0.8rem;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.scrollbar {
+  width: 8px;
+  padding: 4px;
+}
+
+.scrollbar[data-orientation='vertical'] {
+  right: 0;
+  width: 8px;
+}
+
+.thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+
+.thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 

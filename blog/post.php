@@ -1,7 +1,7 @@
 <?php
 /**
  * Blog Post View
- * Podn.Bio - Display blog post
+ * PodaBio - Display blog post
  */
 
 require_once __DIR__ . '/../config/constants.php';

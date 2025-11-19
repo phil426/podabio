@@ -1,7 +1,7 @@
 <?php
 /**
  * Signup Page
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -12,7 +12,7 @@ require_once __DIR__ . '/config/oauth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    redirect('/admin/react-admin.php');
+    redirect('/admin/userdashboard.php');
 }
 
 $error = '';

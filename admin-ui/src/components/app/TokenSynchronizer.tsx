@@ -14,7 +14,13 @@ export function TokenSynchronizer({ children }: PropsWithChildren): JSX.Element 
     }
   }, [data, isSuccess, setTokens]);
 
-  if (isLoading) {
+  // Check if current page doesn't need tokens (demo/docs pages)
+  const isSpecialPage = typeof window !== 'undefined' && (
+    window.location.pathname.includes('/demo/') ||
+    window.location.pathname.includes('/studio-docs')
+  );
+
+  if (isLoading && !isSpecialPage) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <p>Preparing design tokens…</p>
@@ -22,13 +28,16 @@ export function TokenSynchronizer({ children }: PropsWithChildren): JSX.Element 
     );
   }
 
-  if (isError) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: '#b91c1c' }}>
-        <p>We couldn’t load your design tokens.</p>
-        <p style={{ fontSize: '0.85rem' }}>{error instanceof Error ? error.message : String(error)}</p>
-      </div>
-    );
+  if (isError || (isLoading && isSpecialPage)) {
+    // For demo/docs pages or when tokens aren't critical, allow the app to continue
+    // The TokenProvider already has defaultTokenPreset as fallback
+    if (isSpecialPage || isError) {
+      // Demo/docs pages don't need tokens - just continue with defaults
+      if (isError) {
+        console.warn('Failed to load design tokens, using defaults:', error);
+      }
+      return <>{children}</>;
+    }
   }
 
   return <>{children}</>;

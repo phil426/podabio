@@ -69,7 +69,7 @@ demo/podcast-player/
 
 ## Notes
 
-- This is a standalone demo and not integrated with the main Podn.Bio codebase
+- This is a standalone demo and not integrated with the main PodaBio codebase
 - Designed exclusively for mobile devices (320px-414px width)
 - No tablet or desktop considerations
 - Uses localStorage for caching and preferences

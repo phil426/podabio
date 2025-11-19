@@ -29,12 +29,24 @@ export async function updatePageSettings(payload: Payload) {
   );
 }
 
-export async function updatePageThemeId(themeId: number | null, themeData?: { page_background?: string | null; widget_background?: string | null }) {
+export interface ThemeApplicationData {
+  page_background?: string | null;
+  widget_background?: string | null;
+  widget_border_color?: string | null;
+  page_primary_font?: string | null;
+  page_secondary_font?: string | null;
+  widget_primary_font?: string | null;
+  widget_secondary_font?: string | null;
+  widget_styles?: Record<string, unknown> | string | null;
+  spatial_effect?: string | null;
+}
+
+export async function updatePageThemeId(themeId: number | null, themeData?: ThemeApplicationData) {
   const payload: Record<string, string | null> = {
     theme_id: themeId !== null ? String(themeId) : ''
   };
   
-  // If theme data is provided, set page_background and widget_background
+  // If theme data is provided, send all theme fields
   // Pass null to clear page-level overrides (so theme values are used)
   if (themeData) {
     if (themeData.page_background !== undefined) {
@@ -42,6 +54,37 @@ export async function updatePageThemeId(themeId: number | null, themeData?: { pa
     }
     if (themeData.widget_background !== undefined) {
       payload.widget_background = themeData.widget_background;
+    }
+    if (themeData.widget_border_color !== undefined) {
+      payload.widget_border_color = themeData.widget_border_color;
+    }
+    if (themeData.page_primary_font !== undefined) {
+      payload.page_primary_font = themeData.page_primary_font;
+    }
+    if (themeData.page_secondary_font !== undefined) {
+      payload.page_secondary_font = themeData.page_secondary_font;
+    }
+    if (themeData.widget_primary_font !== undefined) {
+      payload.widget_primary_font = themeData.widget_primary_font;
+    }
+    if (themeData.widget_secondary_font !== undefined) {
+      payload.widget_secondary_font = themeData.widget_secondary_font;
+    }
+    if (themeData.widget_styles !== undefined) {
+      // Handle null case (to clear page override)
+      if (themeData.widget_styles === null) {
+        payload.widget_styles = null;
+      } else {
+        // Convert widget_styles to JSON string if it's an object
+        if (typeof themeData.widget_styles === 'object' && themeData.widget_styles !== null) {
+          payload.widget_styles = JSON.stringify(themeData.widget_styles);
+        } else {
+          payload.widget_styles = themeData.widget_styles as string | null;
+        }
+      }
+    }
+    if (themeData.spatial_effect !== undefined) {
+      payload.spatial_effect = themeData.spatial_effect;
     }
   }
   
@@ -156,6 +199,17 @@ export function usePageSettingsMutation() {
 
   return useMutation({
     mutationFn: (payload: Payload) => updatePageSettings(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+    }
+  });
+}
+
+export function usePageAppearanceMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: Payload) => updatePageAppearance(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * Security Functions
- * Podn.Bio
+ * PodaBio
  */
 
 /**

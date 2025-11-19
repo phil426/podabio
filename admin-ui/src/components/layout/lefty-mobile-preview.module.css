@@ -1,0 +1,188 @@
+.floatingButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: var(--active-color, #22d3ee);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 200ms ease;
+}
+
+.floatingButton:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.floatingButton:active {
+  transform: translateY(0);
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.previewPanel {
+  position: fixed;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2001;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: move;
+  max-width: 90vw;
+  max-height: 85vh;
+}
+
+.previewPanel:active {
+  cursor: grabbing;
+}
+
+.infoBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  flex-shrink: 0;
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  cursor: move;
+  user-select: none;
+}
+
+.infoBarContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.deviceName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.deviceDimensions {
+  font-size: 12px;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  margin-left: 4px;
+}
+
+.infoBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 200ms ease;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.dragHandle {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 4px;
+  background: var(--pod-semantic-divider-strong, rgba(15, 23, 42, 0.2));
+  border-radius: 2px;
+  cursor: grab;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.previewPanel:active .dragHandle {
+  cursor: grabbing;
+  background: var(--pod-semantic-divider-strong, rgba(15, 23, 42, 0.3));
+}
+
+.deviceSelectCompact {
+  padding: 4px 8px;
+  border: 1px solid var(--pod-semantic-divider-strong, rgba(15, 23, 42, 0.14));
+  border-radius: 6px;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.deviceSelectCompact:hover {
+  border-color: var(--active-color, #22d3ee);
+}
+
+.deviceSelectCompact:focus {
+  outline: none;
+  border-color: var(--active-color, #22d3ee);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.1);
+}
+
+
+.previewFrame {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  overflow: hidden;
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  min-height: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.previewFrame > * {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+

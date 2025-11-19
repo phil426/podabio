@@ -345,7 +345,7 @@ All widgets MUST include:
 1. **Page.php** (lines 539-1128):
    - Extensive widget styling in `<style>` tag
    - Widget-specific rules (`.widget-video`, `.widget-text`, etc.)
-   - Theme-specific overrides (`body.theme-aurora-skies .widget-item`)
+   - Theme-specific overrides (removed - now handled by ThemeCSSGenerator)
    - Hover states
    - Typography rules
 

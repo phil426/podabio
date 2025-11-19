@@ -23,6 +23,9 @@ import {
 import { useTokens } from '../../design-system/theme/TokenProvider';
 import { useUpdateThemeMutation, useCreateThemeMutation } from '../../api/themes';
 import { useThemeLibraryQuery } from '../../api/themes';
+import { updatePageThemeId } from '../../api/page';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../api/utils';
 import { ColorsSection } from './ultimate-theme-modifier/ColorsSection';
 import { TypographySection } from './ultimate-theme-modifier/TypographySection';
 import { SpacingSection } from './ultimate-theme-modifier/SpacingSection';
@@ -54,6 +57,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   const { data: themeLibrary } = useThemeLibraryQuery();
   const updateMutation = useUpdateThemeMutation();
   const createMutation = useCreateThemeMutation();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<TabValue>('colors');
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,13 +66,21 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   const [modifiedTokens, setModifiedTokens] = useState<Set<string>>(new Set());
   const [undoStack, setUndoStack] = useState<TokenChange[]>([]);
   const [redoStack, setRedoStack] = useState<TokenChange[]>([]);
-  const [auroraDefaults, setAuroraDefaults] = useState<TokenBundle | null>(null);
   // Track all token values (including those not in TokenBundle like spacing_tokens, shape_tokens, etc.)
   const [tokenValues, setTokenValues] = useState<Map<string, unknown>>(new Map());
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const lastInitializedThemeId = useRef<number | null>(null);
 
   // Load theme token values into tokenValues map
   useEffect(() => {
     if (theme) {
+      // Skip if we've already initialized for this theme (unless explicitly reset)
+      // lastInitializedThemeId.current is set to null after save to force reload
+      if (lastInitializedThemeId.current === theme.id && lastInitializedThemeId.current !== null) {
+        return;
+      }
+      lastInitializedThemeId.current = theme.id;
       const colorTokens = safeParse(theme.color_tokens);
       const typographyTokens = safeParse(theme.typography_tokens);
       const spacingTokens = safeParse(theme.spacing_tokens);
@@ -96,6 +108,10 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
           if (typographyTokens.scale.sm) initialValues.set('core.typography.scale.sm', typographyTokens.scale.sm);
           if (typographyTokens.scale.xs) initialValues.set('core.typography.scale.xs', typographyTokens.scale.xs);
         }
+        if (typographyTokens.size) {
+          if (typographyTokens.size.heading !== undefined) initialValues.set('core.typography.size.heading', typographyTokens.size.heading);
+          if (typographyTokens.size.body !== undefined) initialValues.set('core.typography.size.body', typographyTokens.size.body);
+        }
         if (typographyTokens.line_height) {
           if (typographyTokens.line_height.tight) initialValues.set('core.typography.line_height.tight', typographyTokens.line_height.tight);
           if (typographyTokens.line_height.normal) initialValues.set('core.typography.line_height.normal', typographyTokens.line_height.normal);
@@ -111,6 +127,9 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       // Load spacing tokens
       if (spacingTokens) {
         if (spacingTokens.density) initialValues.set('spacing_tokens.density', spacingTokens.density);
+        if (spacingTokens.page_multiplier !== undefined) {
+          initialValues.set('page_spacing_multiplier', spacingTokens.page_multiplier);
+        }
         if (spacingTokens.base_scale) {
           if (spacingTokens.base_scale['2xs']) initialValues.set('spacing_tokens.base_scale.2xs', spacingTokens.base_scale['2xs']);
           if (spacingTokens.base_scale.xs) initialValues.set('spacing_tokens.base_scale.xs', spacingTokens.base_scale.xs);
@@ -154,11 +173,90 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         }
       }
 
+      // Load widget_styles values
+      const widgetStyles = safeParse(theme.widget_styles);
+      if (widgetStyles) {
+        // Load widget border width
+        if (widgetStyles.border_width) {
+          const borderWidth = typeof widgetStyles.border_width === 'string' 
+            ? parseFloat(widgetStyles.border_width.replace('px', ''))
+            : typeof widgetStyles.border_width === 'number'
+            ? widgetStyles.border_width
+            : undefined;
+          if (!isNaN(borderWidth as number)) {
+            initialValues.set('widget_border_width', borderWidth);
+          }
+        }
+        // Load widget shadow intensity
+        if (widgetStyles.border_shadow_intensity_numeric !== undefined) {
+          const intensity = typeof widgetStyles.border_shadow_intensity_numeric === 'number'
+            ? widgetStyles.border_shadow_intensity_numeric
+            : parseFloat(String(widgetStyles.border_shadow_intensity_numeric));
+          if (!isNaN(intensity)) {
+            initialValues.set('widget_shadow_intensity', intensity);
+          }
+        }
+        // Load widget width
+        if (widgetStyles.width !== undefined) {
+          const width = typeof widgetStyles.width === 'number'
+            ? widgetStyles.width
+            : typeof widgetStyles.width === 'string'
+            ? parseFloat(widgetStyles.width.replace('%', ''))
+            : undefined;
+          if (!isNaN(width as number)) {
+            initialValues.set('widget_width', width);
+          }
+        }
+        // Load border_effect
+        if (widgetStyles.border_effect === 'shadow' || widgetStyles.border_effect === 'glow') {
+          initialValues.set('widget_styles.border_effect', widgetStyles.border_effect);
+        }
+      }
+
+      // Load iconography tokens
+      const iconographyTokens = safeParse(theme.iconography_tokens);
+      if (iconographyTokens) {
+        // Use !== undefined check to match save logic (allows empty strings, null, etc.)
+        if (iconographyTokens.color !== undefined) initialValues.set('iconography_tokens.color', iconographyTokens.color);
+        if (iconographyTokens.size !== undefined) initialValues.set('iconography_tokens.size', iconographyTokens.size);
+        if (iconographyTokens.spacing !== undefined) initialValues.set('iconography_tokens.spacing', iconographyTokens.spacing);
+      }
+
       setTokenValues(initialValues);
+      
+      // CRITICAL: Also initialize tokens from theme (fonts and sizes need to be in TokenBundle)
+      // Initialize fonts and sizes from theme in a single update
+      if (typographyTokens?.font || typographyTokens?.size) {
+        setTokens(prevTokens => {
+          let updatedTokens = prevTokens;
+          
+          // Initialize fonts from theme
+          if (typographyTokens?.font) {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typographyTokens.font.heading || 'Inter');
+            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.body', typographyTokens.font.body || 'Inter');
+            if (typographyTokens.font.metatext) {
+              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.metatext', typographyTokens.font.metatext);
+            }
+          }
+          
+          // Initialize typography size values in TokenBundle if they exist
+          if (typographyTokens?.size) {
+            if (typographyTokens.size.heading !== undefined) {
+              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.heading', typographyTokens.size.heading);
+            }
+            if (typographyTokens.size.body !== undefined) {
+              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.body', typographyTokens.size.body);
+            }
+          }
+          
+          return updatedTokens;
+        });
+      }
     } else {
       setTokenValues(new Map());
+      lastInitializedThemeId.current = null;
     }
-  }, [theme]);
+  }, [theme, setTokens]);
 
   // Track token changes
   const trackChange = useCallback((path: string, oldValue: unknown, newValue: unknown) => {
@@ -167,8 +265,10 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     setRedoStack([]); // Clear redo stack on new change
   }, []);
 
-  // Handle token changes from sections
+  // Handle token changes from sections with auto-save
   const handleTokenChange = useCallback((path: string, value: unknown, oldValue: unknown) => {
+    if (!tokens) return;
+    
     // Store the value in our tokenValues map
     setTokenValues(prev => {
       const next = new Map(prev);
@@ -184,7 +284,24 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     
     // Track the change
     trackChange(path, oldValue, value);
-  }, [tokens, setTokens, trackChange]);
+
+    // Auto-save with debouncing (wait 1 second after last change)
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      handleSave();
+    }, 1000);
+  }, [tokens, setTokens, trackChange, handleSave]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Helper function to update tokens
   function applyTokenUpdate<T extends Record<string, any>>(obj: T, path: string, value: unknown): T {
@@ -238,14 +355,13 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     return '#2563eb';
   }
 
-  // Handle save
+  // Handle save with auto-save and new theme copy logic
   const handleSave = useCallback(async () => {
-    if (!theme || !tokens) {
-      setStatusMessage('No theme selected');
-      setSaveStatus('error');
+    if (!theme || !tokens || isSaving) {
       return;
     }
 
+    setIsSaving(true);
     setSaveStatus('saving');
     setStatusMessage('Saving...');
 
@@ -346,6 +462,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
           sm: tokenValues.get('core.typography.scale.sm') as number ?? existingTypographyTokens?.scale?.sm ?? 1.08,
           xs: tokenValues.get('core.typography.scale.xs') as number ?? existingTypographyTokens?.scale?.xs ?? 0.9
         },
+        size: {
+          ...(existingTypographyTokens?.size || {}),
+          ...(tokenValues.get('core.typography.size.heading') !== undefined && { heading: tokenValues.get('core.typography.size.heading') as number }),
+          ...(tokenValues.get('core.typography.size.body') !== undefined && { body: tokenValues.get('core.typography.size.body') as number })
+        },
         line_height: {
           tight: tokenValues.get('core.typography.line_height.tight') as number ?? existingTypographyTokens?.line_height?.tight ?? 1.2,
           normal: tokenValues.get('core.typography.line_height.normal') as number ?? existingTypographyTokens?.line_height?.normal ?? 1.55,
@@ -360,9 +481,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
 
       // Build spacing tokens, preserving existing values
       const spacingDensity = tokenValues.get('spacing_tokens.density') as string || existingSpacingTokens?.density || 'comfortable';
+      const pageSpacingMultiplier = tokenValues.get('page_spacing_multiplier') as number | undefined;
       const spacingTokens: Record<string, any> = {
         ...(existingSpacingTokens || {}),
         density: spacingDensity,
+        ...(pageSpacingMultiplier !== undefined && { page_multiplier: pageSpacingMultiplier }),
         base_scale: {
           '2xs': tokenValues.get('spacing_tokens.base_scale.2xs') as number ?? existingSpacingTokens?.base_scale?.['2xs'] ?? 0.25,
           'xs': tokenValues.get('spacing_tokens.base_scale.xs') as number ?? existingSpacingTokens?.base_scale?.xs ?? 0.5,
@@ -420,19 +543,83 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       const isImage = backgroundBase.startsWith('http://') || backgroundBase.startsWith('https://') || backgroundBase.startsWith('/') || backgroundBase.startsWith('data:');
       const pageBackground = isGradient || isImage ? backgroundBase : (existingColorTokens?.gradient?.page || backgroundBase);
 
-      // Save to database
-      await updateMutation.mutateAsync({
-        themeId: theme.id,
-        data: {
-          name: theme.name,
-          color_tokens: colorTokens,
-          typography_tokens: typographyTokens,
-          spacing_tokens: spacingTokens,
-          shape_tokens: shapeTokens,
-          motion_tokens: motionTokens,
-          page_background: pageBackground
+      // Build widget_styles from custom token values
+      const existingWidgetStyles = safeParse(theme?.widget_styles);
+      const widgetBorderWidth = tokenValues.get('widget_border_width') as number | undefined;
+      const widgetShadowIntensity = tokenValues.get('widget_shadow_intensity') as number | undefined;
+      const widgetWidth = tokenValues.get('widget_width') as number | undefined;
+      const borderEffect = tokenValues.get('widget_styles.border_effect') as 'shadow' | 'glow' | null | undefined;
+      
+      const widgetStyles: Record<string, unknown> = {
+        ...(existingWidgetStyles || {}),
+        ...(widgetBorderWidth !== undefined && { border_width: `${widgetBorderWidth}px` }),
+        ...(widgetShadowIntensity !== undefined && { border_shadow_intensity_numeric: widgetShadowIntensity }),
+        ...(widgetWidth !== undefined && { width: widgetWidth }),
+        ...(borderEffect !== undefined && borderEffect !== null && { border_effect: borderEffect })
+      };
+      
+      // If border_effect is explicitly set to null, remove it (to use 'none')
+      if (borderEffect === null && existingWidgetStyles?.border_effect) {
+        delete widgetStyles.border_effect;
+      }
+
+      // Build iconography tokens
+      const existingIconographyTokens = safeParse(theme.iconography_tokens);
+      const iconographyTokens: Record<string, unknown> = {
+        ...(existingIconographyTokens || {}),
+        ...(tokenValues.get('iconography_tokens.color') !== undefined && { color: tokenValues.get('iconography_tokens.color') }),
+        ...(tokenValues.get('iconography_tokens.size') !== undefined && { size: tokenValues.get('iconography_tokens.size') }),
+        ...(tokenValues.get('iconography_tokens.spacing') !== undefined && { spacing: tokenValues.get('iconography_tokens.spacing') })
+      };
+
+      const themeData = {
+        name: theme.name,
+        color_tokens: colorTokens,
+        typography_tokens: typographyTokens,
+        spacing_tokens: spacingTokens,
+        shape_tokens: shapeTokens,
+        motion_tokens: motionTokens,
+        iconography_tokens: iconographyTokens,
+        page_background: pageBackground,
+        widget_styles: widgetStyles
+      };
+
+      const isSystemTheme = theme.user_id === null || theme.user_id === undefined;
+
+      // If it's a system theme, create a new user theme copy
+      if (isSystemTheme) {
+        const customThemeName = `Custom - ${theme.name}`;
+        const response = await createMutation.mutateAsync({
+          ...themeData,
+          name: customThemeName
+        });
+        
+        if (response.success && response.data && typeof response.data === 'object' && 'theme_id' in response.data) {
+          const newThemeId = (response.data as { theme_id: number }).theme_id;
+          if (typeof newThemeId === 'number') {
+            await updatePageThemeId(newThemeId);
+          }
         }
-      });
+      } else {
+        // Update existing user theme
+        await updateMutation.mutateAsync({
+          themeId: theme.id,
+          data: themeData
+        });
+      }
+
+      // Invalidate and refetch queries to refresh data immediately
+      await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      
+      // Refetch theme library to get updated theme data immediately
+      // This ensures the theme prop updates with the saved iconography_tokens.color
+      await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+
+      // Reset initialization flag to force reload of token values after save
+      // This ensures saved values (like iconography_tokens.color) are reloaded properly
+      lastInitializedThemeId.current = null;
 
       setSaveStatus('success');
       setStatusMessage('Theme saved successfully');
@@ -446,8 +633,10 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     } catch (error) {
       setSaveStatus('error');
       setStatusMessage(error instanceof Error ? error.message : 'Failed to save theme');
+    } finally {
+      setIsSaving(false);
     }
-  }, [theme, tokens, updateMutation, onSave]);
+  }, [theme, tokens, tokenValues, updateMutation, createMutation, queryClient, onSave, isSaving]);
 
   // Undo handler
   const handleUndo = useCallback(() => {

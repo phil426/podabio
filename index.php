@@ -1,7 +1,7 @@
 <?php
 /**
  * Under Construction Page
- * Podn.Bio - Home page
+ * PodaBio - Home page
  */
 
 require_once __DIR__ . '/config/constants.php';

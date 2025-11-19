@@ -3,9 +3,9 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 12px 16px;
+  padding: 6px 10px;
   border: none;
-  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
   background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
   cursor: pointer;
   transition: all 200ms ease-out;
@@ -36,7 +36,7 @@
 }
 
 .title {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--pod-semantic-text-primary, #0f172a);
   text-transform: uppercase;

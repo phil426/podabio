@@ -1,7 +1,7 @@
 <?php
 /**
  * Google OAuth Callback
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/../../config/constants.php';
@@ -35,7 +35,7 @@ unset($_SESSION['oauth_mode']);
 
 if (empty($code)) {
     $error = 'Authorization failed. No code received.';
-    redirect($mode === 'link' && $isLoggedIn ? '/admin/react-admin.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
+    redirect($mode === 'link' && $isLoggedIn ? '/admin/userdashboard.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
 }
 
 // Exchange code for access token
@@ -43,7 +43,7 @@ $tokenData = getGoogleAccessToken($code);
 
 if (!$tokenData || !isset($tokenData['access_token'])) {
     $error = 'Failed to get access token. Please try again.';
-    redirect($mode === 'link' && $isLoggedIn ? '/admin/react-admin.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
+    redirect($mode === 'link' && $isLoggedIn ? '/admin/userdashboard.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
 }
 
 // Get user info from Google
@@ -51,7 +51,7 @@ $userInfo = getGoogleUserInfo($tokenData['access_token']);
 
 if (!$userInfo || !isset($userInfo['id'])) {
     $error = 'Failed to get user information. Please try again.';
-    redirect($mode === 'link' && $isLoggedIn ? '/admin/react-admin.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
+    redirect($mode === 'link' && $isLoggedIn ? '/admin/userdashboard.php#/account/profile?error=' . urlencode($error) : '/login.php?error=' . urlencode($error));
 }
 
 $googleId = $userInfo['id'];
@@ -65,11 +65,11 @@ if ($mode === 'link' && $isLoggedIn) {
     if ($linkResult['success']) {
         // Check if user has a page - if yes, go to editor, otherwise dashboard
         $successMsg = 'Google account linked successfully!';
-        $redirectTo = '/admin/react-admin.php#/account/profile?success=' . urlencode($successMsg);
+        $redirectTo = '/admin/userdashboard.php#/account/profile?success=' . urlencode($successMsg);
         redirect($redirectTo);
     } else {
         // Check if user has a page - if yes, go to editor, otherwise dashboard
-        $redirectTo = '/admin/react-admin.php#/account/profile?error=' . urlencode($linkResult['error']);
+        $redirectTo = '/admin/userdashboard.php#/account/profile?error=' . urlencode($linkResult['error']);
         redirect($redirectTo);
     }
     exit;
@@ -91,8 +91,8 @@ if ($existingUser) {
     );
     
     if ($result['success']) {
-        // Check if user has a page - if yes, go to editor, otherwise dashboard
-        redirect('/admin/react-admin.php');
+        // Redirect to panel selector
+        redirect('/admin/select-panel.php');
     } else {
         redirect('/login.php?error=' . urlencode($result['error']));
     }
@@ -128,10 +128,8 @@ $result = $user->loginWithGoogle(
 );
 
 if ($result['success']) {
-    // Check if user has a page - if yes, go to editor, otherwise dashboard
-    $pageClass = new Page();
-$userPage = $pageClass->getByUserId($result['user']['id'] ?? null);
-redirect($userPage ? '/admin/react-admin.php' : '/admin/react-admin.php?welcome=new');
+    // Redirect to panel selector
+    redirect('/admin/select-panel.php');
 } else {
     redirect('/login.php?error=' . urlencode($result['error']));
 }
