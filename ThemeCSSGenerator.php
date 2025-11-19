@@ -2,7 +2,7 @@
 /**
  * Theme CSS Generator
  * Centralized CSS generation for theme variables and effects
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/Theme.php';
@@ -151,7 +151,6 @@ class ThemeCSSGenerator {
         $css .= ".widget-item[data-border-effect=\"glow\"] {\n";
         $css .= "    position: relative;\n";
         $css .= "    box-shadow: none;\n";
-        $css .= "    animation: glow-pulse 3s ease-in-out infinite;\n";
         $css .= "}\n\n";
         
         $css .= ".widget-item[data-border-effect=\"glow\"]::before {\n";

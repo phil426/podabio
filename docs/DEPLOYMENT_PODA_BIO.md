@@ -1,4 +1,4 @@
-# PodInBio Deployment Guide - poda.bio
+# PodaBio Deployment Guide - poda.bio
 
 > **Security Notice**
 > This document contains sensitive operational details. Store securely and rotate shared credentials regularly. Do **not** expose publicly.
@@ -57,7 +57,7 @@ Create or update `config/database.php` with the following:
 <?php
 /**
  * Database Configuration
- * Podn.Bio - poda.bio Production
+ * PodaBio - poda.bio Production
  */
 
 // Database connection settings
@@ -149,7 +149,7 @@ mysql -h srv775.hstgr.io -u u925957603_pab -p u925957603_podabio < database/seed
 
 4. **Verify Deployment**
    - Test PHP backend: `https://poda.bio/index.php`
-   - Test admin panel: `https://poda.bio/admin/react-admin.php`
+   - Test admin panel: `https://poda.bio/admin/userdashboard.php`
    - Check browser console for React app errors
    - Test database connectivity
    - Verify file uploads work
@@ -160,10 +160,10 @@ The React admin-ui is built using Vite:
 
 - **Command:** `npm run build` (runs `tsc -b && vite build`)
 - **Output:** `admin-ui/dist/` directory
-- **Manifest:** `admin-ui/dist/.vite/manifest.json` (used by `admin/react-admin.php`)
+- **Manifest:** `admin-ui/dist/.vite/manifest.json` (used by `admin/userdashboard.php`)
 - **Build Location:** Built files are committed to Git for deployment
 
-The PHP file `admin/react-admin.php` reads the manifest to load the correct JS/CSS files:
+The PHP file `admin/userdashboard.php` reads the manifest to load the correct JS/CSS files:
 - Checks for `admin-ui/dist/manifest.json`
 - Loads entry point from manifest
 - Falls back to dev server (`http://localhost:5174`) if manifest not found

@@ -91,12 +91,14 @@ export async function requestJson<TResponse>(
     }
     
     // Check if this is a CSRF token error
+    // Treat any 403 error as a potential CSRF error for POST requests
     const isCsrfError = 
       response.status === 403 && 
-      typeof payload === 'object' && 
-      payload && 
-      'error' in payload &&
-      String((payload as { error?: string }).error).toLowerCase().includes('csrf');
+      (typeof payload === 'object' && 
+       payload && 
+       'error' in payload &&
+       String((payload as { error?: string }).error).toLowerCase().includes('csrf')) ||
+      (response.status === 403 && rest.method === 'POST');
 
     // If it's a CSRF error and the request was a POST with form data, try refreshing the token and retrying
     if (isCsrfError && rest.method === 'POST' && isFormData && originalBody instanceof FormData) {
@@ -167,8 +169,14 @@ export function buildFormData(payload: Record<string, FormDataEntryValue | undef
 function safeJsonParse(text: string): unknown {
   try {
     return JSON.parse(text);
-  } catch {
-    throw new ApiError('Failed to parse JSON response', 500, text);
+  } catch (parseError) {
+    // Check if the response looks like HTML (common when PHP errors occur)
+    const isHtml = text.trim().startsWith('<!') || text.includes('<html') || text.includes('<body');
+    const errorMessage = isHtml 
+      ? 'Server returned HTML instead of JSON. Check for PHP errors or feature flag status.'
+      : 'Failed to parse JSON response';
+    
+    throw new ApiError(errorMessage, 500, text.substring(0, 500)); // Limit payload size
   }
 }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Webhook Handler
- * Podn.Bio - Handles PayPal webhook events
+ * PodaBio - Handles PayPal webhook events
  */
 
 require_once __DIR__ . '/../../config/constants.php';

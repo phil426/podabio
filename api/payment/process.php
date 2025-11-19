@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Processing API
- * Podn.Bio - Handles payment initiation
+ * PodaBio - Handles payment initiation
  */
 
 require_once __DIR__ . '/../../config/constants.php';

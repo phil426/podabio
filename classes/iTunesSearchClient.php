@@ -1,7 +1,7 @@
 <?php
 /**
  * iTunes Search API Client
- * Podn.Bio
+ * PodaBio
  * 
  * Handles searching for podcasts using the iTunes Search API
  */

@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Checkout Page
- * Podn.Bio - Subscription checkout
+ * PodaBio - Subscription checkout
  */
 
 require_once __DIR__ . '/../config/constants.php';

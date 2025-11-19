@@ -1,7 +1,7 @@
 <?php
 /**
  * Pricing Page
- * Podn.Bio - Subscription plans and pricing
+ * PodaBio - Subscription plans and pricing
  */
 
 require_once __DIR__ . '/config/constants.php';

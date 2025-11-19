@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin Panel - Analytics Dashboard
- * Podn.Bio - System-wide analytics
+ * PodaBio - System-wide analytics
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -19,15 +19,16 @@ $period = sanitizeInput($_GET['period'] ?? '30'); // days
 $daysAgo = (int)$period;
 
 // Overall stats
-$totalPageViews = (int)fetchOne("SELECT SUM(page_views) as total FROM analytics")['total'] ?? 0;
-$totalLinkClicks = (int)fetchOne("SELECT SUM(click_count) as total FROM analytics")['total'] ?? 0;
-$totalSubscriptions = (int)fetchOne("SELECT COUNT(*) as count FROM email_subscriptions WHERE status = 'confirmed'")['count'];
+$totalPageViews = (int)fetchOne("SELECT COUNT(*) as count FROM analytics WHERE event_type = 'view'")['count'] ?? 0;
+$totalLinkClicks = (int)fetchOne("SELECT COUNT(*) as count FROM analytics WHERE event_type = 'click'")['count'] ?? 0;
+$totalSubscriptions = (int)fetchOne("SELECT COUNT(*) as count FROM email_subscriptions WHERE status = 'confirmed'")['count'] ?? 0;
 
 // Recent analytics (last N days)
 $recentViews = fetchAll(
-    "SELECT DATE(created_at) as date, SUM(page_views) as views 
+    "SELECT DATE(created_at) as date, COUNT(*) as views 
      FROM analytics 
-     WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+     WHERE event_type = 'view' 
+       AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
      GROUP BY DATE(created_at) 
      ORDER BY date DESC",
     [$daysAgo]
@@ -35,11 +36,13 @@ $recentViews = fetchAll(
 
 // Top pages
 $topPages = fetchAll(
-    "SELECT p.username, p.podcast_name, SUM(a.page_views) as views, SUM(a.click_count) as clicks
+    "SELECT p.username, p.podcast_name, 
+            SUM(CASE WHEN a.event_type = 'view' THEN 1 ELSE 0 END) as views,
+            SUM(CASE WHEN a.event_type = 'click' THEN 1 ELSE 0 END) as clicks
      FROM analytics a
      JOIN pages p ON a.page_id = p.id
      WHERE a.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-     GROUP BY a.page_id
+     GROUP BY a.page_id, p.username, p.podcast_name
      ORDER BY views DESC
      LIMIT 20",
     [$daysAgo]
@@ -94,7 +97,7 @@ $csrfToken = generateCSRFToken();
                 <a href="/admin/blog.php">Blog</a>
                 <a href="/admin/support.php">Support</a>
                 <a href="/admin/settings.php">Settings</a>
-                <a href="/admin/react-admin.php">PodaBio Studio</a>
+                <a href="/admin/select-panel.php">Switch Panel</a>
                 <a href="/logout.php">Logout</a>
             </nav>
         </div>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Forgot Password Page
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -11,7 +11,7 @@ require_once __DIR__ . '/classes/User.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    redirect('/editor.php');
+    redirect('/admin/userdashboard.php');
 }
 
 $error = '';

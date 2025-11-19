@@ -3,7 +3,9 @@ import clsx from 'clsx';
 import { LuSearch, LuX } from 'react-icons/lu';
 
 import { useThemeLibraryQuery, useCloneThemeMutation, useRenameThemeMutation, useDeleteThemeMutation } from '../../api/themes';
-import { usePageSnapshot, usePageSettingsMutation } from '../../api/page';
+import { usePageSnapshot, updatePageThemeId } from '../../api/page';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../api/utils';
 import type { ThemeRecord } from '../../api/types';
 import type { TokenBundle } from '../../design-system/tokens';
 import { useThemeInspector } from '../../state/themeInspector';
@@ -18,11 +20,12 @@ interface StatusMessage {
 
 export function ThemeLibraryPanel(): JSX.Element {
   const { data, isLoading, isError, error } = useThemeLibraryQuery();
-  const { mutateAsync: applyTheme, isPending: isApplying } = usePageSettingsMutation();
   const cloneMutation = useCloneThemeMutation();
   const renameMutation = useRenameThemeMutation();
   const { data: snapshot } = usePageSnapshot();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<StatusMessage | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
 
   const currentThemeId = snapshot?.page?.theme_id ?? null;
 
@@ -41,10 +44,76 @@ export function ThemeLibraryPanel(): JSX.Element {
 
   const handleApplyTheme = async (theme: ThemeRecord) => {
     try {
-      await applyTheme({ theme_id: String(theme.id) });
-      setStatus({ tone: 'success', message: `Theme “${theme.name}” applied.` });
+      setIsApplying(true);
+      
+      // Extract page background from theme
+      let pageBackground: string | null | undefined = theme.page_background;
+      
+      // If page_background is not set, try to extract from color_tokens
+      if (!pageBackground && theme.color_tokens) {
+        try {
+          const colorTokens = typeof theme.color_tokens === 'string' 
+            ? JSON.parse(theme.color_tokens) 
+            : theme.color_tokens;
+          
+          // Try semantic.surface.canvas path
+          if (colorTokens?.semantic?.surface?.canvas) {
+            pageBackground = colorTokens.semantic.surface.canvas as string;
+          }
+          // Try semantic.surface.background path
+          else if (colorTokens?.semantic?.surface?.background) {
+            pageBackground = colorTokens.semantic.surface.background as string;
+          }
+          // Try gradient.page path
+          else if (colorTokens?.gradient?.page) {
+            pageBackground = colorTokens.gradient.page as string;
+          }
+        } catch (e) {
+          // If parsing fails, use null to let theme value be used
+          console.warn('Failed to parse color_tokens:', e);
+        }
+      }
+      
+      // Parse widget_styles if it's a string
+      let widgetStyles: Record<string, unknown> | string | null = null;
+      if (theme.widget_styles) {
+        if (typeof theme.widget_styles === 'string') {
+          try {
+            widgetStyles = JSON.parse(theme.widget_styles);
+          } catch (e) {
+            console.warn('Failed to parse widget_styles:', e);
+            widgetStyles = theme.widget_styles;
+          }
+        } else {
+          widgetStyles = theme.widget_styles;
+        }
+      }
+      
+      // Extract widget background (prioritize direct column over color_tokens)
+      const widgetBackground = theme.widget_background ?? null;
+      
+      // Use updatePageThemeId with all theme fields
+      // Pass null to clear page-level overrides (so theme values are used)
+      await updatePageThemeId(theme.id, {
+        page_background: pageBackground ?? null,
+        widget_background: widgetBackground,
+        widget_border_color: theme.widget_border_color ?? null,
+        page_primary_font: theme.page_primary_font ?? null,
+        page_secondary_font: theme.page_secondary_font ?? null,
+        widget_primary_font: theme.widget_primary_font ?? null,
+        widget_secondary_font: theme.widget_secondary_font ?? null,
+        widget_styles: widgetStyles,
+        spatial_effect: theme.spatial_effect ?? null
+      });
+      
+      // Invalidate and refetch queries to update the UI
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+      setStatus({ tone: 'success', message: `Theme "${theme.name}" applied.` });
     } catch (err) {
       setStatus({ tone: 'error', message: err instanceof Error ? err.message : 'Unable to apply theme.' });
+    } finally {
+      setIsApplying(false);
     }
   };
 

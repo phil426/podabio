@@ -1,7 +1,7 @@
 <?php
 /**
  * About Page
- * Podn.Bio - Company information
+ * PodaBio - Company information
  */
 
 require_once __DIR__ . '/config/constants.php';
@@ -14,7 +14,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - <?php echo h(APP_NAME); ?></title>
-    <meta name="description" content="Learn about Podn.Bio and our mission to help podcasters grow their audience.">
+    <meta name="description" content="Learn about PodaBio and our mission to help podcasters grow their audience.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">

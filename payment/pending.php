@@ -1,7 +1,7 @@
 <?php
 /**
  * Venmo Payment Pending Page
- * Podn.Bio - Waiting for Venmo payment verification
+ * PodaBio - Waiting for Venmo payment verification
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -126,7 +126,7 @@ $planType = sanitizeInput($_GET['plan'] ?? 'premium');
         
         <p style="margin-top: 2rem;">You'll receive an email confirmation once your payment is verified and your subscription is activated.</p>
         
-        <a href="/admin/react-admin.php" class="btn">Return to Studio</a>
+        <a href="/admin/userdashboard.php" class="btn">Return to Studio</a>
     </div>
 </body>
 </html>

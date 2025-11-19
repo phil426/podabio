@@ -1,7 +1,7 @@
 <?php
 /**
  * Support Knowledge Base - Index
- * Podn.Bio - Support articles listing
+ * PodaBio - Support articles listing
  */
 
 require_once __DIR__ . '/../config/constants.php';

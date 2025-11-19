@@ -1,0 +1,102 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 1 auto;
+  min-width: 100px;
+  max-width: 160px;
+  padding: 0.3125rem 0.625rem;
+  border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.15));
+  border-radius: 0.375rem;
+  background: var(--color-surface-base, #ffffff);
+  font-size: 0.75rem;
+  color: var(--color-text-primary, #111827);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .trigger {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.trigger:hover:not(:disabled) {
+  background: var(--color-background-base, #f9fafb);
+  border-color: var(--color-divider-subtle, rgba(0, 0, 0, 0.25));
+}
+
+.trigger:focus {
+  outline: none;
+  border-color: var(--color-accent-primary, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary, #6b7280);
+  transition: transform 200ms ease-out;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.trigger[data-state="open"] .icon {
+  transform: rotate(180deg);
+}
+
+.content {
+  overflow: hidden;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+  z-index: 1000;
+  min-width: var(--radix-select-trigger-width);
+  max-height: 300px;
+}
+
+.viewport {
+  padding: 4px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-primary, #111827);
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 150ms ease-out;
+  outline: none;
+}
+
+.item:hover,
+.item[data-highlighted] {
+  background: var(--color-background-base, #f9fafb);
+}
+
+.item[data-state="checked"] {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--color-accent-primary, #7c3aed);
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  color: var(--color-accent-primary, #7c3aed);
+  margin-left: 0.5rem;
+}
+

@@ -11,7 +11,7 @@ import { type TabColorTheme } from '../layout/tab-colors';
 import styles from './profile-inspector.module.css';
 
 interface ProfileInspectorProps {
-  focus: 'image' | 'bio' | 'profile' | 'footer';
+  focus: 'image' | 'bio' | 'profile';
   activeColor: TabColorTheme;
 }
 
@@ -213,7 +213,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const handleSaveProfile = async () => {
     if (!page) return;
     
-    // Check character limits
+    // Check character limits for profile
     const nameTextOnly = name.replace(/<[^>]*>/g, '');
     const bioTextOnly = bio.replace(/<[^>]*>/g, '');
     if (nameTextOnly.length > maxNameLength) {
@@ -229,7 +229,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
 
     try {
       setSavingProfile(true);
-      await updatePageSettings({
+      const response = await updatePageSettings({
         podcast_name: name,
         name_alignment: nameAlignment,
         name_text_size: nameTextSize,
@@ -241,6 +241,12 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
         bio_alignment: bioAlignment,
         bio_text_size: bioTextSize
       });
+      
+      // Check if the response was successful
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to save profile settings');
+      }
+      
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setStatusTone('success');
       setStatus('Profile updated.');

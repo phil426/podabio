@@ -1,7 +1,7 @@
 <?php
 /**
  * Session Management
- * Podn.Bio
+ * PodaBio
  */
 
 // Load constants if not already loaded

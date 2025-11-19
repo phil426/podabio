@@ -6,6 +6,7 @@ import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { useIntegrationSelection } from '../../state/integrationSelection';
 import { WidgetInspector } from '../panels/WidgetInspector';
 import { ProfileInspector } from '../panels/ProfileInspector';
+import { FooterInspector } from '../panels/FooterInspector';
 import { PodcastPlayerInspector } from '../panels/PodcastPlayerInspector';
 import { FeaturedBlockInspector } from '../panels/FeaturedBlockInspector';
 import { SocialIconInspector } from '../panels/SocialIconInspector';
@@ -27,7 +28,7 @@ interface PropertiesPanelProps {
   activeTab?: TabValue;
 }
 
-export function PropertiesPanel({ activeColor, activeTab = 'structure' }: PropertiesPanelProps): JSX.Element {
+export function PropertiesPanel({ activeColor, activeTab = 'layers' }: PropertiesPanelProps): JSX.Element {
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
@@ -35,6 +36,7 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
   const queryClient = useQueryClient();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const { data: snapshot } = usePageSnapshot();
+
 
   const activeTheme = useMemo(
     () => deriveActiveTheme(themeLibrary, snapshot?.page?.theme_id ?? null),
@@ -54,13 +56,21 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
   let inspector: JSX.Element | null = null;
 
   // Gate inspectors by activeTab to prevent stale inspectors from other tabs
-  if (activeTab === 'structure' || activeTab === 'design') {
-    // Style tab: Show widget/page inspectors or default to Profile
-    if (selectedWidgetId?.startsWith('page:')) {
+  // Handle both legacy tabs and new Lefty tabs
+  const isLegacyStyleTab = activeTab === 'structure' || activeTab === 'design';
+  const isLeftyLayerTab = activeTab === 'layers';
+  const isLegacyIntegrationsTab = activeTab === 'integrations';
+  const isLeftyIntegrationTab = activeTab === 'integration';
+  const isLegacySettingsTab = activeTab === 'settings';
+
+  if (isLegacyStyleTab || isLeftyLayerTab) {
+    // Style/Layers tab: Show widget/page inspectors or default to Profile
+    // CRITICAL: Check for 'page:footer' FIRST with exact match before any other checks
+    if (selectedWidgetId === 'page:footer') {
+      inspector = <FooterInspector activeColor={activeColor} />;
+    } else if (selectedWidgetId?.startsWith('page:')) {
       if (selectedWidgetId === 'page:profile') {
         inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
-      } else if (selectedWidgetId === 'page:footer') {
-        inspector = <ProfileInspector focus="footer" activeColor={activeColor} />;
       } else if (selectedWidgetId === 'page:podcast-player') {
         inspector = <PodcastPlayerInspector activeColor={activeColor} />;
       } else {
@@ -83,25 +93,28 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
       } else {
         inspector = <WidgetInspector activeColor={activeColor} />;
       }
-    } else if (activeTab === 'structure') {
-      // Default to Profile inspector when on structure tab and nothing is selected
+    } else if (isLegacyStyleTab || activeTab === 'layers') {
+      // Default to Profile inspector when on structure/layers tab and nothing is selected
       inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
     }
     // Note: ThemeEditorPanel is handled separately via showThemeInspector state
-  } else if (activeTab === 'integrations') {
+  } else if (isLegacyIntegrationsTab || isLeftyIntegrationTab) {
     // Integrations tab: Show IntegrationInspector only if integration is selected
     if (selectedIntegrationId !== null) {
       inspector = <IntegrationInspector activeColor={activeColor} />;
     }
     // No default inspector for integrations tab
-  } else if (activeTab === 'settings') {
+  } else if (isLegacySettingsTab) {
     // Settings tab: Show SocialIconInspector only if social icon is selected
     if (selectedSocialIconId !== null) {
       inspector = <SocialIconInspector activeColor={activeColor} />;
     }
     // No default inspector for settings tab
-  } else if (activeTab === 'analytics') {
-    // Analytics tab: No inspector (right panel is collapsed)
+  } else if (activeTab === 'analytics' || activeTab === 'preview') {
+    // Analytics/Preview tab: No inspector (right panel is collapsed)
+    inspector = null;
+  } else if (activeTab === 'colors' || activeTab === 'special-effects' || activeTab === 'podcast') {
+    // These tabs don't need inspectors in the right panel
     inspector = null;
   }
 
@@ -119,11 +132,6 @@ export function PropertiesPanel({ activeColor, activeTab = 'structure' }: Proper
       <div className={styles.scrollArea}>
         {showThemeInspector && (
           <>
-            {console.log('[PropertiesPanel] Rendering ThemeEditorPanel', { 
-              showThemeInspector, 
-              activeThemeId: activeTheme?.id,
-              activeThemeName: activeTheme?.name 
-            })}
             <ThemeEditorPanel 
               activeColor={activeColor} 
               theme={activeTheme}

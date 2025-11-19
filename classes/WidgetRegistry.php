@@ -17,7 +17,7 @@ class WidgetRegistry {
                 'widget_id' => 'custom_link',
                 'name' => 'Custom Link',
                 'description' => 'Add a clickable link with title and thumbnail',
-                'thumbnail' => '/assets/widget-thumbnails/link.png',
+                'thumbnail' => '/assets/widget-thumbnails/custom_link.png',
                 'category' => 'links',
                 'requires_api' => false,
                 'config_fields' => [
@@ -32,7 +32,7 @@ class WidgetRegistry {
                 'widget_id' => 'youtube_video',
                 'name' => 'YouTube Video',
                 'description' => 'Embed a YouTube video player',
-                'thumbnail' => '/assets/widget-thumbnails/youtube.png',
+                'thumbnail' => '/assets/widget-thumbnails/youtube_video.png',
                 'category' => 'videos',
                 'requires_api' => false,
                 'config_fields' => [
@@ -46,7 +46,7 @@ class WidgetRegistry {
                 'widget_id' => 'text_html',
                 'name' => 'Text/HTML Block',
                 'description' => 'Add custom text or HTML content',
-                'thumbnail' => '/assets/widget-thumbnails/text.png',
+                'thumbnail' => '/assets/widget-thumbnails/text_html.png',
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
@@ -58,7 +58,7 @@ class WidgetRegistry {
                 'widget_id' => 'heading_block',
                 'name' => 'Heading',
                 'description' => 'Create a prominent heading with size controls.',
-                'thumbnail' => '/assets/widget-thumbnails/text.png',
+                'thumbnail' => '/assets/widget-thumbnails/heading_block.png',
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
@@ -81,7 +81,7 @@ class WidgetRegistry {
                 'widget_id' => 'text_note',
                 'name' => 'Italic Text',
                 'description' => 'Add a small italic note for emphasis.',
-                'thumbnail' => '/assets/widget-thumbnails/text.png',
+                'thumbnail' => '/assets/widget-thumbnails/text_note.png',
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
@@ -93,7 +93,7 @@ class WidgetRegistry {
                 'widget_id' => 'divider_rule',
                 'name' => 'Divider',
                 'description' => 'Insert a horizontal rule to separate sections.',
-                'thumbnail' => '/assets/widget-thumbnails/text.png',
+                'thumbnail' => '/assets/widget-thumbnails/divider_rule.png',
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
@@ -130,7 +130,7 @@ class WidgetRegistry {
                 'widget_id' => 'podcast_player_custom',
                 'name' => 'PodNBio Player',
                 'description' => 'Compact podcast player with bottom sheet drawer, chapters, and episode navigation',
-                'thumbnail' => '/assets/widget-thumbnails/podcast-custom.png',
+                'thumbnail' => '/assets/widget-thumbnails/podcast_player_custom.png',
                 'category' => 'podcast',
                 'requires_api' => false,
                 'config_fields' => [
@@ -144,7 +144,7 @@ class WidgetRegistry {
                 'widget_id' => 'email_subscription',
                 'name' => 'Email Subscription',
                 'description' => 'Collect email subscriptions from visitors',
-                'thumbnail' => '/assets/widget-thumbnails/email.png',
+                'thumbnail' => '/assets/widget-thumbnails/email_subscription.png',
                 'category' => 'forms',
                 'requires_api' => false,
                 'config_fields' => [
@@ -158,7 +158,7 @@ class WidgetRegistry {
                 'widget_id' => 'shopify_product',
                 'name' => 'Shopify Product',
                 'description' => 'Display a single product from your Shopify store',
-                'thumbnail' => '/assets/widget-thumbnails/shopify-product.png',
+                'thumbnail' => '/assets/widget-thumbnails/shopify_product.png',
                 'category' => 'ecommerce',
                 'requires_api' => true,
                 'config_fields' => [
@@ -172,7 +172,7 @@ class WidgetRegistry {
                 'widget_id' => 'shopify_product_list',
                 'name' => 'Shopify Product List',
                 'description' => 'Display a list of products from your Shopify store',
-                'thumbnail' => '/assets/widget-thumbnails/shopify-products.png',
+                'thumbnail' => '/assets/widget-thumbnails/shopify_product_list.png',
                 'category' => 'ecommerce',
                 'requires_api' => true,
                 'config_fields' => [
@@ -187,7 +187,7 @@ class WidgetRegistry {
                 'widget_id' => 'shopify_collection',
                 'name' => 'Shopify Collection',
                 'description' => 'Display products from a Shopify collection',
-                'thumbnail' => '/assets/widget-thumbnails/shopify-collection.png',
+                'thumbnail' => '/assets/widget-thumbnails/shopify_collection.png',
                 'category' => 'ecommerce',
                 'requires_api' => true,
                 'config_fields' => [
@@ -204,7 +204,7 @@ class WidgetRegistry {
             //     'widget_id' => 'instagram_post',
             //     'name' => 'Instagram Post',
             //     'description' => 'Display a single Instagram post',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram-post.png',
+            //     'thumbnail' => '/assets/widget-thumbnails/instagram_post.png',
             //     'category' => 'social',
             //     'requires_api' => true,
             //     'config_fields' => [
@@ -218,7 +218,7 @@ class WidgetRegistry {
             //     'widget_id' => 'instagram_feed',
             //     'name' => 'Instagram Feed',
             //     'description' => 'Display your Instagram feed',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram-feed.png',
+            //     'thumbnail' => '/assets/widget-thumbnails/instagram_feed.png',
             //     'category' => 'social',
             //     'requires_api' => true,
             //     'config_fields' => [
@@ -233,7 +233,7 @@ class WidgetRegistry {
             //     'widget_id' => 'instagram_gallery',
             //     'name' => 'Instagram Gallery',
             //     'description' => 'Display Instagram posts in a gallery grid',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram-gallery.png',
+            //     'thumbnail' => '/assets/widget-thumbnails/instagram_gallery.png',
             //     'category' => 'social',
             //     'requires_api' => true,
             //     'config_fields' => [
@@ -248,7 +248,7 @@ class WidgetRegistry {
                 'widget_id' => 'giphy_search',
                 'name' => 'Giphy Search',
                 'description' => 'Display GIFs from Giphy search',
-                'thumbnail' => '/assets/widget-thumbnails/giphy-search.png',
+                'thumbnail' => '/assets/widget-thumbnails/giphy_search.png',
                 'category' => 'content',
                 'requires_api' => true,
                 'config_fields' => [
@@ -264,7 +264,7 @@ class WidgetRegistry {
                 'widget_id' => 'giphy_trending',
                 'name' => 'Giphy Trending',
                 'description' => 'Display trending GIFs from Giphy',
-                'thumbnail' => '/assets/widget-thumbnails/giphy-trending.png',
+                'thumbnail' => '/assets/widget-thumbnails/giphy_trending.png',
                 'category' => 'content',
                 'requires_api' => true,
                 'config_fields' => [
@@ -279,7 +279,7 @@ class WidgetRegistry {
                 'widget_id' => 'giphy_random',
                 'name' => 'Giphy Random',
                 'description' => 'Display a random GIF from Giphy',
-                'thumbnail' => '/assets/widget-thumbnails/giphy-random.png',
+                'thumbnail' => '/assets/widget-thumbnails/giphy_random.png',
                 'category' => 'content',
                 'requires_api' => true,
                 'config_fields' => [

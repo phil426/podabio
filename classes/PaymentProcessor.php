@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Processor Class
- * Podn.Bio - Handles PayPal and Venmo payments
+ * PodaBio - Handles PayPal and Venmo payments
  */
 
 require_once __DIR__ . '/../config/constants.php';

@@ -26,6 +26,9 @@ export interface PageSnapshot {
   podcast_name: string | null;
   podcast_description: string | null;
   footer_text?: string | null;
+  footer_copyright?: string | null;
+  footer_privacy_link?: string | null;
+  footer_terms_link?: string | null;
   cover_image_url: string | null;
   profile_image?: string | null;
   theme_id: number | null;
@@ -54,6 +57,7 @@ export interface PageSnapshot {
   profile_visible?: boolean | null;
   footer_visible?: boolean | null;
   podcast_player_enabled?: boolean | null;
+  spatial_effect?: string | null;
 }
 
 export interface WidgetConfig {
@@ -200,6 +204,7 @@ export interface ThemeRecord {
   shape_tokens?: Record<string, unknown> | string | null;
   motion_tokens?: Record<string, unknown> | string | null;
   spatial_effect?: string | null;
+  widget_styles?: Record<string, unknown> | string | null;
   categories?: string[] | null;
   tags?: string[] | null;
 }

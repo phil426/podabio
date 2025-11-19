@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin Panel - Subscription Management
- * Podn.Bio - Manage subscriptions
+ * PodaBio - Manage subscriptions
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -334,7 +334,7 @@ $csrfToken = generateCSRFToken();
                 <a href="/admin/blog.php">Blog</a>
                 <a href="/admin/support.php">Support</a>
                 <a href="/admin/settings.php">Settings</a>
-                <a href="/admin/react-admin.php">PodaBio Studio</a>
+                <a href="/admin/select-panel.php">Switch Panel</a>
                 <a href="/logout.php">Logout</a>
             </nav>
         </div>

@@ -5,7 +5,7 @@
 set -e
 
 echo "=========================================="
-echo "PodInBio Deployment Script"
+echo "PodaBio Deployment Script"
 echo "Deploying to poda.bio (Hostinger)"
 echo "=========================================="
 echo ""
@@ -107,7 +107,7 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo ""
     echo "Next steps:"
     echo "1. Test PHP backend: https://poda.bio/index.php"
-    echo "2. Test admin panel: https://poda.bio/admin/react-admin.php"
+    echo "2. Test admin panel: https://poda.bio/admin/userdashboard.php"
     echo "3. Verify React app loads (check browser console)"
     echo "4. Test database connectivity"
     echo "5. Test file uploads"

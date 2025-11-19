@@ -1,7 +1,7 @@
 <?php
 /**
  * Shopify Configuration
- * Podn.Bio
+ * PodaBio
  * 
  * To set up Shopify integration:
  * 1. Go to your Shopify admin: Settings > Apps and sales channels > Develop apps

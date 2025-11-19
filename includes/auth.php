@@ -1,7 +1,7 @@
 <?php
 /**
  * Authentication Helper
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/session.php';

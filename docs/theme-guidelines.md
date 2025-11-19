@@ -72,33 +72,10 @@ Following these practices keeps theming centralized, accessible, and maintainabl
 ## Theme Rules & Policies
 
 1. **Prime Rule:** Public pages always render the mobile layout inside the framed shell; desktop/tablet sees the same mobile width centered on a subtle contrasting background.
-2. **Theme Rules (Aurora baseline):**
+2. **Theme Rules:**
    - No floating containers; page content sits flush inside the mobile card.
    - Podcast drawer, compact player, and toggles count as theme content and must be styled accordingly.
    - Podcast drawer always runs in dark mode for readability.
    - Tap-to-listen/podcast banner toggles must **avoid pill shapes**—use theme corner tokens (e.g. `--shape-corner-md`) so the control aligns with other buttons. Contrast must be ≥4.5:1 against the banner and text should default to `#FFFFFF` or a verified `color-mix` with a white majority, paired with a subtle text shadow for clarity against gradients.
    - When theming the podcast banner ensure the toggle sits flush against the player (no overlap). Keep banner padding minimal, and if you add glow effects (`::before` layers) confirm they do not obscure the toggle text.
-
-## Aurora Skies Theme
-
-The Aurora Skies system theme showcases layered gradients, neon accents, and glassmorphism touches designed for the mobile link-in-bio experience.
-
-- **Install:** Run `https://poda.bio/database/add_theme_aurora.php` (idempotent; it quietly exits if the theme already exists).
-- **Token Highlights:**
-  - `colors.gradient.page` combines a midnight base with cyan/purple light blooms.
-  - `colors.glow.primary` powers ambient widget and podcast halos.
-  - `typography.font.heading` switches to `Poppins` with an enlarged `scale.xl` (≈2.65rem) for dramatic hero titles.
-  - `shape.corner.lg` widens to `2.25rem` for smooth capsules and pill buttons.
-- **Front-End Styling:**
-  - Body and podcast banner consume `--gradient-page` / `--gradient-podcast`.
-  - Page titles render gradient-filled lettering with a luminous underline.
-  - Widgets use translucent glass shells with glow outlines and lift on hover.
-  - Podcast controls inherit accent gradients with pulse animations and glowing progress bars.
-- **QA Checklist:**
-  - Test at 390×844 to verify spacing scale and layered background.
-  - Ensure controls retain ≥3:1 contrast and `:focus-visible` rings remain in accent colors.
-  - Interact with the podcast drawer and compact player to confirm glow/blur performance.
-  - Hover social icons to confirm glow shadows stay within bounds and do not clip.
-
-Activate *Aurora Skies* in the Appearance editor after running the installer script above to experience the full aesthetic. Future themes can follow the same pattern by defining gradient and glow token families without rewriting component CSS.
 

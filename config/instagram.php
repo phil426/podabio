@@ -1,7 +1,7 @@
 <?php
 /**
  * Instagram Configuration
- * Podn.Bio
+ * PodaBio
  * 
  * To set up Instagram integration:
  * 1. Go to https://developers.facebook.com/apps/

@@ -1,7 +1,7 @@
 <?php
 /**
  * Podlinks API Endpoint
- * Podn.Bio
+ * PodaBio
  * 
  * Generates podcast platform links by searching APIs and populating social icons
  */

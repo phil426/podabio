@@ -10,7 +10,7 @@ ini_set('display_errors', 1);
 
 // Define APP_NAME if constants.php fails
 if (!defined('APP_NAME')) {
-    define('APP_NAME', 'Podn.Bio');
+    define('APP_NAME', 'PodaBio');
 }
 
 // Simple HTML escape function if helpers.php fails

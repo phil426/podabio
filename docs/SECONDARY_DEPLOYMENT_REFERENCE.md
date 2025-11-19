@@ -1,4 +1,4 @@
-# Podn.Bio Secondary Deployment Reference
+# PodaBio Secondary Deployment Reference
 
 > **Security Notice**
 > This document contains sensitive operational details. Store securely and rotate shared credentials regularly. Do **not** expose publicly.
@@ -8,8 +8,8 @@
 - **Primary Branch:** `main`
 - **Local workspace:** `/Users/philybarrolaza/.cursor/podinbio`
 - **Deploy script:** `./deploy_git.sh` (runs git pull on server via SSH)
-- **Latest version tag:** `v1.4.0`
-- **Checkpoint docs:** `CHECKPOINT_v1.4.0.md`, `PROGRESS_REPORT.md`
+- **Latest version tag:** `v1.0.1` (or see `git tag -l` for current tags)
+- **Application version:** See `/VERSION` file (currently `1.0.1`)
 
 ### Standard Deployment Workflow
 1. Commit local changes:

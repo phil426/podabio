@@ -4,24 +4,26 @@ import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'rea
 
 import { AccountSummaryPanel } from '../account/AccountSummaryPanel';
 import { AccountWorkspace } from '../account/AccountWorkspace';
-import { LeftRail } from './LeftRail';
-import { CanvasViewport } from './CanvasViewport';
-import { PropertiesPanel } from './PropertiesPanel';
-import { TopBar } from './TopBar';
-import { TabBar } from './TabBar';
-import { MobilePreviewBar } from './MobilePreviewBar';
+import { LeftRailNav } from './LeftRailNav';
+import { LeftyContentPanel } from './LeftyContentPanel';
+import { CanvasViewport, type DevicePreset } from './CanvasViewport';
 import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
-import { tabColors, type TabValue } from './tab-colors';
+import { PropertiesPanel } from './PropertiesPanel';
+import { tabColors, type LeftyTabValue } from './tab-colors';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { useIntegrationSelection } from '../../state/integrationSelection';
+import { useWidgetSelection } from '../../state/widgetSelection';
 
 import './editor-shell.css';
+
+// Lefty is now the only admin panel
 
 export function EditorShell(): JSX.Element {
   const location = useLocation();
   const isAccountRoute = location.pathname.startsWith('/account');
-  const [activeTab, setActiveTab] = useState<TabValue>('structure');
-  const [selectedDevice, setSelectedDevice] = useState(() => {
+  
+  const [activeTab, setActiveTab] = useState<LeftyTabValue>('layers');
+  const [selectedDevice] = useState(() => {
     // Top 5 most popular non-folding phones (2024)
     const DEVICE_PRESETS = [
       { id: 'iphone-15-pro-max', name: 'iPhone 15 Pro Max', width: 430, height: 932, aspectRatio: '19.5:9' },
@@ -36,51 +38,47 @@ export function EditorShell(): JSX.Element {
   // Clear selections when switching tabs to prevent stale inspectors
   const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
   const selectIntegration = useIntegrationSelection((state) => state.selectIntegration);
+  const selectWidget = useWidgetSelection((state) => state.selectWidget);
+
+  // Handle tab change
+  const handleTabChange = (tab: LeftyTabValue) => {
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
-    // Clear social icon selection when leaving settings tab
-    if (activeTab !== 'settings') {
+    // Clear social icon selection when leaving settings/integration tabs
+    if (activeTab !== 'integration') {
       selectSocialIcon(null);
-    }
-    // Clear integration selection when leaving integrations tab
-    if (activeTab !== 'integrations') {
       selectIntegration(null);
     }
-    // Note: Widget selection is already cleared in LeftRail when leaving structure/design tabs
-  }, [activeTab, selectSocialIcon, selectIntegration]);
+    // Clear widget selection when leaving layers tab
+    if (activeTab !== 'layers') {
+      selectWidget(null);
+    }
+  }, [activeTab, selectSocialIcon, selectIntegration, selectWidget]);
 
   return (
     <div className="editor-shell">
-      <TopBar />
       {isAccountRoute ? (
         <AccountPanels />
       ) : (
-        <>
-          <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-          <EditorPanels activeTab={activeTab} onTabChange={setActiveTab} selectedDevice={selectedDevice} onDeviceChange={setSelectedDevice} />
-        </>
+        <EditorPanels
+          activeTab={activeTab as LeftyTabValue}
+          onTabChange={handleTabChange as (tab: LeftyTabValue) => void}
+          selectedDevice={selectedDevice}
+        />
       )}
     </div>
   );
 }
 
-interface DevicePreset {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  aspectRatio: string;
-}
-
 interface EditorPanelsProps {
-  activeTab: TabValue;
-  onTabChange: (tab: TabValue) => void;
+  activeTab: LeftyTabValue;
+  onTabChange: (tab: LeftyTabValue) => void;
   selectedDevice: DevicePreset;
-  onDeviceChange: (device: DevicePreset) => void;
 }
 
-function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }: EditorPanelsProps): JSX.Element {
-  const [previewScale, setPreviewScale] = useState(0.75);
+function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsProps): JSX.Element {
   const activeColor = tabColors[activeTab];
   const wrapperRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -89,21 +87,22 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
   const leftPanelHandleRef = useRef<ImperativePanelHandle>(null);
   const centerPanelHandleRef = useRef<ImperativePanelHandle>(null);
   const rightPanelHandleRef = useRef<ImperativePanelHandle>(null);
-  const [barStyle, setBarStyle] = useState<React.CSSProperties>({});
 
-  // Calculate panel sizes based on active tab
+  // Calculate panel sizes based on active tab (percentages that sum to 100)
   const panelSizes = useMemo(() => {
-    if (activeTab === 'analytics') {
+    if (activeTab === 'analytics' || activeTab === 'preview') {
       return {
-        left: 0,
-        center: 100,
+        left: 4, // ~64px as percentage (64px / ~1600px viewport)
+        center: activeTab === 'analytics' ? 96 : 0,
         right: 0
       };
     }
+    // For normal tabs: left panel fills remaining space after right panel
+    // When center is collapsed, left will automatically expand to fill available space
     return {
-      left: 22,
-      center: 46,
-      right: 32
+      left: 72, // Left panel with rail + content panels (fills remaining space: 100% - 28% right = 72%)
+      center: 0, // Center panel hidden for now
+      right: 28 // Information panel (~28% of viewport)
     };
   }, [activeTab]);
 
@@ -111,10 +110,15 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
   useEffect(() => {
     if (leftPanelHandleRef.current && rightPanelHandleRef.current && centerPanelHandleRef.current) {
       if (activeTab === 'analytics') {
-        leftPanelHandleRef.current.collapse();
         rightPanelHandleRef.current.collapse();
+        centerPanelHandleRef.current.resize(100);
+      } else if (activeTab === 'preview') {
+        centerPanelHandleRef.current.collapse();
+        rightPanelHandleRef.current.resize(panelSizes.right);
       } else {
+        // For normal tabs, left panel contains both rail and content
         leftPanelHandleRef.current.resize(panelSizes.left);
+        centerPanelHandleRef.current.collapse(); // Hide center panel
         rightPanelHandleRef.current.resize(panelSizes.right);
       }
     }
@@ -218,91 +222,53 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
     };
   }, []);
 
-  useEffect(() => {
-    const updateBarPosition = () => {
-      if (leftPanelRef.current && centerPanelRef.current && rightPanelRef.current && wrapperRef.current) {
-        const centerRect = centerPanelRef.current.getBoundingClientRect();
-        const rightRect = rightPanelRef.current.getBoundingClientRect();
-        const wrapperRect = wrapperRef.current.getBoundingClientRect();
-        
-        // Position bar to span only the center panel, not overlaying resizers
-        // Start from the left edge of the center panel (after left resizer)
-        // End at the right edge of the center panel (before right resizer)
-        const left = centerRect.left - wrapperRect.left;
-        const right = wrapperRect.right - centerRect.right;
-        
-        setBarStyle({
-          left: `${left}px`,
-          right: `${right}px`,
-        });
-      }
-    };
-
-    updateBarPosition();
-    const resizeObserver = new ResizeObserver(updateBarPosition);
-    
-    if (leftPanelRef.current) resizeObserver.observe(leftPanelRef.current);
-    if (centerPanelRef.current) resizeObserver.observe(centerPanelRef.current);
-    if (rightPanelRef.current) resizeObserver.observe(rightPanelRef.current);
-    if (wrapperRef.current) resizeObserver.observe(wrapperRef.current);
-
-    window.addEventListener('resize', updateBarPosition);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateBarPosition);
-    };
-  }, []);
 
   return (
     <div ref={wrapperRef} className="editor-shell__panels-wrapper">
-      {activeTab !== 'analytics' && (
-        <MobilePreviewBar 
-          selectedDevice={selectedDevice} 
-          onDeviceChange={onDeviceChange} 
-          previewScale={previewScale}
-          onScaleChange={setPreviewScale}
-          style={barStyle} 
-        />
-      )}
       <PanelGroup direction="horizontal" className="editor-shell__panels">
         <Panel 
           id="left-panel"
           order={1}
           ref={leftPanelHandleRef}
           defaultSize={panelSizes.left} 
-          minSize={activeTab === 'analytics' ? 0 : 18}
-          maxSize={activeTab === 'analytics' ? 0 : undefined}
-          collapsible={activeTab === 'analytics'}
+          minSize={activeTab === 'analytics' || activeTab === 'preview' ? 4 : 20}
+          maxSize={activeTab === 'analytics' || activeTab === 'preview' ? 4 : undefined}
           className="editor-shell__panel editor-shell__panel--left"
         >
-          <div ref={leftPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
-            <LeftRail 
+          <div ref={leftPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'row', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
+            <LeftRailNav 
               activeTab={activeTab} 
               onTabChange={onTabChange}
-              activeColor={activeColor}
             />
+            {activeTab !== 'analytics' && activeTab !== 'preview' && (
+              <div style={{ flex: 1, height: '100%', overflow: 'hidden', background: 'var(--pod-semantic-surface-panel, #ffffff)', position: 'relative' }}>
+                <LeftyContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
+              </div>
+            )}
           </div>
         </Panel>
         <PanelResizeHandle 
           id="left-resizer"
           className="editor-shell__resizer"
-          style={{ display: activeTab === 'analytics' ? 'none' : 'block' }}
+          style={{ display: 'none' }}
         />
         <Panel 
           id="center-panel"
           order={2}
           ref={centerPanelHandleRef}
           defaultSize={panelSizes.center} 
-          minSize={activeTab === 'analytics' ? 100 : 36}
+          minSize={activeTab === 'analytics' ? 96 : 0}
+          collapsible={activeTab !== 'analytics'}
           className="editor-shell__panel editor-shell__panel--center"
         >
           <div ref={centerPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTab === 'analytics' ? (
               <AnalyticsDashboard activeColor={activeColor} />
-            ) : (
-              <CanvasViewport selectedDevice={selectedDevice} previewScale={previewScale} />
-            )}
+            ) : activeTab === 'preview' ? (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
+                <p style={{ color: '#6b7280', fontSize: '14px' }}>Preview will open in overlay</p>
+              </div>
+            ) : null}
           </div>
         </Panel>
         <PanelResizeHandle 
@@ -321,7 +287,10 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice, onDeviceChange }
           className="editor-shell__panel editor-shell__panel--right"
         >
           <div ref={rightPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-            <PropertiesPanel activeColor={activeColor} activeTab={activeTab} />
+            <CanvasViewport
+              selectedDevice={selectedDevice}
+              previewScale={0.75}
+            />
           </div>
         </Panel>
       </PanelGroup>

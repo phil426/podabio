@@ -12,6 +12,7 @@ interface TokenControlProps {
   children: React.ReactNode;
   error?: string;
   loading?: boolean;
+  hideTokenPath?: boolean;
 }
 
 export function TokenControl({
@@ -23,7 +24,8 @@ export function TokenControl({
   onValueChange,
   children,
   error,
-  loading
+  loading,
+  hideTokenPath = false
 }: TokenControlProps): JSX.Element {
   const [isHovered, setIsHovered] = useState(false);
   const isModified = defaultValue !== undefined && value !== defaultValue;
@@ -51,7 +53,7 @@ export function TokenControl({
           </button>
         )}
       </div>
-      <div className={styles.tokenPath}>{tokenPath}</div>
+      {!hideTokenPath && <div className={styles.tokenPath}>{tokenPath}</div>}
       {loading ? (
         <div className={styles.loading}>Loading...</div>
       ) : error ? (

@@ -83,7 +83,7 @@ For testing, you can add test users in OAuth consent screen:
 1. Visit: `https://getphily.com/login.php`
 2. Click "Sign in with Google"
 3. Should redirect to Google authentication
-4. After approval, redirect back to PodaBio Studio (`/admin/react-admin.php`)
+4. After approval, redirect back to PodaBio Studio (`/admin/userdashboard.php`)
 5. User account should be created/linked automatically
 
 ## Troubleshooting

@@ -194,7 +194,17 @@ class PodcastPlayerApp {
         if (!this.podcastData || !this.podcastData.episodes) return;
         
         const episodesList = this.drawerContainer.querySelector('#episodes-list');
+        const episodesHeader = this.drawerContainer.querySelector('#episodes-header');
+        const episodesCount = this.drawerContainer.querySelector('#episodes-count');
+        
         if (!episodesList) return;
+        
+        // Update header with count
+        if (episodesHeader && episodesCount) {
+            const count = this.podcastData.episodes.length;
+            episodesCount.textContent = `${count} ${count === 1 ? 'episode' : 'episodes'}`;
+            episodesHeader.style.display = 'flex';
+        }
         
         episodesList.innerHTML = '';
         
@@ -208,12 +218,13 @@ class PodcastPlayerApp {
      * Create episode card element
      */
     createEpisodeCard(episode, index) {
-        const card = createElement('div', { className: 'episode-card' });
+        const card = createElement('div', { className: 'episode-card-modern' });
         
         // Prioritize episode artwork, then saved cover image, then RSS feed cover image
         let artworkUrl = episode.artwork || this.config.savedCoverImage || this.podcastData.coverImage || '';
+        const artworkWrapper = createElement('div', { className: 'episode-artwork-wrapper' });
         const artwork = createElement('img', {
-            className: 'episode-artwork',
+            className: 'episode-artwork-modern',
             src: getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl),
             alt: episode.title
         });
@@ -230,38 +241,44 @@ class PodcastPlayerApp {
                 if (artworkUrl) {
                     artwork.src = getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl);
                 } else {
-                    // No fallback available, hide image (placeholder will show)
+                    // No fallback available, show placeholder
                     artwork.style.display = 'none';
+                    artworkWrapper.innerHTML = '<div class="episode-artwork-placeholder"><i class="fas fa-music"></i></div>';
                 }
             } else {
-                // No fallback available, hide image (placeholder will show)
+                // No fallback available, show placeholder
                 artwork.style.display = 'none';
+                artworkWrapper.innerHTML = '<div class="episode-artwork-placeholder"><i class="fas fa-music"></i></div>';
             }
         });
         
-        const info = createElement('div', { className: 'episode-info' });
-        const title = createElement('div', { className: 'episode-title' }, episode.title);
-        const meta = createElement('div', { className: 'episode-meta' });
+        artworkWrapper.appendChild(artwork);
+        
+        const info = createElement('div', { className: 'episode-info-modern' });
+        const title = createElement('div', { className: 'episode-title-modern' }, episode.title);
+        const meta = createElement('div', { className: 'episode-meta-modern' });
         
         const duration = episode.duration ? formatTime(episode.duration) : '';
         const date = episode.pubDate ? formatDate(episode.pubDate) : '';
         
         if (duration) {
-            meta.appendChild(document.createTextNode(duration));
+            const durationEl = createElement('span', { className: 'episode-duration' }, duration);
+            meta.appendChild(durationEl);
         }
         if (duration && date) {
-            meta.appendChild(document.createTextNode(' · '));
+            meta.appendChild(document.createTextNode(' • '));
         }
         if (date) {
-            meta.appendChild(document.createTextNode(date));
+            const dateEl = createElement('span', { className: 'episode-date' }, date);
+            meta.appendChild(dateEl);
         }
         
-        const chevron = createElement('i', { className: 'fas fa-chevron-right chevron' });
+        const chevron = createElement('i', { className: 'fas fa-chevron-right episode-chevron' });
         
         info.appendChild(title);
         info.appendChild(meta);
         
-        card.appendChild(artwork);
+        card.appendChild(artworkWrapper);
         card.appendChild(info);
         card.appendChild(chevron);
         
@@ -384,9 +401,15 @@ class PodcastPlayerApp {
      * Update episode list to show active episode
      */
     updateEpisodeListActive() {
-        const cards = this.drawerContainer.querySelectorAll('.episode-card');
+        const cards = this.drawerContainer.querySelectorAll('.episode-card-modern');
         cards.forEach(card => {
             card.classList.remove('active');
+            if (this.currentEpisode) {
+                const cardTitle = card.querySelector('.episode-title-modern')?.textContent;
+                if (cardTitle === this.currentEpisode.title) {
+                    card.classList.add('active');
+                }
+            }
         });
     }
 
@@ -397,7 +420,7 @@ class PodcastPlayerApp {
         if (!this.currentEpisode) {
             const content = this.drawerContainer.querySelector('#shownotes-content');
             if (content) {
-                content.innerHTML = '<p class="empty-message">No episode selected</p>';
+                content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-info-circle"></i><p>No episode selected</p></div>';
             }
             return;
         }
@@ -405,7 +428,7 @@ class PodcastPlayerApp {
         const content = this.drawerContainer.querySelector('#shownotes-content');
         if (!content) return;
         
-        let html = this.currentEpisode.description || '<p>No show notes available</p>';
+        let html = this.currentEpisode.description || '<div class="empty-state-modern"><i class="fas fa-file-alt"></i><p>No show notes available</p></div>';
         
         // Process timestamp links
         html = html.replace(/\[(\d{1,2}):(\d{2})\]/g, (match, mins, secs) => {
@@ -436,7 +459,7 @@ class PodcastPlayerApp {
         if (!this.currentEpisode) {
             const content = this.drawerContainer.querySelector('#chapters-list');
             if (content) {
-                content.innerHTML = '<div class="empty-state">No chapters available</div>';
+                content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-list"></i><p>No chapters available</p></div>';
             }
             return;
         }
@@ -445,35 +468,42 @@ class PodcastPlayerApp {
         if (!content) return;
         
         if (!this.currentEpisode.chapters || this.currentEpisode.chapters.length === 0) {
-            content.innerHTML = '<div class="empty-state">No chapters available</div>';
+            content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-list"></i><p>No chapters available</p></div>';
             return;
         }
         content.innerHTML = '';
         
         this.currentEpisode.chapters.forEach((chapter, index) => {
             const item = createElement('div', {
-                className: 'chapter-item',
+                className: 'chapter-item-modern',
                 dataset: { index: index, time: chapter.startTime }
             });
             
+            const chapterNumber = createElement('div', { className: 'chapter-number' }, (index + 1).toString().padStart(2, '0'));
+            item.appendChild(chapterNumber);
+            
+            const chapterContent = createElement('div', { className: 'chapter-content' });
+            
             if (chapter.imageUrl) {
                 const img = createElement('img', {
-                    className: 'chapter-image',
+                    className: 'chapter-image-modern',
                     src: getProxiedImageUrl(chapter.imageUrl, this.config.imageProxyUrl),
                     alt: chapter.title
                 });
-                item.appendChild(img);
+                chapterContent.appendChild(img);
             }
             
-            const info = createElement('div', { className: 'chapter-info' });
-            const title = createElement('div', { className: 'chapter-title' }, chapter.title);
-            const time = createElement('div', { className: 'chapter-time' }, formatTime(chapter.startTime));
+            const info = createElement('div', { className: 'chapter-info-modern' });
+            const title = createElement('div', { className: 'chapter-title-modern' }, chapter.title);
+            const time = createElement('div', { className: 'chapter-time-modern' }, formatTime(chapter.startTime));
             
             info.appendChild(title);
             info.appendChild(time);
-            item.appendChild(info);
+            chapterContent.appendChild(info);
             
-            const chevron = createElement('i', { className: 'fas fa-chevron-right chevron' });
+            item.appendChild(chapterContent);
+            
+            const chevron = createElement('i', { className: 'fas fa-chevron-right chapter-chevron' });
             item.appendChild(chevron);
             
             item.addEventListener('click', () => {
@@ -503,7 +533,7 @@ class PodcastPlayerApp {
         }
         
         // Update UI
-        const items = content.querySelectorAll('.chapter-item');
+        const items = content.querySelectorAll('.chapter-item-modern');
         items.forEach((item, index) => {
             item.classList.toggle('active', index === activeChapter);
         });

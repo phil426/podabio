@@ -119,8 +119,7 @@ export function TypographySection({ tokens, onTokenChange, searchQuery = '', tok
     return label.toLowerCase().includes(query) || path.toLowerCase().includes(query);
   };
 
-  // Available fonts
-  const availableFonts = ['Inter', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway', 'Source Sans Pro'];
+  // Use categorized fonts - no need for availableFonts array
 
   return (
     <div className={styles.section}>
@@ -150,7 +149,6 @@ export function TypographySection({ tokens, onTokenChange, searchQuery = '', tok
                 >
                   <FontSelect
                     value={headingFont}
-                    options={availableFonts}
                     onChange={(value) => handleTokenChange('core.typography.font.heading', value)}
                   />
                   <div className={styles.fontPreview} style={{ fontFamily: headingFont }}>
@@ -166,7 +164,6 @@ export function TypographySection({ tokens, onTokenChange, searchQuery = '', tok
                 >
                   <FontSelect
                     value={bodyFont}
-                    options={availableFonts}
                     onChange={(value) => handleTokenChange('core.typography.font.body', value)}
                   />
                   <div className={styles.fontPreview} style={{ fontFamily: bodyFont }}>
@@ -182,7 +179,6 @@ export function TypographySection({ tokens, onTokenChange, searchQuery = '', tok
                 >
                   <FontSelect
                     value={metatextFont}
-                    options={availableFonts}
                     onChange={(value) => handleTokenChange('core.typography.font.metatext', value)}
                   />
                   <div className={styles.fontPreview} style={{ fontFamily: metatextFont }}>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Favicon Generator
- * Generates a simple favicon for Podn.Bio
+ * Generates a simple favicon for PodaBio
  */
 
 header('Content-Type: image/x-icon');

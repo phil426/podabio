@@ -1,7 +1,7 @@
 .control {
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: var(--pod-core-shape-radius-sm, 8px);
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
   background: var(--active-tab-light, rgba(15, 23, 42, 0.01));
   transition: all 200ms ease-out;
 }
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .labelRow {
@@ -24,7 +24,7 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--pod-semantic-text-primary, #0f172a);
   margin: 0;

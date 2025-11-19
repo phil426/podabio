@@ -14,8 +14,8 @@ ssh -p 65002 u925957603@195.179.237.142 << 'ENDSSH'
     
     echo ""
     echo "✅ Verifying files..."
-    if [ -f "admin/react-admin.php" ]; then
-        echo "✅ admin/react-admin.php updated"
+    if [ -f "admin/userdashboard.php" ]; then
+        echo "✅ admin/userdashboard.php updated"
     fi
     
     if [ -f "admin-ui/dist/.vite/manifest.json" ]; then
@@ -26,7 +26,7 @@ ssh -p 65002 u925957603@195.179.237.142 << 'ENDSSH'
     
     echo ""
     echo "✅ Deployment complete!"
-    echo "Test at: https://poda.bio/admin/react-admin.php"
+    echo "Test at: https://poda.bio/admin/userdashboard.php"
 ENDSSH
 
 echo ""

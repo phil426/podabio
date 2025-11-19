@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Success Page
- * Podn.Bio - Payment confirmation
+ * PodaBio - Payment confirmation
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -138,12 +138,12 @@ if ($orderId) {
             <div class="success-icon">✓</div>
             <h1>Payment Successful!</h1>
             <p><?php echo h($message); ?></p>
-            <a href="/admin/react-admin.php" class="btn">Open Studio</a>
+            <a href="/admin/userdashboard.php" class="btn">Open Studio</a>
         <?php else: ?>
             <div class="error-icon">✗</div>
             <h1>Payment Status</h1>
             <p><?php echo h($message); ?></p>
-            <a href="/admin/react-admin.php" class="btn">Open Studio</a>
+            <a href="/admin/userdashboard.php" class="btn">Open Studio</a>
             <a href="/payment/checkout.php?plan=<?php echo h($planType); ?>" style="margin-left: 1rem; color: #667eea;">Try Again</a>
         <?php endif; ?>
     </div>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Support Category View
- * Podn.Bio - Display articles in a category
+ * PodaBio - Display articles in a category
  */
 
 require_once __DIR__ . '/../config/constants.php';

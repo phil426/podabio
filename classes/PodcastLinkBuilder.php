@@ -1,7 +1,7 @@
 <?php
 /**
  * Podcast Link Builder
- * Podn.Bio
+ * PodaBio
  * 
  * Builds platform-specific URLs for podcast platforms using Apple Podcasts ID
  */

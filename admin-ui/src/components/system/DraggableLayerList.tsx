@@ -131,12 +131,27 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
     onSelect?.(item);
   };
 
+  // For non-draggable items (Profile, Footer, Podcast Player), make the entire item clickable
+  const handleItemClick = (e: React.MouseEvent<HTMLLIElement>) => {
+    // Don't select if clicking on action buttons or their containers
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[class*="layerAction"]')) {
+      return;
+    }
+    // Don't handle if clicking on the text div (it has its own handler)
+    if (target.closest(`.${styles.text}`)) {
+      return;
+    }
+    handleSelect();
+  };
+
   return (
     <li
       ref={setNodeRef}
       style={style}
       className={`${styles.item} ${isSelected ? styles.itemSelected : ''} ${item.isLocked ? styles.itemLocked : ''} ${isPodcastPlayer || isProfileOrFooter ? styles.itemNoGrip : ''} ${isPodcastPlayer ? styles.itemPodcastPlayer : ''}`}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
+      onClick={!isDraggable ? handleItemClick : undefined}
       data-dnd-kit-dragging={isDragging ? 'true' : undefined}
       data-locked={item.isLocked ? 'true' : undefined}
       data-no-grip={isPodcastPlayer || isProfileOrFooter ? 'true' : undefined}
@@ -160,17 +175,33 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
           {item.icon}
         </span>
       ) : null}
-      <div className={styles.text} onClick={handleSelect} role="button" tabIndex={0} onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
+      <div 
+        className={styles.text} 
+        onClick={(e) => {
+          e.stopPropagation();
           handleSelect();
-        }
-      }}>
+        }} 
+        role="button" 
+        tabIndex={0} 
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleSelect();
+          }
+        }}
+      >
         <p className={styles.label}>{item.label}</p>
         <p className={styles.description}>{item.description}</p>
       </div>
       {renderActions ? renderActions(item) : (
-        <button type="button" className={styles.quickAction} onClick={handleSelect}>
+        <button 
+          type="button" 
+          className={styles.quickAction} 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSelect();
+          }}
+        >
           Focus
         </button>
       )}

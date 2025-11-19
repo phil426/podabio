@@ -1,0 +1,34 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  overflow: hidden;
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+/* Lefty-specific styling can be added here */
+.scrollArea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+

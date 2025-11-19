@@ -1,7 +1,7 @@
 <?php
 /**
  * Email Verification Page
- * Podn.Bio
+ * PodaBio
  */
 
 require_once __DIR__ . '/config/constants.php';

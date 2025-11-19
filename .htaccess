@@ -35,6 +35,10 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ /page.php?username=$1 [L,QSA]
     
+    # Route studio-docs (with or without .php)
+    RewriteCond %{REQUEST_URI} ^/studio-docs(/.*)?$
+    RewriteRule ^studio-docs(/.*)?$ /studio-docs.php [L,QSA]
+    
     # Route username pages (for main domain)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -43,9 +47,11 @@
     RewriteCond %{REQUEST_URI} !^/api/
     RewriteCond %{REQUEST_URI} !^/blog/
     RewriteCond %{REQUEST_URI} !^/payment/
+    RewriteCond %{REQUEST_URI} !^/demo/
     RewriteCond %{REQUEST_URI} !^/editor
     RewriteCond %{REQUEST_URI} !^/login
     RewriteCond %{REQUEST_URI} !^/signup
+    RewriteCond %{REQUEST_URI} !^/studio-docs
     RewriteCond %{REQUEST_URI} !^/index\.php
     RewriteRule ^([a-zA-Z0-9_-]+)$ /page.php?username=$1 [L,QSA]
     

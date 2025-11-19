@@ -1,6 +1,7 @@
 import { useMemo, type CSSProperties, useState, useEffect, useRef } from 'react';
 
 import { usePageSnapshot } from '../../api/page';
+import { useTokens } from '../../design-system/theme/TokenProvider';
 import styles from './canvas-viewport.module.css';
 
 export interface DevicePreset {
@@ -18,6 +19,7 @@ interface CanvasViewportProps {
 
 export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasViewportProps): JSX.Element {
   const { data, isLoading, isError, error } = usePageSnapshot();
+  const { tokens } = useTokens();
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -33,6 +35,26 @@ export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasVi
     }
   }, [data]);
 
+  // Increment version when tokens change to force iframe refresh with new styles
+  // Use JSON.stringify to create a stable comparison and avoid infinite loops
+  const tokensString = useMemo(() => {
+    if (!tokens) return '';
+    // Only serialize the parts that affect the preview (colors, typography)
+    return JSON.stringify({
+      semantic: tokens.semantic,
+      core: {
+        typography: tokens.core?.typography,
+        color: tokens.core?.color
+      }
+    });
+  }, [tokens]);
+
+  useEffect(() => {
+    if (tokensString) {
+      setDataVersion((prev) => prev + 1);
+    }
+  }, [tokensString]);
+
   // Construct the public page URL with preview dimensions and cache-busting
   // The version ensures the iframe refreshes when data changes
   const publicPageUrl = useMemo(() => {
@@ -46,16 +68,18 @@ export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasVi
   }, [page?.username, selectedDevice.width, dataVersion]);
 
   const previewDimensions = useMemo(() => {
-    const scaledWidth = selectedDevice.width * 0.75;
+    const scaledWidth = selectedDevice.width * previewScale;
+    const scaledHeight = selectedDevice.height * previewScale;
     const toolbarWidth = scaledWidth * 1.5625; // 25% wider than previous (1.25 * 1.25)
     return {
       '--pod-canvas-preview-width': `${selectedDevice.width}px`,
       '--pod-canvas-preview-height': `${selectedDevice.height}px`,
       '--pod-canvas-preview-padding': '0',
       '--pod-canvas-preview-scaled-width': `${scaledWidth}px`,
+      '--pod-canvas-preview-scaled-height': `${scaledHeight}px`,
       '--pod-canvas-toolbar-width': `${toolbarWidth}px`
     } as CSSProperties;
-  }, [selectedDevice]);
+  }, [selectedDevice, previewScale]);
 
   const deviceFrameStyle = useMemo(() => {
     return { background: '#ffffff' } as CSSProperties;
@@ -129,10 +153,8 @@ export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasVi
           aria-label="Mobile preview" 
           style={{
             ...deviceFrameStyle,
-            width: `${selectedDevice.width}px`,
-            height: `${selectedDevice.height}px`,
-            transform: `scale(${previewScale})`,
-            transformOrigin: 'top center'
+            width: '100%',
+            height: '100%',
           }}
         >
           {isLoading || !publicPageUrl ? (
@@ -166,7 +188,11 @@ export function CanvasViewport({ selectedDevice, previewScale = 0.75 }: CanvasVi
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                 style={{
                   opacity: iframeLoading || iframeError ? 0 : 1,
-                  transition: 'opacity 0.3s ease-in-out'
+                  transition: 'opacity 0.3s ease-in-out',
+                  width: `${selectedDevice.width}px`,
+                  height: `${selectedDevice.height}px`,
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: 'top left'
                 }}
               />
             </>

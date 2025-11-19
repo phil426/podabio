@@ -1,7 +1,7 @@
 <?php
 /**
  * Web-Based Deployment Script
- * Podn.Bio - Deploy code from GitHub via browser
+ * PodaBio - Deploy code from GitHub via browser
  * 
  * SECURITY: This script requires admin authentication and CSRF token
  * DELETE THIS FILE after deployment or restrict access via .htaccess
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deploy - Podn.Bio</title>
+    <title>Deploy - PodaBio</title>
     <style>
         * {
             margin: 0;
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="info">
                 <strong>Next steps:</strong><br>
                 1. Test PHP backend: <a href="https://poda.bio/index.php" target="_blank">https://poda.bio/index.php</a><br>
-                2. Test admin panel: <a href="https://poda.bio/admin/react-admin.php" target="_blank">https://poda.bio/admin/react-admin.php</a><br>
+                2. Test admin panel: <a href="https://poda.bio/admin/userdashboard.php" target="_blank">https://poda.bio/admin/userdashboard.php</a><br>
                 3. Verify React app loads (check browser console)<br>
                 4. Test database connectivity<br>
                 5. Test file uploads<br>

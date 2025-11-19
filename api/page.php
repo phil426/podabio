@@ -67,6 +67,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         return $widget;
     }, $page->getAllWidgets($pageId));
 
+    // Get active theme for resolving widget_styles and spatial_effect
+    $themeClass = new Theme();
+    $activeTheme = null;
+    if (!empty($userPage['theme_id'])) {
+        $activeTheme = $themeClass->getTheme($userPage['theme_id']);
+    }
+
+    // Resolve widget_styles (merged from page + theme using helper function)
+    $resolvedWidgetStyles = getWidgetStyles($userPage, $activeTheme);
+    
+    // Resolve spatial_effect (merged from page + theme using helper function)
+    $resolvedSpatialEffect = getSpatialEffect($userPage, $activeTheme);
+
     $response = [
         'success' => true,
         'page' => [
@@ -99,10 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'widget_border_color' => $userPage['widget_border_color'],
             'page_primary_font' => $userPage['page_primary_font'],
         'page_secondary_font' => $userPage['page_secondary_font'],
+        'page_name_effect' => $userPage['page_name_effect'] ?? null,
         'profile_image' => $userPage['profile_image'] ?? null,
             'publish_status' => $userPage['publish_status'] ?? 'draft',
             'published_at' => $userPage['published_at'] ?? null,
-            'scheduled_publish_at' => $userPage['scheduled_publish_at'] ?? null
+            'scheduled_publish_at' => $userPage['scheduled_publish_at'] ?? null,
+            // Add resolved widget_styles and spatial_effect (merged from page + theme)
+            'widget_styles' => $resolvedWidgetStyles,
+            'spatial_effect' => $resolvedSpatialEffect
         ],
         'widgets' => $widgets,
         'social_icons' => $page->getSocialIcons($pageId),
@@ -160,15 +177,18 @@ switch ($action) {
         }
 
         if (isset($_POST['footer_copyright'])) {
-            $updateData['footer_copyright'] = sanitizeInput($_POST['footer_copyright']);
+            $footerCopyright = trim(sanitizeInput($_POST['footer_copyright']));
+            $updateData['footer_copyright'] = !empty($footerCopyright) ? $footerCopyright : null;
         }
 
         if (isset($_POST['footer_privacy_link'])) {
-            $updateData['footer_privacy_link'] = sanitizeInput($_POST['footer_privacy_link']);
+            $footerPrivacyLink = trim(sanitizeInput($_POST['footer_privacy_link']));
+            $updateData['footer_privacy_link'] = !empty($footerPrivacyLink) ? $footerPrivacyLink : null;
         }
 
         if (isset($_POST['footer_terms_link'])) {
-            $updateData['footer_terms_link'] = sanitizeInput($_POST['footer_terms_link']);
+            $footerTermsLink = trim(sanitizeInput($_POST['footer_terms_link']));
+            $updateData['footer_terms_link'] = !empty($footerTermsLink) ? $footerTermsLink : null;
         }
 
         if (isset($_POST['profile_visible'])) {
@@ -177,6 +197,17 @@ switch ($action) {
 
         if (isset($_POST['footer_visible'])) {
             $updateData['footer_visible'] = (int)$_POST['footer_visible'];
+        }
+        
+        // Debug logging for footer fields
+        if (isset($updateData['footer_text']) || isset($updateData['footer_copyright']) || isset($updateData['footer_privacy_link']) || isset($updateData['footer_terms_link']) || isset($updateData['footer_visible'])) {
+            error_log("Footer update data: " . json_encode([
+                'footer_text' => $updateData['footer_text'] ?? 'not set',
+                'footer_copyright' => $updateData['footer_copyright'] ?? 'not set',
+                'footer_privacy_link' => $updateData['footer_privacy_link'] ?? 'not set',
+                'footer_terms_link' => $updateData['footer_terms_link'] ?? 'not set',
+                'footer_visible' => $updateData['footer_visible'] ?? 'not set'
+            ]));
         }
 
         if (isset($_POST['podcast_player_enabled'])) {
@@ -263,10 +294,17 @@ switch ($action) {
                     if ($feedResult['success'] && !empty($feedResult['data'])) {
                         $feedData = $feedResult['data'];
                         
-                        // Only save cover image URL from RSS feed - do NOT populate podcast_name or podcast_description
-                        // RSS feed data should only be used for the podcast player, not the main page
+                        // Save cover image URL from RSS feed
                         if (!empty($feedData['cover_image'])) {
                             $updateData['cover_image_url'] = $feedData['cover_image'];
+                        }
+                        
+                        // Save podcast name and description for podcast player display
+                        if (!empty($feedData['title'])) {
+                            $updateData['podcast_name'] = $feedData['title'];
+                        }
+                        if (!empty($feedData['description'])) {
+                            $updateData['podcast_description'] = $feedData['description'];
                         }
                     } else {
                         // Log error but don't fail the update
@@ -421,43 +459,56 @@ switch ($action) {
         }
         
         // Handle widget styles
+        // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['widget_styles'])) {
             $widgetStylesJson = $_POST['widget_styles'];
-            if (is_string($widgetStylesJson)) {
-                $widgetStyles = json_decode($widgetStylesJson, true);
+            if ($widgetStylesJson === '' || $widgetStylesJson === null || $widgetStylesJson === 'null') {
+                $updateData['widget_styles'] = null; // Clear override
             } else {
-                $widgetStyles = $widgetStylesJson;
-            }
-            
-            if (is_array($widgetStyles)) {
-                // Sanitize and merge with defaults
-                $updateData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
+                if (is_string($widgetStylesJson)) {
+                    $widgetStyles = json_decode($widgetStylesJson, true);
+                } else {
+                    $widgetStyles = $widgetStylesJson;
+                }
+                
+                if (is_array($widgetStyles)) {
+                    // Sanitize and merge with defaults
+                    $updateData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
+                }
             }
         }
         
         // Handle spatial effect
+        // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['spatial_effect'])) {
-            $spatialEffect = sanitizeInput($_POST['spatial_effect']);
-            $validEffects = ['none', 'tilt'];
-            if (in_array($spatialEffect, $validEffects, true)) {
-                $updateData['spatial_effect'] = $spatialEffect;
+            $spatialEffect = $_POST['spatial_effect'];
+            if ($spatialEffect === '' || $spatialEffect === null || $spatialEffect === 'null') {
+                $updateData['spatial_effect'] = null; // Clear override
+            } else {
+                $spatialEffect = sanitizeInput($spatialEffect);
+                $validEffects = ['none', 'tilt'];
+                if (in_array($spatialEffect, $validEffects, true)) {
+                    $updateData['spatial_effect'] = $spatialEffect;
+                }
             }
         }
         
         // Handle page name effect
         if (isset($_POST['page_name_effect'])) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
-            error_log("API: page_name_effect received: " . var_export($pageNameEffect, true));
-            error_log("API: POST data contains page_name_effect: " . var_export(isset($_POST['page_name_effect']), true));
-            $validEffects = ['', 'none'];
+            // Valid page-title effects (5 impressive new creations)
+            $validEffects = ['', 'none', 'aurora-borealis', 'holographic', 'liquid-neon', 'chrome-metallic', 'energy-pulse'];
             if (in_array($pageNameEffect, $validEffects, true)) {
-                $updateData['page_name_effect'] = null; // Normalize all inputs to NULL (no effect)
-                error_log("API: page_name_effect validated and added to updateData: " . var_export($updateData['page_name_effect'], true));
+                // Normalize 'none' and empty string to NULL (no effect)
+                // Other effects will be saved as-is for future implementation
+                if ($pageNameEffect === '' || $pageNameEffect === 'none') {
+                    $updateData['page_name_effect'] = null;
+                } else {
+                    $updateData['page_name_effect'] = $pageNameEffect;
+                }
             } else {
                 error_log("API: page_name_effect validation FAILED. Value: " . var_export($pageNameEffect, true) . ", Valid effects: " . implode(', ', $validEffects));
             }
-        } else {
-            error_log("API: page_name_effect NOT SET in POST data. Available POST keys: " . implode(', ', array_keys($_POST)));
         }
         
         $result = $page->update($pageId, $updateData);

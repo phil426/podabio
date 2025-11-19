@@ -36,7 +36,7 @@ $context = stream_context_create([
     'http' => [
         'method' => 'GET',
         'timeout' => 10,
-        'user_agent' => 'Podn.Bio Podcast Player/1.0',
+        'user_agent' => 'PodaBio Podcast Player/1.0',
         'follow_location' => true,
         'max_redirects' => 5
     ]

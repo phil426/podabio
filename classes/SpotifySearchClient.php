@@ -1,7 +1,7 @@
 <?php
 /**
  * Spotify Web API Client
- * Podn.Bio
+ * PodaBio
  * 
  * Handles searching for podcasts using the Spotify Web API
  * Implements Client Credentials OAuth flow for server-side authentication
