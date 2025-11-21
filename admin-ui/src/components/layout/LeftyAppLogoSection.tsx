@@ -13,7 +13,7 @@ import { trackTelemetry } from '../../services/telemetry';
 import { normalizeImageUrl } from '../../api/utils';
 import styles from './lefty-app-logo-section.module.css';
 
-const LOGO_PATH = '/uploads/podabio_logo.png';
+const LOGO_PATH = '/uploads/pnb_big.png';
 
 export function LeftyAppLogoSection(): JSX.Element {
   const { data, isLoading } = usePageSnapshot();

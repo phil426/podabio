@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { LuChevronDown, LuSmartphone, LuZoomIn, LuZoomOut } from 'react-icons/lu';
+import { ChevronDown, DeviceMobile, MagnifyingGlassPlus, MagnifyingGlassMinus } from '@phosphor-icons/react';
 
 import { usePageSnapshot } from '../../api/page';
 import styles from './mobile-preview-bar.module.css';
@@ -147,7 +147,7 @@ export function MobilePreviewBar({ selectedDevice, onDeviceChange, previewScale,
             title="Zoom in preview"
             disabled={previewScale >= 1}
           >
-            <LuZoomIn aria-hidden="true" />
+            <MagnifyingGlassPlus aria-hidden="true" size={16} weight="regular" />
           </button>
         </div>
         <div className={styles.deviceSelector} ref={menuRef}>

@@ -5,6 +5,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--widget-gap, var(--widget-spacing, var(--space-md)));
+    margin-top: var(--page-vertical-spacing, var(--space-lg));
     position: relative;
 }
 

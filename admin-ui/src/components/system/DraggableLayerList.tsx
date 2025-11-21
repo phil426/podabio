@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useState, type ReactNode } from 'react';
-import { LuGripHorizontal } from 'react-icons/lu';
+import { DotsSixVertical } from '@phosphor-icons/react';
 
 import { normalizeImageUrl } from '../../api/utils';
 import styles from './draggable-layer-list.module.css';
@@ -159,7 +159,7 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
     >
       {!isPodcastPlayer && !isProfileOrFooter && (
       <span className={styles.gripIcon} aria-hidden="true">
-        <LuGripHorizontal />
+        <DotsSixVertical size={16} weight="regular" />
       </span>
       )}
       {item.thumbnail ? (

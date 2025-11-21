@@ -7,7 +7,7 @@
     line-height: var(--type-line-height-tight, 1.2);
     font-family: var(--font-family-heading);
     font-weight: var(--type-weight-bold, 600);
-    margin: var(--space-xs) 0;
+    margin: var(--page-vertical-spacing, var(--space-xs)) 0;
     color: var(--heading-font-color, var(--page-title-color, var(--color-text-primary)));
 }
 
@@ -16,8 +16,12 @@
     opacity: 0.9;
     font-size: var(--page-body-size, var(--type-scale-sm, 1rem));
     line-height: var(--type-line-height-normal, 1.5);
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--page-vertical-spacing, var(--space-lg));
     font-family: var(--font-family-body);
+    width: 80%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Name size classes now use CSS variables from typography scale */

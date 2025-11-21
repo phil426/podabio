@@ -59,7 +59,34 @@ mv archive/editor.php editor.php
 - The file is kept as a backup in case of critical issues with Lefty
 - Documentation of the migration is in `docs/editor-php-diagnostic-report.md`
 
+### Demo Files (`archive/demos/`)
+
+- **Archived Date**: 2025-11-19
+- **Purpose**: Demo and prototype files kept for reference
+- **Files**: 16 files total
+  - `demo-themes.php` - Gradient themes demo/showcase page (1,400 lines)
+  - `demo/color-picker.php` - Color picker demo/prototype
+  - `demo/page-properties-toolbar.php` - Page properties toolbar demo/prototype
+  - `demo/page-settings.php` - Page settings demo/prototype
+  - `demo/podcast-player/` - Podcast player demo/prototype (12 files)
+- **Status**: Not used in production, excluded from routing, kept for reference only
+- **Reference**: See `docs/DEMO_FILES_REVIEW.md` for complete analysis
+
+### Test Files (`archive/test-files/`)
+
+- **Archived Date**: 2025-11-19
+- **Purpose**: Development test and debug files
+- **Files**: 9 test-*.php and debug-*.php files
+- **Status**: Archived for reference only
+
+### Database Dumps (`archive/database-dumps/`)
+
+- **Archived Date**: 2025-11-19
+- **Purpose**: Database backup files
+- **Files**: 4 SQL dump files (dated 2025-11-13)
+- **Status**: Archived backups - restore if needed for recovery
+
 ---
 
-**Last Updated**: 2025-01-XX
+**Last Updated**: 2025-11-19
 

@@ -175,14 +175,36 @@ class Theme {
      * @return array
      */
     public function getThemeFonts($page, $theme = null) {
-        // First, try page-specific page fonts (new columns)
-        if (!empty($page['page_primary_font']) || !empty($page['page_secondary_font'])) {
-            $defaults = $this->getDefaultFonts();
-            $pagePrimary = $page['page_primary_font'] ?? $defaults['page_primary_font'];
-            $pageSecondary = $page['page_secondary_font'] ?? $defaults['page_secondary_font'];
+        $defaults = $this->getDefaultFonts();
+        
+        // Priority 1: Check typography_tokens (new theme editor saves here)
+        $pageTypographyTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
+        $themeTypographyTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
+        
+        // Merge typography tokens (theme overrides page)
+        $typographyTokens = $this->mergeTokens($pageTypographyTokens, $themeTypographyTokens);
+        
+        // Extract fonts from typography_tokens if available
+        $pagePrimary = !empty($typographyTokens['font']['heading']) ? $typographyTokens['font']['heading'] : null;
+        $pageSecondary = !empty($typographyTokens['font']['body']) ? $typographyTokens['font']['body'] : null;
+        $widgetPrimary = !empty($typographyTokens['font']['widget_heading']) ? $typographyTokens['font']['widget_heading'] : null;
+        $widgetSecondary = !empty($typographyTokens['font']['widget_body']) ? $typographyTokens['font']['widget_body'] : null;
+        
+        // Priority 2: First, try page-specific page fonts (new columns)
+        if (!$pagePrimary && !empty($page['page_primary_font'])) {
+            $pagePrimary = $page['page_primary_font'];
+        }
+        if (!$pageSecondary && !empty($page['page_secondary_font'])) {
+            $pageSecondary = $page['page_secondary_font'];
+        }
+        
+        // If we have both fonts from typography_tokens or page columns, return early
+        if ($pagePrimary && $pageSecondary) {
             return [
                 'page_primary_font' => $pagePrimary,
                 'page_secondary_font' => $pageSecondary,
+                'widget_primary_font' => $widgetPrimary ?? $pagePrimary,
+                'widget_secondary_font' => $widgetSecondary ?? $pageSecondary,
                 'heading' => $pagePrimary,
                 'body' => $pageSecondary
             ];
@@ -245,15 +267,18 @@ class Theme {
         }
         
         // Apply defaults for any missing fonts
-        $defaults = $this->getDefaultFonts();
         // Map legacy 'heading'/'body' to new structure
-        $pagePrimary = $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'];
-        $pageSecondary = $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font'];
+        $pagePrimary = $pagePrimary ?? $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'];
+        $pageSecondary = $pageSecondary ?? $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font'];
+        $widgetPrimary = $widgetPrimary ?? $pagePrimary;
+        $widgetSecondary = $widgetSecondary ?? $pageSecondary;
         
         return [
             // New structure
             'page_primary_font' => $pagePrimary,
             'page_secondary_font' => $pageSecondary,
+            'widget_primary_font' => $widgetPrimary,
+            'widget_secondary_font' => $widgetSecondary,
             // Legacy support
             'heading' => $pagePrimary,
             'body' => $pageSecondary
@@ -576,12 +601,30 @@ class Theme {
         $pageTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
         
+        // CRITICAL DEBUG: Log what we're reading from database
+        error_log("THEME GET TYPOGRAPHY DEBUG: theme_id=" . ($theme['id'] ?? 'null'));
+        error_log("THEME GET TYPOGRAPHY DEBUG: themeTokens from DB=" . json_encode($themeTokens));
+        if (isset($themeTokens['color'])) {
+            error_log("THEME GET TYPOGRAPHY DEBUG: themeTokens.color.heading=" . ($themeTokens['color']['heading'] ?? 'NOT SET'));
+            error_log("THEME GET TYPOGRAPHY DEBUG: themeTokens.color.body=" . ($themeTokens['color']['body'] ?? 'NOT SET'));
+        } else {
+            error_log("THEME GET TYPOGRAPHY DEBUG: themeTokens.color NOT SET");
+        }
+        
         $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
         
         // DEBUG: Log scale values
         $scale = $merged['scale'] ?? null;
         if ($scale) {
             error_log("THEME GET TYPOGRAPHY DEBUG: scale_xl=" . ($scale['xl'] ?? 'null') . ", scale_sm=" . ($scale['sm'] ?? 'null') . ", theme_id=" . ($theme['id'] ?? 'null'));
+        }
+        
+        // CRITICAL DEBUG: Log merged result
+        if (isset($merged['color'])) {
+            error_log("THEME GET TYPOGRAPHY DEBUG: merged.color.heading=" . ($merged['color']['heading'] ?? 'NOT SET'));
+            error_log("THEME GET TYPOGRAPHY DEBUG: merged.color.body=" . ($merged['color']['body'] ?? 'NOT SET'));
+        } else {
+            error_log("THEME GET TYPOGRAPHY DEBUG: merged.color NOT SET");
         }
         
         return $merged;
@@ -781,8 +824,9 @@ class Theme {
             return false;
         }
         
-        // Validate colors JSON
-        if (isset($themeData['colors'])) {
+        // Validate colors JSON (if present) - but don't require it
+        // Themes can use either legacy 'colors' field or new 'color_tokens' system
+        if (isset($themeData['colors']) && $themeData['colors'] !== null) {
             if (is_string($themeData['colors'])) {
                 $colors = parseThemeJson($themeData['colors'], []);
             } else {
@@ -793,20 +837,27 @@ class Theme {
                 return false;
             }
             
-            // Validate color format (should be hex codes)
-            if (isset($colors['primary']) && !$this->isValidColor($colors['primary'])) {
-                return false;
+            // Only validate color format if colors are provided (don't require them)
+            // Themes using color_tokens may not have legacy colors field
+            if (isset($colors['primary']) && $colors['primary'] !== null && $colors['primary'] !== '') {
+                if (!$this->isValidColor($colors['primary'])) {
+                    return false;
+                }
             }
-            if (isset($colors['secondary']) && !$this->isValidColor($colors['secondary'])) {
-                return false;
+            if (isset($colors['secondary']) && $colors['secondary'] !== null && $colors['secondary'] !== '') {
+                if (!$this->isValidColor($colors['secondary'])) {
+                    return false;
+                }
             }
-            if (isset($colors['accent']) && !$this->isValidColor($colors['accent'])) {
-                return false;
+            if (isset($colors['accent']) && $colors['accent'] !== null && $colors['accent'] !== '') {
+                if (!$this->isValidColor($colors['accent'])) {
+                    return false;
+                }
             }
         }
         
-        // Validate fonts JSON
-        if (isset($themeData['fonts'])) {
+        // Validate fonts JSON (if present) - but don't require it
+        if (isset($themeData['fonts']) && $themeData['fonts'] !== null) {
             if (is_string($themeData['fonts'])) {
                 $fonts = parseThemeJson($themeData['fonts'], []);
             } else {
@@ -821,7 +872,7 @@ class Theme {
         // Validate optional token JSON columns if present
         $tokenColumns = ['color_tokens', 'typography_tokens', 'spacing_tokens', 'shape_tokens', 'motion_tokens'];
         foreach ($tokenColumns as $tokenColumn) {
-            if (isset($themeData[$tokenColumn])) {
+            if (isset($themeData[$tokenColumn]) && $themeData[$tokenColumn] !== null) {
                 $parsed = $this->parseJsonColumn($themeData[$tokenColumn], null);
                 if ($parsed !== null && !is_array($parsed)) {
                     return false;
@@ -1245,8 +1296,10 @@ class Theme {
         }
         
         try {
-            $colors = isset($themeData['colors']) ? (is_array($themeData['colors']) ? json_encode($themeData['colors']) : $themeData['colors']) : null;
-            $fonts = isset($themeData['fonts']) ? (is_array($themeData['fonts']) ? json_encode($themeData['fonts']) : $themeData['fonts']) : null;
+            // CRITICAL FIX: 'colors' and 'fonts' columns are NOT NULL, so provide empty JSON objects if not set
+            // (We use color_tokens and typography_tokens now, but legacy columns are still required)
+            $colors = isset($themeData['colors']) ? (is_array($themeData['colors']) ? json_encode($themeData['colors']) : $themeData['colors']) : '{}';
+            $fonts = isset($themeData['fonts']) ? (is_array($themeData['fonts']) ? json_encode($themeData['fonts']) : $themeData['fonts']) : '{}';
             $pageBackground = $themeData['page_background'] ?? null;
             $widgetStyles = isset($themeData['widget_styles']) ? (is_array($themeData['widget_styles']) ? json_encode($themeData['widget_styles']) : $themeData['widget_styles']) : null;
             $spatialEffect = $themeData['spatial_effect'] ?? 'none';
@@ -1353,15 +1406,27 @@ class Theme {
             $placeholders = array_fill(0, count($columns), '?');
             $sql = "INSERT INTO themes (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
             
+            error_log("THEME CREATE DEBUG: SQL=" . $sql);
+            error_log("THEME CREATE DEBUG: Columns count=" . count($columns) . ", Params count=" . count($params));
+            error_log("THEME CREATE DEBUG: Columns=" . implode(', ', $columns));
+            error_log("THEME CREATE DEBUG: Params (first 5)=" . json_encode(array_slice($params, 0, 5)));
+            
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             
             $themeId = $this->pdo->lastInsertId();
             
+            error_log("THEME CREATE DEBUG: Success! Theme ID=" . $themeId);
+            
             return ['success' => true, 'theme_id' => $themeId, 'error' => null];
         } catch (PDOException $e) {
-            error_log("Theme creation failed: " . $e->getMessage());
-            return ['success' => false, 'theme_id' => null, 'error' => 'Failed to create theme'];
+            error_log("THEME CREATE DEBUG: PDOException caught!");
+            error_log("THEME CREATE DEBUG: Error message=" . $e->getMessage());
+            error_log("THEME CREATE DEBUG: Error code=" . $e->getCode());
+            error_log("THEME CREATE DEBUG: SQL State=" . $e->errorInfo[0] ?? 'N/A');
+            error_log("THEME CREATE DEBUG: Driver error=" . ($e->errorInfo[1] ?? 'N/A'));
+            error_log("THEME CREATE DEBUG: Driver message=" . ($e->errorInfo[2] ?? 'N/A'));
+            return ['success' => false, 'theme_id' => null, 'error' => 'Failed to create theme: ' . $e->getMessage()];
         }
     }
     
@@ -1505,8 +1570,16 @@ class Theme {
             }
             
             if ($this->hasThemeColumn('typography_tokens') && isset($themeData['typography_tokens'])) {
+                $typographyJson = is_array($themeData['typography_tokens']) ? json_encode($themeData['typography_tokens']) : $themeData['typography_tokens'];
+                // CRITICAL DEBUG: Log typography_tokens colors being saved
+                if (is_array($themeData['typography_tokens']) && isset($themeData['typography_tokens']['color'])) {
+                    error_log("THEME UPDATE DEBUG: Saving typography_tokens.color.heading=" . ($themeData['typography_tokens']['color']['heading'] ?? 'NOT SET'));
+                    error_log("THEME UPDATE DEBUG: Saving typography_tokens.color.body=" . ($themeData['typography_tokens']['color']['body'] ?? 'NOT SET'));
+                } else {
+                    error_log("THEME UPDATE DEBUG: typography_tokens.color NOT SET in themeData");
+                }
                 $updates[] = "typography_tokens = ?";
-                $params[] = is_array($themeData['typography_tokens']) ? json_encode($themeData['typography_tokens']) : $themeData['typography_tokens'];
+                $params[] = $typographyJson;
             }
             
             if ($this->hasThemeColumn('spacing_tokens') && isset($themeData['spacing_tokens'])) {

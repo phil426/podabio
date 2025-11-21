@@ -200,6 +200,22 @@ if ($method === 'POST') {
                     if (isset($decoded['shape_tokens']['corner'])) {
                         error_log("THEME API UPDATE: shape_tokens.corner=" . json_encode($decoded['shape_tokens']['corner']));
                     }
+                    // CRITICAL DEBUG: Log typography_tokens colors
+                    if (isset($decoded['typography_tokens'])) {
+                        error_log("THEME API UPDATE: typography_tokens EXISTS");
+                        error_log("THEME API UPDATE: typography_tokens=" . json_encode($decoded['typography_tokens']));
+                        if (isset($decoded['typography_tokens']['color'])) {
+                            error_log("THEME API UPDATE: typography_tokens.color.heading=" . ($decoded['typography_tokens']['color']['heading'] ?? 'NOT SET'));
+                            error_log("THEME API UPDATE: typography_tokens.color.body=" . ($decoded['typography_tokens']['color']['body'] ?? 'NOT SET'));
+                        } else {
+                            error_log("THEME API UPDATE: typography_tokens.color NOT SET (but typography_tokens exists)");
+                            error_log("THEME API UPDATE: typography_tokens keys=" . implode(', ', array_keys($decoded['typography_tokens'] ?? [])));
+                        }
+                    } else {
+                        error_log("THEME API UPDATE: typography_tokens NOT SET in decoded data");
+                    }
+                } else {
+                    error_log("THEME API UPDATE: Failed to parse theme_data JSON: " . json_last_error_msg());
                 }
             } else {
                 // Fallback: parse individual fields

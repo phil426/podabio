@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuCheck, LuX, LuLoader, LuShoppingBag, LuTrendingUp, LuStore, LuTicket, LuLink } from 'react-icons/lu';
+import { Check, X, CircleNotch, ShoppingBag, TrendUp, Storefront, Ticket, Link } from '@phosphor-icons/react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 
 import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useIntegrationsStatus, useDisconnectInstagramMutation } from '../../api/account';
@@ -25,7 +25,7 @@ const integrationPlaceholders: IntegrationPlaceholder[] = [
     id: 'shopify',
     name: 'Shopify',
     description: 'Connect your Shopify store to sync products and orders.',
-    icon: <LuShoppingBag aria-hidden="true" />
+    icon: <ShoppingBag aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'instagram',
@@ -81,37 +81,37 @@ const integrationPlaceholders: IntegrationPlaceholder[] = [
     id: 'printful',
     name: 'Printful',
     description: 'Connect Printful to sync your print-on-demand products.',
-    icon: <LuStore aria-hidden="true" />
+    icon: <Storefront aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'printfy',
     name: 'Printfy',
     description: 'Connect Printfy to manage your print-on-demand store.',
-    icon: <LuStore aria-hidden="true" />
+    icon: <Storefront aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'gelato',
     name: 'Gelato',
     description: 'Connect Gelato to sync your print products and orders.',
-    icon: <LuStore aria-hidden="true" />
+    icon: <Storefront aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'google-analytics',
     name: 'Google Analytics',
     description: 'Connect Google Analytics to track your page performance.',
-    icon: <LuTrendingUp aria-hidden="true" />
+    icon: <TrendUp aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'etsy',
     name: 'Etsy',
     description: 'Connect your Etsy shop to display your products.',
-    icon: <LuShoppingBag aria-hidden="true" />
+    icon: <ShoppingBag aria-hidden="true" size={20} weight="regular" />
   },
   {
     id: 'eventbrite',
     name: 'Eventbrite',
     description: 'Connect your Eventbrite account to display your upcoming events.',
-    icon: <LuTicket aria-hidden="true" />
+    icon: <Ticket aria-hidden="true" size={20} weight="regular" />
   }
 ];
 
@@ -173,7 +173,7 @@ export function IntegrationsPanel(): JSX.Element {
         <ScrollArea.Viewport className={styles.viewport}>
           <div className={styles.container}>
             <div className={styles.loadingState}>
-              <LuLoader className={styles.spinner} />
+              <CircleNotch className={styles.spinner} size={20} weight="regular" />
               <p>Loading integrations…</p>
             </div>
           </div>
@@ -281,7 +281,7 @@ export function IntegrationsPanel(): JSX.Element {
 
           {status && (
             <div className={styles.statusBanner}>
-              <LuCheck aria-hidden="true" />
+              <Check aria-hidden="true" size={16} weight="regular" />
               <span>{status}</span>
             </div>
           )}
@@ -330,7 +330,7 @@ export function IntegrationsPanel(): JSX.Element {
                       </>
                     ) : (
                       <>
-                        <LuX className={styles.statusIcon} aria-hidden="true" />
+                        <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
                         <span>Not connected</span>
                       </>
                     )}
@@ -347,7 +347,7 @@ export function IntegrationsPanel(): JSX.Element {
                   >
                     {unlinkPending ? (
                       <>
-                        <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                        <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
                         <span>Disconnecting…</span>
                       </>
                     ) : (
@@ -406,7 +406,7 @@ export function IntegrationsPanel(): JSX.Element {
                       </>
                     ) : (
                       <>
-                        <LuX className={styles.statusIcon} aria-hidden="true" />
+                        <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
                         <span>Not connected</span>
                       </>
                     )}
@@ -423,7 +423,7 @@ export function IntegrationsPanel(): JSX.Element {
                   >
                     {disconnectInstagramPending ? (
                       <>
-                        <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                        <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
                         <span>Disconnecting…</span>
                       </>
                     ) : (
@@ -465,7 +465,7 @@ export function IntegrationsPanel(): JSX.Element {
 
         {disconnectInstagramError && (
           <div className={styles.errorBanner}>
-            <LuX aria-hidden="true" />
+            <X aria-hidden="true" size={16} weight="regular" />
             <span>{parseError(disconnectInstagramError)}</span>
           </div>
         )}
@@ -547,7 +547,7 @@ export function IntegrationsPanel(): JSX.Element {
                   <div className={styles.socialIconHeader}>
                     <div className={styles.socialIconInfo}>
                       <div className={styles.socialIconIcon}>
-                        <LuLink aria-hidden="true" />
+                        <Link aria-hidden="true" size={16} weight="regular" />
                       </div>
                       <div className={styles.socialIconDetails}>
                         <p className={styles.socialIconName}>{platformName}</p>
@@ -581,7 +581,7 @@ export function IntegrationsPanel(): JSX.Element {
                                   handleSaveSocialIcon(icon.id, icon.platform_name, editingUrl);
                                 }}
                               >
-                                <LuCheck aria-hidden="true" />
+                                <Check aria-hidden="true" size={16} weight="regular" />
                               </button>
                               <button
                                 type="button"

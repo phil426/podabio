@@ -128,32 +128,61 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
       setBorderEffect('none');
     }
   }, [activeTheme?.widget_styles]);
-  // Extract values - prioritize props from active theme
+  // Extract values - prioritize tokenValues (unsaved changes), then props from active theme, then tokens
   const widgetHeadingText = useMemo(() => {
+    // Priority 1: Check tokenValues (changed but not yet saved) - use widget-specific token
+    const colorFromValues = tokenValues.get('core.typography.color.widget_heading') as string | undefined;
+    if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
+      return colorFromValues;
+    }
+    // Priority 2: Check props from active theme
     if (widgetHeadingTextProp && typeof widgetHeadingTextProp === 'string' && widgetHeadingTextProp.trim() !== '') {
       return widgetHeadingTextProp;
     }
+    // Priority 3: Extract from tokens - use widget-specific token
+    const widgetColor = extractColorValue(tokens, 'core.typography.color.widget_heading');
+    if (widgetColor && widgetColor !== '#2563eb') { // #2563eb is the default "not found" value
+      return widgetColor;
+    }
+    // Priority 4: Fallback to page heading color if widget color not set
     return extractColorValue(tokens, 'semantic.text.primary');
-  }, [widgetHeadingTextProp, tokens]);
+  }, [widgetHeadingTextProp, tokens, tokenValues]);
   
   const widgetBodyText = useMemo(() => {
+    // Priority 1: Check tokenValues (changed but not yet saved) - use widget-specific token
+    const colorFromValues = tokenValues.get('core.typography.color.widget_body') as string | undefined;
+    if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
+      return colorFromValues;
+    }
+    // Priority 2: Check props from active theme
     if (widgetBodyTextProp && typeof widgetBodyTextProp === 'string' && widgetBodyTextProp.trim() !== '') {
       return widgetBodyTextProp;
     }
+    // Priority 3: Extract from tokens - use widget-specific token
+    const widgetColor = extractColorValue(tokens, 'core.typography.color.widget_body');
+    if (widgetColor && widgetColor !== '#2563eb') { // #2563eb is the default "not found" value
+      return widgetColor;
+    }
+    // Priority 4: Fallback to page body color if widget color not set
     return extractColorValue(tokens, 'semantic.text.secondary');
-  }, [widgetBodyTextProp, tokens]);
+  }, [widgetBodyTextProp, tokens, tokenValues]);
   
   const widgetBackground = useMemo(() => {
-    // Priority 1: Check prop from ColorsPanel (which loads from active theme)
+    // Priority 1: Check tokenValues (changed but not yet saved)
+    const bgFromValues = tokenValues.get('semantic.surface.base') as string | undefined;
+    if (bgFromValues && typeof bgFromValues === 'string' && bgFromValues.trim() !== '') {
+      return bgFromValues;
+    }
+    // Priority 2: Check prop from ColorsPanel (which loads from active theme)
     if (widgetBackgroundProp && typeof widgetBackgroundProp === 'string' && widgetBackgroundProp.trim() !== '') {
       return widgetBackgroundProp;
     }
-    // Priority 2: Check active theme's widget_background directly
+    // Priority 3: Check active theme's widget_background directly
     const themeWidgetBg = activeTheme?.widget_background;
     if (themeWidgetBg && typeof themeWidgetBg === 'string' && themeWidgetBg.trim() !== '') {
       return themeWidgetBg;
     }
-    // Priority 3: Check theme's color_tokens.background.surface
+    // Priority 4: Check theme's color_tokens.background.surface
     if (activeTheme?.color_tokens) {
       try {
         const colorTokens = safeParse(activeTheme.color_tokens);
@@ -165,11 +194,11 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
         console.warn('Failed to parse theme color_tokens:', e);
       }
     }
-    // Priority 4: Fallback to tokens
+    // Priority 5: Fallback to tokens
     const tokenValue = extractColorValue(tokens, 'semantic.surface.base');
     // Return default white if token value is the default blue (means not found)
     return tokenValue !== '#2563eb' ? tokenValue : '#FFFFFF';
-  }, [widgetBackgroundProp, tokens, activeTheme]);
+  }, [widgetBackgroundProp, tokens, activeTheme, tokenValues]);
   
   const widgetBorder = useMemo(() => {
     // Priority 1: Check prop from ColorsPanel (which loads from active theme)
@@ -492,19 +521,19 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
               <BackgroundColorSwatch
                 value={widgetHeadingText}
                 backgroundType={getBackgroundType(widgetHeadingText)}
-                onChange={(value) => handleColorChange('semantic.text.primary', value)}
+                onChange={(value) => handleColorChange('core.typography.color.widget_heading', value)}
                 onTypeChange={(type) => {
                   if (type === 'solid') {
-                    handleColorChange('semantic.text.primary', '#111827');
+                    handleColorChange('core.typography.color.widget_heading', '#111827');
                   } else if (type === 'gradient') {
                     if (!widgetHeadingText.includes('gradient')) {
-                      handleColorChange('semantic.text.primary', 'linear-gradient(135deg, #111827 0%, #4b5563 100%)');
+                      handleColorChange('core.typography.color.widget_heading', 'linear-gradient(135deg, #111827 0%, #4b5563 100%)');
                     }
                   }
                 }}
                 onImageChange={(url) => {
                   if (url) {
-                    handleColorChange('semantic.text.primary', url);
+                    handleColorChange('core.typography.color.widget_heading', url);
                   }
                 }}
                 label="Widget heading color"
@@ -544,19 +573,19 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
               <BackgroundColorSwatch
                 value={widgetBodyText}
                 backgroundType={getBackgroundType(widgetBodyText)}
-                onChange={(value) => handleColorChange('semantic.text.secondary', value)}
+                onChange={(value) => handleColorChange('core.typography.color.widget_body', value)}
                 onTypeChange={(type) => {
                   if (type === 'solid') {
-                    handleColorChange('semantic.text.secondary', '#4b5563');
+                    handleColorChange('core.typography.color.widget_body', '#4b5563');
                   } else if (type === 'gradient') {
                     if (!widgetBodyText.includes('gradient')) {
-                      handleColorChange('semantic.text.secondary', 'linear-gradient(135deg, #4b5563 0%, #6b7280 100%)');
+                      handleColorChange('core.typography.color.widget_body', 'linear-gradient(135deg, #4b5563 0%, #6b7280 100%)');
                     }
                   }
                 }}
                 onImageChange={(url) => {
                   if (url) {
-                    handleColorChange('semantic.text.secondary', url);
+                    handleColorChange('core.typography.color.widget_body', url);
                   }
                 }}
                 label="Widget body color"

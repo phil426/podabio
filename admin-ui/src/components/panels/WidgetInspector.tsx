@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LuUpload, LuX } from 'react-icons/lu';
+import { Upload, X } from '@phosphor-icons/react';
 
 import { useAvailableWidgetsQuery, useUpdateWidgetMutation } from '../../api/widgets';
 import { usePageSnapshot } from '../../api/page';
@@ -344,7 +344,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
                       disabled={isUploadingThumbnail}
                       title={isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
                     >
-                      <LuUpload aria-hidden="true" />
+                      <Upload aria-hidden="true" />
                     </button>
                     {resolvedThumbnail && (
                       <button
@@ -354,7 +354,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
                         disabled={isUploadingThumbnail}
                         title="Remove thumbnail"
                       >
-                        <LuX aria-hidden="true" />
+                        <X aria-hidden="true" size={16} weight="regular" />
                       </button>
                     )}
                   </div>

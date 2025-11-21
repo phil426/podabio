@@ -1,8 +1,8 @@
 .card {
   display: grid;
-  gap: 0.85rem;
-  padding: 0.9rem;
-  border-radius: var(--pod-core-shape-radius-lg, 16px);
+  gap: 0.65rem;
+  padding: 0.7rem;
+  border-radius: var(--pod-core-shape-radius-lg, 12px);
   border: 1px solid rgba(15, 23, 42, 0.09);
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 12px 28px -24px rgba(15, 23, 42, 0.55);
@@ -42,8 +42,10 @@
 }
 
 .cardSelected {
-  border-color: rgba(37, 99, 235, 0.6);
-  box-shadow: 0 18px 40px -22px rgba(37, 99, 235, 0.6);
+  border-color: rgba(37, 99, 235, 0.8);
+  border-width: 2px;
+  box-shadow: 0 18px 40px -22px rgba(37, 99, 235, 0.6), 0 0 0 2px rgba(37, 99, 235, 0.1);
+  transform: scale(1.02);
 }
 
 .hero {
@@ -52,9 +54,9 @@
   align-items: flex-end;
   width: 100%;
   border: none;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border-radius: var(--pod-core-shape-radius-md, 10px);
   padding: 0;
-  min-height: 96px;
+  min-height: 72px;
   overflow: hidden;
   cursor: pointer;
   color: #fff;
@@ -80,12 +82,12 @@
 }
 
 .heroTitle {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 .heroSubtitle {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   opacity: 0.85;
 }
 
@@ -158,8 +160,8 @@
 
 .swatch {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 2px solid rgba(15, 23, 42, 0.12);
   background-clip: padding-box;
@@ -181,9 +183,48 @@
 
 .title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--pod-semantic-text-primary, #0f172a);
+  line-height: 1.3;
+}
+
+.cardDark .title {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.titleEditable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 150ms ease;
+}
+
+.titleEditable:hover {
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
+.cardDark .titleEditable:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.titleInput {
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 4px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-family: inherit;
+}
+
+.cardDark .titleInput {
+  background: rgba(15, 23, 42, 0.9);
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .applyButton {
@@ -207,6 +248,67 @@
 .applyButton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.editBar {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: var(--pod-core-shape-radius-md, 10px);
+  background: linear-gradient(120deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.06));
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.cardDark .editBar {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.editButton {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--pod-core-shape-radius-md, 10px);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: linear-gradient(120deg, rgba(37, 99, 235, 0.95), rgba(59, 130, 246, 0.85));
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.editButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(37, 99, 235, 0.55);
+  background: linear-gradient(120deg, rgba(37, 99, 235, 1), rgba(59, 130, 246, 0.95));
+}
+
+.editButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.editButton svg {
+  width: 1em;
+  height: 1em;
+  color: inherit;
+}
+
+.cardDark .editButton {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  color: rgba(15, 23, 42, 0.95);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 18px 36px -18px rgba(15, 23, 42, 0.9);
+}
+
+.cardDark .editButton:hover:not(:disabled) {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.95));
+  color: rgba(15, 23, 42, 1);
+  box-shadow: 0 20px 40px -18px rgba(15, 23, 42, 0.95);
 }
 
 .iconActions {
@@ -245,6 +347,12 @@
   width: 1em;
   height: 1em;
   color: inherit;
+}
+
+.iconButton[aria-label="Delete theme"]:hover:not(:disabled) {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 @media (max-width: 420px) {

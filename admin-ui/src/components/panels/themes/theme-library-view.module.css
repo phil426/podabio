@@ -1,0 +1,112 @@
+.container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.header p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.podcastButton,
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--button-border, rgba(15, 23, 42, 0.12));
+  background: var(--button-bg, rgba(37, 99, 235, 0.12));
+  color: var(--button-color, #2563eb);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.podcastButton {
+  background: linear-gradient(120deg, rgba(139, 92, 246, 0.95), rgba(124, 58, 237, 0.85));
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #fff;
+}
+
+.createButton:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.createButton:active {
+  transform: translateY(0);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid rgba(15, 23, 42, 0.08);
+}
+
+.section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.empty p {
+  margin: 0;
+  font-size: 16px;
+}
+

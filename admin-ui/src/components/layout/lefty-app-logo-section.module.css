@@ -4,6 +4,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* When collapsed, create a square container with equal padding */
+.logoSection:has(.logoButton:not([data-expanded='true'])) {
+  padding: 3px;
+  width: 64px;
+  min-width: 64px;
+  max-width: 64px;
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  aspect-ratio: 1 / 1;
 }
 
 .logoButton {
@@ -12,9 +26,9 @@
   gap: 12px;
   width: 100%;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 250ms ease;
@@ -22,28 +36,44 @@
 }
 
 .logoButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: transparent;
 }
 
 .logoButton:not([data-expanded='true']) {
   justify-content: center;
   align-items: center;
   padding: 0;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  max-width: 58px;
+  max-height: 58px;
   margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  max-width: 58px;
+  max-height: 58px;
+  border-radius: 0;
   flex-shrink: 0;
   object-fit: contain;
+  object-position: center center;
   display: block;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
 }
 
 .logoInfo {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { LuTrendingUp, LuMousePointerClick, LuEye, LuChartColumn, LuRefreshCw, LuExternalLink } from 'react-icons/lu';
+import { TrendUp, CursorClick, Eye, ChartBar, ArrowClockwise, ArrowSquareOut } from '@phosphor-icons/react';
 
 import { useLinkAnalytics } from '../../api/analytics';
 import { type TabColorTheme } from '../layout/tab-colors';
@@ -68,7 +68,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
 
       {isLoading ? (
         <div className={styles.loadingState}>
-          <LuChartColumn className={styles.loadingIcon} aria-hidden="true" />
+          <ChartBar className={styles.loadingIcon} aria-hidden="true" size={24} weight="regular" />
           <p>Loading analytics…</p>
         </div>
       ) : isError ? (
@@ -77,7 +77,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
         </div>
       ) : !data ? (
           <div className={styles.emptyState}>
-            <LuChartColumn className={styles.emptyIcon} aria-hidden="true" />
+            <ChartBar className={styles.emptyIcon} aria-hidden="true" size={48} weight="regular" />
             <p>No analytics data available yet.</p>
             <p className={styles.emptySubtext}>Data will appear here after your links receive clicks.</p>
           </div>
@@ -87,7 +87,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
           <div className={styles.summaryGrid}>
             <div className={styles.summaryCard}>
               <div className={styles.summaryIcon}>
-                <LuEye aria-hidden="true" />
+                <Eye aria-hidden="true" size={20} weight="regular" />
               </div>
               <div className={styles.summaryContent}>
                 <span className={styles.summaryLabel}>Page Views</span>
@@ -96,7 +96,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryIcon}>
-                <LuMousePointerClick aria-hidden="true" />
+                <CursorClick aria-hidden="true" size={20} weight="regular" />
               </div>
               <div className={styles.summaryContent}>
                 <span className={styles.summaryLabel}>Total Clicks</span>
@@ -105,7 +105,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryIcon}>
-                <LuTrendingUp aria-hidden="true" />
+                <TrendUp aria-hidden="true" size={20} weight="regular" />
               </div>
               <div className={styles.summaryContent}>
                 <span className={styles.summaryLabel}>Click-Through Rate</span>
@@ -126,7 +126,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
                   disabled={isFetching}
                   aria-label="Refresh data"
                 >
-                  <LuRefreshCw className={isFetching ? styles.spinning : ''} aria-hidden="true" />
+                  <ArrowClockwise className={isFetching ? styles.spinning : ''} aria-hidden="true" size={16} weight="regular" />
                 </button>
               </div>
               <div className={styles.chartContainer}>
@@ -205,7 +205,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
                               onClick={(e) => e.stopPropagation()}
                             >
                               {truncateUrl(link.url)}
-                              <LuExternalLink className={styles.externalIcon} aria-hidden="true" />
+                              <ArrowSquareOut className={styles.externalIcon} aria-hidden="true" size={14} weight="regular" />
                             </a>
                           ) : (
                             <span className={styles.topLinkType}>{link.type}</span>
@@ -230,7 +230,7 @@ export function LinkAnalyticsPanel({ activeColor }: { activeColor: TabColorTheme
 
           {(!data.top_links || data.top_links.length === 0) && chartData.points.length === 0 && (
             <div className={styles.emptyState}>
-              <LuChartColumn className={styles.emptyIcon} aria-hidden="true" />
+              <ChartBar className={styles.emptyIcon} aria-hidden="true" size={48} weight="regular" />
               <p>No link activity yet.</p>
               <p className={styles.emptySubtext}>After you publish and share your page, click data will appear here.</p>
             </div>

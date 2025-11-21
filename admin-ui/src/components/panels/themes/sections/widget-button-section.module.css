@@ -1,0 +1,37 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+}
+
+.subsectionTitle {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import { LuUser } from 'react-icons/lu';
+import { User } from '@phosphor-icons/react';
 
 import type { ThemeRecord } from '../../api/types';
 

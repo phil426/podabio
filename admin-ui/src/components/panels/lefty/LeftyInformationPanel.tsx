@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { Info, Question, Palette, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut } from '@phosphor-icons/react';
+import { Info, Question, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut } from '@phosphor-icons/react';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import type { LeftyTabValue } from '../../layout/tab-colors';
 import styles from './lefty-information-panel.module.css';
@@ -71,52 +71,6 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
               title: 'Profile Setup',
               url: '/docs/profile',
               description: 'How to set up and customize your profile'
-            }
-          ]
-        };
-      case 'colors':
-        return {
-          title: 'Colors',
-          icon: <Palette size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Color Customization',
-              content: 'Customize your page colors to match your brand. Changes apply instantly to your live page.'
-            }
-          ],
-          documentation: [
-            {
-              title: 'Color Themes',
-              url: '/studio-docs.php#colors',
-              description: 'Learn how to customize colors and create custom themes'
-            },
-            {
-              title: 'Branding Guide',
-              url: '/docs/branding',
-              description: 'Best practices for branding your page'
-            }
-          ]
-        };
-      case 'typography':
-        return {
-          title: 'Typography',
-          icon: <TextT size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Font Settings',
-              content: 'Choose fonts and adjust typography settings for headings and body text throughout your page.'
-            }
-          ],
-          documentation: [
-            {
-              title: 'Typography Guide',
-              url: '/studio-docs.php#typography',
-              description: 'Complete guide to customizing fonts and typography'
-            },
-            {
-              title: 'Font Pairing',
-              url: '/docs/typography',
-              description: 'Tips for choosing and pairing fonts'
             }
           ]
         };
@@ -216,16 +170,11 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
             }
           ]
         };
-      case 'preview':
+      default:
         return {
-          title: 'Preview',
+          title: 'Information',
           icon: <Info size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Preview Mode',
-              content: 'See how your page looks on different devices. All external links are disabled in preview mode.'
-            }
-          ],
+          sections: [],
           documentation: [
             {
               title: 'Preview Guide',

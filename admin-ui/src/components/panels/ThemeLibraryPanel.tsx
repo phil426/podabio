@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { LuSearch, LuX } from 'react-icons/lu';
+import { MagnifyingGlass, X } from '@phosphor-icons/react';
 
 import { useThemeLibraryQuery, useCloneThemeMutation, useRenameThemeMutation, useDeleteThemeMutation } from '../../api/themes';
 import { usePageSnapshot, updatePageThemeId } from '../../api/page';
@@ -192,10 +192,18 @@ export function ThemeLibraryPanel(): JSX.Element {
     );
   }
 
-  // Combine all themes for a simple list
+  // Combine all themes for a simple list, with active theme first
   const allThemes = useMemo(() => {
-    return [...filteredUserThemes, ...filteredSystemThemes];
-  }, [filteredUserThemes, filteredSystemThemes]);
+    const combined = [...filteredUserThemes, ...filteredSystemThemes];
+    if (currentThemeId) {
+      const activeIndex = combined.findIndex(t => t.id === currentThemeId);
+      if (activeIndex > 0) {
+        const [active] = combined.splice(activeIndex, 1);
+        combined.unshift(active);
+      }
+    }
+    return combined;
+  }, [filteredUserThemes, filteredSystemThemes, currentThemeId]);
 
   // Extract current colors/values for the active theme
   // PRIORITY: Theme data (from Edit Theme Panel) > Snapshot tokens (current page state)
@@ -354,7 +362,7 @@ export function ThemeLibraryPanel(): JSX.Element {
       {/* Search Bar */}
       <div className={styles.searchSection}>
         <div className={styles.searchInputWrapper}>
-          <LuSearch className={styles.searchIcon} aria-hidden="true" />
+          <MagnifyingGlass className={styles.searchIcon} aria-hidden="true" size={16} weight="regular" />
           <input
             type="text"
             className={styles.searchInput}
@@ -370,7 +378,7 @@ export function ThemeLibraryPanel(): JSX.Element {
               onClick={() => setSearchQuery('')}
               aria-label="Clear search"
             >
-              <LuX aria-hidden="true" />
+              <X aria-hidden="true" size={16} weight="regular" />
           </button>
           )}
         </div>

@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect } from 'react';
-import * as Tabs from '@radix-ui/react-tabs';
 import { BackgroundColorSwatch } from '../../controls/BackgroundColorSwatch';
 import { FontSelect } from './FontSelect';
 import { SpecialTextSelect } from './SpecialTextSelect';
@@ -71,13 +70,10 @@ function extractNumericValue(tokens: TokenBundle, path: string, defaultValue: nu
 
 
 // Helper to determine background type from value
-function getBackgroundType(value: string): 'solid' | 'gradient' | 'image' {
+function getBackgroundType(value: string): 'solid' | 'gradient' {
   if (!value || typeof value !== 'string') return 'solid';
   if (value.includes('gradient') || value.includes('linear-gradient') || value.includes('radial-gradient')) {
     return 'gradient';
-  }
-  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/') || value.startsWith('data:')) {
-    return 'image';
   }
   return 'solid';
 }
@@ -87,7 +83,6 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
   const queryClient = useQueryClient();
   const page = snapshot?.page;
   
-  const [activeTab, setActiveTab] = useState('title-text');
   const [specialText, setSpecialText] = useState('None');
   
   // Load current page_name_effect from snapshot
@@ -110,28 +105,48 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     }
   }, [page?.page_name_effect]);
   
-  // Extract values - prioritize props from active theme
+  // Extract values - prioritize tokenValues (unsaved changes), then props from active theme, then tokens
   const pageHeadingText = useMemo(() => {
+    // Priority 1: Check tokenValues (changed but not yet saved)
+    const colorFromValues = tokenValues.get('semantic.text.primary') as string | undefined;
+    if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
+      return colorFromValues;
+    }
+    // Priority 2: Check props from active theme
     if (pageHeadingTextProp && typeof pageHeadingTextProp === 'string' && pageHeadingTextProp.trim() !== '') {
       return pageHeadingTextProp;
     }
+    // Priority 3: Extract from tokens
     return extractColorValue(tokens, 'semantic.text.primary');
-  }, [pageHeadingTextProp, tokens]);
+  }, [pageHeadingTextProp, tokens, tokenValues]);
   
   const pageBodyText = useMemo(() => {
+    // Priority 1: Check tokenValues (changed but not yet saved)
+    const colorFromValues = tokenValues.get('semantic.text.secondary') as string | undefined;
+    if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
+      return colorFromValues;
+    }
+    // Priority 2: Check props from active theme
     if (pageBodyTextProp && typeof pageBodyTextProp === 'string' && pageBodyTextProp.trim() !== '') {
       return pageBodyTextProp;
     }
+    // Priority 3: Extract from tokens
     return extractColorValue(tokens, 'semantic.text.secondary');
-  }, [pageBodyTextProp, tokens]);
+  }, [pageBodyTextProp, tokens, tokenValues]);
   
   // Use page_background from snapshot if available (from active theme), otherwise fall back to tokens
   const pageBackground = useMemo(() => {
+    // Priority 1: Check tokenValues (changed but not yet saved)
+    const bgFromValues = tokenValues.get('semantic.surface.canvas') as string | undefined;
+    if (bgFromValues && typeof bgFromValues === 'string' && bgFromValues.trim() !== '') {
+      return bgFromValues;
+    }
+    // Priority 2: Check props from active theme
     let result: string;
-    
     if (pageBackgroundProp && typeof pageBackgroundProp === 'string' && pageBackgroundProp.trim() !== '') {
       result = pageBackgroundProp;
     } else {
+      // Priority 3: Extract from tokens
       result = extractColorValue(tokens, 'semantic.surface.canvas');
     }
     
@@ -141,7 +156,7 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     }
     
     return result;
-  }, [pageBackgroundProp, tokens]);
+  }, [pageBackgroundProp, tokens, tokenValues]);
   
   const headingFont = useMemo(() => {
     const font = tokens.core?.typography?.font?.heading;
@@ -192,20 +207,9 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     if (bg.includes('gradient') || bg.includes('linear-gradient') || bg.includes('radial-gradient')) {
       return 'gradient';
     }
-    // Check for image URL
-    if (bg.startsWith('http://') || bg.startsWith('https://') || bg.startsWith('/') || bg.startsWith('data:')) {
-      return 'image';
-    }
     // Default to solid
     return 'solid';
   }, [pageBackground]);
-
-  const backgroundImage = useMemo(() => {
-    if (backgroundType === 'image') {
-      return pageBackground;
-    }
-    return null;
-  }, [backgroundType, pageBackground]);
 
   const handleColorChange = (path: string, value: string) => {
     const oldValue = resolveToken(tokens, path);
@@ -292,7 +296,6 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
             <BackgroundColorSwatch
               value={pageBackground}
               backgroundType={backgroundType}
-              backgroundImage={backgroundImage}
               onChange={(value) => handleColorChange('semantic.surface.canvas', value)}
               onTypeChange={(type) => {
                 if (type === 'solid') {
@@ -303,25 +306,12 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
                   }
                 }
               }}
-              onImageChange={(url) => {
-                if (url) {
-                  handleColorChange('semantic.surface.canvas', url);
-                }
-              }}
               label="Page background color"
             />
           </div>
 
-          {/* Page title section with tabs */}
+          {/* Page title section */}
           <div className={styles.section}>
-            <Tabs.Root value={activeTab} onValueChange={setActiveTab} className={styles.tabs}>
-              <Tabs.List className={styles.tabList}>
-                <Tabs.Trigger value="title-text" className={styles.tabTrigger}>
-                  Page title
-                </Tabs.Trigger>
-              </Tabs.List>
-              
-              <Tabs.Content value="title-text" className={styles.tabContent}>
                 <div className={styles.contentArea}>
                   {/* Special Text Effect Selector */}
                   <div className={styles.controlRow}>
@@ -434,8 +424,6 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
                     />
                   </div>
                 </div>
-              </Tabs.Content>
-            </Tabs.Root>
           </div>
 
           {/* Body section */}

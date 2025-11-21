@@ -16,6 +16,33 @@ function requireAuth() {
         $currentUrl = currentUrl();
         redirect('/login.php?redirect=' . urlencode($currentUrl));
     }
+    
+    // FORCE Lefty - Always set admin_panel to 'lefty' and redirect old admin pages
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $oldAdminPages = [
+        '/admin/index.php',
+        '/admin/classic.php',
+        '/admin/select-panel.php',
+        '/admin/analytics.php',
+        '/admin/pages.php',
+        '/admin/blog.php',
+        '/admin/users.php',
+        '/admin/settings.php',
+        '/admin/support.php',
+        '/admin/subscriptions.php'
+    ];
+    
+    // If accessing any old admin page, force redirect to Lefty
+    foreach ($oldAdminPages as $oldPage) {
+        if (strpos($requestUri, $oldPage) !== false) {
+            $_SESSION['admin_panel'] = 'lefty';
+            redirect('/admin/userdashboard.php');
+            exit;
+        }
+    }
+    
+    // Always ensure admin_panel is set to 'lefty'
+    $_SESSION['admin_panel'] = 'lefty';
 }
 
 /**

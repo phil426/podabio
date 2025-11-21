@@ -1,37 +1,25 @@
 <?php
 /**
- * Admin Panel Selector
- * PodaBio - Choose your admin panel experience
+ * Admin Panel Selector (DEPRECATED)
+ * PodaBio - Forces logout and redirects to login
+ * 
+ * This file is kept for backward compatibility but forces users to log out and log back in.
  */
 
 require_once __DIR__ . '/../config/constants.php';
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
-require_once __DIR__ . '/../includes/security.php';
 
-requireAuth();
-
-// Handle panel selection
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $error = 'Invalid request. Please try again.';
-    } else {
-        // Always redirect to Lefty - it's now the only admin panel
-        $_SESSION['admin_panel'] = 'lefty';
-        redirect('/admin/userdashboard.php');
-        exit;
-    }
+// Force logout - clear all session data
+$_SESSION = [];
+if (isset($_COOKIE[session_name()])) {
+    setcookie(session_name(), '', time() - 3600, '/');
 }
+session_destroy();
 
-// Always redirect to Lefty - it's now the only admin panel
-$_SESSION['admin_panel'] = 'lefty';
-redirect('/admin/userdashboard.php');
+// Redirect to login with message
+redirect('/login.php?message=' . urlencode('The admin panel selector has been retired. Please log in to access the new dashboard.'));
 exit;
-
-$csrfToken = generateCSRFToken();
-$user = getCurrentUser();
 
 ?>
 <!DOCTYPE html>

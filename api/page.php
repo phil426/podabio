@@ -98,6 +98,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'profile_image_shadow' => $userPage['profile_image_shadow'] ?? 'subtle',
             'profile_image_size' => $userPage['profile_image_size'] ?? 'medium',
             'profile_image_border' => $userPage['profile_image_border'] ?? 'none',
+            'profile_image_radius' => $userPage['profile_image_radius'] ?? null,
+            'profile_image_effect' => $userPage['profile_image_effect'] ?? 'none',
+            'profile_image_shadow_color' => $userPage['profile_image_shadow_color'] ?? null,
+            'profile_image_shadow_intensity' => $userPage['profile_image_shadow_intensity'] ?? null,
+            'profile_image_shadow_depth' => $userPage['profile_image_shadow_depth'] ?? null,
+            'profile_image_shadow_blur' => $userPage['profile_image_shadow_blur'] ?? null,
+            'profile_image_glow_color' => $userPage['profile_image_glow_color'] ?? null,
+            'profile_image_glow_width' => $userPage['profile_image_glow_width'] ?? null,
+            'profile_image_border_color' => $userPage['profile_image_border_color'] ?? null,
+            'profile_image_border_width' => $userPage['profile_image_border_width'] ?? null,
+            'profile_image_spacing_top' => $userPage['profile_image_spacing_top'] ?? null,
+            'profile_image_spacing_bottom' => $userPage['profile_image_spacing_bottom'] ?? null,
             'name_alignment' => $userPage['name_alignment'] ?? 'center',
             'name_text_size' => $userPage['name_text_size'] ?? 'large',
             'bio_alignment' => $userPage['bio_alignment'] ?? 'center',
@@ -257,16 +269,105 @@ switch ($action) {
         }
 
         if (isset($_POST['profile_image_size'])) {
+            // Support both old enum format and new numeric format
             $size = sanitizeInput($_POST['profile_image_size']);
             if (in_array($size, ['small', 'medium', 'large'], true)) {
                 $updateData['profile_image_size'] = $size;
+            } elseif (is_numeric($size) && $size >= 40 && $size <= 200) {
+                $updateData['profile_image_size'] = (int)$size;
             }
         }
 
         if (isset($_POST['profile_image_border'])) {
+            // Support both old enum format and new numeric format
             $border = sanitizeInput($_POST['profile_image_border']);
             if (in_array($border, ['none', 'thin', 'thick'], true)) {
                 $updateData['profile_image_border'] = $border;
+            }
+        }
+
+        // New profile image fields (numeric/color values)
+        if (isset($_POST['profile_image_radius'])) {
+            $radius = filter_var($_POST['profile_image_radius'], FILTER_VALIDATE_INT);
+            if ($radius !== false && $radius >= 0 && $radius <= 50) {
+                $updateData['profile_image_radius'] = $radius;
+            }
+        }
+
+        if (isset($_POST['profile_image_effect'])) {
+            $effect = sanitizeInput($_POST['profile_image_effect']);
+            if (in_array($effect, ['none', 'glow', 'shadow'], true)) {
+                $updateData['profile_image_effect'] = $effect;
+            }
+        }
+
+        if (isset($_POST['profile_image_shadow_color'])) {
+            $color = sanitizeInput($_POST['profile_image_shadow_color']);
+            if (preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
+                $updateData['profile_image_shadow_color'] = $color;
+            }
+        }
+
+        if (isset($_POST['profile_image_shadow_intensity'])) {
+            $intensity = filter_var($_POST['profile_image_shadow_intensity'], FILTER_VALIDATE_FLOAT);
+            if ($intensity !== false && $intensity >= 0 && $intensity <= 1) {
+                $updateData['profile_image_shadow_intensity'] = $intensity;
+            }
+        }
+
+        if (isset($_POST['profile_image_shadow_depth'])) {
+            $depth = filter_var($_POST['profile_image_shadow_depth'], FILTER_VALIDATE_INT);
+            if ($depth !== false && $depth >= 0 && $depth <= 20) {
+                $updateData['profile_image_shadow_depth'] = $depth;
+            }
+        }
+
+        if (isset($_POST['profile_image_shadow_blur'])) {
+            $blur = filter_var($_POST['profile_image_shadow_blur'], FILTER_VALIDATE_INT);
+            if ($blur !== false && $blur >= 0 && $blur <= 50) {
+                $updateData['profile_image_shadow_blur'] = $blur;
+            }
+        }
+
+        if (isset($_POST['profile_image_glow_color'])) {
+            $color = sanitizeInput($_POST['profile_image_glow_color']);
+            if (preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
+                $updateData['profile_image_glow_color'] = $color;
+            }
+        }
+
+        if (isset($_POST['profile_image_glow_width'])) {
+            $width = filter_var($_POST['profile_image_glow_width'], FILTER_VALIDATE_INT);
+            if ($width !== false && $width >= 0 && $width <= 50) {
+                $updateData['profile_image_glow_width'] = $width;
+            }
+        }
+
+        if (isset($_POST['profile_image_border_color'])) {
+            $color = sanitizeInput($_POST['profile_image_border_color']);
+            if (preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
+                $updateData['profile_image_border_color'] = $color;
+            }
+        }
+
+        if (isset($_POST['profile_image_border_width'])) {
+            $width = filter_var($_POST['profile_image_border_width'], FILTER_VALIDATE_FLOAT);
+            if ($width !== false && $width >= 0 && $width <= 10) {
+                $updateData['profile_image_border_width'] = $width;
+            }
+        }
+
+        if (isset($_POST['profile_image_spacing_top'])) {
+            $spacing = filter_var($_POST['profile_image_spacing_top'], FILTER_VALIDATE_INT);
+            if ($spacing !== false && $spacing >= 0 && $spacing <= 100) {
+                $updateData['profile_image_spacing_top'] = $spacing;
+            }
+        }
+
+        if (isset($_POST['profile_image_spacing_bottom'])) {
+            $spacing = filter_var($_POST['profile_image_spacing_bottom'], FILTER_VALIDATE_INT);
+            if ($spacing !== false && $spacing >= 0 && $spacing <= 100) {
+                $updateData['profile_image_spacing_bottom'] = $spacing;
             }
         }
         
@@ -508,6 +609,104 @@ switch ($action) {
                 }
             } else {
                 error_log("API: page_name_effect validation FAILED. Value: " . var_export($pageNameEffect, true) . ", Valid effects: " . implode(', ', $validEffects));
+            }
+        }
+        
+        // Handle profile image fields (for theme editor)
+        // Profile image size (numeric, 40-200)
+        if (isset($_POST['profile_image_size'])) {
+            $size = filter_var($_POST['profile_image_size'], FILTER_VALIDATE_INT);
+            if ($size !== false && $size >= 40 && $size <= 200) {
+                $updateData['profile_image_size'] = $size;
+            }
+        }
+        
+        // Profile image radius (0-50)
+        if (isset($_POST['profile_image_radius'])) {
+            $radius = filter_var($_POST['profile_image_radius'], FILTER_VALIDATE_INT);
+            if ($radius !== false && $radius >= 0 && $radius <= 50) {
+                $updateData['profile_image_radius'] = $radius;
+            }
+        }
+        
+        // Profile image effect
+        if (isset($_POST['profile_image_effect'])) {
+            $effect = sanitizeInput($_POST['profile_image_effect']);
+            if (in_array($effect, ['none', 'glow', 'shadow'], true)) {
+                $updateData['profile_image_effect'] = $effect;
+            }
+        }
+        
+        // Profile image shadow properties
+        if (isset($_POST['profile_image_shadow_color'])) {
+            $color = sanitizeInput($_POST['profile_image_shadow_color']);
+            if (preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+                $updateData['profile_image_shadow_color'] = $color;
+            }
+        }
+        
+        if (isset($_POST['profile_image_shadow_intensity'])) {
+            $intensity = filter_var($_POST['profile_image_shadow_intensity'], FILTER_VALIDATE_FLOAT);
+            if ($intensity !== false && $intensity >= 0 && $intensity <= 1) {
+                $updateData['profile_image_shadow_intensity'] = $intensity;
+            }
+        }
+        
+        if (isset($_POST['profile_image_shadow_depth'])) {
+            $depth = filter_var($_POST['profile_image_shadow_depth'], FILTER_VALIDATE_INT);
+            if ($depth !== false && $depth >= 0 && $depth <= 20) {
+                $updateData['profile_image_shadow_depth'] = $depth;
+            }
+        }
+        
+        if (isset($_POST['profile_image_shadow_blur'])) {
+            $blur = filter_var($_POST['profile_image_shadow_blur'], FILTER_VALIDATE_INT);
+            if ($blur !== false && $blur >= 0 && $blur <= 50) {
+                $updateData['profile_image_shadow_blur'] = $blur;
+            }
+        }
+        
+        // Profile image glow properties
+        if (isset($_POST['profile_image_glow_color'])) {
+            $color = sanitizeInput($_POST['profile_image_glow_color']);
+            if (preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+                $updateData['profile_image_glow_color'] = $color;
+            }
+        }
+        
+        if (isset($_POST['profile_image_glow_width'])) {
+            $width = filter_var($_POST['profile_image_glow_width'], FILTER_VALIDATE_INT);
+            if ($width !== false && $width >= 0 && $width <= 50) {
+                $updateData['profile_image_glow_width'] = $width;
+            }
+        }
+        
+        // Profile image border properties
+        if (isset($_POST['profile_image_border_color'])) {
+            $color = sanitizeInput($_POST['profile_image_border_color']);
+            if (preg_match('/^#[0-9a-fA-F]{6}$/', $color)) {
+                $updateData['profile_image_border_color'] = $color;
+            }
+        }
+        
+        if (isset($_POST['profile_image_border_width'])) {
+            $width = filter_var($_POST['profile_image_border_width'], FILTER_VALIDATE_FLOAT);
+            if ($width !== false && $width >= 0 && $width <= 10) {
+                $updateData['profile_image_border_width'] = $width;
+            }
+        }
+        
+        // Handle profile_image URL
+        if (isset($_POST['profile_image'])) {
+            $profileImageUrl = trim(sanitizeInput($_POST['profile_image']));
+            if (!empty($profileImageUrl)) {
+                // Validate URL format
+                if (filter_var($profileImageUrl, FILTER_VALIDATE_URL)) {
+                    $updateData['profile_image'] = $profileImageUrl;
+                }
+            } else {
+                // Allow clearing profile image
+                $updateData['profile_image'] = null;
             }
         }
         

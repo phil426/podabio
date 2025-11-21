@@ -8,6 +8,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
 }
 
 .leftRail::after {
@@ -71,5 +72,47 @@
 
 .thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.docsButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  margin: 0 12px 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 250ms ease;
+  font-size: 14px;
+}
+
+.docsButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.docsButton:not([data-expanded='true']) {
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  margin: 0 auto 8px auto;
+}
+
+.docsLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.docsButton:not([data-expanded='true']) .docsLabel {
+  display: none;
 }
 
