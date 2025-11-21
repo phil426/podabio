@@ -56,14 +56,10 @@ export function PropertiesPanel({ activeColor, activeTab = 'layers' }: Propertie
   let inspector: JSX.Element | null = null;
 
   // Gate inspectors by activeTab to prevent stale inspectors from other tabs
-  // Handle both legacy tabs and new Lefty tabs
-  const isLegacyStyleTab = activeTab === 'structure' || activeTab === 'design';
   const isLeftyLayerTab = activeTab === 'layers';
-  const isLegacyIntegrationsTab = activeTab === 'integrations';
   const isLeftyIntegrationTab = activeTab === 'integration';
-  const isLegacySettingsTab = activeTab === 'settings';
 
-  if (isLegacyStyleTab || isLeftyLayerTab) {
+  if (isLeftyLayerTab) {
     // Style/Layers tab: Show widget/page inspectors or default to Profile
     // CRITICAL: Check for 'page:footer' FIRST with exact match before any other checks
     if (selectedWidgetId === 'page:footer') {
@@ -93,27 +89,21 @@ export function PropertiesPanel({ activeColor, activeTab = 'layers' }: Propertie
       } else {
         inspector = <WidgetInspector activeColor={activeColor} />;
       }
-    } else if (isLegacyStyleTab || activeTab === 'layers') {
-      // Default to Profile inspector when on structure/layers tab and nothing is selected
+    } else if (activeTab === 'layers') {
+      // Default to Profile inspector when on layers tab and nothing is selected
       inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
     }
     // Note: ThemeEditorPanel is handled separately via showThemeInspector state
-  } else if (isLegacyIntegrationsTab || isLeftyIntegrationTab) {
+  } else if (isLeftyIntegrationTab) {
     // Integrations tab: Show IntegrationInspector only if integration is selected
     if (selectedIntegrationId !== null) {
       inspector = <IntegrationInspector activeColor={activeColor} />;
     }
     // No default inspector for integrations tab
-  } else if (isLegacySettingsTab) {
-    // Settings tab: Show SocialIconInspector only if social icon is selected
-    if (selectedSocialIconId !== null) {
-      inspector = <SocialIconInspector activeColor={activeColor} />;
-    }
-    // No default inspector for settings tab
-  } else if (activeTab === 'analytics' || activeTab === 'preview') {
+  } else if (activeTab === 'analytics') {
     // Analytics/Preview tab: No inspector (right panel is collapsed)
     inspector = null;
-  } else if (activeTab === 'colors' || activeTab === 'special-effects' || activeTab === 'podcast') {
+  } else if (activeTab === 'podcast') {
     // These tabs don't need inspectors in the right panel
     inspector = null;
   }

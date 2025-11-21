@@ -91,8 +91,9 @@ if ($existingUser) {
     );
     
     if ($result['success']) {
-        // Redirect to panel selector
-        redirect('/admin/select-panel.php');
+        // Redirect directly to Lefty
+        $_SESSION['admin_panel'] = 'lefty';
+        redirect('/admin/userdashboard.php');
     } else {
         redirect('/login.php?error=' . urlencode($result['error']));
     }
@@ -128,8 +129,9 @@ $result = $user->loginWithGoogle(
 );
 
 if ($result['success']) {
-    // Redirect to panel selector
-    redirect('/admin/select-panel.php');
+    // Redirect directly to Lefty
+    $_SESSION['admin_panel'] = 'lefty';
+    redirect('/admin/userdashboard.php');
 } else {
     redirect('/login.php?error=' . urlencode($result['error']));
 }

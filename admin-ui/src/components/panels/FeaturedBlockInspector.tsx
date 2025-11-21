@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LuStar } from 'react-icons/lu';
+import { Star } from '@phosphor-icons/react';
 
 import { usePageSnapshot } from '../../api/page';
 import { useUpdateWidgetMutation } from '../../api/widgets';

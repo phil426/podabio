@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuCheck, LuX, LuLoader, LuPlus, LuMusic, LuHeart, LuNewspaper, LuEye, LuEyeOff, LuGripVertical } from 'react-icons/lu';
+import { Check, X, CircleNotch, Plus, MusicNote, Heart, Newspaper, Eye, EyeSlash, DotsSixVertical } from '@phosphor-icons/react';
 import { FaSpotify, FaYoutube, FaInstagram, FaTwitter, FaTiktok, FaFacebook, FaLinkedin, FaReddit, FaDiscord, FaTwitch, FaGithub, FaDribbble, FaMedium, FaSnapchat, FaPinterest, FaAmazon, FaPodcast } from 'react-icons/fa';
 import {
   DndContext,
@@ -84,7 +84,7 @@ const getPlatformIcon = (platformName: string): JSX.Element => {
     apple_podcasts: <FaPodcast aria-hidden="true" />,
     spotify: <FaSpotify aria-hidden="true" />,
     youtube_music: <FaYoutube aria-hidden="true" />,
-    iheart_radio: <LuHeart aria-hidden="true" />,
+    iheart_radio: <Heart aria-hidden="true" size={20} weight="regular" />,
     amazon_music: <FaAmazon aria-hidden="true" />,
     pocket_casts: <PocketCastsIcon />,
     castro: <CastroIcon />,
@@ -94,7 +94,7 @@ const getPlatformIcon = (platformName: string): JSX.Element => {
     instagram: <FaInstagram aria-hidden="true" />,
     twitter: <FaTwitter aria-hidden="true" />,
     tiktok: <FaTiktok aria-hidden="true" />,
-    substack: <LuNewspaper aria-hidden="true" />,
+    substack: <Newspaper aria-hidden="true" size={20} weight="regular" />,
     // Social/Professional
     facebook: <FaFacebook aria-hidden="true" />,
     linkedin: <FaLinkedin aria-hidden="true" />,
@@ -108,7 +108,7 @@ const getPlatformIcon = (platformName: string): JSX.Element => {
     snapchat: <FaSnapchat aria-hidden="true" />,
     pinterest: <FaPinterest aria-hidden="true" />
   };
-  return iconMap[platformName] || <LuMusic aria-hidden="true" />;
+  return iconMap[platformName] || <MusicNote aria-hidden="true" size={20} weight="regular" />;
 };
 
 interface SortableIconCardProps {
@@ -162,7 +162,7 @@ function SortableIconCard({
         {...listeners}
         aria-hidden="true"
       >
-        <LuGripVertical />
+        <DotsSixVertical size={16} weight="regular" />
       </span>
       <div className={styles.iconIcon} data-active={isActive ? 'true' : 'false'}>
         {getPlatformIcon(icon.platform_name)}
@@ -184,7 +184,7 @@ function SortableIconCard({
         title={isActive ? 'Hide' : 'Show'}
         data-active={isActive ? 'true' : 'false'}
       >
-        {isActive ? <LuEye aria-hidden="true" /> : <LuEyeOff aria-hidden="true" />}
+        {isActive ? <Eye aria-hidden="true" size={16} weight="regular" /> : <EyeSlash aria-hidden="true" size={16} weight="regular" />}
       </button>
     </div>
   );
@@ -296,7 +296,7 @@ export function SettingsPanel(): JSX.Element {
     return (
       <div className={styles.container}>
         <div className={styles.loadingState}>
-          <LuLoader className={styles.spinner} />
+          <CircleNotch className={styles.spinner} size={20} weight="regular" />
           <p>Loading settings…</p>
         </div>
       </div>
@@ -330,7 +330,7 @@ export function SettingsPanel(): JSX.Element {
           {availablePlatforms.length > 0 && (
             <div className={styles.addCard}>
               <div className={styles.addCardHeader}>
-                <LuPlus className={styles.addCardIcon} aria-hidden="true" />
+                <Plus className={styles.addCardIcon} aria-hidden="true" size={16} weight="regular" />
                 <span className={styles.addCardTitle}>Add Social Icon</span>
               </div>
               <div className={styles.addCardForm}>
@@ -365,12 +365,12 @@ export function SettingsPanel(): JSX.Element {
                 >
                   {addMutation.isPending ? (
                     <>
-                      <LuLoader className={styles.buttonSpinner} />
+                      <CircleNotch className={styles.buttonSpinner} size={16} weight="regular" />
                       <span>Adding…</span>
                     </>
                   ) : (
                     <>
-                      <LuPlus aria-hidden="true" />
+                      <Plus aria-hidden="true" size={16} weight="regular" />
                       <span>Add</span>
                     </>
                   )}

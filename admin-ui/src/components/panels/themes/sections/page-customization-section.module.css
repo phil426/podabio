@@ -1,0 +1,187 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+}
+
+.subsectionTitle {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.toggleGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleButton:hover {
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+}
+
+.toggleButton.active {
+  background: var(--pod-semantic-accent-primary, #2563eb);
+  color: #ffffff;
+  border-color: var(--pod-semantic-accent-primary, #2563eb);
+}
+
+.optionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.optionButton {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.optionButton:hover {
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  border-color: var(--pod-semantic-divider, rgba(15, 23, 42, 0.16));
+}
+
+.optionButtonActive {
+  background: var(--pod-semantic-accent-primary, #2563eb);
+  color: #ffffff;
+  border-color: var(--pod-semantic-accent-primary, #2563eb);
+}
+
+/* Profile Image Upload */
+.imageUploadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imagePreview {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imagePreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* Always show overlay when no image (for upload button) */
+.imagePreview[data-has-image='false'] .imageOverlay {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.imagePreview:hover .imageOverlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.imageActionButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.imageActionButton:hover:not(:disabled) {
+  background: #ffffff;
+  transform: scale(1.1);
+}
+
+.imageActionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

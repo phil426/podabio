@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LuBold, LuItalic, LuUnderline, LuAlignLeft, LuAlignCenter, LuAlignRight, LuUpload, LuX } from 'react-icons/lu';
+import { TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight, UploadSimple, X } from '@phosphor-icons/react';
 
 import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../api/page';
 import { uploadProfileImage } from '../../api/uploads';
@@ -326,7 +326,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               role="radio"
               aria-checked={nameAlignment === 'left'}
             >
-              <LuAlignLeft aria-hidden="true" />
+              <TextAlignLeft aria-hidden="true" size={16} weight="regular" />
               <span>Left</span>
             </button>
             <button
@@ -336,7 +336,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               role="radio"
               aria-checked={nameAlignment === 'center'}
             >
-              <LuAlignCenter aria-hidden="true" />
+              <TextAlignCenter aria-hidden="true" size={16} weight="regular" />
               <span>Center</span>
             </button>
             <button
@@ -346,7 +346,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               role="radio"
               aria-checked={nameAlignment === 'right'}
             >
-              <LuAlignRight aria-hidden="true" />
+              <TextAlignRight aria-hidden="true" size={16} weight="regular" />
               <span>Right</span>
             </button>
           </div>
@@ -404,7 +404,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               disabled={isUploading}
               title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
             >
-              <LuUpload aria-hidden="true" />
+              <UploadSimple aria-hidden="true" size={16} weight="regular" />
             </button>
             {profileImage && (
               <button
@@ -414,7 +414,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
                 disabled={isUploading}
                 title="Remove image"
               >
-                <LuX aria-hidden="true" />
+                <X aria-hidden="true" size={16} weight="regular" />
               </button>
             )}
           </div>

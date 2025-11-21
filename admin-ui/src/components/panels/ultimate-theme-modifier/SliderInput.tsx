@@ -25,12 +25,17 @@ export function SliderInput({
   disabled = false,
   label
 }: SliderInputProps): JSX.Element {
-  const [inputValue, setInputValue] = useState(String(value));
+  // Ensure value is always a valid number
+  const safeValue = typeof value === 'number' && !isNaN(value) ? value : min;
+  
+  const [inputValue, setInputValue] = useState(String(safeValue));
   const [selectedUnit, setSelectedUnit] = useState(unit || (units.length > 0 ? units[0] : ''));
 
   useEffect(() => {
-    setInputValue(String(value));
-  }, [value]);
+    // Ensure we always set a valid number
+    const numValue = typeof value === 'number' && !isNaN(value) ? value : min;
+    setInputValue(String(numValue));
+  }, [value, min]);
 
   const handleSliderChange = useCallback(
     (newValue: number[]) => {
@@ -54,7 +59,7 @@ export function SliderInput({
   const handleBlur = useCallback(() => {
     const numValue = parseFloat(inputValue);
     if (isNaN(numValue)) {
-      setInputValue(String(value));
+      setInputValue(String(safeValue));
     } else if (numValue < min) {
       setInputValue(String(min));
       onChange(min);
@@ -62,14 +67,14 @@ export function SliderInput({
       setInputValue(String(max));
       onChange(max);
     }
-  }, [inputValue, value, min, max, onChange]);
+  }, [inputValue, safeValue, min, max, onChange]);
 
   return (
     <div className={styles.container}>
       {label && <label className={styles.label}>{label}</label>}
       <Slider.Root
         className={styles.sliderRoot}
-        value={[value]}
+        value={[safeValue]}
         onValueChange={handleSliderChange}
         min={min}
         max={max}

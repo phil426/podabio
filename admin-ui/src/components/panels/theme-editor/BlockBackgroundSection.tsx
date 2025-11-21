@@ -1,5 +1,5 @@
 import * as Tabs from '@radix-ui/react-tabs';
-import { LuImage, LuSwatchBook, LuSquare } from 'react-icons/lu';
+import { Image, Swatches, Square } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
 import styles from '../theme-editor-panel.module.css';
 
@@ -36,11 +36,11 @@ export function BlockBackgroundSection({
           <span>Solid</span>
         </Tabs.Trigger>
         <Tabs.Trigger value="gradient" className={styles.backgroundTabTrigger}>
-          <LuSwatchBook aria-hidden="true" />
+          <Swatches aria-hidden="true" size={16} weight="regular" />
           <span>Gradient</span>
         </Tabs.Trigger>
         <Tabs.Trigger value="image" className={styles.backgroundTabTrigger}>
-          <LuImage aria-hidden="true" />
+          <Image aria-hidden="true" size={16} weight="regular" />
           <span>Image</span>
         </Tabs.Trigger>
       </Tabs.List>

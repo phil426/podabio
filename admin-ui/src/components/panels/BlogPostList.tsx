@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuPlus, LuPencil, LuTrash2, LuFileText, LuCalendar, LuEye, LuEyeOff, LuLoader } from 'react-icons/lu';
+import { Plus, Pencil, Trash, FileText, Calendar, Eye, EyeSlash, CircleNotch } from '@phosphor-icons/react';
 
 import { useBlogPosts, useDeleteBlogPostMutation, useBlogCategories } from '../../api/blog';
 import { useBlogPostSelection } from '../../state/blogPostSelection';
@@ -102,12 +102,12 @@ export function BlogPostList({ activeColor }: BlogPostListProps): JSX.Element {
 
       {isLoading ? (
         <div className={styles.loading}>
-          <LuLoader className={styles.spinner} aria-hidden="true" />
+          <CircleNotch className={styles.spinner} aria-hidden="true" size={20} weight="regular" />
           <p>Loading posts...</p>
         </div>
       ) : filteredPosts.length === 0 ? (
         <div className={styles.empty}>
-          <LuFileText className={styles.emptyIcon} aria-hidden="true" />
+          <FileText className={styles.emptyIcon} aria-hidden="true" size={48} weight="regular" />
           <p>No blog posts yet.</p>
           <button type="button" className={styles.emptyButton} onClick={handleCreateNew}>
             Create your first post
@@ -139,7 +139,7 @@ export function BlogPostList({ activeColor }: BlogPostListProps): JSX.Element {
                     aria-label="Edit post"
                     title="Edit"
                   >
-                    <LuPencil aria-hidden="true" />
+                    <Pencil aria-hidden="true" size={16} weight="regular" />
                   </button>
                   <button
                     type="button"
@@ -149,13 +149,13 @@ export function BlogPostList({ activeColor }: BlogPostListProps): JSX.Element {
                     title="Delete"
                     disabled={deleteMutation.isPending}
                   >
-                    <LuTrash2 aria-hidden="true" />
+                    <Trash aria-hidden="true" size={16} weight="regular" />
                   </button>
                 </div>
               </div>
               <div className={styles.postMeta}>
                 <span className={styles.postDate}>
-                  <LuCalendar aria-hidden="true" />
+                  <Calendar aria-hidden="true" size={16} weight="regular" />
                   {formatDate(post.created_at)}
                 </span>
                 {post.category_name && (

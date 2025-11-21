@@ -7,7 +7,8 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-sm);
-    margin-bottom: var(--space-lg);
+    margin-top: var(--profile-image-spacing-top, calc(var(--page-vertical-spacing, 24px) + 20px));
+    margin-bottom: var(--profile-image-spacing-bottom, var(--page-vertical-spacing, var(--space-lg)));
 }
 
 .profile-image {

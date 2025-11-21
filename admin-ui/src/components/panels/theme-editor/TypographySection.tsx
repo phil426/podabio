@@ -1,5 +1,5 @@
 import * as Tabs from '@radix-ui/react-tabs';
-import { LuType, LuBold, LuItalic, LuUnderline, LuAlignLeft, LuAlignCenter, LuAlignRight } from 'react-icons/lu';
+import { Type, TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
 import profileStyles from '../profile-inspector.module.css';
 import styles from '../theme-editor-panel.module.css';
@@ -130,7 +130,7 @@ export function TypographySection({
                 onClick={() => onHeadingItalicChange(!headingItalic)}
                 title="Italic"
               >
-                <LuItalic aria-hidden="true" />
+                <TextItalic aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -138,7 +138,7 @@ export function TypographySection({
                 onClick={() => onHeadingUnderlineChange(!headingUnderline)}
                 title="Underline"
               >
-                <LuUnderline aria-hidden="true" />
+                <TextUnderline aria-hidden="true" size={16} weight="regular" />
               </button>
               <div className={profileStyles.formatDivider} />
               <button
@@ -147,7 +147,7 @@ export function TypographySection({
                 onClick={() => onHeadingAlignmentChange('left')}
                 title="Align left"
               >
-                <LuAlignLeft aria-hidden="true" />
+                <TextAlignLeft aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -155,7 +155,7 @@ export function TypographySection({
                 onClick={() => onHeadingAlignmentChange('center')}
                 title="Align center"
               >
-                <LuAlignCenter aria-hidden="true" />
+                <TextAlignCenter aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -163,7 +163,7 @@ export function TypographySection({
                 onClick={() => onHeadingAlignmentChange('right')}
                 title="Align right"
               >
-                <LuAlignRight aria-hidden="true" />
+                <TextAlignRight aria-hidden="true" size={16} weight="regular" />
               </button>
             </div>
             
@@ -250,7 +250,7 @@ export function TypographySection({
                 onClick={() => onBodyItalicChange(!bodyItalic)}
                 title="Italic"
               >
-                <LuItalic aria-hidden="true" />
+                <TextItalic aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -258,7 +258,7 @@ export function TypographySection({
                 onClick={() => onBodyUnderlineChange(!bodyUnderline)}
                 title="Underline"
               >
-                <LuUnderline aria-hidden="true" />
+                <TextUnderline aria-hidden="true" size={16} weight="regular" />
               </button>
               <div className={profileStyles.formatDivider} />
               <button
@@ -267,7 +267,7 @@ export function TypographySection({
                 onClick={() => onBodyAlignmentChange('left')}
                 title="Align left"
               >
-                <LuAlignLeft aria-hidden="true" />
+                <TextAlignLeft aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -275,7 +275,7 @@ export function TypographySection({
                 onClick={() => onBodyAlignmentChange('center')}
                 title="Align center"
               >
-                <LuAlignCenter aria-hidden="true" />
+                <TextAlignCenter aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -283,7 +283,7 @@ export function TypographySection({
                 onClick={() => onBodyAlignmentChange('right')}
                 title="Align right"
               >
-                <LuAlignRight aria-hidden="true" />
+                <TextAlignRight aria-hidden="true" size={16} weight="regular" />
               </button>
             </div>
             

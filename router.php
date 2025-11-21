@@ -5,7 +5,7 @@
  */
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = trim($uri, '/');
+$path = $uri ? trim($uri, '/') : '';
 
 // If it's a file that exists, serve it directly
 if ($path && file_exists(__DIR__ . '/' . $path) && !is_dir(__DIR__ . '/' . $path)) {
@@ -40,7 +40,8 @@ $excludedPaths = [
     'favicon.php',
     'fontawesome.php',
     'demo-themes.php',
-    'feature-comparison.html'
+    'feature-comparison.html',
+    'page-preview.php'
 ];
 
 // Check if path starts with any excluded prefix
@@ -55,6 +56,13 @@ foreach ($excludedPaths as $excluded) {
 // If it's an excluded path or empty, let it fall through to normal handling
 if ($isExcluded || empty($path)) {
     return false;
+}
+
+// Check if it's page-preview with username
+if (preg_match('/^page-preview\.php\/([a-zA-Z0-9_-]{3,30})$/', $path, $matches)) {
+    $_GET['username'] = $matches[1];
+    require __DIR__ . '/page-preview.php';
+    return true;
 }
 
 // Check if it looks like a username (alphanumeric, underscore, dash, 3-30 chars)

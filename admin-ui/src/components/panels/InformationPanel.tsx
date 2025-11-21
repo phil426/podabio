@@ -43,17 +43,6 @@ export function InformationPanel({ activeColor, activeTab }: InformationPanelPro
             }
           ]
         };
-      case 'colors':
-        return {
-          title: 'Colors',
-          icon: <Palette size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Color Customization',
-              content: 'Customize your page colors to match your brand. Changes apply instantly to your live page.'
-            }
-          ]
-        };
       case 'typography':
         return {
           title: 'Typography',

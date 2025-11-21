@@ -6,7 +6,7 @@ import styles from './page-background-picker.module.css';
 interface PageBackgroundPickerProps {
   value?: string;
   onChange?: (value: string) => void;
-  mode?: 'solid' | 'gradient' | 'both'; // Which section(s) to show
+  mode?: 'solid' | 'gradient' | 'both' | 'vanta'; // Which section(s) to show
   hidePresets?: boolean; // Hide preset color/gradient grids
   presetsOnly?: boolean; // Show only presets, hide custom picker
   lightOnly?: boolean; // Show only light presets
@@ -15,6 +15,10 @@ interface PageBackgroundPickerProps {
 
 function isGradient(value: string): boolean {
   return value.includes('gradient') || value.includes('linear-gradient') || value.includes('radial-gradient');
+}
+
+function isVanta(value: string): boolean {
+  return value.startsWith('vanta:') || value.startsWith('{"type":"vanta');
 }
 
 function parseGradient(gradient: string): { direction: number; color1: string; color2: string } | null {
@@ -98,9 +102,11 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
   const [gradientDirection, setGradientDirection] = useState(initialGradient.direction);
   const [gradientColor1, setGradientColor1] = useState(initialGradient.color1);
   const [gradientColor2, setGradientColor2] = useState(initialGradient.color2);
-  const [activeMode, setActiveMode] = useState<'solid' | 'gradient'>(() => {
+  const [activeMode, setActiveMode] = useState<'solid' | 'gradient' | 'vanta'>(() => {
     // Initialize active mode based on value
-    return value && isGradient(value) ? 'gradient' : 'solid';
+    if (value && isVanta(value)) return 'vanta';
+    if (value && isGradient(value)) return 'gradient';
+    return 'solid';
   });
   const [showSolidPicker, setShowSolidPicker] = useState(false);
   const [showGradientPicker1, setShowGradientPicker1] = useState(false);
@@ -180,7 +186,9 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
     // Always sync if value exists and is different, or if we haven't initialized yet
     if (value && (value !== lastValueRef.current || lastValueRef.current === undefined)) {
       lastValueRef.current = value;
-      if (isGradient(value)) {
+      if (isVanta(value)) {
+        setActiveMode('vanta');
+      } else if (isGradient(value)) {
         setActiveMode('gradient');
         const parsed = parseGradient(value);
         if (parsed) {
@@ -245,6 +253,7 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
 
   const showSolid = mode === 'solid' || mode === 'both';
   const showGradient = mode === 'gradient' || mode === 'both';
+  const showVanta = mode === 'vanta' || mode === 'both';
 
   // Split solid presets into light and dark
   const lightPresets = solidPresets.slice(0, 12);
@@ -581,6 +590,32 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
           </div>
           )}
         </>
+      )}
+
+      {/* Vanta.js Section */}
+      {showVanta && (
+        <div className={styles.customSection}>
+          <label className={styles.customLabel}>
+            <span>Animated Backgrounds</span>
+          </label>
+          <div className={styles.vantaOptions}>
+            <button
+              type="button"
+              className={`${styles.vantaOption} ${activeMode === 'vanta' && value === 'vanta:clouds2' ? styles.vantaOptionActive : ''}`}
+              onClick={() => {
+                setActiveMode('vanta');
+                isInternalUpdateRef.current = true;
+                lastValueRef.current = 'vanta:clouds2';
+                onChange?.('vanta:clouds2');
+              }}
+            >
+              <div className={styles.vantaPreview}>
+                <div className={styles.vantaPreviewIcon}>☁️</div>
+              </div>
+              <span className={styles.vantaLabel}>Clouds 2</span>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

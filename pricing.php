@@ -19,110 +19,9 @@ require_once __DIR__ . '/includes/helpers.php';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/marketing.css?v=<?php echo filemtime(__DIR__ . '/css/marketing.css'); ?>">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: #333;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: #667eea;
-        }
-        
-        .nav-actions {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-        
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-        
-        .page-header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .page-header p {
-            font-size: 1.25rem;
-            opacity: 0.95;
-        }
+        /* Page-specific styles for pricing page */
         
         .pricing {
             padding: 4rem 2rem;
@@ -157,7 +56,7 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         .pricing-card.featured:before {
-            content: 'POPULAR';
+            content: 'MOST POPULAR';
             position: absolute;
             top: -12px;
             left: 50%;
@@ -225,51 +124,6 @@ require_once __DIR__ . '/includes/helpers.php';
             color: #ef4444;
         }
         
-        .footer {
-            background: #1f2937;
-            color: white;
-            padding: 3rem 2rem 2rem;
-            margin-top: 4rem;
-        }
-        
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .footer-section h4 {
-            margin-bottom: 1rem;
-            color: #667eea;
-        }
-        
-        .footer-section ul {
-            list-style: none;
-        }
-        
-        .footer-section ul li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .footer-section a {
-            color: #9ca3af;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-section a:hover {
-            color: white;
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid #374151;
-            color: #9ca3af;
-        }
     </style>
 </head>
 <body>
@@ -279,6 +133,7 @@ require_once __DIR__ . '/includes/helpers.php';
             <ul class="nav-links">
                 <li><a href="/features.php">Features</a></li>
                 <li><a href="/pricing.php">Pricing</a></li>
+                <li><a href="/examples.php">Examples</a></li>
                 <li><a href="/about.php">About</a></li>
                 <li><a href="/support/">Support</a></li>
             </ul>
@@ -302,6 +157,8 @@ require_once __DIR__ . '/includes/helpers.php';
                 <div class="plan-price">$0<span class="period">/month</span></div>
                 <p class="plan-description">Perfect for getting started</p>
                 <ul class="plan-features">
+                    <li>RSS feed auto-sync</li>
+                    <li>Built-in podcast player</li>
                     <li>Basic links</li>
                     <li>Basic themes</li>
                     <li class="unavailable">Custom colors & fonts</li>
@@ -318,9 +175,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <div class="plan-price">$<?php echo number_format(PLAN_PREMIUM_PRICE, 2); ?><span class="period">/month</span></div>
                 <p class="plan-description">For serious podcasters</p>
                 <ul class="plan-features">
-                    <li>Basic links</li>
-                    <li>Basic themes</li>
+                    <li>Everything in Free</li>
                     <li>Custom colors & fonts</li>
+                    <li>49+ beautiful themes</li>
                     <li>Basic analytics</li>
                     <li>Email subscriptions</li>
                     <li>Priority support</li>
@@ -343,6 +200,96 @@ require_once __DIR__ . '/includes/helpers.php';
                     <li>All features</li>
                 </ul>
                 <a href="/payment/checkout.php?plan=pro" class="btn btn-primary" style="width: 100%; text-align: center;">Upgrade to Pro</a>
+            </div>
+        </div>
+        
+        <!-- Feature Comparison Matrix -->
+        <div style="margin-top: 4rem; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: #1f2937;">Feature Comparison</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Feature</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Free</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Premium</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Pro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">RSS Feed Auto-Sync</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Podcast Player</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Custom Colors & Fonts</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">49+ Themes</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">Basic</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Analytics</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">Basic</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">Advanced</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Email Subscriptions</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Custom Domain</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem;">Support</td>
+                            <td style="padding: 1rem; text-align: center; color: #6b7280;">Community</td>
+                            <td style="padding: 1rem; text-align: center; color: #10b981;">Priority</td>
+                            <td style="padding: 1rem; text-align: center; color: #10b981;">24/7 Priority</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- FAQ Section -->
+        <div style="margin-top: 4rem;">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: #1f2937;">Frequently Asked Questions</h2>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 0.75rem; color: #1f2937;">Can I use PodaBio for free?</h3>
+                    <p style="color: #6b7280; line-height: 1.6;">Yes! Our free plan includes RSS feed auto-sync and the built-in podcast player. Perfect for getting started.</p>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 0.75rem; color: #1f2937;">What's the difference between Premium and Pro?</h3>
+                    <p style="color: #6b7280; line-height: 1.6;">Premium includes custom themes, analytics, and email subscriptions. Pro adds custom domain support, advanced analytics, and 24/7 priority support.</p>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 0.75rem; color: #1f2937;">Can I cancel anytime?</h3>
+                    <p style="color: #6b7280; line-height: 1.6;">Absolutely. Cancel your subscription at any time. You'll continue to have access until the end of your billing period.</p>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 0.75rem; color: #1f2937;">Do you offer refunds?</h3>
+                    <p style="color: #6b7280; line-height: 1.6;">We offer a 30-day money-back guarantee. If you're not satisfied, contact us for a full refund.</p>
+                </div>
             </div>
         </div>
     </div>

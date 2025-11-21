@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LuRss, LuPodcast, LuLoader, LuCheck, LuX, LuCopy, LuCircleCheck, LuHeart, LuNewspaper } from 'react-icons/lu';
+import { Rss, ApplePodcastsLogo, CircleNotch, Check, X, Copy, CheckCircle, Heart, Newspaper } from '@phosphor-icons/react';
 import { FaPodcast, FaSpotify, FaYoutube, FaAmazon, FaInstagram, FaTwitter, FaTiktok, FaFacebook, FaLinkedin, FaReddit, FaDiscord, FaTwitch, FaGithub, FaDribbble, FaMedium, FaSnapchat, FaPinterest } from 'react-icons/fa';
 
 import { usePageSnapshot, usePageSettingsMutation, generatePodlinks } from '../../api/page';
@@ -85,7 +85,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       instagram: <FaInstagram aria-hidden="true" />,
       twitter: <FaTwitter aria-hidden="true" />,
       tiktok: <FaTiktok aria-hidden="true" />,
-      substack: <LuNewspaper aria-hidden="true" />,
+      substack: <Newspaper aria-hidden="true" size={20} weight="regular" />,
       // Social/Professional
       facebook: <FaFacebook aria-hidden="true" />,
       linkedin: <FaLinkedin aria-hidden="true" />,
@@ -99,7 +99,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       snapchat: <FaSnapchat aria-hidden="true" />,
       pinterest: <FaPinterest aria-hidden="true" />
     };
-    return (platformName: string) => iconMap[platformName.toLowerCase()] || <LuPodcast aria-hidden="true" />;
+    return (platformName: string) => iconMap[platformName.toLowerCase()] || <ApplePodcastsLogo aria-hidden="true" size={20} weight="regular" />;
   }, []);
 
   // Convert existing social icons to podlinks results format
@@ -470,7 +470,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
             >
               {isLoadingFeed ? (
                 <>
-                  <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                  <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
                   Loading...
                 </>
               ) : (
@@ -570,9 +570,9 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
                         title="Copy URL"
                       >
                         {copiedUrl === platformData.url ? (
-                          <LuCircleCheck className={styles.podlinksCopyIcon} aria-hidden="true" />
+                          <CheckCircle className={styles.podlinksCopyIcon} aria-hidden="true" size={16} weight="regular" />
                         ) : (
-                          <LuCopy className={styles.podlinksCopyIcon} aria-hidden="true" />
+                          <Copy className={styles.podlinksCopyIcon} aria-hidden="true" size={16} weight="regular" />
                         )}
                       </button>
                     </div>

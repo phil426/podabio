@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LuX } from 'react-icons/lu';
+import { X } from '@phosphor-icons/react';
 
 import { usePageSnapshot, updateSocialIcon, deleteSocialIcon, toggleSocialIconVisibility } from '../../api/page';
 import { useSocialIconSelection } from '../../state/socialIconSelection';

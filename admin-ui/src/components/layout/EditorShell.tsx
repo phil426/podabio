@@ -83,44 +83,26 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
   const wrapperRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const centerPanelRef = useRef<HTMLDivElement>(null);
-  const rightPanelRef = useRef<HTMLDivElement>(null);
+  // Right panel removed - preview is now in themes tab
   const leftPanelHandleRef = useRef<ImperativePanelHandle>(null);
   const centerPanelHandleRef = useRef<ImperativePanelHandle>(null);
-  const rightPanelHandleRef = useRef<ImperativePanelHandle>(null);
 
   // Calculate panel sizes based on active tab (percentages that sum to 100)
   const panelSizes = useMemo(() => {
-    if (activeTab === 'analytics' || activeTab === 'preview') {
-      return {
-        left: 4, // ~64px as percentage (64px / ~1600px viewport)
-        center: activeTab === 'analytics' ? 96 : 0,
-        right: 0
-      };
-    }
-    // For normal tabs: left panel fills remaining space after right panel
-    // When center is collapsed, left will automatically expand to fill available space
+    // All tabs: left panel fills all space (right panel removed - preview is in themes tab)
     return {
-      left: 72, // Left panel with rail + content panels (fills remaining space: 100% - 28% right = 72%)
+      left: 100, // Left panel with rail + content panels (fills all space)
       center: 0, // Center panel hidden for now
-      right: 28 // Information panel (~28% of viewport)
+      right: 0 // Right panel removed
     };
   }, [activeTab]);
 
   // Reset panel sizes when tab changes
   useEffect(() => {
-    if (leftPanelHandleRef.current && rightPanelHandleRef.current && centerPanelHandleRef.current) {
-      if (activeTab === 'analytics') {
-        rightPanelHandleRef.current.collapse();
-        centerPanelHandleRef.current.resize(100);
-      } else if (activeTab === 'preview') {
-        centerPanelHandleRef.current.collapse();
-        rightPanelHandleRef.current.resize(panelSizes.right);
-      } else {
-        // For normal tabs, left panel contains both rail and content
-        leftPanelHandleRef.current.resize(panelSizes.left);
-        centerPanelHandleRef.current.collapse(); // Hide center panel
-        rightPanelHandleRef.current.resize(panelSizes.right);
-      }
+    if (leftPanelHandleRef.current && centerPanelHandleRef.current) {
+      // For all tabs, left panel contains both rail and content
+      leftPanelHandleRef.current.resize(panelSizes.left);
+      centerPanelHandleRef.current.collapse(); // Hide center panel
     }
   }, [activeTab, panelSizes]);
 
@@ -131,7 +113,8 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
       // Find panels and their scroll containers
       const leftPanel = document.querySelector('.editor-shell__panel--left') as HTMLElement;
       const centerPanel = document.querySelector('.editor-shell__panel--center') as HTMLElement;
-      const rightPanel = document.querySelector('.editor-shell__panel--right') as HTMLElement;
+      // Right panel removed - preview is now in themes tab
+      // const rightPanel = document.querySelector('.editor-shell__panel--right') as HTMLElement;
 
       // Find scroll containers - try multiple selectors
       const findScrollContainer = (panel: HTMLElement | null): HTMLElement | null => {
@@ -158,7 +141,8 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
 
       const leftScrollContainer = findScrollContainer(leftPanel);
       const centerScrollContainer = findScrollContainer(centerPanel);
-      const rightScrollContainer = findScrollContainer(rightPanel);
+      // Right panel removed - preview is now in themes tab
+      // const rightScrollContainer = findScrollContainer(rightPanel);
 
       const handleWheel = (e: WheelEvent) => {
         const target = e.target as HTMLElement;
@@ -173,10 +157,12 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
         } else if (centerPanel?.contains(target)) {
           scrollContainer = centerScrollContainer;
           panelElement = centerPanel;
-        } else if (rightPanel?.contains(target)) {
-          scrollContainer = rightScrollContainer;
-          panelElement = rightPanel;
         }
+        // Right panel removed - preview is now in themes tab
+        // else if (rightPanel?.contains(target)) {
+        //   scrollContainer = rightScrollContainer;
+        //   panelElement = rightPanel;
+        // }
 
         // If not over any panel, allow default (might be scrolling something else)
         if (!scrollContainer || !panelElement) {
@@ -231,8 +217,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           order={1}
           ref={leftPanelHandleRef}
           defaultSize={panelSizes.left} 
-          minSize={activeTab === 'analytics' || activeTab === 'preview' ? 4 : 20}
-          maxSize={activeTab === 'analytics' || activeTab === 'preview' ? 4 : undefined}
+          minSize={20}
           className="editor-shell__panel editor-shell__panel--left"
         >
           <div ref={leftPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'row', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
@@ -240,11 +225,9 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
               activeTab={activeTab} 
               onTabChange={onTabChange}
             />
-            {activeTab !== 'analytics' && activeTab !== 'preview' && (
-              <div style={{ flex: 1, height: '100%', overflow: 'hidden', background: 'var(--pod-semantic-surface-panel, #ffffff)', position: 'relative' }}>
-                <LeftyContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
-              </div>
-            )}
+            <div style={{ flex: 1, height: '100%', overflow: 'hidden', background: 'var(--pod-semantic-surface-panel, #ffffff)', position: 'relative' }}>
+              <LeftyContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
+            </div>
           </div>
         </Panel>
         <PanelResizeHandle 
@@ -257,42 +240,17 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           order={2}
           ref={centerPanelHandleRef}
           defaultSize={panelSizes.center} 
-          minSize={activeTab === 'analytics' ? 96 : 0}
-          collapsible={activeTab !== 'analytics'}
+          minSize={0}
+          collapsible={true}
           className="editor-shell__panel editor-shell__panel--center"
         >
           <div ref={centerPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTab === 'analytics' ? (
               <AnalyticsDashboard activeColor={activeColor} />
-            ) : activeTab === 'preview' ? (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
-                <p style={{ color: '#6b7280', fontSize: '14px' }}>Preview will open in overlay</p>
-              </div>
             ) : null}
           </div>
         </Panel>
-        <PanelResizeHandle 
-          id="right-resizer"
-          className="editor-shell__resizer"
-          style={{ display: activeTab === 'analytics' ? 'none' : 'block' }}
-        />
-        <Panel 
-          id="right-panel"
-          order={3}
-          ref={rightPanelHandleRef}
-          defaultSize={panelSizes.right} 
-          minSize={activeTab === 'analytics' ? 0 : 26}
-          maxSize={activeTab === 'analytics' ? 0 : undefined}
-          collapsible={activeTab === 'analytics'}
-          className="editor-shell__panel editor-shell__panel--right"
-        >
-          <div ref={rightPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CanvasViewport
-              selectedDevice={selectedDevice}
-              previewScale={0.75}
-            />
-          </div>
-        </Panel>
+        {/* Right panel and resizer removed - preview is now in themes tab */}
       </PanelGroup>
     </div>
   );

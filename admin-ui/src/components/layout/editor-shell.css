@@ -59,6 +59,8 @@
   background: transparent;
   overflow: hidden;
   overscroll-behavior: none;
+  position: relative;
+  z-index: 100;
 }
 
 .editor-shell__panel--center {

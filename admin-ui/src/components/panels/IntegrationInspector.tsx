@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LuX, LuCheck, LuLoader, LuSettings } from 'react-icons/lu';
+import { X, Check, CircleNotch, Gear } from '@phosphor-icons/react';
 
 import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useIntegrationsStatus, useDisconnectInstagramMutation } from '../../api/account';
 import { SecurityActionDrawer } from '../overlays/SecurityActionDrawer';
@@ -45,7 +45,7 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
     return (
       <div className={styles.wrapper}>
         <div className={styles.emptyState}>
-          <LuSettings className={styles.emptyIcon} aria-hidden="true" />
+          <Gear className={styles.emptyIcon} aria-hidden="true" size={48} weight="regular" />
           <p>Select an integration to configure</p>
         </div>
       </div>
@@ -111,20 +111,20 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
             onClick={() => selectIntegration(null)}
             aria-label="Close"
           >
-            <LuX aria-hidden="true" />
+            <X aria-hidden="true" size={20} weight="regular" />
           </button>
         </header>
 
         {isLoading ? (
           <div className={styles.loadingState}>
-            <LuLoader className={styles.spinner} aria-hidden="true" />
+            <CircleNotch className={styles.spinner} aria-hidden="true" size={20} weight="regular" />
             <p>Loading…</p>
           </div>
         ) : (
           <>
             {status && (
               <div className={styles.statusBanner}>
-                <LuCheck aria-hidden="true" />
+                <Check aria-hidden="true" size={16} weight="regular" />
                 <span>{status}</span>
               </div>
             )}
@@ -136,9 +136,9 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
                   <div className={styles.statusInfo}>
                     <div className={styles.statusIcon}>
                       {methods?.has_google ? (
-                        <LuCheck className={styles.statusIconCheck} aria-hidden="true" />
+                        <Check className={styles.statusIconCheck} aria-hidden="true" size={16} weight="regular" />
                       ) : (
-                        <LuX className={styles.statusIconX} aria-hidden="true" />
+                        <X className={styles.statusIconX} aria-hidden="true" size={16} weight="regular" />
                       )}
                     </div>
                     <div className={styles.statusDetails}>
@@ -166,7 +166,7 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
                   >
                     {unlinkPending ? (
                       <>
-                        <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+                        <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
                         Disconnecting…
                       </>
                     ) : (
@@ -237,7 +237,7 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
             onClick={() => selectIntegration(null)}
             aria-label="Close"
           >
-            <LuX aria-hidden="true" />
+            <X aria-hidden="true" size={20} weight="regular" />
           </button>
         </header>
 

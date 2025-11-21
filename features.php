@@ -18,110 +18,9 @@ require_once __DIR__ . '/includes/helpers.php';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/marketing.css?v=<?php echo filemtime(__DIR__ . '/css/marketing.css'); ?>">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: #333;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: #667eea;
-        }
-        
-        .nav-actions {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-        
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-        
-        .page-header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .page-header p {
-            font-size: 1.25rem;
-            opacity: 0.95;
-        }
+        /* Page-specific styles for features page */
         
         .content {
             max-width: 1200px;
@@ -193,51 +92,6 @@ require_once __DIR__ . '/includes/helpers.php';
             opacity: 0.95;
         }
         
-        .footer {
-            background: #1f2937;
-            color: white;
-            padding: 3rem 2rem 2rem;
-            margin-top: 4rem;
-        }
-        
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .footer-section h4 {
-            margin-bottom: 1rem;
-            color: #667eea;
-        }
-        
-        .footer-section ul {
-            list-style: none;
-        }
-        
-        .footer-section ul li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .footer-section a {
-            color: #9ca3af;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-section a:hover {
-            color: white;
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid #374151;
-            color: #9ca3af;
-        }
     </style>
 </head>
 <body>
@@ -247,6 +101,7 @@ require_once __DIR__ . '/includes/helpers.php';
             <ul class="nav-links">
                 <li><a href="/features.php">Features</a></li>
                 <li><a href="/pricing.php">Pricing</a></li>
+                <li><a href="/examples.php">Examples</a></li>
                 <li><a href="/about.php">About</a></li>
                 <li><a href="/support/">Support</a></li>
             </ul>
@@ -263,9 +118,68 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
     
     <div class="content">
+        <!-- Feature Comparison Table -->
+        <section class="feature-section" style="margin-bottom: 4rem;">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Why PodaBio vs. Generic Link-in-Bio Tools</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Feature</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">PodaBio</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Linktree</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Beacons</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">RSS Feed Auto-Sync</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Built-in Podcast Player</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Podcast Directory Links</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Podcast-Specific Themes</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">49+ Themes</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Limited</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Limited</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Email Subscription Integration</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">6 Services</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Basic</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Basic</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem;">Free Plan</td>
+                            <td style="padding: 1rem; text-align: center; color: #10b981;">✓ Full Features</td>
+                            <td style="padding: 1rem; text-align: center; color: #6b7280;">Limited</td>
+                            <td style="padding: 1rem; text-align: center; color: #6b7280;">Limited</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="feature-section">
             <h2><span class="icon">🎙️</span> RSS Feed Integration</h2>
             <p>Automatically import your podcast information, episodes, and artwork from your RSS feed.</p>
+            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+                <p style="margin-bottom: 0.5rem;">[Visual: RSS feed integration screenshot]</p>
+                <p style="font-size: 0.9rem;">AI Prompt: "Screenshot showing RSS feed URL input and auto-populated podcast information with cover art, name, and description fields filled automatically."</p>
+            </div>
             <ul class="feature-list">
                 <li>Auto-populate podcast name, description, and cover art</li>
                 <li>Import recent episodes with titles and descriptions</li>
@@ -288,6 +202,10 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎧</span> Podcast Player</h2>
             <p>Built-in audio player for your episodes using Shikwasa.js.</p>
+            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+                <p style="margin-bottom: 0.5rem;">[Visual: Podcast player interface]</p>
+                <p style="font-size: 0.9rem;">AI Prompt: "Modern podcast player interface with waveform visualization, play/pause controls, and episode list drawer. Clean, minimalist design."</p>
+            </div>
             <ul class="feature-list">
                 <li>Beautiful, accessible podcast player</li>
                 <li>Episode drawer for easy browsing</li>
@@ -299,7 +217,12 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎨</span> Complete Customization</h2>
             <p>Make your page truly yours with extensive customization options.</p>
+            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+                <p style="margin-bottom: 0.5rem;">[Visual: Theme preview grid]</p>
+                <p style="font-size: 0.9rem;">AI Prompt: "Grid showing 4 different beautiful website themes side by side. Each with different color schemes. Clean, modern design."</p>
+            </div>
             <ul class="feature-list">
+                <li>49+ professionally designed themes</li>
                 <li>15+ Google Fonts for headings and body text</li>
                 <li>Custom color pickers for primary, secondary, and accent colors</li>
                 <li>Pre-built themes with one-click application</li>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { LuSparkles, LuDroplet } from 'react-icons/lu';
+import { Sparkle, Drop } from '@phosphor-icons/react';
 
 import styles from './color-token-picker.module.css';
 
@@ -225,7 +225,7 @@ export function ColorTokenPicker({
                 aria-label="Solid color mode"
                 title="Solid color"
               >
-                <LuDroplet aria-hidden="true" />
+                <Drop aria-hidden="true" size={16} weight="regular" />
                 <span>Solid</span>
               </button>
               <button
@@ -235,7 +235,7 @@ export function ColorTokenPicker({
                 aria-label="Gradient mode"
                 title="Gradient"
               >
-                <LuSparkles aria-hidden="true" />
+                <Sparkle aria-hidden="true" size={16} weight="regular" />
                 <span>Gradient</span>
               </button>
             </div>

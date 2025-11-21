@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuPlus, LuPencil, LuTrash2, LuFileText, LuCalendar, LuEye, LuEyeOff } from 'react-icons/lu';
+import { Plus, Pencil, Trash, FileText, Calendar, Eye, EyeSlash } from '@phosphor-icons/react';
 
 import { useBlogPosts, useDeleteBlogPostMutation, useBlogCategories } from '../../api/blog';
 import type { BlogPost } from '../../api/blog';
@@ -49,7 +49,7 @@ export function BlogPanel({ onSelectPost, selectedPostId }: BlogPanelProps): JSX
       <div className={styles.header}>
         <h3>Blog Posts</h3>
         <button type="button" className={styles.createButton} onClick={handleCreateNew}>
-          <LuPlus aria-hidden="true" />
+          <Plus aria-hidden="true" size={16} weight="regular" />
           <span>New Post</span>
         </button>
       </div>
@@ -80,7 +80,7 @@ export function BlogPanel({ onSelectPost, selectedPostId }: BlogPanelProps): JSX
         <div className={styles.loading}>Loading posts...</div>
       ) : filteredPosts.length === 0 ? (
         <div className={styles.empty}>
-          <LuFileText aria-hidden="true" />
+          <FileText aria-hidden="true" size={16} weight="regular" />
           <p>No blog posts yet.</p>
           <button type="button" className={styles.emptyButton} onClick={handleCreateNew}>
             Create your first post
@@ -106,7 +106,7 @@ export function BlogPanel({ onSelectPost, selectedPostId }: BlogPanelProps): JSX
                     }}
                     aria-label="Edit post"
                   >
-                    <LuPencil aria-hidden="true" />
+                    <Pencil aria-hidden="true" size={16} weight="regular" />
                   </button>
                   <button
                     type="button"
@@ -114,13 +114,13 @@ export function BlogPanel({ onSelectPost, selectedPostId }: BlogPanelProps): JSX
                     onClick={(e) => handleDelete(post.id, e)}
                     aria-label="Delete post"
                   >
-                    <LuTrash2 aria-hidden="true" />
+                    <Trash aria-hidden="true" size={16} weight="regular" />
                   </button>
                 </div>
               </div>
               <div className={styles.postMeta}>
                 <span className={styles.postDate}>
-                  <LuCalendar aria-hidden="true" />
+                  <Calendar aria-hidden="true" size={16} weight="regular" />
                   {formatDate(post.created_at)}
                 </span>
                 {post.category_name && (
@@ -129,12 +129,12 @@ export function BlogPanel({ onSelectPost, selectedPostId }: BlogPanelProps): JSX
                 <span className={styles.postStatus}>
                   {post.published === 1 ? (
                     <>
-                      <LuEye aria-hidden="true" />
+                      <Eye aria-hidden="true" size={16} weight="regular" />
                       Published
                     </>
                   ) : (
                     <>
-                      <LuEyeOff aria-hidden="true" />
+                      <EyeSlash aria-hidden="true" size={16} weight="regular" />
                       Draft
                     </>
                   )}

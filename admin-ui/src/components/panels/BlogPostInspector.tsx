@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LuX, LuSave, LuUpload, LuTrash2 } from 'react-icons/lu';
+import { X, FloppyDisk, Upload, Trash } from '@phosphor-icons/react';
 
 import { useBlogPost, useCreateBlogPostMutation, useUpdateBlogPostMutation, useBlogCategories } from '../../api/blog';
 import { useBlogPostSelection } from '../../state/blogPostSelection';
@@ -323,12 +323,12 @@ export function BlogPostInspector({ activeColor }: BlogPostInspectorProps): JSX.
             </>
           ) : saveStatus === 'success' ? (
             <>
-              <LuSave aria-hidden="true" />
+              <FloppyDisk aria-hidden="true" size={16} weight="regular" />
               <span>Saved!</span>
             </>
           ) : (
             <>
-              <LuSave aria-hidden="true" />
+              <FloppyDisk aria-hidden="true" size={16} weight="regular" />
               <span>{isNewPost ? 'Create Post' : 'Save Changes'}</span>
             </>
           )}

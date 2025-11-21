@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Tabs from '@radix-ui/react-tabs';
-import { LuX, LuCheck, LuCircleX, LuPalette, LuType, LuLayoutGrid, LuShapes, LuSave, LuCopy, LuImage, LuSwatchBook, LuSquare, LuSparkles, LuBold, LuItalic, LuUnderline, LuAlignLeft, LuAlignCenter, LuAlignRight, LuShare2 } from 'react-icons/lu';
+import { X, Check, XCircle, Palette, Type, GridFour, Shapes, FloppyDisk, Copy, Image, Swatches, Square, Sparkle, TextB, TextItalic, TextUnderline, AlignLeft, AlignCenter, AlignRight, Share } from '@phosphor-icons/react';
 import profileStyles from './profile-inspector.module.css';
 
 import { usePageSnapshot, updatePageThemeId } from '../../api/page';
@@ -177,6 +177,7 @@ function isGradient(value: string): boolean {
 function isImageUrl(value: string): boolean {
   return typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/') || value.startsWith('data:'));
 }
+
 
 export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPanelProps): JSX.Element {
   // DEBUG: Log component initialization - v3 (widgetBorderWidth removed, buttonRadius2 fixed)
@@ -1708,7 +1709,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'page-background-type',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuImage className={styles.accordionIcon} aria-hidden="true" />
+          <Image className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Page Background Type</span>
         </div>
       ),
@@ -1717,7 +1718,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         <PageBackgroundSection
           backgroundType={backgroundType}
           onBackgroundTypeChange={(type) => {
-            setBackgroundType(type);
+            setBackgroundType(type as 'solid' | 'gradient' | 'image');
             setHasChanges(true);
           }}
           pageBackground={pageBackground}
@@ -1736,7 +1737,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'typography-page',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuType className={styles.accordionIcon} aria-hidden="true" />
+          <Type className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Typography</span>
         </div>
       ),
@@ -1816,7 +1817,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'iconography-page',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuShare2 className={styles.accordionIcon} aria-hidden="true" />
+          <Share className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Iconography</span>
         </div>
       ),
@@ -1948,7 +1949,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'spacing-page',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuLayoutGrid className={styles.accordionIcon} aria-hidden="true" />
+          <GridFour className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Spacing</span>
         </div>
       ),
@@ -2000,7 +2001,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'block-background-type',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuImage className={styles.accordionIcon} aria-hidden="true" />
+          <Image className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Block Widget Background Type</span>
         </div>
       ),
@@ -2028,7 +2029,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'typography-block',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuType className={styles.accordionIcon} aria-hidden="true" />
+          <Type className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Typography</span>
         </div>
       ),
@@ -2119,7 +2120,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'shape-block',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <LuShapes className={styles.accordionIcon} aria-hidden="true" />
+          <Shapes className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Shape & Effects</span>
         </div>
       ),
@@ -2207,7 +2208,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
                     onClick={handleSave}
                     disabled={saveStatus === 'saving' || !hasChanges}
                   >
-                    <LuSave aria-hidden="true" />
+                    <FloppyDisk aria-hidden="true" size={16} weight="regular" />
                     {saveStatus === 'saving' ? 'Saving…' : 'Update theme'}
                   </button>
                   <span className={styles.actionHint}>Apply changes to this theme</span>
@@ -2219,7 +2220,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
                     onClick={handleSaveAsNew}
                     disabled={saveStatus === 'saving'}
                   >
-                    <LuCopy aria-hidden="true" />
+                    <Copy aria-hidden="true" size={16} weight="regular" />
                     Save as new
                   </button>
                   <span className={styles.actionHint}>Create a duplicate theme</span>
@@ -2281,8 +2282,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         </div>
         {statusMessage && (
           <div className={`${styles.statusMessage} ${styles[`statusMessage_${saveStatus}`]}`}>
-            {saveStatus === 'success' && <LuCheck aria-hidden="true" />}
-            {saveStatus === 'error' && <LuCircleX aria-hidden="true" />}
+            {saveStatus === 'success' && <Check aria-hidden="true" size={16} weight="regular" />}
+            {saveStatus === 'error' && <XCircle aria-hidden="true" size={16} weight="regular" />}
             <span>{statusMessage}</span>
           </div>
         )}

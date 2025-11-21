@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuChevronDown, LuChevronUp, LuPalette } from 'react-icons/lu';
+import { ChevronDown, ChevronUp, Palette } from '@phosphor-icons/react';
 import { ColorTokenPicker } from '../controls/ColorTokenPicker';
 import type { TabColorTheme } from '../layout/tab-colors';
 
@@ -69,7 +69,7 @@ export function ColorPaletteEditor({ activeColor, groups }: ColorPaletteEditorPr
             >
               <div className={styles.groupHeaderLeft}>
                 <div className={styles.groupIcon}>
-                  <LuPalette aria-hidden="true" />
+                  <Palette aria-hidden="true" size={16} weight="regular" />
                 </div>
                 <div className={styles.groupInfo}>
                   <h4 className={styles.groupLabel}>{group.label}</h4>
@@ -95,9 +95,9 @@ export function ColorPaletteEditor({ activeColor, groups }: ColorPaletteEditorPr
                   ))}
                 </div>
                 {isExpanded ? (
-                  <LuChevronUp className={styles.chevron} aria-hidden="true" />
+                  <ChevronUp className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
                 ) : (
-                  <LuChevronDown className={styles.chevron} aria-hidden="true" />
+                  <ChevronDown className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
                 )}
               </div>
             </button>

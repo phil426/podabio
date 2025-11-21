@@ -6,10 +6,22 @@
 
 /**
  * Sanitize output for HTML
- * @param string $string
+ * @param string|array|object $string
  * @return string
  */
 function h($string) {
+    // Handle arrays and objects by converting to JSON
+    if (is_array($string) || is_object($string)) {
+        return htmlspecialchars(json_encode($string), ENT_QUOTES, 'UTF-8');
+    }
+    // Handle null
+    if ($string === null) {
+        return '';
+    }
+    // Convert to string if not already
+    if (!is_string($string)) {
+        $string = (string)$string;
+    }
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
 }
 

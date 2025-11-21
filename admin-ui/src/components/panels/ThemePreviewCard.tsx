@@ -1,5 +1,7 @@
+import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
-import { LuPencil, LuCheck } from 'react-icons/lu';
+import { Pencil, Check, Trash } from '@phosphor-icons/react';
+import { useRenameThemeMutation } from '../../api/themes';
 
 import type { ThemeRecord } from '../../api/types';
 
@@ -9,7 +11,8 @@ type ThemePreviewCardProps = {
   theme: ThemeRecord;
   selected?: boolean;
   onSelect: () => void;
-  primaryActionLabel: string;
+  primaryActionLabel?: string;
+  onPrimaryAction?: () => void;
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
   tertiaryActions?: {
@@ -43,9 +46,66 @@ export function ThemePreviewCard({
   selected,
   onSelect,
   primaryActionLabel,
+  onPrimaryAction,
+  secondaryActionLabel,
+  onSecondaryAction,
   tertiaryActions,
   disabled
 }: ThemePreviewCardProps): JSX.Element {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(theme.name ?? '');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const renameMutation = useRenameThemeMutation();
+  const isUserTheme = Boolean(theme.user_id);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setEditedName(theme.name ?? '');
+  }, [theme.name]);
+
+  const handleStartEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isUserTheme && !disabled) {
+      setIsEditing(true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (editedName.trim() && editedName.trim() !== theme.name && isUserTheme) {
+      try {
+        await renameMutation.mutateAsync({
+          themeId: theme.id,
+          name: editedName.trim()
+        });
+      } catch (error) {
+        console.error('Failed to rename theme:', error);
+        setEditedName(theme.name ?? '');
+      }
+    } else {
+      setEditedName(theme.name ?? '');
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedName(theme.name ?? '');
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   const swatches = parseColorSwatches(theme);
   const primarySwatch = swatches[0] ?? '#2563eb';
   const secondarySwatch = swatches[1] ?? '#1d4ed8';
@@ -64,13 +124,10 @@ export function ThemePreviewCard({
   const bodyFont = theme.page_secondary_font ?? theme.widget_secondary_font ?? 'inherit';
   const ownerBadge = theme.user_id ? 'Community' : 'System';
   const densityLabel = theme.layout_density ? theme.layout_density : 'cozy';
-  const isCustom = Boolean(theme.user_id) && theme.name?.toLowerCase().includes('custom');
   const isActiveCard = selected && primaryActionLabel === undefined;
   const themeLabel = isActiveCard
     ? 'Current Theme'
-    : isCustom
-      ? 'Custom Theme'
-      : theme.name ?? 'Custom Theme';
+    : theme.name ?? 'Custom Theme';
 
   return (
     <article
@@ -96,7 +153,7 @@ export function ThemePreviewCard({
         </div>
         {selected && (
           <span className={styles.heroBadge}>
-            <LuCheck aria-hidden="true" />
+            <Check aria-hidden="true" size={16} weight="regular" />
             Active
           </span>
         )}
@@ -121,9 +178,45 @@ export function ThemePreviewCard({
         ))}
       </div>
 
+      {selected && (
+        <div className={styles.editBar}>
+          <button
+            type="button"
+            className={styles.editButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSecondaryAction?.() || onSelect();
+            }}
+            disabled={disabled}
+          >
+            <Pencil aria-hidden="true" size={16} weight="regular" />
+            Edit Theme
+          </button>
+        </div>
+      )}
+
       <footer className={styles.footer}>
         <div className={styles.footerLeft}>
-          <h5 className={styles.title}>{themeLabel}</h5>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              className={clsx(styles.title, styles.titleInput)}
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleSaveEdit}
+              onKeyDown={handleKeyDown}
+              disabled={renameMutation.isPending}
+            />
+          ) : (
+            <h5 
+              className={clsx(styles.title, isUserTheme && styles.titleEditable)}
+              onClick={handleStartEdit}
+              title={isUserTheme ? 'Click to edit name' : undefined}
+            >
+              {themeLabel}
+            </h5>
+          )}
           {primaryActionLabel && (
             <button
               type="button"
@@ -135,18 +228,35 @@ export function ThemePreviewCard({
             </button>
           )}
         </div>
-        {tertiaryActions && tertiaryActions.onRename && (
+        {tertiaryActions && (tertiaryActions.onRename || tertiaryActions.onDelete) && (
           <div className={styles.iconActions} aria-label="Theme actions">
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={tertiaryActions.onRename}
-              disabled={disabled}
-              aria-label="Rename theme"
-              title="Rename theme"
-            >
-              <LuPencil aria-hidden="true" />
-            </button>
+            {tertiaryActions.onRename && (
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={tertiaryActions.onRename}
+                disabled={disabled}
+                aria-label="Rename theme"
+                title="Rename theme"
+              >
+                <Pencil aria-hidden="true" size={16} weight="regular" />
+              </button>
+            )}
+            {tertiaryActions.onDelete && (
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  tertiaryActions.onDelete?.();
+                }}
+                disabled={disabled}
+                aria-label="Delete theme"
+                title="Delete theme"
+              >
+                <Trash aria-hidden="true" size={16} weight="regular" />
+              </button>
+            )}
           </div>
         )}
       </footer>

@@ -122,6 +122,9 @@ class Page {
             'publish_status', 'published_at', 'scheduled_publish_at',
             'profile_visible', 'footer_visible', 'podcast_player_enabled',
             'profile_image_shape', 'profile_image_shadow', 'profile_image_size', 'profile_image_border',
+            'profile_image_radius', 'profile_image_effect', 'profile_image_shadow_color', 'profile_image_shadow_intensity',
+            'profile_image_shadow_depth', 'profile_image_shadow_blur', 'profile_image_glow_color', 'profile_image_glow_width',
+            'profile_image_border_color', 'profile_image_border_width', 'profile_image_spacing_top', 'profile_image_spacing_bottom',
             'name_alignment', 'name_text_size', 'bio_alignment', 'bio_text_size'
         ];
         

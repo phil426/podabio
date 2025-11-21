@@ -1,5 +1,5 @@
 import * as Tabs from '@radix-ui/react-tabs';
-import { LuImage, LuSparkles, LuSquare } from 'react-icons/lu';
+import { Image, Sparkle, Square } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
 import styles from '../theme-editor-panel.module.css';
 
@@ -24,6 +24,7 @@ export function PageBackgroundSection({
   onBackgroundImageUpload,
   onBackgroundImageRemove
 }: PageBackgroundSectionProps): JSX.Element {
+
   return (
     <Tabs.Root 
       className={styles.backgroundTabs}
@@ -31,16 +32,16 @@ export function PageBackgroundSection({
       onValueChange={(value) => onBackgroundTypeChange(value as 'solid' | 'gradient' | 'image')}
     >
       <Tabs.List className={styles.backgroundTabList} aria-label="Background type">
-        <Tabs.Trigger value="gradient" className={styles.backgroundTabTrigger}>
-          <LuSparkles aria-hidden="true" />
-          <span>Gradient</span>
-        </Tabs.Trigger>
         <Tabs.Trigger value="solid" className={styles.backgroundTabTrigger}>
-          <LuSquare aria-hidden="true" />
+          <Square aria-hidden="true" size={16} weight="regular" />
           <span>Solid</span>
         </Tabs.Trigger>
+        <Tabs.Trigger value="gradient" className={styles.backgroundTabTrigger}>
+          <Sparkle aria-hidden="true" size={16} weight="regular" />
+          <span>Gradient</span>
+        </Tabs.Trigger>
         <Tabs.Trigger value="image" className={styles.backgroundTabTrigger}>
-          <LuImage aria-hidden="true" />
+          <Image aria-hidden="true" size={16} weight="regular" />
           <span>Image</span>
         </Tabs.Trigger>
       </Tabs.List>

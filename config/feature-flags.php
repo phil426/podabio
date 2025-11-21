@@ -6,7 +6,7 @@
  */
 
 return [
-    'admin_new_experience' => envFlag('FEATURE_ADMIN_NEW_EXPERIENCE', true),
+    // REMOVED: 'admin_new_experience' - editor.php is archived, Lefty is the only admin panel
     'tokens_api' => envFlag('FEATURE_TOKENS_API', true),
     'admin_account_workspace' => envFlag('FEATURE_ADMIN_ACCOUNT_WORKSPACE', true),
 ];

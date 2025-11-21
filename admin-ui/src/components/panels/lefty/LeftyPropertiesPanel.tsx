@@ -99,10 +99,10 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'layers' }: Left
       inspector = <IntegrationInspector activeColor={activeColor} />;
     }
     // No default inspector for integrations tab
-  } else if (activeTab === 'analytics' || activeTab === 'preview') {
+  } else if (activeTab === 'analytics') {
     // Analytics/Preview tab: No inspector (right panel is collapsed)
     inspector = null;
-  } else if (activeTab === 'colors' || activeTab === 'typography' || activeTab === 'special-effects' || activeTab === 'podcast') {
+  } else if (activeTab === 'typography' || activeTab === 'podcast') {
     // These tabs don't need inspectors in the center panel
     inspector = null;
   }

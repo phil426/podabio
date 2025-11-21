@@ -5,11 +5,10 @@ import {
   Plus,
   Stack,
   Palette,
-  Sparkle,
   ApplePodcastsLogo,
   Plug,
   TrendUp,
-  Eye
+  Question
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { type LeftyTabValue, tabColors, type TabColorTheme } from './tab-colors';
@@ -33,12 +32,10 @@ interface TabDefinition {
 
 const TABS: TabDefinition[] = [
   { value: 'layers', label: 'Layers', Icon: Stack },
-  { value: 'colors', label: 'Colors', Icon: Palette },
-  { value: 'special-effects', label: 'Special Effects', Icon: Sparkle },
+  { value: 'themes', label: 'Themes', Icon: Palette },
   { value: 'podcast', label: 'Podcast', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integration', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },
-  { value: 'preview', label: 'Preview', Icon: Eye },
 ];
 
 const COLLAPSED_WIDTH = 64;
@@ -129,8 +126,44 @@ export function LeftRailNav({ activeTab, onTabChange }: LeftRailNavProps): JSX.E
         </ScrollArea.Scrollbar>
       </ScrollArea.Root>
 
+      <DocumentationButton />
       <LeftyProfileSection />
     </motion.div>
+  );
+}
+
+function DocumentationButton(): JSX.Element {
+  const { isExpanded } = useLeftRailExpanded();
+
+  const handleClick = () => {
+    // Open user documentation/support in a new tab
+    window.open('/support/', '_blank');
+  };
+
+  return (
+    <motion.button
+      type="button"
+      className={styles.docsButton}
+      data-expanded={isExpanded ? 'true' : undefined}
+      onClick={handleClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      aria-label="Open documentation"
+      title="Documentation"
+    >
+      <Question aria-hidden="true" size={isExpanded ? 20 : 24} weight="regular" />
+      {isExpanded && (
+        <motion.span
+          className={styles.docsLabel}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          Documentation
+        </motion.span>
+      )}
+    </motion.button>
   );
 }
 

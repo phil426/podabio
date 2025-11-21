@@ -1,22 +1,23 @@
 <?php
 /**
- * Classic Admin Panel Entry Point
- * PodaBio - Traditional PHP-based admin interface
+ * Classic Admin Panel Entry Point (DEPRECATED)
+ * PodaBio - Forces logout and redirects to login
+ * 
+ * This file is kept for backward compatibility but forces users to log out and log back in.
  */
 
 require_once __DIR__ . '/../config/constants.php';
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
-require_once __DIR__ . '/../includes/security.php';
 
-requireAuth();
+// Force logout - clear all session data
+$_SESSION = [];
+if (isset($_COOKIE[session_name()])) {
+    setcookie(session_name(), '', time() - 3600, '/');
+}
+session_destroy();
 
-// Store panel preference in session
-$_SESSION['admin_panel'] = 'classic';
-
-// Redirect to the main admin dashboard
-redirect('/admin/index.php');
+// Redirect to login with message
+redirect('/login.php?message=' . urlencode('The classic admin panel has been retired. Please log in to access the new dashboard.'));
 exit;
 
