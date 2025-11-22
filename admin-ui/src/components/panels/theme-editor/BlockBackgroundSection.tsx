@@ -32,7 +32,7 @@ export function BlockBackgroundSection({
     >
       <Tabs.List className={styles.backgroundTabList} aria-label="Background type">
         <Tabs.Trigger value="solid" className={styles.backgroundTabTrigger}>
-          <LuSquare aria-hidden="true" />
+          <Square aria-hidden="true" size={16} weight="regular" />
           <span>Solid</span>
         </Tabs.Trigger>
         <Tabs.Trigger value="gradient" className={styles.backgroundTabTrigger}>

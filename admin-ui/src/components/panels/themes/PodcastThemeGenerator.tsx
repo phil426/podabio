@@ -327,7 +327,7 @@ export function PodcastThemeGenerator({
 
           {isExtracting && (
             <div className={styles.loading}>
-              <LuLoader className={styles.spinner} aria-hidden="true" />
+              <CircleNotch className={styles.spinner} aria-hidden="true" size={20} weight="regular" />
               <p>Extracting colors from cover image...</p>
             </div>
           )}
@@ -405,7 +405,7 @@ export function PodcastThemeGenerator({
           >
             {isGenerating ? (
               <>
-                <LuLoader className={styles.spinner} aria-hidden="true" />
+                <CircleNotch className={styles.spinner} aria-hidden="true" size={20} weight="regular" />
                 Generating...
               </>
             ) : (

@@ -147,7 +147,7 @@ export function StyleGuidePreview({
                 borderColor: themeProps.widgetBorder
               }}
             >
-              <LuUser className={styles.profilePictureIcon} aria-hidden="true" />
+              <User className={styles.profilePictureIcon} aria-hidden="true" size={24} weight="regular" />
             </div>
           </div>
         </div>

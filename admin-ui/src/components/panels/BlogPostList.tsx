@@ -73,7 +73,7 @@ export function BlogPostList({ activeColor }: BlogPostListProps): JSX.Element {
           onClick={handleCreateNew}
           title="Create new post"
         >
-          <LuPlus aria-hidden="true" />
+          <Plus aria-hidden="true" size={16} weight="regular" />
           <span>New Post</span>
         </button>
       </div>
@@ -164,12 +164,12 @@ export function BlogPostList({ activeColor }: BlogPostListProps): JSX.Element {
                 <span className={`${styles.postStatus} ${post.published === 1 ? styles.postStatusPublished : styles.postStatusDraft}`}>
                   {post.published === 1 ? (
                     <>
-                      <LuEye aria-hidden="true" />
+                      <Eye aria-hidden="true" size={16} weight="regular" />
                       Published
                     </>
                   ) : (
                     <>
-                      <LuEyeOff aria-hidden="true" />
+                      <EyeSlash aria-hidden="true" size={16} weight="regular" />
                       Draft
                     </>
                   )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Palette } from '@phosphor-icons/react';
+import { CaretDown, CaretUp, Palette } from '@phosphor-icons/react';
 import { ColorTokenPicker } from '../controls/ColorTokenPicker';
 import type { TabColorTheme } from '../layout/tab-colors';
 
@@ -95,9 +95,9 @@ export function ColorPaletteEditor({ activeColor, groups }: ColorPaletteEditorPr
                   ))}
                 </div>
                 {isExpanded ? (
-                  <ChevronUp className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
+                  <CaretUp className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
                 ) : (
-                  <ChevronDown className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
+                  <CaretDown className={styles.chevron} aria-hidden="true" size={16} weight="regular" />
                 )}
               </div>
             </button>

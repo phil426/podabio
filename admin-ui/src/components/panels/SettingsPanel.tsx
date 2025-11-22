@@ -316,9 +316,9 @@ export function SettingsPanel(): JSX.Element {
         {status && (
           <div className={styles.statusBanner}>
             {status.includes('successfully') ? (
-              <LuCheck aria-hidden="true" />
+              <Check aria-hidden="true" size={16} weight="regular" />
             ) : (
-              <LuX aria-hidden="true" />
+              <X aria-hidden="true" size={16} weight="regular" />
             )}
             <span>{status}</span>
           </div>

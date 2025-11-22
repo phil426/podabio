@@ -94,7 +94,7 @@ export function FeaturedBlockInspector({ activeColor }: FeaturedBlockInspectorPr
       <header className={styles.header}>
         <div>
           <h3>
-            <LuStar aria-hidden="true" />
+            <Star aria-hidden="true" size={20} weight="regular" />
             Featured Block
           </h3>
           <p>Highlight this block with special effects to draw attention</p>

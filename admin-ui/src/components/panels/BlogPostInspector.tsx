@@ -184,7 +184,7 @@ export function BlogPostInspector({ activeColor }: BlogPostInspectorProps): JSX.
           onClick={() => selectBlogPost(null)} 
           aria-label="Close"
         >
-          <LuX aria-hidden="true" />
+          <X aria-hidden="true" size={16} weight="regular" />
         </button>
       </header>
 
