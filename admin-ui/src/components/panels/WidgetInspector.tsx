@@ -39,10 +39,21 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
 
   const widgetDefinition = useMemo(() => {
     if (!selectedWidget || !availableWidgets) return undefined;
-    return availableWidgets.find((item) => {
+    const widgetType = selectedWidget.widget_type;
+    const found = availableWidgets.find((item) => {
       const key = (item.widget_id ?? item.type ?? item.name ?? '').toString();
-      return key === selectedWidget.widget_type;
+      return key === widgetType;
     });
+    
+    // Debug: Log if widget not found
+    if (!found && widgetType) {
+      console.warn('Widget not found in registry:', {
+        widgetType,
+        availableWidgetIds: availableWidgets.map((w) => w.widget_id ?? w.type ?? w.name)
+      });
+    }
+    
+    return found;
   }, [availableWidgets, selectedWidget]);
 
   const [formState, setFormState] = useState<WidgetFormState | null>(null);
@@ -312,6 +323,18 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
           ) {
             return null;
           }
+          // Special handling for rolodex items field with CSV import
+          if (widgetType === 'rolodex' && field === 'items') {
+            return (
+              <RolodexItemsField
+                key={field}
+                field={field}
+                definition={fieldDef}
+                value={formState?.config?.[field]}
+                onChange={handleInputChange}
+              />
+            );
+          }
           return (
             <WidgetField
               key={field}
@@ -523,6 +546,174 @@ function toConfigValue(value: unknown): ConfigValue {
   }
 
   return JSON.stringify(value);
+}
+
+interface RolodexItemsFieldProps {
+  field: string;
+  definition: Record<string, unknown>;
+  value: ConfigValue;
+  onChange: (field: string, value: ConfigValue) => void;
+}
+
+function RolodexItemsField({ field, definition, value, onChange }: RolodexItemsFieldProps): JSX.Element {
+  const label = (definition.label ?? field) as string;
+  const help = (definition.help ?? '') as string;
+  const required = Boolean(definition.required);
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  const handleCSVFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    setParseError(null);
+
+    try {
+      const text = await file.text();
+      const items = parseCSVToRolodexItems(text);
+      
+      if (items.length === 0) {
+        setParseError('No valid items found in CSV file. Expected format: title,description,url (header row optional)');
+        return;
+      }
+
+      onChange(field, JSON.stringify(items));
+    } catch (error) {
+      setParseError(error instanceof Error ? error.message : 'Failed to parse CSV file');
+    } finally {
+      setIsParsing(false);
+      if (csvInputRef.current) {
+        csvInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleChooseCSVFile = () => {
+    csvInputRef.current?.click();
+  };
+
+  return (
+    <div className={styles.control}>
+      <span>
+        {label}
+        {required && <span className={styles.required}>*</span>}
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={handleChooseCSVFile}
+            disabled={isParsing}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              background: 'white',
+              cursor: isParsing ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            {isParsing ? 'Parsing…' : 'Import CSV'}
+          </button>
+          <input
+            ref={csvInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            style={{ display: 'none' }}
+            onChange={handleCSVFileChange}
+          />
+          {help && <p className={styles.help} style={{ margin: 0, fontSize: '0.75rem', color: '#666' }}>{help}</p>}
+        </div>
+        <textarea
+          className={styles.textarea}
+          value={(value as string) ?? ''}
+          onChange={(event) => onChange(field, event.target.value)}
+          rows={Number(definition.rows ?? 8)}
+          placeholder='[{"title":"Item 1","description":"Details here","url":"https://example.com"}]'
+        />
+        {parseError && <p style={{ color: '#dc3545', fontSize: '0.875rem', margin: 0 }}>{parseError}</p>}
+      </div>
+    </div>
+  );
+}
+
+function parseCSVToRolodexItems(csvText: string): Array<{ title: string; description?: string; url?: string }> {
+  const lines = csvText.trim().split('\n');
+  if (lines.length === 0) return [];
+
+  // Check if first line is a header (common CSV headers)
+  let startIndex = 0;
+  const firstLine = lines[0].toLowerCase();
+  if (firstLine.includes('title') || firstLine.includes('name') || firstLine.includes('item')) {
+    startIndex = 1; // Skip header row
+  }
+
+  const items: Array<{ title: string; description?: string; url?: string }> = [];
+
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Parse CSV line (handles quoted fields)
+    const fields = parseCSVLine(line);
+    
+    if (fields.length === 0) continue;
+
+    const item: { title: string; description?: string; url?: string } = {
+      title: fields[0]?.trim() || 'Untitled'
+    };
+
+    if (fields[1]) {
+      item.description = fields[1].trim();
+    }
+
+    if (fields[2]) {
+      const url = fields[2].trim();
+      // Validate URL format
+      if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'))) {
+        item.url = url;
+      }
+    }
+
+    items.push(item);
+  }
+
+  return items;
+}
+
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = [];
+  let currentField = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        // Escaped quote
+        currentField += '"';
+        i++; // Skip next quote
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // Field separator
+      fields.push(currentField);
+      currentField = '';
+    } else {
+      currentField += char;
+    }
+  }
+
+  // Add last field
+  fields.push(currentField);
+
+  return fields;
 }
 
 

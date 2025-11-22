@@ -310,3 +310,8 @@ After analyzing bio.link's homepage, here are key design patterns and ideas that
 8. A/B test different headlines and CTAs
 
 
+
+
+
+
+

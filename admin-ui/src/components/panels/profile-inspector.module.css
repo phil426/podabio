@@ -73,56 +73,6 @@
   padding: 0.7rem 0.65rem;
 }
 
-.layoutSection {
-  display: grid;
-  gap: 0.65rem;
-}
-
-.layoutHeader {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.layoutRow {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.layoutChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.28rem 0.6rem;
-  border-radius: var(--pod-core-shape-radius-pill, 9999px);
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background: rgba(255, 255, 255, 0.95);
-  font-size: 0.78rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
-  cursor: pointer;
-  transition: all 160ms ease;
-}
-
-.layoutChip svg {
-  width: 0.95em;
-  height: 0.95em;
-}
-
-.layoutChip:hover {
-  background: rgba(248, 250, 252, 1);
-  border-color: rgba(148, 163, 184, 0.9);
-  color: var(--pod-semantic-text-primary, #0f172a);
-}
-
-.layoutChipActive {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: rgba(37, 99, 235, 0.6);
-  color: #1d4ed8;
-}
-
 /* Compact profile preview card at the top */
 .previewCard {
   display: grid;

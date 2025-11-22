@@ -289,6 +289,19 @@ class WidgetRegistry {
                 ]
             ],
             
+            'rolodex' => [
+                'widget_id' => 'rolodex',
+                'name' => 'Rolodex',
+                'description' => 'Display expandable content cards that can be opened to reveal details',
+                'thumbnail' => '/assets/widget-thumbnails/rolodex.png',
+                'category' => 'content',
+                'requires_api' => false,
+                'config_fields' => [
+                    'items' => ['type' => 'textarea', 'label' => 'Items (JSON)', 'required' => true, 'help' => 'JSON array of items with title, description, and optional url. Example: [{"title":"Item 1","description":"Details here","url":"https://example.com"}]', 'rows' => 8],
+                    'default_expanded' => ['type' => 'checkbox', 'label' => 'Default Expanded', 'required' => false, 'default' => false, 'help' => 'Show all items expanded by default']
+                ]
+            ],
+            
             // Additional widgets will be added as they're implemented
         ];
     }

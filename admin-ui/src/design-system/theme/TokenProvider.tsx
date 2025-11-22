@@ -1,7 +1,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode
@@ -37,7 +36,11 @@ export function TokenProvider({ initialTokens, children }: TokenProviderProps): 
     [tokens]
   );
 
-  return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
+  return (
+    <TokenContext.Provider value={value}>
+      {children}
+    </TokenContext.Provider>
+  );
 }
 
 export function useTokens(): TokenContextValue {

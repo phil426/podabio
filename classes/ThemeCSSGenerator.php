@@ -745,6 +745,7 @@ class ThemeCSSGenerator {
         
         // Page vertical spacing (spacing between page elements) - from spacing_tokens.vertical_spacing
         $verticalSpacing = '24px'; // Default
+        $verticalSpacingValue = '24'; // Default numeric value
         if (!empty($this->spacingTokens['vertical_spacing'])) {
             $verticalSpacingValue = $this->spacingTokens['vertical_spacing'];
             // Ensure it has units if it's a number
@@ -1102,7 +1103,7 @@ class ThemeCSSGenerator {
         $css .= "    display: flex;\n";
         $css .= "    align-items: center;\n";
         $css .= "    gap: var(--widget-space-sm, 0.75rem);\n";
-        $css .= "    width: var(--widget-width, 100%);\n";
+        $css .= "    width: 100%;\n";
         $css .= "    max-width: var(--widget-width, 100%);\n";
         $css .= "    margin: 0 auto;\n";
         // CRITICAL: Use widget-specific spacing for interior padding

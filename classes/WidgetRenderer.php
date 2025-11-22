@@ -141,6 +141,9 @@ class WidgetRenderer {
             case 'giphy_random':
                 return self::renderGiphyRandom($widget, $configData);
                 
+            case 'rolodex':
+                return self::renderRolodex($widget, $configData);
+                
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
@@ -2032,6 +2035,83 @@ class WidgetRenderer {
         }
         
         $html .= '</div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Rolodex widget - expandable content cards
+     */
+    private static function renderRolodex($widget, $configData) {
+        $title = $widget['title'] ?? 'Rolodex';
+        $itemsJson = $configData['items'] ?? '[]';
+        $defaultExpanded = isset($configData['default_expanded']) && $configData['default_expanded'];
+        
+        // Parse items JSON
+        $items = json_decode($itemsJson, true);
+        if (!is_array($items) || empty($items)) {
+            return '<div class="widget-item widget-rolodex"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">No items configured. Please add items in JSON format.</div></div></div>';
+        }
+        
+        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+        $containerId = 'rolodex-' . $widgetId;
+        
+        $html = '<div class="widget-item widget-rolodex" id="' . htmlspecialchars($containerId) . '">';
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        $html .= '<div class="rolodex-items">';
+        
+        foreach ($items as $index => $item) {
+            $itemTitle = $item['title'] ?? 'Untitled';
+            $itemDescription = $item['description'] ?? '';
+            $itemUrl = $item['url'] ?? null;
+            $itemId = 'rolodex-item-' . $widgetId . '-' . $index;
+            $isExpanded = $defaultExpanded ? 'true' : 'false';
+            
+            $html .= '<div class="rolodex-item" data-item-id="' . htmlspecialchars($itemId) . '">';
+            $html .= '<button type="button" class="rolodex-item-header" onclick="toggleRolodexItem(\'' . htmlspecialchars($itemId) . '\')" aria-expanded="' . $isExpanded . '">';
+            $html .= '<span class="rolodex-item-title">' . htmlspecialchars($itemTitle) . '</span>';
+            $html .= '<span class="rolodex-item-toggle"><i class="fas fa-chevron-down"></i></span>';
+            $html .= '</button>';
+            $html .= '<div class="rolodex-item-content" id="' . htmlspecialchars($itemId) . '-content" style="display: ' . ($defaultExpanded ? 'block' : 'none') . ';">';
+            
+            if ($itemDescription) {
+                $html .= '<div class="rolodex-item-description">' . self::sanitizeHtml($itemDescription) . '</div>';
+            }
+            
+            if ($itemUrl) {
+                $pageId = $widget['page_id'] ?? 0;
+                $clickUrl = "/click.php?link_id={$widgetId}&page_id={$pageId}&item_index={$index}";
+                $html .= '<a href="' . htmlspecialchars($clickUrl) . '" class="rolodex-item-link" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($itemUrl) . '</a>';
+            }
+            
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // Close rolodex-items
+        $html .= '</div>'; // Close widget-content
+        $html .= '</div>'; // Close widget-item
+        
+        // Add inline JavaScript for toggle functionality
+        $html .= '<script>
+(function() {
+    window.toggleRolodexItem = function(itemId) {
+        const content = document.getElementById(itemId + "-content");
+        const button = document.querySelector("[data-item-id=\'" + itemId + "\'] .rolodex-item-header");
+        if (!content || !button) return;
+        
+        const isExpanded = content.style.display !== "none";
+        content.style.display = isExpanded ? "none" : "block";
+        button.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+        
+        const icon = button.querySelector(".rolodex-item-toggle i");
+        if (icon) {
+            icon.style.transform = isExpanded ? "rotate(0deg)" : "rotate(180deg)";
+        }
+    };
+})();
+</script>';
         
         return $html;
     }

@@ -174,19 +174,6 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
         return {
           title: 'Information',
           icon: <Info size={20} weight="regular" />,
-          sections: [],
-          documentation: [
-            {
-              title: 'Preview Guide',
-              url: '/studio-docs.php#preview',
-              description: 'How to use the preview feature to test your page'
-            }
-          ]
-        };
-      default:
-        return {
-          title: 'Information',
-          icon: <Info size={20} weight="regular" />,
           sections: [
             {
               title: 'Getting Started',

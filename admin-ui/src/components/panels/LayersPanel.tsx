@@ -11,7 +11,9 @@ import {
   Trash,
   Star,
   Lock,
-  Plus
+  Plus,
+  X,
+  Cards
 } from '@phosphor-icons/react';
 import {
   useAddWidgetMutation,
@@ -28,6 +30,7 @@ import { useWidgetSelection } from '../../state/widgetSelection';
 import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList';
 import { getYouTubeThumbnail } from '../../utils/media';
 import type { TabColorTheme, LeftyTabValue } from '../layout/tab-colors';
+import { AddingContentPanel } from './AddingContentPanel';
 import styles from './layers-panel.module.css';
 
 interface LayersPanelProps {
@@ -51,7 +54,8 @@ const widgetIconMap: Record<string, JSX.Element> = {
   divider_rule: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
   instagram_post: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
   instagram_feed: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  instagram_gallery: <AlignLeft aria-hidden="true" size={20} weight="regular" />
+  instagram_gallery: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
+  rolodex: <Cards aria-hidden="true" size={20} weight="regular" />
 };
 
 export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX.Element {
@@ -68,6 +72,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
   const queryClient = useQueryClient();
   const [lockedItems, setLockedItems] = useState<Set<string>>(new Set());
   const pageSettingsMutation = usePageSettingsMutation();
+  const [showAddPanel, setShowAddPanel] = useState(false);
 
   const layers = useMemo<LayerItem[]>(() => {
     const profileLayer: LayerItem = {
@@ -266,6 +271,15 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
               <p>Manage and organize the elements on your page</p>
             </header>
 
+            <button
+              type="button"
+              onClick={() => setShowAddPanel(true)}
+              className={styles.addButton}
+              aria-label="Add a new block"
+            >
+              <Plus aria-hidden="true" size={20} weight="regular" />
+              <span>Add a block</span>
+            </button>
 
             {isLoading ? (
               <p className={styles.loading}>Loading layers…</p>
@@ -356,6 +370,44 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
           <ScrollArea.Thumb className={styles.thumb} />
         </ScrollArea.Scrollbar>
       </ScrollArea.Root>
+
+      {/* Add Panel Drawer */}
+      <AnimatePresence>
+        {showAddPanel && (
+          <>
+            <motion.div
+              className={styles.drawerBackdrop}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddPanel(false)}
+            />
+            <motion.div
+              className={styles.addDrawer}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            >
+              <div className={styles.drawerHeader}>
+                <h3>Add a block</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPanel(false)}
+                  className={styles.closeButton}
+                  aria-label="Close"
+                >
+                  <X aria-hidden="true" size={20} weight="regular" />
+                </button>
+              </div>
+              <div className={styles.drawerContent}>
+                <AddingContentPanel activeColor={activeColor} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

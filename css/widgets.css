@@ -24,3 +24,88 @@
     height: 100%;
 }
 
+/* Rolodex Widget Styles */
+.widget-rolodex {
+    width: 100%;
+}
+
+.rolodex-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.rolodex-item {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.rolodex-item:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rolodex-item-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 600;
+    color: inherit;
+    transition: background 0.2s ease;
+}
+
+.rolodex-item-header:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.rolodex-item-title {
+    flex: 1;
+}
+
+.rolodex-item-toggle {
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.rolodex-item-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.rolodex-item-content {
+    padding: 0 1rem 1rem 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+.rolodex-item-description {
+    color: rgba(0, 0, 0, 0.7);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+}
+
+.rolodex-item-link {
+    display: inline-block;
+    color: var(--color-primary, #667eea);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    transition: opacity 0.2s ease;
+}
+
+.rolodex-item-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
