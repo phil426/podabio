@@ -122,7 +122,7 @@ export function TypographySection({
                 onClick={() => onHeadingBoldChange(!headingBold)}
                 title="Bold"
               >
-                <LuBold aria-hidden="true" />
+                <TextB aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"
@@ -242,7 +242,7 @@ export function TypographySection({
                 onClick={() => onBodyBoldChange(!bodyBold)}
                 title="Bold"
               >
-                <LuBold aria-hidden="true" />
+                <TextB aria-hidden="true" size={16} weight="regular" />
               </button>
               <button
                 type="button"

@@ -275,7 +275,7 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
           onClick={() => selectIntegration(null)}
           aria-label="Close"
         >
-          <LuX aria-hidden="true" />
+          <X aria-hidden="true" size={16} weight="regular" />
         </button>
       </header>
 

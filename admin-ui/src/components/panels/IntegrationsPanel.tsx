@@ -325,7 +325,7 @@ export function IntegrationsPanel(): JSX.Element {
                   <p className={styles.integrationStatus}>
                     {hasGoogle ? (
                       <>
-                        <LuCheck className={styles.statusIcon} aria-hidden="true" />
+                        <Check className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
                         <span>Connected</span>
                       </>
                     ) : (
@@ -401,7 +401,7 @@ export function IntegrationsPanel(): JSX.Element {
                   <p className={styles.integrationStatus}>
                     {integrations.instagram.connected ? (
                       <>
-                        <LuCheck className={styles.statusIcon} aria-hidden="true" />
+                        <Check className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
                         <span>{integrations.instagram.expired ? 'Token expired' : 'Connected'}</span>
                       </>
                     ) : (
@@ -592,7 +592,7 @@ export function IntegrationsPanel(): JSX.Element {
                                   setEditingUrl('');
                                 }}
                               >
-                                <LuX aria-hidden="true" />
+                                <X aria-hidden="true" size={16} weight="regular" />
                               </button>
                             </div>
                           </div>
@@ -620,7 +620,7 @@ export function IntegrationsPanel(): JSX.Element {
                   </div>
                   {icon.is_active === 0 && (
                     <div className={styles.socialIconStatus}>
-                      <LuX className={styles.statusIcon} aria-hidden="true" />
+                      <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
                       <span>Hidden</span>
                     </div>
                   )}

@@ -75,7 +75,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       apple_podcasts: <FaPodcast aria-hidden="true" />,
       spotify: <FaSpotify aria-hidden="true" />,
       youtube_music: <FaYoutube aria-hidden="true" />,
-      iheart_radio: <LuHeart aria-hidden="true" />,
+      iheart_radio: <Heart aria-hidden="true" size={20} weight="regular" />,
       amazon_music: <FaAmazon aria-hidden="true" />,
       pocket_casts: <PocketCastsIcon />,
       castro: <CastroIcon />,
@@ -451,7 +451,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
           <span>RSS Feed URL</span>
           <div className={styles.rssFeedContainer}>
             <div className={styles.inputWrapper}>
-              <LuRss className={styles.inputIcon} aria-hidden="true" />
+              <Rss className={styles.inputIcon} aria-hidden="true" size={16} weight="regular" />
               <input
                 id="rss-feed-url"
                 type="url"
@@ -515,7 +515,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         >
           {generatingPodlinks ? (
             <>
-              <LuLoader className={styles.buttonSpinner} aria-hidden="true" />
+              <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
               Generating...
             </>
           ) : (
@@ -542,12 +542,12 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
                     </div>
                     {platformData.found ? (
                       <span className={styles.podlinksStatusFound}>
-                        <LuCheck aria-hidden="true" />
+                        <Check aria-hidden="true" size={16} weight="regular" />
                         Found
                       </span>
                     ) : (
                       <span className={styles.podlinksStatusNotFound}>
-                        <LuX aria-hidden="true" />
+                        <X aria-hidden="true" size={16} weight="regular" />
                         Not found
                       </span>
                     )}

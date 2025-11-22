@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { ChevronDown, DeviceMobile, MagnifyingGlassPlus, MagnifyingGlassMinus } from '@phosphor-icons/react';
+import { CaretDown, DeviceMobile, MagnifyingGlassPlus, MagnifyingGlassMinus } from '@phosphor-icons/react';
 
 import { usePageSnapshot } from '../../api/page';
 import styles from './mobile-preview-bar.module.css';
@@ -136,7 +136,7 @@ export function MobilePreviewBar({ selectedDevice, onDeviceChange, previewScale,
             title="Zoom out preview"
             disabled={previewScale <= 0.25}
           >
-            <LuZoomOut aria-hidden="true" />
+            <MagnifyingGlassMinus aria-hidden="true" size={16} weight="regular" />
           </button>
           <span className={styles.scaleValue}>{Math.round(previewScale * 100)}%</span>
           <button
@@ -159,9 +159,9 @@ export function MobilePreviewBar({ selectedDevice, onDeviceChange, previewScale,
             title="Change device preset"
             aria-expanded={showDeviceMenu}
           >
-            <LuSmartphone className={styles.deviceIcon} aria-hidden="true" />
+            <DeviceMobile className={styles.deviceIcon} aria-hidden="true" size={16} weight="regular" />
             <span className={styles.deviceName}>{selectedDevice.name}</span>
-            <LuChevronDown className={clsx(styles.chevronIcon, showDeviceMenu && styles.chevronIconOpen)} aria-hidden="true" />
+            <CaretDown className={clsx(styles.chevronIcon, showDeviceMenu && styles.chevronIconOpen)} aria-hidden="true" size={16} weight="regular" />
           </button>
           {showDeviceMenu && (
             <div className={styles.deviceMenu}>

@@ -2233,7 +2233,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
                 onClick={handleSave}
                 disabled={saveStatus === 'saving' || !hasChanges}
               >
-                <LuSave aria-hidden="true" />
+                <FloppyDisk aria-hidden="true" size={16} weight="regular" />
                 {saveStatus === 'saving' ? 'Saving…' : 'Save theme'}
               </button>
             )}
