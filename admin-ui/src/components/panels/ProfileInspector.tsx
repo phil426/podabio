@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight, UploadSimple, X } from '@phosphor-icons/react';
+import { TextB, TextItalic, TextUnderline, UploadSimple, X } from '@phosphor-icons/react';
 
 import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../api/page';
 import { uploadProfileImage } from '../../api/uploads';
@@ -43,20 +43,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const bioTextLength = useMemo(() => bio.replace(/<[^>]*>/g, '').length, [bio]);
   const maxBioLength = 150;
   const maxNameLength = 30;
-
-  // Derive a shared text size preset for simple S / M / L controls
-  const [textSizePreset, setTextSizePreset] = useState<'small' | 'medium' | 'large'>('medium');
-
-  useEffect(() => {
-    // Map existing name/bio sizes into a single preset
-    if (nameTextSize === 'large' && bioTextSize === 'small') {
-      setTextSizePreset('small');
-    } else if (nameTextSize === 'xxlarge' && bioTextSize === 'large') {
-      setTextSizePreset('large');
-    } else {
-      setTextSizePreset('medium');
-    }
-  }, [nameTextSize, bioTextSize]);
 
   const previewName = name.trim() || page?.podcast_name || 'Your show name';
   const previewBio = bio.trim() || page?.podcast_description || 'Give listeners a one-line reason to follow your show.';
@@ -258,26 +244,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     }
   };
 
-  const handleAlignmentChange = (alignment: 'left' | 'center' | 'right') => {
-    setNameAlignment(alignment);
-    setBioAlignment(alignment);
-  };
-
-  const handleTextSizePresetChange = (preset: 'small' | 'medium' | 'large') => {
-    setTextSizePreset(preset);
-    if (preset === 'small') {
-      setNameTextSize('large');
-      setBioTextSize('small');
-    } else if (preset === 'large') {
-      setNameTextSize('xxlarge');
-      setBioTextSize('large');
-    } else {
-      setNameTextSize('xlarge');
-      setBioTextSize('medium');
-    }
-  };
-
-
   return (
     <section 
       className={styles.wrapper} 
@@ -313,79 +279,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       </div>
 
       <div className={styles.fieldset}>
-        {/* Layout Section */}
-        <div className={styles.layoutSection}>
-          <div className={styles.layoutHeader}>
-            <span>Layout</span>
-          </div>
-          <div className={styles.layoutRow} aria-label="Text alignment" role="radiogroup">
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${nameAlignment === 'left' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleAlignmentChange('left')}
-              role="radio"
-              aria-checked={nameAlignment === 'left'}
-            >
-              <TextAlignLeft aria-hidden="true" size={16} weight="regular" />
-              <span>Left</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${nameAlignment === 'center' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleAlignmentChange('center')}
-              role="radio"
-              aria-checked={nameAlignment === 'center'}
-            >
-              <TextAlignCenter aria-hidden="true" size={16} weight="regular" />
-              <span>Center</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${nameAlignment === 'right' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleAlignmentChange('right')}
-              role="radio"
-              aria-checked={nameAlignment === 'right'}
-            >
-              <TextAlignRight aria-hidden="true" size={16} weight="regular" />
-              <span>Right</span>
-            </button>
-          </div>
-          <div className={styles.layoutRow} aria-label="Text size" role="radiogroup">
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${textSizePreset === 'small' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleTextSizePresetChange('small')}
-              role="radio"
-              aria-checked={textSizePreset === 'small'}
-            >
-              <span className={styles.sizeLabel}>S</span>
-              <span>Compact</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${textSizePreset === 'medium' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleTextSizePresetChange('medium')}
-              role="radio"
-              aria-checked={textSizePreset === 'medium'}
-            >
-              <span className={styles.sizeLabel}>M</span>
-              <span>Balanced</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.layoutChip} ${textSizePreset === 'large' ? styles.layoutChipActive : ''}`}
-              onClick={() => handleTextSizePresetChange('large')}
-              role="radio"
-              aria-checked={textSizePreset === 'large'}
-            >
-              <span className={styles.sizeLabel}>L</span>
-              <span>Hero</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.fieldset}>
         {/* Profile Image Section */}
         <div
           className={styles.imagePreview}
@@ -417,116 +310,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
                 <X aria-hidden="true" size={16} weight="regular" />
               </button>
             )}
-          </div>
-        </div>
-        <div className={styles.imageOptionsCompact}>
-          <div className={styles.layoutSection}>
-            <div className={styles.layoutHeader}>Avatar</div>
-            <div className={styles.layoutRow} aria-label="Avatar shape" role="radiogroup">
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageShape === 'circle' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageShape('circle')}
-                role="radio"
-                aria-checked={imageShape === 'circle'}
-              >
-                <div className={styles.shapePreview} data-shape="circle" />
-                <span>Circle</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageShape === 'rounded' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageShape('rounded')}
-                role="radio"
-                aria-checked={imageShape === 'rounded'}
-              >
-                <div className={styles.shapePreview} data-shape="rounded" />
-                <span>Rounded</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageShape === 'square' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageShape('square')}
-                role="radio"
-                aria-checked={imageShape === 'square'}
-              >
-                <div className={styles.shapePreview} data-shape="square" />
-                <span>Square</span>
-              </button>
-            </div>
-            <div className={styles.layoutRow} aria-label="Avatar size" role="radiogroup">
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageSize === 'small' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageSize('small')}
-                role="radio"
-                aria-checked={imageSize === 'small'}
-              >
-                <span className={styles.sizeLabel}>S</span>
-                <span>Small</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageSize === 'medium' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageSize('medium')}
-                role="radio"
-                aria-checked={imageSize === 'medium'}
-              >
-                <span className={styles.sizeLabel}>M</span>
-                <span>Medium</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageSize === 'large' ? styles.layoutChipActive : ''}`}
-                onClick={() => setImageSize('large')}
-                role="radio"
-                aria-checked={imageSize === 'large'}
-              >
-                <span className={styles.sizeLabel}>L</span>
-                <span>Large</span>
-              </button>
-            </div>
-            <div className={styles.layoutRow} aria-label="Avatar frame style" role="radiogroup">
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageBorder === 'none' && imageShadow === 'none' ? styles.layoutChipActive : ''}`}
-                onClick={() => {
-                  setImageBorder('none');
-                  setImageShadow('none');
-                }}
-                role="radio"
-                aria-checked={imageBorder === 'none' && imageShadow === 'none'}
-              >
-                <div className={styles.borderPreview} data-border="none" data-shape={imageShape} />
-                <span>Minimal</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageBorder === 'thin' && imageShadow !== 'strong' ? styles.layoutChipActive : ''}`}
-                onClick={() => {
-                  setImageBorder('thin');
-                  setImageShadow('subtle');
-                }}
-                role="radio"
-                aria-checked={imageBorder === 'thin' && imageShadow !== 'strong'}
-              >
-                <div className={styles.borderPreview} data-border="thin" data-shape={imageShape} />
-                <span>Soft frame</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.layoutChip} ${imageBorder === 'thick' || imageShadow === 'strong' ? styles.layoutChipActive : ''}`}
-                onClick={() => {
-                  setImageBorder('thick');
-                  setImageShadow('strong');
-                }}
-                role="radio"
-                aria-checked={imageBorder === 'thick' || imageShadow === 'strong'}
-              >
-                <div className={styles.borderPreview} data-border="thick" data-shape={imageShape} />
-                <span>Bold frame</span>
-              </button>
-            </div>
           </div>
         </div>
         <input

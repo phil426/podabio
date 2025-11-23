@@ -55,6 +55,7 @@ const widgetIconMap: Record<string, JSX.Element> = {
   instagram_post: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
   instagram_feed: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
   instagram_gallery: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
+  people: <Cards aria-hidden="true" size={20} weight="regular" />,
   rolodex: <Cards aria-hidden="true" size={20} weight="regular" />
 };
 

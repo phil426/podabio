@@ -289,16 +289,19 @@ class WidgetRegistry {
                 ]
             ],
             
-            'rolodex' => [
-                'widget_id' => 'rolodex',
-                'name' => 'Rolodex',
-                'description' => 'Display expandable content cards that can be opened to reveal details',
-                'thumbnail' => '/assets/widget-thumbnails/rolodex.png',
+            'people' => [
+                'widget_id' => 'people',
+                'name' => 'People',
+                'description' => 'Display a searchable list of contacts with profile photos and contact information',
+                'thumbnail' => '/assets/widget-thumbnails/people.png',
                 'category' => 'content',
                 'requires_api' => false,
                 'config_fields' => [
-                    'items' => ['type' => 'textarea', 'label' => 'Items (JSON)', 'required' => true, 'help' => 'JSON array of items with title, description, and optional url. Example: [{"title":"Item 1","description":"Details here","url":"https://example.com"}]', 'rows' => 8],
-                    'default_expanded' => ['type' => 'checkbox', 'label' => 'Default Expanded', 'required' => false, 'default' => false, 'help' => 'Show all items expanded by default']
+                    'thumbnail_image' => ['type' => 'url', 'label' => 'Widget Thumbnail', 'required' => false, 'help' => 'Thumbnail image for the widget'],
+                    'heading' => ['type' => 'text', 'label' => 'Heading', 'required' => false, 'help' => 'Main heading for the widget'],
+                    'paragraph' => ['type' => 'textarea', 'label' => 'Short Paragraph', 'required' => false, 'help' => 'Brief description or introduction text', 'rows' => 3],
+                    'contacts' => ['type' => 'textarea', 'label' => 'Contacts (JSON)', 'required' => true, 'help' => 'JSON array of contacts. Each contact can have: name, photo, email, phone, company, title, address, website, notes. Example: [{"name":"John Doe","email":"john@example.com","phone":"+1-555-0123","company":"Acme Inc","photo":"https://example.com/photo.jpg"}]', 'rows' => 8],
+                    'show_search' => ['type' => 'checkbox', 'label' => 'Show Search Field', 'required' => false, 'default' => true, 'help' => 'Display search field at the top to filter contacts']
                 ]
             ],
             

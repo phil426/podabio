@@ -141,8 +141,11 @@ class WidgetRenderer {
             case 'giphy_random':
                 return self::renderGiphyRandom($widget, $configData);
                 
+            case 'people':
+                return self::renderPeople($widget, $configData);
+                
             case 'rolodex':
-                return self::renderRolodex($widget, $configData);
+                return self::renderRolodex($widget, $configData); // Legacy support
                 
             default:
                 // Fallback rendering
@@ -2035,6 +2038,254 @@ class WidgetRenderer {
         }
         
         $html .= '</div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render People widget - searchable contacts with profile photos
+     */
+    private static function renderPeople($widget, $configData) {
+        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+        $containerId = 'people-' . $widgetId;
+        
+        // Widget-level fields
+        $thumbnail = $configData['thumbnail_image'] ?? null;
+        $heading = $configData['heading'] ?? '';
+        $paragraph = $configData['paragraph'] ?? '';
+        $showSearch = isset($configData['show_search']) ? (bool)$configData['show_search'] : true;
+        
+        // Parse contacts JSON
+        $contactsJson = $configData['contacts'] ?? '[]';
+        $contacts = json_decode($contactsJson, true);
+        if (!is_array($contacts) || empty($contacts)) {
+            return '<div class="widget-item widget-people" id="' . htmlspecialchars($containerId) . '"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($heading ?: 'People') . '</div><div class="widget-note" style="color: #dc3545;">No contacts configured. Please add contacts in JSON format.</div></div></div>';
+        }
+        
+        $html = '<div class="widget-item widget-people" id="' . htmlspecialchars($containerId) . '">';
+        
+        // Widget thumbnail (outside widget-content, on the left - stays fixed)
+        if ($thumbnail) {
+            $html .= '<div class="widget-thumbnail-wrapper">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($heading ?: 'People') . '" class="widget-thumbnail" onerror="this.onerror=null; this.style.display=\'none\'; var wrapper=this.closest(\'.widget-thumbnail-wrapper\'); if(wrapper){var fallback=wrapper.querySelector(\'.widget-thumbnail-fallback\'); if(fallback)fallback.style.display=\'flex\';}">';
+            $html .= '</div>';
+        }
+        
+        $html .= '<div class="widget-content">';
+        
+        // Widget heading with accordion toggle button
+        $accordionId = $containerId . '-accordion';
+        $accordionContentId = $accordionId . '-content';
+        if ($heading) {
+            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false">';
+            $html .= '<div class="widget-title">' . htmlspecialchars($heading) . '</div>';
+            $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
+            $html .= '</button>';
+        } else {
+            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false">';
+            $html .= '<div class="widget-title">People</div>';
+            $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
+            $html .= '</button>';
+        }
+        
+        // Widget paragraph (outside accordion, always visible)
+        if ($paragraph) {
+            $html .= '<div class="people-widget-paragraph">' . nl2br(htmlspecialchars($paragraph)) . '</div>';
+        }
+        
+        $html .= '</div>'; // Close widget-content
+        
+        // Accordion drawer - separate bottom drawer that slides down (outside widget-content)
+        $html .= '<div class="people-accordion-drawer" id="' . htmlspecialchars($accordionContentId) . '" style="display: none;">';
+        
+        // Search field
+        if ($showSearch) {
+            $html .= '<div class="people-search-container">';
+            $html .= '<input type="text" class="people-search-input" id="' . htmlspecialchars($containerId) . '-search" placeholder="Search contacts..." aria-label="Search contacts" />';
+            $html .= '</div>';
+        }
+        
+        // Contacts list
+        $html .= '<div class="people-contacts-list">';
+        
+        foreach ($contacts as $index => $contact) {
+            $name = $contact['name'] ?? 'Unnamed';
+            $photo = $contact['photo'] ?? null;
+            $email = $contact['email'] ?? null;
+            $phone = $contact['phone'] ?? null;
+            $company = $contact['company'] ?? null;
+            $title = $contact['title'] ?? null;
+            $address = $contact['address'] ?? null;
+            $website = $contact['website'] ?? null;
+            $notes = $contact['notes'] ?? null;
+            
+            $contactId = 'people-contact-' . $widgetId . '-' . $index;
+            $initial = strtoupper(substr($name, 0, 1));
+            
+            $html .= '<div class="people-contact-item" data-contact-name="' . htmlspecialchars(strtolower($name)) . '" data-contact-company="' . htmlspecialchars(strtolower($company ?? '')) . '">';
+            $html .= '<button type="button" class="people-contact-header" onclick="togglePeopleContact(\'' . htmlspecialchars($contactId) . '\')" aria-expanded="false">';
+            
+            // Contact header with photo/initial
+            $html .= '<div class="people-contact-header-content">';
+            if ($photo) {
+                $html .= '<img src="' . htmlspecialchars($photo) . '" alt="' . htmlspecialchars($name) . '" class="people-contact-photo" />';
+            } else {
+                $html .= '<div class="people-contact-initial">' . htmlspecialchars($initial) . '</div>';
+            }
+            
+            $html .= '<div class="people-contact-info">';
+            $html .= '<div class="people-contact-name">' . htmlspecialchars($name) . '</div>';
+            if ($company) {
+                $html .= '<div class="people-contact-company">' . htmlspecialchars($company) . '</div>';
+            }
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            $html .= '<span class="people-contact-toggle"><i class="fas fa-chevron-down"></i></span>';
+            $html .= '</button>';
+            
+            // Contact details (accordion content)
+            $html .= '<div class="people-contact-content" id="' . htmlspecialchars($contactId) . '-content" style="display: none;">';
+            $html .= '<div class="people-contact-details">';
+            
+            if ($title) {
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Title:</span>';
+                $html .= '<span class="people-contact-value">' . htmlspecialchars($title) . '</span>';
+                $html .= '</div>';
+            }
+            
+            if ($email) {
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Email:</span>';
+                $html .= '<a href="mailto:' . htmlspecialchars($email) . '" class="people-contact-link">' . htmlspecialchars($email) . '</a>';
+                $html .= '</div>';
+            }
+            
+            if ($phone) {
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Phone:</span>';
+                $html .= '<a href="tel:' . htmlspecialchars(preg_replace('/[^0-9+]/', '', $phone)) . '" class="people-contact-link">' . htmlspecialchars($phone) . '</a>';
+                $html .= '</div>';
+            }
+            
+            if ($address) {
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Address:</span>';
+                $html .= '<span class="people-contact-value">' . nl2br(htmlspecialchars($address)) . '</span>';
+                $html .= '</div>';
+            }
+            
+            if ($website) {
+                $url = $website;
+                if (!preg_match('/^https?:\/\//', $url)) {
+                    $url = 'https://' . $url;
+                }
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Website:</span>';
+                $html .= '<a href="' . htmlspecialchars($url) . '" class="people-contact-link" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($website) . '</a>';
+                $html .= '</div>';
+            }
+            
+            if ($notes) {
+                $html .= '<div class="people-contact-detail-row">';
+                $html .= '<span class="people-contact-label">Notes:</span>';
+                $html .= '<span class="people-contact-value people-contact-notes">' . nl2br(htmlspecialchars($notes)) . '</span>';
+                $html .= '</div>';
+            }
+            
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // Close people-contacts-list
+        $html .= '</div>'; // Close people-accordion-drawer
+        $html .= '</div>'; // Close widget-item
+        
+        // Add inline JavaScript for toggle and search functionality
+        $html .= '<script>
+(function() {
+    function initPeopleAccordion() {
+        // Set up accordion toggle using event delegation
+        const container = document.getElementById("' . htmlspecialchars($containerId) . '");
+        if (!container) return;
+        
+        const headerButton = container.querySelector(".people-widget-header");
+        const content = document.getElementById("' . htmlspecialchars($accordionContentId) . '");
+        
+        if (headerButton && content) {
+            // Remove any existing listeners by cloning the button
+            const newButton = headerButton.cloneNode(true);
+            headerButton.parentNode.replaceChild(newButton, headerButton);
+            
+            newButton.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle drawer using class instead of display
+                const isOpen = content.classList.contains("open");
+                if (isOpen) {
+                    content.classList.remove("open");
+                    content.style.display = "none";
+                    newButton.setAttribute("aria-expanded", "false");
+                } else {
+                    content.style.display = "block";
+                    // Force reflow to ensure display is set before adding class
+                    content.offsetHeight;
+                    content.classList.add("open");
+                    newButton.setAttribute("aria-expanded", "true");
+                }
+                
+                // Rotate arrow icon
+                const icon = newButton.querySelector(".people-accordion-arrow i");
+                if (icon) {
+                    icon.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+                }
+            });
+        }
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPeopleAccordion);
+    } else {
+        initPeopleAccordion();
+    }
+    
+    // Toggle contact accordion
+    window.togglePeopleContact = function(contactId) {
+        const content = document.getElementById(contactId + "-content");
+        const button = document.querySelector("[onclick*=\'" + contactId + "\']");
+        if (!content || !button) return;
+        
+        const isExpanded = content.style.display !== "none";
+        content.style.display = isExpanded ? "none" : "block";
+        button.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+        
+        const icon = button.querySelector(".people-contact-toggle i");
+        if (icon) {
+            icon.style.transform = isExpanded ? "rotate(0deg)" : "rotate(180deg)";
+        }
+    };
+    
+    // Search functionality
+    const searchInput = document.getElementById("' . htmlspecialchars($containerId) . '-search");
+    if (searchInput) {
+        searchInput.addEventListener("input", function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const contacts = document.querySelectorAll("#' . htmlspecialchars($containerId) . ' .people-contact-item");
+            
+            contacts.forEach(function(contact) {
+                const name = contact.getAttribute("data-contact-name") || "";
+                const company = contact.getAttribute("data-contact-company") || "";
+                const matches = !query || name.includes(query) || company.includes(query);
+                contact.style.display = matches ? "" : "none";
+            });
+        });
+    }
+})();
+</script>';
         
         return $html;
     }

@@ -84,15 +84,21 @@ class ThemeCSSGenerator {
             $color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
         }
         
-        // Ensure we have exactly 6 hex digits
-        if (strlen($color) !== 6 || !ctype_xdigit($color)) {
+        // Ensure we have exactly 6 hex digits and validate format
+        // This prevents PHP 8.1+ deprecation warnings from hexdec()
+        if (strlen($color) !== 6 || !preg_match('/^[0-9a-fA-F]{6}$/', $color)) {
             return 0.5; // Default neutral luminance
         }
         
+        // Extract hex components - safe now that we've validated
+        $rHex = substr($color, 0, 2);
+        $gHex = substr($color, 2, 2);
+        $bHex = substr($color, 4, 2);
+        
         // Convert to RGB
-        $r = hexdec(substr($color, 0, 2));
-        $g = hexdec(substr($color, 2, 2));
-        $b = hexdec(substr($color, 4, 2));
+        $r = hexdec($rHex);
+        $g = hexdec($gHex);
+        $b = hexdec($bHex);
         
         // Normalize to 0-1
         $r = $r / 255;
@@ -1752,10 +1758,21 @@ class ThemeCSSGenerator {
             return null;
         }
 
+        // Validate that all characters are valid hex (0-9, a-f, A-F)
+        // This prevents PHP 8.1+ deprecation warnings from hexdec()
+        if (!preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+            return null;
+        }
+
+        // Extract and validate each component before conversion
+        $rHex = substr($hex, 0, 2);
+        $gHex = substr($hex, 2, 2);
+        $bHex = substr($hex, 4, 2);
+
         return [
-            hexdec(substr($hex, 0, 2)),
-            hexdec(substr($hex, 2, 2)),
-            hexdec(substr($hex, 4, 2))
+            hexdec($rHex),
+            hexdec($gHex),
+            hexdec($bHex)
         ];
     }
     

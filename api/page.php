@@ -177,11 +177,13 @@ switch ($action) {
         }
         
         if (isset($_POST['podcast_name'])) {
-            $updateData['podcast_name'] = sanitizeInput($_POST['podcast_name']);
+            $podcastName = sanitizeInput($_POST['podcast_name']);
+            $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
         }
         
         if (isset($_POST['podcast_description'])) {
-            $updateData['podcast_description'] = sanitizeInput($_POST['podcast_description']);
+            $podcastDescription = sanitizeInput($_POST['podcast_description']);
+            $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
         }
 
         if (isset($_POST['footer_text'])) {
@@ -402,10 +404,12 @@ switch ($action) {
                         
                         // Save podcast name and description for podcast player display
                         if (!empty($feedData['title'])) {
-                            $updateData['podcast_name'] = $feedData['title'];
+                            $podcastName = sanitizeInput($feedData['title']);
+                            $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
                         }
                         if (!empty($feedData['description'])) {
-                            $updateData['podcast_description'] = $feedData['description'];
+                            $podcastDescription = sanitizeInput($feedData['description']);
+                            $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
                         }
                     } else {
                         // Log error but don't fail the update

@@ -24,7 +24,302 @@
     height: 100%;
 }
 
-/* Rolodex Widget Styles */
+/* People Widget Styles */
+.widget-people {
+    width: 100%;
+    position: relative;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* Ensure thumbnail and content are side by side (widget-item already has flex) */
+.widget-people > .widget-thumbnail-wrapper {
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.widget-people > .widget-content {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+}
+
+.people-widget-thumbnail {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.people-widget-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+
+/* People widget header button - looks like regular widget */
+.people-widget-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.people-widget-header:hover {
+    opacity: 0.8;
+}
+
+.people-widget-header .widget-title {
+    flex: 1;
+    margin: 0;
+}
+
+.people-accordion-arrow {
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    color: rgba(0, 0, 0, 0.6);
+    padding: 0;
+}
+
+.people-widget-header:hover .people-accordion-arrow {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+.people-accordion-arrow i {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+    display: block;
+}
+
+.people-widget-paragraph {
+    color: rgba(0, 0, 0, 0.7);
+    line-height: 1.6;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* People accordion drawer - slides down from bottom of widget */
+.people-accordion-drawer {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 0;
+    transition: max-height 0.3s ease, padding 0.3s ease, border-top 0.3s ease, margin-top 0.3s ease, opacity 0.3s ease;
+    border-top: 0 solid rgba(0, 0, 0, 0.1);
+    padding: 0;
+    margin-top: 0;
+    background: transparent;
+    opacity: 0;
+    order: 3; /* Ensure it appears after widget-content */
+    flex-basis: 100%; /* Force it to full width on new line */
+    align-self: stretch; /* Stretch to full width */
+}
+
+.people-accordion-drawer.open {
+    max-height: 600px;
+    padding: 1rem;
+    border-top-width: 1px;
+    margin-top: 0.5rem;
+    opacity: 1;
+}
+
+.people-search-container {
+    margin: 0 0 1rem 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.people-search-input {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.people-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.people-contacts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.people-contact-item {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.people-contact-item:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.people-contact-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    transition: background 0.2s ease;
+}
+
+.people-contact-header:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.people-contact-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.people-contact-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.people-contact-initial {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-primary, #667eea);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.people-contact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.people-contact-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: inherit;
+    margin-bottom: 0.25rem;
+}
+
+.people-contact-company {
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.people-contact-toggle {
+    margin-left: 1rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.people-contact-toggle i {
+    transition: transform 0.3s ease;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.people-contact-content {
+    padding: 0 1rem 1rem 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+.people-contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.people-contact-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.people-contact-label {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.7);
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.people-contact-value {
+    color: rgba(0, 0, 0, 0.8);
+    flex: 1;
+    word-break: break-word;
+}
+
+.people-contact-link {
+    color: var(--color-primary, #667eea);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.people-contact-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.people-contact-notes {
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* Rolodex Widget Styles (Legacy) */
 .widget-rolodex {
     width: 100%;
 }
