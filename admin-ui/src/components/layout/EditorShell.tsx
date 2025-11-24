@@ -91,11 +91,18 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
 
   // Calculate panel sizes based on active tab (percentages that sum to 100)
   const panelSizes = useMemo(() => {
-    if (activeTab === 'layers') {
+    if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') {
       return {
         left: 60, // Left panel with rail + content panels
-        center: 0, // Center panel hidden
-        right: 40 // Right panel for info panel
+        center: 40, // Center panel for info panel
+        right: 0 // Right panel hidden
+      };
+    }
+    if (activeTab === 'analytics') {
+      return {
+        left: 60, // Left panel with rail + content panels
+        center: 40, // Center panel for analytics dashboard
+        right: 0 // Right panel hidden
       };
     }
     // Other tabs: left panel fills all space
@@ -106,18 +113,22 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
     };
   }, [activeTab]);
 
-  // Reset panel sizes when tab changes
-  useEffect(() => {
-    if (leftPanelHandleRef.current && centerPanelHandleRef.current && rightPanelHandleRef.current) {
-      leftPanelHandleRef.current.resize(panelSizes.left);
-      centerPanelHandleRef.current.collapse(); // Hide center panel
-      if (activeTab === 'layers') {
-        rightPanelHandleRef.current.resize(panelSizes.right);
-      } else {
-        rightPanelHandleRef.current.collapse(); // Hide right panel for other tabs
-      }
-    }
-  }, [activeTab, panelSizes]);
+      // Reset panel sizes when tab changes
+      useEffect(() => {
+        if (leftPanelHandleRef.current && centerPanelHandleRef.current && rightPanelHandleRef.current) {
+          leftPanelHandleRef.current.resize(panelSizes.left);
+          if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') {
+            centerPanelHandleRef.current.resize(panelSizes.center);
+            rightPanelHandleRef.current.collapse(); // Hide right panel
+          } else if (activeTab === 'analytics') {
+            centerPanelHandleRef.current.resize(panelSizes.center);
+            rightPanelHandleRef.current.collapse();
+          } else {
+            centerPanelHandleRef.current.collapse(); // Hide center panel
+            rightPanelHandleRef.current.collapse(); // Hide right panel for other tabs
+          }
+        }
+      }, [activeTab, panelSizes]);
 
   // Prevent scroll event propagation to isolate panel scrolling
   // AGGRESSIVE approach: Block ALL wheel events and manually handle scrolling
@@ -242,7 +253,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
         <PanelResizeHandle 
           id="left-resizer"
           className="editor-shell__resizer"
-          style={{ display: 'none' }}
+          style={{ display: (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'analytics' || activeTab === 'themes' || activeTab === 'integration') ? 'block' : 'none' }}
         />
         <Panel 
           id="center-panel"
@@ -256,13 +267,15 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           <div ref={centerPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTab === 'analytics' ? (
               <AnalyticsDashboard activeColor={activeColor} />
+            ) : (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') ? (
+              <LeftyInformationPanel activeColor={activeColor} activeTab={activeTab} />
             ) : null}
           </div>
         </Panel>
         <PanelResizeHandle 
           id="right-resizer"
           className="editor-shell__resizer"
-          style={{ display: activeTab === 'layers' ? 'block' : 'none' }}
+          style={{ display: 'none' }}
         />
         <Panel 
           id="right-panel"
@@ -274,9 +287,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           className="editor-shell__panel editor-shell__panel--right"
         >
           <div ref={rightPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {activeTab === 'layers' ? (
-              <LeftyInformationPanel activeColor={activeColor} activeTab={activeTab} />
-            ) : null}
+            {/* Right panel is now unused - information moved to center panel */}
           </div>
         </Panel>
       </PanelGroup>

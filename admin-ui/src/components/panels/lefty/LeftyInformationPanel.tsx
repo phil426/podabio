@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { Info, Question, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut } from '@phosphor-icons/react';
+import { Info, Question, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut, Palette } from '@phosphor-icons/react';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import type { LeftyTabValue } from '../../layout/tab-colors';
 import styles from './lefty-information-panel.module.css';
@@ -144,6 +144,37 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
               title: 'API Documentation',
               url: '/docs/api',
               description: 'Technical documentation for API integrations'
+            }
+          ]
+        };
+      case 'themes':
+        return {
+          title: 'Themes',
+          icon: <Palette size={20} weight="regular" />,
+          sections: [
+            {
+              title: 'Theme Library',
+              content: 'Browse and apply pre-designed themes to instantly change the look and feel of your page.'
+            },
+            {
+              title: 'Custom Themes',
+              content: 'Create custom themes with your own colors, fonts, and styling. Save and reuse themes across your pages.'
+            },
+            {
+              title: 'Theme Editor',
+              content: 'Fine-tune every aspect of your theme including colors, typography, spacing, and special effects.'
+            }
+          ],
+          documentation: [
+            {
+              title: 'Themes Guide',
+              url: '/studio-docs.php#themes',
+              description: 'Complete guide to using and customizing themes'
+            },
+            {
+              title: 'Creating Custom Themes',
+              url: '/docs/themes',
+              description: 'Learn how to create and save your own custom themes'
             }
           ]
         };
