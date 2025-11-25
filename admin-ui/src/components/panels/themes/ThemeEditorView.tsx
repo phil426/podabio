@@ -104,11 +104,6 @@ export function ThemeEditorView({
                   className={styles.saveButton}
                   onClick={onSave}
                   disabled={isSaving || !theme}
-                  style={{
-                    '--button-bg': activeColor.primary,
-                    '--button-color': activeColor.text,
-                    '--button-border': activeColor.border
-                  } as React.CSSProperties}
                 >
                   <FloppyDisk aria-hidden="true" size={16} weight="regular" />
                   {isSaving ? 'Saving...' : 'Save'}
