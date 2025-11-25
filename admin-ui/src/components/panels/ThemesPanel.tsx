@@ -103,9 +103,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         themeName: selectedTheme.name,
         userId: selectedTheme.user_id,
         isUserTheme: selectedTheme.user_id !== null && selectedTheme.user_id !== undefined,
-        dbStateKeys: Object.keys(dbState),
-        widgetBorderWidth: uiState['widget-border-width'],
-        widgetStyles: dbState.widget_styles
+        dbStateKeys: Object.keys(dbState)
       });
 
       // Merge with existing theme data to preserve fields not in UI state

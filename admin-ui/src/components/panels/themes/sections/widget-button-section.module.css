@@ -62,3 +62,26 @@
   border-color: var(--pod-semantic-accent-primary, #2563eb);
 }
 
+.textInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: rgba(15, 23, 42, 0.3);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+}
+
+.helpText {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--pod-semantic-text-secondary, #64748b);
+}
+
