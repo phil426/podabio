@@ -10,7 +10,6 @@ import { useTokens } from '../../design-system/theme/TokenProvider';
 import { useThemeInspector } from '../../state/themeInspector';
 import { queryKeys } from '../../api/utils';
 import { uploadBackgroundImage } from '../../api/uploads';
-import { ColorTokenPicker } from '../controls/ColorTokenPicker';
 import { PageBackgroundPicker } from '../controls/PageBackgroundPicker';
 import { ColorPaletteEditor } from './ColorPaletteEditor';
 import { TokenAccordion, type TokenAccordionItem } from '../system/TokenAccordion';

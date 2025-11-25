@@ -1,0 +1,84 @@
+.previewContainer {
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  margin-top: 1rem;
+}
+
+.previewLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pod-semantic-text-secondary, #64748b);
+  margin-bottom: 0.75rem;
+}
+
+.pageTitlePreview {
+  margin: 0;
+  text-align: center;
+  word-break: break-word;
+}
+
+.pageDescriptionPreview {
+  margin: 0;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.profileImagePreview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.profileImage {
+  display: block;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.profileImagePlaceholder {
+  display: block;
+  flex-shrink: 0;
+}
+
+.pageBackgroundPreview {
+  width: 100%;
+}
+
+.widgetPreview {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.podcastPlayerPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.socialIconsPreview {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.socialIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.socialIcon i {
+  font-size: 1em;
+}
+

@@ -1,12 +1,8 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import { Pencil } from '@phosphor-icons/react';
+import { Check, Trash } from '@phosphor-icons/react';
 import type { ThemeRecord } from '../../api/types';
-import { ThemeCardHero } from './themes/ThemeCardHero';
-import { ThemeCardMeta } from './themes/ThemeCardMeta';
-import { ThemeCardSwatches } from './themes/ThemeCardSwatches';
-import { ThemeCardFooter } from './themes/ThemeCardFooter';
-import { extractColorSwatches, getCardBackground, isDarkColor } from './themes/utils/themeCardUtils';
+import { getCardBackground, isDarkColor, getThemeDescription, getButtonColor, getButtonRadius, extractTypography } from './themes/utils/themeCardUtils';
 import styles from './ThemePreviewCard.module.css';
 
 type ThemePreviewCardProps = {
@@ -36,58 +32,103 @@ export function ThemePreviewCard({
   disabled
 }: ThemePreviewCardProps): JSX.Element {
   // Extract theme data
-  const swatches = useMemo(() => extractColorSwatches(theme), [theme]);
   const background = useMemo(() => getCardBackground(theme), [theme]);
   const isDarkBackground = useMemo(() => background ? isDarkColor(background) : false, [background]);
   const contrastClass = isDarkBackground ? styles.cardDark : '';
-  const isActiveCard = selected && primaryActionLabel === undefined;
+  const description = useMemo(() => getThemeDescription(theme), [theme]);
+  const buttonColor = useMemo(() => getButtonColor(theme), [theme]);
+  const buttonRadius = useMemo(() => getButtonRadius(theme), [theme]);
+  const { headingFont, bodyFont } = useMemo(() => extractTypography(theme), [theme]);
+  
+  const buttonRadiusStyle = useMemo(() => {
+    switch (buttonRadius) {
+      case 'square':
+        return '0px';
+      case 'pill':
+        return '9999px';
+      case 'rounded':
+      default:
+        return '6px';
+    }
+  }, [buttonRadius]);
+  
+  // Convert font names to CSS font-family values
+  const headingFontFamily = useMemo(() => {
+    if (!headingFont || headingFont === 'inherit') {
+      return 'Georgia, "Times New Roman", serif'; // Default serif for titles
+    }
+    return headingFont;
+  }, [headingFont]);
+  
+  const bodyFontFamily = useMemo(() => {
+    if (!bodyFont || bodyFont === 'inherit') {
+      return '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'; // Default sans-serif
+    }
+    return bodyFont;
+  }, [bodyFont]);
+
+  const isUserTheme = Boolean(theme.user_id);
+  const showDeleteButton = isUserTheme && tertiaryActions?.onDelete;
 
   return (
     <article
       className={clsx(styles.card, selected && styles.cardSelected, contrastClass)}
       aria-pressed={selected ? 'true' : 'false'}
       style={background ? { background } : undefined}
-      onClick={onSelect}
+      onClick={disabled ? undefined : onSelect}
     >
-      <ThemeCardHero
-        theme={theme}
-        selected={selected}
-        onSelect={onSelect}
-        disabled={disabled}
-        swatches={swatches}
-      />
-
-      <div className={styles.cardBody}>
-        <ThemeCardMeta theme={theme} />
-        <ThemeCardSwatches theme={theme} swatches={swatches} />
-      </div>
-
       {selected && (
-        <div className={styles.editBar}>
-          <button
-            type="button"
-            className={styles.editButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSecondaryAction?.() || onSelect();
-            }}
-            disabled={disabled}
-          >
-            <Pencil aria-hidden="true" size={14} weight="regular" />
-            Edit Theme
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.checkmarkButton}
+          aria-label={`${theme.name} is selected`}
+          title={`${theme.name} is selected`}
+        >
+          <Check aria-hidden="true" size={9} weight="regular" />
+        </button>
       )}
-
-      <ThemeCardFooter
-        theme={theme}
-        selected={selected}
-        primaryActionLabel={primaryActionLabel}
-        onSelect={onSelect}
-        tertiaryActions={tertiaryActions}
-        disabled={disabled}
-        isActiveCard={isActiveCard}
-      />
+      
+      {showDeleteButton && (
+        <button
+          type="button"
+          className={styles.deleteButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            tertiaryActions?.onDelete?.();
+          }}
+          aria-label={`Delete ${theme.name}`}
+          title={`Delete ${theme.name}`}
+        >
+          <Trash aria-hidden="true" size={9} weight="regular" />
+        </button>
+      )}
+      
+      <div className={styles.cardContent}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitleSection}>
+            <h3 
+              className={styles.cardTitle}
+              style={{ fontFamily: headingFontFamily }}
+            >
+              {theme.name ?? 'Custom Theme'}
+            </h3>
+            <p 
+              className={styles.cardSubtitle}
+              style={{ fontFamily: bodyFontFamily }}
+            >
+              {description}
+            </p>
+            <div 
+              className={styles.buttonPreview}
+              style={{ 
+                backgroundColor: buttonColor,
+                borderRadius: buttonRadiusStyle
+              }}
+              title={`Button style: ${buttonRadius}`}
+            />
+          </div>
+        </div>
+      </div>
     </article>
   );
 }

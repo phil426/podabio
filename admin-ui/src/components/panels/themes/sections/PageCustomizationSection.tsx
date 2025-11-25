@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Upload, X } from '@phosphor-icons/react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
-import { ColorTokenPicker } from '../../../controls/ColorTokenPicker';
+import { StandardColorPicker } from '../../../controls/StandardColorPicker';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
@@ -277,12 +277,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <ColorTokenPicker
+              <StandardColorPicker
                 label="Shadow color"
-                token="page.profile_image_shadow_color"
                 value={(uiState['profile-image-shadow-color'] as string) ?? '#000000'}
                 onChange={(value) => onFieldChange('profile-image-shadow-color', value)}
-                hideToken
                 hideWrapper
               />
             </div>
@@ -329,12 +327,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <ColorTokenPicker
+              <StandardColorPicker
                 label="Glow color"
-                token="page.profile_image_glow_color"
                 value={(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}
                 onChange={(value) => onFieldChange('profile-image-glow-color', value)}
-                hideToken
                 hideWrapper
               />
             </div>
@@ -356,12 +352,10 @@ export function PageCustomizationSection({
         {/* Border Controls */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
-          <ColorTokenPicker
+          <StandardColorPicker
             label="Border color"
-            token="page.profile_image_border_color"
             value={(uiState['profile-image-border-color'] as string) ?? '#000000'}
             onChange={(value) => onFieldChange('profile-image-border-color', value)}
-            hideToken
             hideWrapper
           />
         </div>
@@ -399,12 +393,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <ColorTokenPicker
+              <StandardColorPicker
                 label="Shadow color"
-                token="typography_tokens.effect.shadow.color"
                 value={shadowColor}
                 onChange={(value) => onFieldChange('page-title-shadow-color', value)}
-                hideToken
                 hideWrapper
               />
             </div>
@@ -451,12 +443,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <ColorTokenPicker
+              <StandardColorPicker
                 label="Glow color"
-                token="typography_tokens.effect.glow.color"
                 value={glowColor}
                 onChange={(value) => onFieldChange('page-title-glow-color', value)}
-                hideToken
                 hideWrapper
               />
             </div>
@@ -478,12 +468,10 @@ export function PageCustomizationSection({
         {/* Font Border/Stroke Controls - Always visible */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Font Border Color</label>
-          <ColorTokenPicker
+          <StandardColorPicker
             label="Font border color"
-            token="typography_tokens.effect.border.color"
             value={borderColor}
             onChange={(value) => onFieldChange('page-title-border-color', value)}
-            hideToken
             hideWrapper
           />
         </div>
@@ -502,12 +490,10 @@ export function PageCustomizationSection({
 
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
-          <ColorTokenPicker
+          <StandardColorPicker
             label="Page title color"
-            token="typography_tokens.color.heading"
             value={pageTitleColor}
             onChange={(value) => onFieldChange('page-title-color', value)}
-            hideToken
             hideWrapper
           />
         </div>
@@ -570,12 +556,10 @@ export function PageCustomizationSection({
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
-          <ColorTokenPicker
+          <StandardColorPicker
             label="Page bio color"
-            token="typography_tokens.color.body"
             value={pageBioColor}
             onChange={(value) => onFieldChange('page-bio-color', value)}
-            hideToken
             hideWrapper
           />
         </div>

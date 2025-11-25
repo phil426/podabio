@@ -3,7 +3,7 @@
  * Settings for widget heading and body text
  */
 
-import { ColorTokenPicker } from '../../../controls/ColorTokenPicker';
+import { StandardColorPicker } from '../../../controls/StandardColorPicker';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
@@ -43,12 +43,10 @@ export function WidgetTextSection({
           
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Color</label>
-            <ColorTokenPicker
+            <StandardColorPicker
               label="Widget heading color"
-              token="typography_tokens.color.widget_heading"
               value={widgetHeadingColor}
               onChange={(value) => onFieldChange('widget-heading-color', value)}
-              hideToken
               hideWrapper
             />
           </div>
@@ -111,12 +109,10 @@ export function WidgetTextSection({
           
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Color</label>
-            <ColorTokenPicker
+            <StandardColorPicker
               label="Widget body color"
-              token="typography_tokens.color.widget_body"
               value={widgetBodyColor}
               onChange={(value) => onFieldChange('widget-body-color', value)}
-              hideToken
               hideWrapper
             />
           </div>

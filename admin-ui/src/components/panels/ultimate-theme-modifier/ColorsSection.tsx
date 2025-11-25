@@ -159,7 +159,6 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
                       theme={theme}
                       selected={currentThemeId === theme.id}
                       onSelect={() => handleApplyTheme(theme)}
-                      primaryActionLabel={currentThemeId === theme.id ? undefined : 'Apply'}
                     />
                   ))}
                 </div>

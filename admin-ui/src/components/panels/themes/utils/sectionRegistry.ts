@@ -64,6 +64,74 @@ export const sectionRegistry = new SectionRegistry();
 
 // Register all sections from the plan
 sectionRegistry.register({
+  id: 'page-background',
+  title: 'Page Background',
+  description: 'Customize the page background and vertical spacing',
+  fields: [
+    'page-background',
+    'page-vertical-spacing'
+  ],
+  order: 0
+});
+
+sectionRegistry.register({
+  id: 'profile-image',
+  title: 'Profile Image',
+  description: 'Customize profile image appearance and effects',
+  fields: [
+    'profile-image-size',
+    'profile-image-radius',
+    'profile-image-effect',
+    'profile-image-shadow-color',
+    'profile-image-shadow-intensity',
+    'profile-image-shadow-depth',
+    'profile-image-shadow-blur',
+    'profile-image-glow-color',
+    'profile-image-glow-width',
+    'profile-image-border-color',
+    'profile-image-border-width'
+  ],
+  order: 0.5
+});
+
+sectionRegistry.register({
+  id: 'page-title',
+  title: 'Page Title',
+  description: 'Customize page title appearance and effects',
+  fields: [
+    'page-title-effect',
+    'page-title-shadow-color',
+    'page-title-shadow-intensity',
+    'page-title-shadow-depth',
+    'page-title-shadow-blur',
+    'page-title-glow-color',
+    'page-title-glow-width',
+    'page-title-border-color',
+    'page-title-border-width',
+    'page-title-color',
+    'page-title-font',
+    'page-title-size',
+    'page-title-spacing',
+    'page-title-weight'
+  ],
+  order: 0.6
+});
+
+sectionRegistry.register({
+  id: 'page-description',
+  title: 'Page Description',
+  description: 'Customize page description/bio appearance',
+  fields: [
+    'page-bio-color',
+    'page-bio-font',
+    'page-bio-size',
+    'page-bio-spacing',
+    'page-bio-weight'
+  ],
+  order: 0.7
+});
+
+sectionRegistry.register({
   id: 'page-customization',
   title: 'Page Customization',
   description: 'Customize the page background, title, and bio appearance',
@@ -116,6 +184,26 @@ sectionRegistry.register({
 });
 
 sectionRegistry.register({
+  id: 'widget-settings',
+  title: 'Widget Settings',
+  description: 'Customize widget background, border, radius, shadow, and glow',
+  fields: [
+    'widget-background',
+    'widget-border-color',
+    'widget-border-width',
+    'widget-rounding',
+    'widget-border-effect',
+    'widget-shadow-depth',
+    'widget-shadow-color',
+    'widget-shadow-intensity',
+    'widget-glow-width',
+    'widget-glow-color',
+    'widget-glow-intensity'
+  ],
+  order: 2.5
+});
+
+sectionRegistry.register({
   id: 'widget-text',
   title: 'Widgets & Blocks Text Settings',
   description: 'Customize widget heading and body text appearance',
@@ -144,5 +232,20 @@ sectionRegistry.register({
     'social-icon-spacing'
   ],
   order: 4
+});
+
+sectionRegistry.register({
+  id: 'podcast-player-bar',
+  title: 'Podcast Player Bar',
+  description: 'Customize podcast player bar appearance',
+  fields: [
+    'podcast-player-background',
+    'podcast-player-border-color',
+    'podcast-player-border-width',
+    'podcast-player-shadow-enabled',
+    'podcast-player-shadow-depth',
+    'podcast-player-text-color'
+  ],
+  order: 0.3
 });
 

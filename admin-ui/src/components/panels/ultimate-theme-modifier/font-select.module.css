@@ -61,7 +61,7 @@
   border-radius: 0.5rem;
   border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.1));
   box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
-  z-index: 1000;
+  z-index: 10003;
   min-width: var(--radix-select-trigger-width);
   max-height: 400px;
 }

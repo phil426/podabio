@@ -130,8 +130,17 @@ fieldRegistry.register({
   defaultValue: 'none',
   options: [
     { value: 'none', label: 'None' },
-    { value: 'glow', label: 'Glow' },
-    { value: 'shadow', label: 'Drop Shadow' }
+    { value: 'glow', label: 'Neon Glow' },
+    { value: 'shadow', label: 'Drop Shadow' },
+    { value: 'retro', label: 'Retro Shadow' },
+    { value: 'anaglyphic', label: 'Anaglyphic' },
+    { value: 'deep', label: 'Deep' },
+    { value: 'game', label: 'Game' },
+    { value: 'fancy', label: 'Fancy' },
+    { value: 'pretty', label: 'Pretty' },
+    { value: 'flat', label: 'Flat' },
+    { value: 'long', label: 'Long Shadow' },
+    { value: 'party', label: 'Party Time' }
   ],
   implemented: true
 });
@@ -791,6 +800,75 @@ fieldRegistry.register({
   min: 0,
   max: 3,
   unit: 'rem',
+  implemented: true
+});
+
+// Podcast Player Bar Section
+fieldRegistry.register({
+  id: 'podcast-player-background',
+  label: 'Background',
+  type: 'color',
+  tokenPath: 'podcast_player.background',
+  section: 'podcast-player-bar',
+  defaultValue: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'podcast-player-border-color',
+  label: 'Border Color',
+  type: 'color',
+  tokenPath: 'podcast_player.border_color',
+  section: 'podcast-player-bar',
+  defaultValue: 'rgba(255, 255, 255, 0.2)',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'podcast-player-border-width',
+  label: 'Border Width',
+  type: 'number',
+  tokenPath: 'podcast_player.border_width',
+  section: 'podcast-player-bar',
+  defaultValue: 1,
+  min: 0,
+  max: 8,
+  step: 1,
+  unit: 'px',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'podcast-player-shadow-enabled',
+  label: 'Shadow Enabled',
+  type: 'toggle',
+  tokenPath: 'podcast_player.shadow_enabled',
+  section: 'podcast-player-bar',
+  defaultValue: true,
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'podcast-player-shadow-depth',
+  label: 'Shadow Depth',
+  type: 'number',
+  tokenPath: 'podcast_player.shadow_depth',
+  section: 'podcast-player-bar',
+  defaultValue: 16,
+  min: 0,
+  max: 50,
+  step: 1,
+  unit: 'px',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'podcast-player-text-color',
+  label: 'Text Color',
+  type: 'color',
+  tokenPath: 'podcast_player.text_color',
+  section: 'podcast-player-bar',
+  defaultValue: '#ffffff',
   implemented: true
 });
 

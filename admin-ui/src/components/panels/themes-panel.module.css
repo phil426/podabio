@@ -36,3 +36,39 @@
   border-radius: 4px;
 }
 
+/* Status Message */
+.statusMessage {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  animation: slideIn 200ms ease-out;
+  max-width: 400px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.statusMessage_success {
+  background: #10b981;
+  color: #064e3b;
+}
+
+.statusMessage_error {
+  background: #ef4444;
+  color: #7f1d1d;
+}
+

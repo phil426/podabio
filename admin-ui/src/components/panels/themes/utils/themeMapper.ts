@@ -52,6 +52,7 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
     const value = uiState[field.id];
     
     // Skip if value is undefined (not set in UI)
+    // Note: 0, false, and empty string are valid values and should be saved
     if (value === undefined) continue;
 
     // Skip page-level fields (they're saved separately to the page, not theme)
@@ -85,6 +86,10 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
       const path = field.tokenPath.replace('widget_styles.', '');
       if (!dbState.widget_styles) dbState.widget_styles = {};
       setNestedValue(dbState.widget_styles, path, value);
+      // Debug: Log widget_styles saves
+      if (field.id === 'widget-border-width') {
+        console.log('Saving widget-border-width:', { fieldId: field.id, value, path, widget_styles: dbState.widget_styles });
+      }
     } else if (field.tokenPath.startsWith('iconography_tokens.')) {
       const path = field.tokenPath.replace('iconography_tokens.', '');
       if (!dbState.iconography_tokens) dbState.iconography_tokens = {};
@@ -100,6 +105,14 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
       const path = field.tokenPath.replace('spacing_tokens.', '');
       if (!dbState.spacing_tokens) dbState.spacing_tokens = {};
       setNestedValue(dbState.spacing_tokens, path, value);
+    } else if (field.tokenPath.startsWith('podcast_player.')) {
+      // Store podcast player fields in color_tokens
+      const path = field.tokenPath.replace('podcast_player.', '');
+      if (!dbState.color_tokens) dbState.color_tokens = {};
+      if (!dbState.color_tokens.podcast_player) {
+        dbState.color_tokens.podcast_player = {};
+      }
+      setNestedValue(dbState.color_tokens.podcast_player as Record<string, unknown>, path, value);
     }
   }
 
@@ -149,9 +162,14 @@ export function databaseToUI(
       value = getNestedValue(theme, field.tokenPath);
     }
 
+    // Debug: Log widget-border-width loading
+    if (field.id === 'widget-border-width') {
+      console.log('Loading widget-border-width:', { fieldId: field.id, tokenPath: field.tokenPath, rawValue: value, fieldType: field.type });
+    }
+
     // Parse value based on field type - extract numeric values from strings with units
     let parsedValue: unknown = value;
-    if (value !== undefined && field.type === 'number') {
+    if (value !== undefined && (field.type === 'number' || field.type === 'border-width')) {
       // If value is a string with units (e.g., "34px", "0.1rem"), extract the number
       if (typeof value === 'string') {
         // Skip non-numeric strings like "none", "medium", etc.
@@ -235,6 +253,17 @@ function getNestedValue(obj: Record<string, unknown> | null | undefined, path: s
     if (!typographyTokens || typeof typographyTokens !== 'object') return undefined;
     const subPath = path.replace('typography_tokens.', '');
     return getNestedValue(typographyTokens as Record<string, unknown>, subPath);
+  }
+  if (path.startsWith('podcast_player.')) {
+    // Podcast player fields are stored in color_tokens.podcast_player
+    const colorTokens = typeof obj.color_tokens === 'string'
+      ? JSON.parse(obj.color_tokens)
+      : obj.color_tokens;
+    if (!colorTokens || typeof colorTokens !== 'object') return undefined;
+    const podcastPlayer = (colorTokens as Record<string, unknown>).podcast_player;
+    if (!podcastPlayer || typeof podcastPlayer !== 'object') return undefined;
+    const subPath = path.replace('podcast_player.', '');
+    return getNestedValue(podcastPlayer as Record<string, unknown>, subPath);
   }
   if (path.startsWith('widget_styles.')) {
     const widgetStyles = typeof obj.widget_styles === 'string'

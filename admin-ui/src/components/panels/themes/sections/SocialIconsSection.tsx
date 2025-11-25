@@ -3,7 +3,7 @@
  * Settings for social icon appearance
  */
 
-import { ColorTokenPicker } from '../../../controls/ColorTokenPicker';
+import { StandardColorPicker } from '../../../controls/StandardColorPicker';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './social-icons-section.module.css';
@@ -27,12 +27,10 @@ export function SocialIconsSection({
     <div className={styles.section}>
       <div className={styles.fieldGroup}>
         <label className={styles.label}>Color</label>
-        <ColorTokenPicker
+        <StandardColorPicker
           label="Social icon color"
-          token="iconography_tokens.color"
           value={socialIconColor}
           onChange={(value) => onFieldChange('social-icon-color', value)}
-          hideToken
           hideWrapper
         />
       </div>

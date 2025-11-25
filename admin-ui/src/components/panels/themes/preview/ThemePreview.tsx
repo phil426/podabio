@@ -4,20 +4,42 @@
  * No iframe - pure React component
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { DeviceMobile } from '@phosphor-icons/react';
 import { usePageSnapshot } from '../../../../api/page';
 import { normalizeImageUrl } from '../../../../api/utils';
 import styles from './theme-preview.module.css';
 
+interface DevicePreset {
+  id: string;
+  name: string;
+  actualWidth: number; // Actual device width in CSS pixels
+  actualHeight: number; // Actual device height in CSS pixels
+}
+
+// 6 Popular phone sizes - actual device dimensions
+const DEVICE_PRESETS: DevicePreset[] = [
+  { id: 'iphone-16-pro-max', name: 'iPhone 16 Pro Max', actualWidth: 430, actualHeight: 932 },
+  { id: 'iphone-15-pro', name: 'iPhone 15 Pro', actualWidth: 393, actualHeight: 852 },
+  { id: 'iphone-se', name: 'iPhone SE', actualWidth: 375, actualHeight: 667 },
+  { id: 'samsung-s24-ultra', name: 'Samsung S24 Ultra', actualWidth: 412, actualHeight: 915 },
+  { id: 'pixel-8-pro', name: 'Pixel 8 Pro', actualWidth: 412, actualHeight: 915 },
+  { id: 'iphone-15', name: 'iPhone 15', actualWidth: 390, actualHeight: 844 },
+];
+
+const PREVIEW_SCALE = 0.7; // 70% scale
+
 interface ThemePreviewProps {
   cssVars: Record<string, string>;
   onHotspotClick?: (sectionId: string) => void;
+  hotspotsVisible?: boolean;
 }
 
-export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JSX.Element {
+export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }: ThemePreviewProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const page = snapshot?.page;
   const socialIcons = snapshot?.social_icons || [];
+  const [selectedDevice, setSelectedDevice] = useState<DevicePreset>(DEVICE_PRESETS[0]);
 
   // Decode HTML entities in text
   const decodeHtmlEntities = (text: string): string => {
@@ -170,35 +192,97 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
     (previewStyle as Record<string, string>)[name] = value;
   });
 
+  // Calculate scaled dimensions for the frame
+  const scaledDimensions = useMemo(() => ({
+    width: selectedDevice.actualWidth * PREVIEW_SCALE,
+    height: selectedDevice.actualHeight * PREVIEW_SCALE
+  }), [selectedDevice]);
+
+  const phoneStyle = useMemo(() => ({
+    ...previewStyle,
+    width: `${scaledDimensions.width}px`,
+    height: `${scaledDimensions.height}px`
+  }), [previewStyle, scaledDimensions]);
+
+  // Style for the content wrapper that scales everything proportionally
+  const contentWrapperStyle = useMemo(() => ({
+    width: `${selectedDevice.actualWidth}px`,
+    height: `${selectedDevice.actualHeight}px`,
+    transform: `scale(${PREVIEW_SCALE})`,
+    transformOrigin: 'top left'
+  }), [selectedDevice]);
+
   return (
     <div className={styles.previewContainer}>
       <div className={styles.previewHeader}>
-        <h3>Live Preview</h3>
-        <p>See your changes in real-time</p>
+        <div className={styles.previewHeaderLeft}>
+          <h3>Live Preview</h3>
+          <p>See your changes in real-time</p>
+        </div>
+        <div className={styles.deviceSelector}>
+          <DeviceMobile aria-hidden="true" size={16} weight="regular" />
+          <select
+            className={styles.deviceSelect}
+            value={selectedDevice.id}
+            onChange={(e) => {
+              const device = DEVICE_PRESETS.find((d) => d.id === e.target.value);
+              if (device) setSelectedDevice(device);
+            }}
+          >
+            {DEVICE_PRESETS.map((device) => (
+              <option key={device.id} value={device.id}>
+                {device.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className={styles.previewWrapper}>
-        <div className={styles.previewPhone} style={previewStyle}>
-          {/* Background Hotspot - positioned in top left */}
-          <div
-            className={`${styles.backgroundHotspot} ${styles.hotspot}`}
-            data-hotspot="page-background"
-            onClick={(e) => {
-              e.stopPropagation();
-              onHotspotClick?.('page-customization');
-            }}
-            title="Click to edit page background"
-          />
-          
-          {/* Non-functional Podcast Player Banner */}
-          <div className={styles.podcastBanner}>
-            <button className={styles.podcastBannerToggle} type="button" disabled>
-              <i className="fas fa-podcast" aria-hidden="true"></i>
-              <span>Tap to Listen</span>
-              <i className="fas fa-chevron-down" aria-hidden="true"></i>
-            </button>
-          </div>
-          <div className={styles.previewContent}>
+        <div className={styles.previewPhone} style={phoneStyle}>
+          {/* Content wrapper that scales everything proportionally */}
+          <div className={styles.contentWrapper} style={contentWrapperStyle}>
+            {/* Background Hotspot - positioned in top left */}
+            {hotspotsVisible && (
+              <div
+                className={`${styles.backgroundHotspot} ${styles.hotspot}`}
+                data-hotspot="page-background"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onHotspotClick?.('page-background');
+                }}
+                title="Page Background - Edit page background and vertical spacing"
+              />
+            )}
+            
+            {/* Non-functional Podcast Player Banner */}
+            <div 
+              className={`${styles.podcastBanner} ${hotspotsVisible ? styles.hotspot : ''}`}
+              onClick={(e) => {
+                if (!hotspotsVisible) return;
+                e.stopPropagation();
+                onHotspotClick?.('podcast-player-bar');
+              }}
+              title={hotspotsVisible ? "Podcast Player Bar - Edit player bar appearance" : undefined}
+            >
+              <button 
+                className={styles.podcastBannerToggle} 
+                type="button" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (hotspotsVisible) {
+                    onHotspotClick?.('podcast-player-bar');
+                  }
+                }}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <i className="fas fa-podcast" aria-hidden="true"></i>
+                <span>Tap to Listen</span>
+                <i className="fas fa-chevron-down" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div className={styles.previewContent}>
             {/* Profile Section - Always show if profile_image exists */}
             {page?.profile_image && (
               <div 
@@ -209,10 +293,10 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
                 }}
               >
                 <div
-                  className={`${styles.profileImageContainer} ${styles.hotspot}`}
+                  className={`${styles.profileImageContainer} ${hotspotsVisible ? styles.hotspot : ''}`}
                   data-hotspot="profile-image"
-                  onClick={() => onHotspotClick?.('page-customization')}
-                  title="Click to edit profile image settings"
+                  onClick={() => hotspotsVisible && onHotspotClick?.('profile-image')}
+                  title={hotspotsVisible ? "Profile Image - Edit profile image settings" : undefined}
                 >
                   <img 
                     src={normalizeImageUrl(page.profile_image)} 
@@ -250,10 +334,10 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
             {/* Page Title */}
             {page?.podcast_name && (
               <h1 
-                className={`${styles.pageTitle} ${styles.hotspot}`}
+                className={`${styles.pageTitle} ${hotspotsVisible ? styles.hotspot : ''}`}
                 data-hotspot="page-title"
-                onClick={() => onHotspotClick?.('page-customization')}
-                title="Click to edit page title settings"
+                onClick={() => hotspotsVisible && onHotspotClick?.('page-title')}
+                title={hotspotsVisible ? "Page Title - Edit page title settings" : undefined}
               >
                 {page.podcast_name}
               </h1>
@@ -262,10 +346,10 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
             {/* Page Bio */}
             {page?.podcast_description && (
               <p 
-                className={`${styles.pageBio} ${styles.hotspot}`}
+                className={`${styles.pageBio} ${hotspotsVisible ? styles.hotspot : ''}`}
                 data-hotspot="page-bio"
-                onClick={() => onHotspotClick?.('page-customization')}
-                title="Click to edit page bio settings"
+                onClick={() => hotspotsVisible && onHotspotClick?.('page-description')}
+                title={hotspotsVisible ? "Page Description - Edit page description settings" : undefined}
               >
                 {decodeHtmlEntities(page.podcast_description)}
               </p>
@@ -274,9 +358,10 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
             {/* Social Icons - Positioned between bio and widgets (matching page.php structure) */}
             {socialIcons.length > 0 && (
               <div 
-                className={`${styles.socialIcons} ${styles.hotspot}`}
+                className={`${styles.socialIcons} ${hotspotsVisible ? styles.hotspot : ''}`}
                 data-hotspot="social-icons"
                 onClick={(e) => {
+                  if (!hotspotsVisible) return;
                   // Only trigger if clicking on the container, not the links
                   if (e.target === e.currentTarget || (e.target as HTMLElement).closest(`.${styles.socialIcon}`)) {
                     e.preventDefault();
@@ -284,7 +369,7 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
                     onHotspotClick?.('social-icons');
                   }
                 }}
-                title="Click to edit social icons settings"
+                title={hotspotsVisible ? "Social Icons - Edit social icon appearance" : undefined}
               >
                 {socialIcons.map((icon) => (
                   <a
@@ -295,6 +380,7 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
                     rel="noopener noreferrer"
                     title={icon.platform_name}
                     onClick={(e) => {
+                      if (!hotspotsVisible) return;
                       // In preview, prevent navigation and trigger hotspot instead
                       e.preventDefault();
                       e.stopPropagation();
@@ -310,19 +396,37 @@ export function ThemePreview({ cssVars, onHotspotClick }: ThemePreviewProps): JS
             {/* Sample Widget - wrapped in container to match page.php structure */}
             <div className={styles.widgetsContainer}>
               <div 
-                className={`${styles.widget} ${styles.hotspot}`}
+                className={styles.widget}
                 data-hotspot="widget"
-                onClick={() => onHotspotClick?.('widget-buttons')}
-                title="Click to edit widget settings"
               >
-                <h3 className={styles.widgetHeading}>
-                  Sample Widget Heading
+                {/* Widget Styling Hotspot - positioned on the right */}
+                {hotspotsVisible && (
+                  <div
+                    className={`${styles.widgetStylingHotspot} ${styles.hotspot}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onHotspotClick?.('widget-settings');
+                    }}
+                    title="Widget Settings - Edit widget background, border, radius, shadow, and glow"
+                  />
+                )}
+                <h3 
+                  className={`${styles.widgetHeading} ${hotspotsVisible ? styles.hotspot : ''}`}
+                  onClick={(e) => {
+                    if (!hotspotsVisible) return;
+                    e.stopPropagation();
+                    onHotspotClick?.('widget-text');
+                  }}
+                  title={hotspotsVisible ? "Widgets & Blocks Text Settings - Edit widget heading text" : undefined}
+                >
+                  Sample Heading
                 </h3>
                 <p className={styles.widgetBody}>
-                  This is sample widget body text to preview how your theme settings look.
+                  This is sample body text.
                 </p>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

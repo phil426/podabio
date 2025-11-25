@@ -35,3 +35,30 @@
   color: var(--pod-semantic-text-primary, #0f172a);
 }
 
+.toggleGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleButton:hover {
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+}
+
+.toggleButton.active {
+  background: var(--pod-semantic-accent-primary, #2563eb);
+  color: #ffffff;
+  border-color: var(--pod-semantic-accent-primary, #2563eb);
+}
+

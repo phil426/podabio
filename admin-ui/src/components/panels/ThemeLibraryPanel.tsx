@@ -11,6 +11,7 @@ import type { TokenBundle } from '../../design-system/tokens';
 import { useThemeInspector } from '../../state/themeInspector';
 import { StyleGuidePreview } from './StyleGuidePreview';
 import { ThemeSwatch, extractThemeColors } from './ThemeSwatch';
+import { ConfirmDeleteDialog } from './themes/ConfirmDeleteDialog';
 import styles from './theme-library-panel.module.css';
 
 interface StatusMessage {
@@ -41,6 +42,8 @@ export function ThemeLibraryPanel(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
   const deleteMutation = useDeleteThemeMutation();
   const { setThemeInspectorVisible } = useThemeInspector();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [themeToDelete, setThemeToDelete] = useState<ThemeRecord | null>(null);
 
   const handleApplyTheme = async (theme: ThemeRecord) => {
     try {
@@ -145,15 +148,22 @@ export function ThemeLibraryPanel(): JSX.Element {
     }
   };
 
-  const handleDeleteTheme = async (theme: ThemeRecord) => {
-    if (!window.confirm(`Are you sure you want to delete "${theme.name}"? This cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteTheme = (theme: ThemeRecord) => {
+    setThemeToDelete(theme);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!themeToDelete) return;
+
     try {
-      await deleteMutation.mutateAsync(theme.id);
+      await deleteMutation.mutateAsync(themeToDelete.id);
       setStatus({ tone: 'success', message: 'Theme deleted.' });
     } catch (err) {
       setStatus({ tone: 'error', message: err instanceof Error ? err.message : 'Unable to delete theme.' });
+    } finally {
+      setThemeToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -417,6 +427,20 @@ export function ThemeLibraryPanel(): JSX.Element {
           })
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setThemeToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Theme"
+        message={themeToDelete ? `Are you sure you want to delete "${themeToDelete.name}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
     </section>
   );
 }

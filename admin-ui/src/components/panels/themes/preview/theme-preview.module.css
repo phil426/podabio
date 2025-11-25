@@ -20,19 +20,23 @@
 }
 
 .previewPhone {
-  width: 393px; /* iPhone 17 Pro Max actual width */
-  height: 852px; /* iPhone 17 Pro Max actual height */
   max-width: 100%;
   max-height: 100%;
   background: var(--page-background, #ffffff);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+/* Content wrapper that scales everything proportionally */
+.contentWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  position: relative;
-  transform: scale(0.7);
-  transform-origin: center center;
 }
 
 .podcastBanner {
@@ -42,13 +46,17 @@
   right: 0;
   width: 100%;
   box-sizing: border-box;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: var(--podcast-player-background, linear-gradient(135deg, #6366f1 0%, #4f46e5 100%));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--podcast-player-box-shadow, 0 6px 16px rgba(15, 23, 42, 0.16));
+  border-bottom: var(--podcast-player-border-width, 1px) solid var(--podcast-player-border-color, rgba(255, 255, 255, 0.2));
   flex-shrink: 0;
+}
+
+.podcastBanner.hotspot {
+  cursor: pointer;
 }
 
 .podcastBannerToggle {
@@ -60,20 +68,22 @@
   min-height: 48px;
   padding: 0.5rem 0.75rem;
   background: transparent;
-  color: #ffffff;
+  color: var(--podcast-player-text-color, #ffffff);
   text-shadow: 0 0 10px rgba(8, 12, 32, 0.65);
   border: none;
   font-size: 0.889rem;
   font-weight: 500;
-  cursor: default;
+  cursor: pointer;
   text-align: center;
   box-sizing: border-box;
   opacity: 0.9;
+  pointer-events: auto;
 }
 
 .podcastBannerToggle:disabled {
-  cursor: default;
+  cursor: pointer;
   opacity: 0.9;
+  pointer-events: auto;
 }
 
 .podcastBannerToggle i:first-child {
@@ -91,6 +101,15 @@
   background: var(--pod-semantic-surface-panel, #ffffff);
   flex-shrink: 0;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.previewHeaderLeft {
+  flex: 1;
+  min-width: 0;
 }
 
 .previewHeader h3 {
@@ -104,6 +123,37 @@
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--pod-semantic-text-secondary, #64748b);
+}
+
+.deviceSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deviceSelect {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  color: var(--pod-semantic-text-primary, #0f172a);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.deviceSelect:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+  background: var(--pod-semantic-surface-subtle, #f8fafc);
+}
+
+.deviceSelect:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .previewContent {
@@ -179,6 +229,7 @@
 }
 
 .widget {
+  position: relative;
   width: calc(100% - 10px); /* Account for half padding on sides (10px left + 10px right) */
   max-width: var(--widget-width, 100%);
   padding: 20px;
@@ -191,7 +242,28 @@
   box-shadow: var(--widget-glow-box-shadow, none);
 }
 
+/* Widget styling hotspot - positioned in top right corner */
+.widgetStylingHotspot {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  width: 40px;
+  height: 40px;
+  z-index: 10;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.widgetStylingHotspot::after {
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+}
+
 .widgetHeading {
+  position: relative;
+  z-index: 2;
   margin: 0 0 8px;
   font-size: var(--widget-heading-size, 20px);
   font-weight: var(--widget-heading-weight, 600);
@@ -202,6 +274,8 @@
 }
 
 .widgetBody {
+  position: relative;
+  z-index: 2;
   margin: 0;
   font-size: var(--widget-body-size, 16px);
   font-weight: var(--widget-body-weight, 400);
@@ -375,7 +449,14 @@
   right: 8px;
 }
 
+/* Podcast banner hotspot - orb in top-right corner */
+.podcastBanner.hotspot::after {
+  top: 8px;
+  right: 8px;
+}
+
 /* Background hotspot - positioned in top-left corner */
+/* Note: Hotspots are inside the scaled content wrapper, so they scale proportionally */
 .backgroundHotspot {
   position: absolute;
   top: 76px;

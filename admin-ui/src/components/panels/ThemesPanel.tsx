@@ -16,6 +16,7 @@ import { sectionRegistry } from './themes/utils/sectionRegistry';
 import { previewRenderer } from './themes/utils/previewRenderer';
 import { ThemeLibraryView } from './themes/ThemeLibraryView';
 import { ThemeEditorView } from './themes/ThemeEditorView';
+import { ConfirmDeleteDialog } from './themes/ConfirmDeleteDialog';
 import styles from './themes-panel.module.css';
 
 interface ThemesPanelProps {
@@ -23,6 +24,11 @@ interface ThemesPanelProps {
 }
 
 type ViewMode = 'library' | 'editor';
+
+interface StatusMessage {
+  tone: 'success' | 'error';
+  message: string;
+}
 
 export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
@@ -37,6 +43,9 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const [selectedTheme, setSelectedTheme] = useState<ThemeRecord | null>(null);
   const [uiState, setUIState] = useState<Record<string, unknown>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [status, setStatus] = useState<StatusMessage | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [themeToDelete, setThemeToDelete] = useState<ThemeRecord | null>(null);
 
   // Derive active theme from theme library
   const activeTheme = useMemo(() => {
@@ -62,6 +71,13 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     }
   }, [activeTheme?.id, snapshot?.page]);
 
+  // Auto-dismiss status messages
+  useEffect(() => {
+    if (!status) return;
+    const timer = window.setTimeout(() => setStatus(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [status]);
+
   // Handle field change
   const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
     setUIState(prev => ({
@@ -76,9 +92,21 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
     try {
       setIsSaving(true);
+      setStatus(null); // Clear any existing status
 
       // Convert UI state to database format
       const dbState = uiToDatabase(uiState);
+      
+      // Debug: Log what we're trying to save
+      console.log('Saving theme:', {
+        themeId: selectedTheme.id,
+        themeName: selectedTheme.name,
+        userId: selectedTheme.user_id,
+        isUserTheme: selectedTheme.user_id !== null && selectedTheme.user_id !== undefined,
+        dbStateKeys: Object.keys(dbState),
+        widgetBorderWidth: uiState['widget-border-width'],
+        widgetStyles: dbState.widget_styles
+      });
 
       // Merge with existing theme data to preserve fields not in UI state
       const existingThemeData = selectedTheme ? {
@@ -139,10 +167,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
         if (existingCustom) {
           // Update existing custom theme
-          await updateMutation.mutateAsync({
+          const updateResult = await updateMutation.mutateAsync({
             themeId: existingCustom.id,
             data: themeData
           });
+          console.log('Updated custom theme:', updateResult);
         } else {
           // Create new custom theme
           const response = await createMutation.mutateAsync({
@@ -150,6 +179,8 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
             ...themeData
           });
 
+          console.log('Created custom theme:', response);
+          
           if (response.theme_id) {
             // Update page to use new theme
             const newThemeId = typeof response.theme_id === 'string' 
@@ -159,15 +190,32 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
             // Refresh theme library to get new theme
             await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
             
-            // Note: Would need to update page theme_id here if needed
+            // Update selected theme to the new custom theme
+            await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
+            const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
+            const newTheme = refreshedLibrary?.user?.find(t => t.id === newThemeId);
+            if (newTheme) {
+              setSelectedTheme(newTheme);
+            }
           }
         }
       } else {
         // User theme - update directly
-        await updateMutation.mutateAsync({
+        console.log('Updating user theme:', selectedTheme.id, selectedTheme.name);
+        const updateResult = await updateMutation.mutateAsync({
           themeId: selectedTheme.id,
           data: themeData
         });
+        console.log('Update result:', updateResult);
+        
+        // Refresh the selected theme data
+        await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
+        const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
+        const updatedTheme = refreshedLibrary?.user?.find(t => t.id === selectedTheme.id) ||
+                            refreshedLibrary?.system?.find(t => t.id === selectedTheme.id);
+        if (updatedTheme) {
+          setSelectedTheme(updatedTheme);
+        }
       }
 
       // Save page-level fields (profile image styling)
@@ -203,8 +251,15 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       // Invalidate queries
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      
+      // Show success message
+      setStatus({ tone: 'success', message: 'Theme saved successfully!' });
     } catch (error) {
       console.error('Failed to save theme:', error);
+      setStatus({ 
+        tone: 'error', 
+        message: error instanceof Error ? error.message : 'Failed to save theme. Please try again.' 
+      });
     } finally {
       setIsSaving(false);
     }
@@ -274,9 +329,10 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       // Invalidate and refetch queries to update the UI
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+      setStatus({ tone: 'success', message: `Theme "${theme.name}" applied successfully.` });
     } catch (error) {
       console.error('Failed to apply theme:', error);
-      alert('Failed to apply theme. Please try again.');
+      setStatus({ tone: 'error', message: 'Failed to apply theme. Please try again.' });
     }
   }, [queryClient]);
 
@@ -292,23 +348,26 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     setViewMode('editor');
   }, []);
 
-  // Handle delete theme
-  const handleDeleteTheme = useCallback(async (theme: ThemeRecord) => {
+  // Handle delete theme (opens confirmation dialog)
+  const handleDeleteTheme = useCallback((theme: ThemeRecord) => {
     // Only allow deleting user themes (not system themes)
     if (!theme.user_id || theme.user_id === null) {
       return;
     }
 
-    // Confirm deletion
-    if (!window.confirm(`Are you sure you want to delete "${theme.name}"? This action cannot be undone.`)) {
-      return;
-    }
+    setThemeToDelete(theme);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  // Confirm delete theme (called from dialog)
+  const handleConfirmDelete = useCallback(async () => {
+    if (!themeToDelete) return;
 
     try {
-      await deleteMutation.mutateAsync(theme.id);
+      await deleteMutation.mutateAsync(themeToDelete.id);
       
       // If the deleted theme was selected, go back to library view
-      if (selectedTheme?.id === theme.id) {
+      if (selectedTheme?.id === themeToDelete.id) {
         setViewMode('library');
         setSelectedTheme(null);
       }
@@ -316,11 +375,15 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       // Refresh theme library
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      setStatus({ tone: 'success', message: `Theme "${themeToDelete.name}" deleted successfully.` });
     } catch (error) {
       console.error('Failed to delete theme:', error);
-      alert('Failed to delete theme. Please try again.');
+      setStatus({ tone: 'error', message: 'Failed to delete theme. Please try again.' });
+    } finally {
+      setThemeToDelete(null);
+      setDeleteDialogOpen(false);
     }
-  }, [deleteMutation, queryClient, selectedTheme]);
+  }, [deleteMutation, queryClient, selectedTheme, themeToDelete]);
 
   // Generate CSS variables for preview
   const previewCSSVars = useMemo(() => {
@@ -366,6 +429,27 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           activeColor={activeColor}
         />
       )}
+
+      {/* Status Message */}
+      {status && (
+        <div className={`${styles.statusMessage} ${styles[`statusMessage_${status.tone}`]}`}>
+          {status.message}
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setThemeToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Theme"
+        message={themeToDelete ? `Are you sure you want to delete "${themeToDelete.name}"? This action cannot be undone.` : ''}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
     </div>
   );
 }

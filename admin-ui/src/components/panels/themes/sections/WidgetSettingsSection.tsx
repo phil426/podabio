@@ -1,6 +1,6 @@
 /**
- * Widget Button Section
- * Settings for widget background, border, shadow, and glow
+ * Widget Settings Section
+ * Settings for widget background, border, radius, shadow, and glow
  */
 
 import { useState, useEffect } from 'react';
@@ -11,30 +11,27 @@ import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './widget-button-section.module.css';
 
-interface WidgetButtonSectionProps {
+interface WidgetSettingsSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
 }
 
-export function WidgetButtonSection({
+export function WidgetSettingsSection({
   uiState,
   onFieldChange,
   activeColor
-}: WidgetButtonSectionProps): JSX.Element {
+}: WidgetSettingsSectionProps): JSX.Element {
+  // Widget background/border/shadow/glow values
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
   const [widgetBackgroundType, setWidgetBackgroundType] = useState<'solid' | 'gradient'>('solid');
-  
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';
   const widgetBorderWidth = (uiState['widget-border-width'] as number) ?? 0;
   const widgetRounding = (uiState['widget-rounding'] as number) ?? 12;
-  const widgetButtonWidth = (uiState['widget-button-width'] as number) ?? 100;
   const widgetBorderEffect = (uiState['widget-border-effect'] as string) ?? 'none';
-  
   const widgetShadowDepth = (uiState['widget-shadow-depth'] as number) ?? 1;
   const widgetShadowColor = (uiState['widget-shadow-color'] as string) ?? 'rgba(15, 23, 42, 0.12)';
   const widgetShadowIntensity = (uiState['widget-shadow-intensity'] as number) ?? 1;
-  
   const widgetGlowWidth = (uiState['widget-glow-width'] as number) ?? 2;
   const widgetGlowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
   const widgetGlowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
@@ -54,7 +51,7 @@ export function WidgetButtonSection({
 
   return (
     <div className={styles.section}>
-      {/* Background & Border */}
+      {/* Widget Background & Border */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Background & Border</h4>
         
@@ -69,7 +66,7 @@ export function WidgetButtonSection({
               if (type === 'solid') {
                 onFieldChange('widget-background', '#ffffff');
               } else if (type === 'gradient') {
-                onFieldChange('widget-background', 'linear-gradient(140deg, #ffffff 0%, #f8fafc 100%)');
+                onFieldChange('widget-background', 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)');
               }
             }}
             label="Widget background"
@@ -99,7 +96,7 @@ export function WidgetButtonSection({
         </div>
 
         <div className={styles.fieldGroup}>
-          <label className={styles.label}>Rounding</label>
+          <label className={styles.label}>Border Radius</label>
           <SliderInput
             value={widgetRounding}
             min={0}
@@ -109,23 +106,11 @@ export function WidgetButtonSection({
             onChange={(value) => onFieldChange('widget-rounding', value)}
           />
         </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Button Width</label>
-          <SliderInput
-            value={widgetButtonWidth}
-            min={50}
-            max={100}
-            step={5}
-            unit="%"
-            onChange={(value) => onFieldChange('widget-button-width', value)}
-          />
-        </div>
       </div>
 
       {/* Shadow/Glow Effects */}
       <div className={styles.subsection}>
-        <h4 className={styles.subsectionTitle}>Effects</h4>
+        <h4 className={styles.subsectionTitle}>Shadow & Glow</h4>
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Effect Type</label>
