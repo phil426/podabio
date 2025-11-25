@@ -7,7 +7,6 @@ import { AccountWorkspace } from '../account/AccountWorkspace';
 import { LeftRailNav } from './LeftRailNav';
 import { LeftyContentPanel } from './LeftyContentPanel';
 import { CanvasViewport, type DevicePreset } from './CanvasViewport';
-import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
 import { PropertiesPanel } from './PropertiesPanel';
 import { LeftyInformationPanel } from '../panels/lefty/LeftyInformationPanel';
 import { tabColors, type LeftyTabValue } from './tab-colors';
@@ -91,17 +90,10 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
 
   // Calculate panel sizes based on active tab (percentages that sum to 100)
   const panelSizes = useMemo(() => {
-    if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') {
+    if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration' || activeTab === 'analytics') {
       return {
         left: 60, // Left panel with rail + content panels
         center: 40, // Center panel for info panel
-        right: 0 // Right panel hidden
-      };
-    }
-    if (activeTab === 'analytics') {
-      return {
-        left: 60, // Left panel with rail + content panels
-        center: 40, // Center panel for analytics dashboard
         right: 0 // Right panel hidden
       };
     }
@@ -113,22 +105,19 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
     };
   }, [activeTab]);
 
-      // Reset panel sizes when tab changes
-      useEffect(() => {
-        if (leftPanelHandleRef.current && centerPanelHandleRef.current && rightPanelHandleRef.current) {
-          leftPanelHandleRef.current.resize(panelSizes.left);
-          if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') {
+  // Reset panel sizes when tab changes
+  useEffect(() => {
+    if (leftPanelHandleRef.current && centerPanelHandleRef.current && rightPanelHandleRef.current) {
+      leftPanelHandleRef.current.resize(panelSizes.left);
+          if (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration' || activeTab === 'analytics') {
             centerPanelHandleRef.current.resize(panelSizes.center);
             rightPanelHandleRef.current.collapse(); // Hide right panel
-          } else if (activeTab === 'analytics') {
-            centerPanelHandleRef.current.resize(panelSizes.center);
-            rightPanelHandleRef.current.collapse();
           } else {
-            centerPanelHandleRef.current.collapse(); // Hide center panel
-            rightPanelHandleRef.current.collapse(); // Hide right panel for other tabs
-          }
-        }
-      }, [activeTab, panelSizes]);
+      centerPanelHandleRef.current.collapse(); // Hide center panel
+        rightPanelHandleRef.current.collapse(); // Hide right panel for other tabs
+      }
+    }
+  }, [activeTab, panelSizes]);
 
   // Prevent scroll event propagation to isolate panel scrolling
   // AGGRESSIVE approach: Block ALL wheel events and manually handle scrolling
@@ -265,9 +254,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           className="editor-shell__panel editor-shell__panel--center"
         >
           <div ref={centerPanelRef} style={{ width: '100%', height: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {activeTab === 'analytics' ? (
-              <AnalyticsDashboard activeColor={activeColor} />
-            ) : (activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration') ? (
+            {(activeTab === 'layers' || activeTab === 'podcast' || activeTab === 'themes' || activeTab === 'integration' || activeTab === 'analytics') ? (
               <LeftyInformationPanel activeColor={activeColor} activeTab={activeTab} />
             ) : null}
           </div>

@@ -47,6 +47,8 @@
     position: relative;
     z-index: 1;
     align-self: flex-start;
+    margin-bottom: 0; /* No extra bottom margin */
+    padding-bottom: 0; /* No extra bottom padding */
 }
 
 .people-widget-thumbnail {
@@ -114,40 +116,65 @@
     transition: transform 0.3s ease;
     font-size: 0.75rem;
     display: block;
+    transform: rotate(0deg);
+}
+
+.people-accordion-arrow i.people-arrow-open {
+    transform: rotate(180deg);
 }
 
 .people-widget-paragraph {
-    color: rgba(0, 0, 0, 0.7);
+    font-size: var(--type-scale-sm, 1rem);
+    color: var(--widget-body-font-color, var(--color-text-secondary, #64748b));
+    opacity: 0.9;
+    margin: var(--widget-space-2xs, 0.25rem) 0 0 0; /* No bottom margin to match widget-description */
+    font-family: var(--widget-secondary-font, var(--page-secondary-font), sans-serif);
+    min-width: 0; /* Allow text to be constrained in flex container */
     line-height: 1.6;
-    margin-top: 0.5rem;
-    margin-bottom: 0;
-    font-size: 0.95rem;
 }
 
 /* People accordion drawer - slides down from bottom of widget */
 .people-accordion-drawer {
     width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden; /* Hidden when closed */
     max-height: 0;
-    transition: max-height 0.3s ease, padding 0.3s ease, border-top 0.3s ease, margin-top 0.3s ease, opacity 0.3s ease;
+    transition: max-height 0.4s ease-out, padding 0.4s ease-out, border-top 0.4s ease-out, margin-top 0.4s ease-out, opacity 0.4s ease-out;
     border-top: 0 solid rgba(0, 0, 0, 0.1);
     padding: 0;
-    margin-top: 0;
+    margin: 0; /* No margin when closed to prevent extra spacing */
+    margin-bottom: 0 !important; /* Force no bottom margin */
     background: transparent;
     opacity: 0;
+    pointer-events: none; /* Prevent interaction when closed */
     order: 3; /* Ensure it appears after widget-content */
-    flex-basis: 100%; /* Force it to full width on new line */
+    flex-basis: 0; /* Start at 0 to prevent taking up space when closed */
+    flex-grow: 0; /* Don't grow when closed */
+    flex-shrink: 0; /* Don't shrink */
     align-self: stretch; /* Stretch to full width */
+    position: relative;
+    z-index: 1;
+    /* Desktop fix: Ensure drawer works inside iphone-content with overflow */
+    min-height: 0;
+    height: 0; /* Force height to 0 when closed */
+    /* Critical: Do NOT use display: none - it prevents CSS transitions */
+    /* Use max-height: 0 + opacity: 0 to hide while allowing transitions */
 }
 
 .people-accordion-drawer.open {
-    max-height: 600px;
-    padding: 1rem;
+    max-height: 500px;
+    height: auto; /* Allow natural height when open */
+    overflow-y: auto; /* Allow scrolling when open */
+    padding: 0.75rem; /* Match widget padding */
+    padding-bottom: 0.75rem;
     border-top-width: 1px;
     margin-top: 0.5rem;
+    margin-bottom: 0 !important; /* No bottom margin to match other widgets */
+    flex-basis: 100%; /* Take full width when open */
+    flex-grow: 1; /* Allow to grow when open */
     opacity: 1;
+    pointer-events: auto; /* Allow interaction when open */
+    z-index: 2; /* Higher z-index when open */
 }
 
 .people-search-container {
@@ -249,7 +276,7 @@
 .people-contact-name {
     font-size: 1rem;
     font-weight: 600;
-    color: inherit;
+    color: var(--widget-heading-font-color, var(--color-text-primary, #0f172a));
     margin-bottom: 0.25rem;
 }
 
@@ -267,6 +294,11 @@
 .people-contact-toggle i {
     transition: transform 0.3s ease;
     color: rgba(0, 0, 0, 0.5);
+    transform: rotate(0deg);
+}
+
+.people-contact-toggle i.people-contact-arrow-open {
+    transform: rotate(180deg);
 }
 
 .people-contact-content {
@@ -274,6 +306,11 @@
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: 0.5rem;
     padding-top: 1rem;
+    display: block;
+}
+
+.people-contact-content-closed {
+    display: none;
 }
 
 .people-contact-details {

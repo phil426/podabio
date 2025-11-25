@@ -299,7 +299,7 @@ class WidgetRegistry {
                 'config_fields' => [
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Widget Thumbnail', 'required' => false, 'help' => 'Thumbnail image for the widget'],
                     'heading' => ['type' => 'text', 'label' => 'Heading', 'required' => false, 'help' => 'Main heading for the widget'],
-                    'paragraph' => ['type' => 'textarea', 'label' => 'Short Paragraph', 'required' => false, 'help' => 'Brief description or introduction text', 'rows' => 3],
+                    'paragraph' => ['type' => 'textarea', 'label' => 'Description', 'required' => false, 'help' => 'Brief description or introduction text', 'rows' => 3],
                     'contacts' => ['type' => 'textarea', 'label' => 'Contacts (JSON)', 'required' => true, 'help' => 'JSON array of contacts. Each contact can have: name, photo, email, phone, company, title, address, website, notes. Example: [{"name":"John Doe","email":"john@example.com","phone":"+1-555-0123","company":"Acme Inc","photo":"https://example.com/photo.jpg"}]', 'rows' => 8],
                     'show_search' => ['type' => 'checkbox', 'label' => 'Show Search Field', 'required' => false, 'default' => true, 'help' => 'Display search field at the top to filter contacts']
                 ]

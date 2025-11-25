@@ -8,8 +8,12 @@
     'use strict';
     
     function initWidgetMarquee(element) {
-        // Only process widget descriptions within Custom Link widgets
-        if (!element.closest('.widget-item') || !element.classList.contains('widget-description')) {
+        // Process widget descriptions and people widget paragraphs
+        if (!element.closest('.widget-item')) {
+            return;
+        }
+        // Check if it's a widget description or people widget paragraph
+        if (!element.classList.contains('widget-description') && !element.classList.contains('people-widget-paragraph')) {
             return;
         }
         
@@ -105,8 +109,8 @@
         isProcessing = true;
         
         try {
-            // Only target widget descriptions within Custom Link widgets
-            document.querySelectorAll('.widget-item .widget-description').forEach(element => {
+            // Target widget descriptions and people widget paragraphs
+            document.querySelectorAll('.widget-item .widget-description, .widget-item .people-widget-paragraph').forEach(element => {
                 // Skip if already has marquee-text (already fully processed)
                 if (element.querySelector('.marquee-text')) {
                     return;
@@ -127,7 +131,7 @@
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             // Only reset flags for elements that actually changed
-            document.querySelectorAll('.widget-item .widget-description').forEach(el => {
+            document.querySelectorAll('.widget-item .widget-description, .widget-item .people-widget-paragraph').forEach(el => {
                 // Only reset if it's not currently being processed
                 if (!isProcessing) {
                     delete el.dataset.marqueeProcessed;

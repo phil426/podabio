@@ -2076,13 +2076,16 @@ class WidgetRenderer {
         // Widget heading with accordion toggle button
         $accordionId = $containerId . '-accordion';
         $accordionContentId = $accordionId . '-content';
+        // Inline onclick handler - uses CSS classes only, no inline styles
+        $onclickCode = 'var w=this.closest(\'.widget-people\');if(!w)return false;var d=w.querySelector(\'.people-accordion-drawer\');if(!d)return false;var b=this;var o=d.classList.contains(\'open\');if(o){d.classList.remove(\'open\');b.setAttribute(\'aria-expanded\',\'false\');}else{d.classList.add(\'open\');b.setAttribute(\'aria-expanded\',\'true\');}var i=b.querySelector(\'.people-accordion-arrow i\');if(i){if(o){i.classList.remove(\'people-arrow-open\');}else{i.classList.add(\'people-arrow-open\');}}return false;';
+        
         if ($heading) {
-            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false">';
+            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false" onclick="' . htmlspecialchars($onclickCode) . '">';
             $html .= '<div class="widget-title">' . htmlspecialchars($heading) . '</div>';
             $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
             $html .= '</button>';
         } else {
-            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false">';
+            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false" onclick="' . htmlspecialchars($onclickCode) . '">';
             $html .= '<div class="widget-title">People</div>';
             $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
             $html .= '</button>';
@@ -2096,7 +2099,7 @@ class WidgetRenderer {
         $html .= '</div>'; // Close widget-content
         
         // Accordion drawer - separate bottom drawer that slides down (outside widget-content)
-        $html .= '<div class="people-accordion-drawer" id="' . htmlspecialchars($accordionContentId) . '" style="display: none;">';
+        $html .= '<div class="people-accordion-drawer" id="' . htmlspecialchars($accordionContentId) . '">';
         
         // Search field
         if ($showSearch) {
@@ -2145,7 +2148,7 @@ class WidgetRenderer {
             $html .= '</button>';
             
             // Contact details (accordion content)
-            $html .= '<div class="people-contact-content" id="' . htmlspecialchars($contactId) . '-content" style="display: none;">';
+            $html .= '<div class="people-contact-content people-contact-content-closed" id="' . htmlspecialchars($contactId) . '-content">';
             $html .= '<div class="people-contact-details">';
             
             if ($title) {
@@ -2207,43 +2210,117 @@ class WidgetRenderer {
         $html .= '<script>
 (function() {
     function initPeopleAccordion() {
-        // Set up accordion toggle using event delegation
         const container = document.getElementById("' . htmlspecialchars($containerId) . '");
-        if (!container) return;
+        if (!container) {
+            console.warn("People accordion: Container not found");
+            return;
+        }
         
         const headerButton = container.querySelector(".people-widget-header");
-        const content = document.getElementById("' . htmlspecialchars($accordionContentId) . '");
+        if (!headerButton) {
+            console.warn("People accordion: Header button not found");
+            return;
+        }
         
-        if (headerButton && content) {
-            // Remove any existing listeners by cloning the button
-            const newButton = headerButton.cloneNode(true);
-            headerButton.parentNode.replaceChild(newButton, headerButton);
-            
-            newButton.addEventListener("click", function(e) {
+        // Get content ID from data attribute or use the known ID
+        const contentId = headerButton.getAttribute("data-accordion-content") || "' . htmlspecialchars($accordionContentId) . '";
+        const content = document.getElementById(contentId);
+        
+        if (!content) {
+            console.warn("People accordion: Content not found", { contentId });
+            return;
+        }
+        
+        // Store references globally for debugging
+        window.peopleAccordionDebug = window.peopleAccordionDebug || {};
+        window.peopleAccordionDebug["' . htmlspecialchars($containerId) . '"] = {
+            container: container,
+            button: headerButton,
+            content: content
+        };
+        
+        // Ensure button has proper attributes
+        headerButton.setAttribute("type", "button");
+        headerButton.setAttribute("tabindex", "0");
+        headerButton.setAttribute("data-people-accordion", "' . htmlspecialchars($containerId) . '");
+        
+        // No inline styles - all styling handled by CSS classes
+        
+        // Toggle function
+        const toggleDrawer = function(e) {
+            if (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                // Toggle drawer using class instead of display
-                const isOpen = content.classList.contains("open");
+                e.stopImmediatePropagation();
+            }
+            
+            const isOpen = content.classList.contains("open");
+            
+            if (isOpen) {
+                content.classList.remove("open");
+                headerButton.setAttribute("aria-expanded", "false");
+            } else {
+                content.classList.add("open");
+                headerButton.setAttribute("aria-expanded", "true");
+            }
+            
+            // Rotate arrow icon using CSS class
+            const icon = headerButton.querySelector(".people-accordion-arrow i");
+            if (icon) {
                 if (isOpen) {
-                    content.classList.remove("open");
-                    content.style.display = "none";
-                    newButton.setAttribute("aria-expanded", "false");
+                    icon.classList.remove("people-arrow-open");
                 } else {
-                    content.style.display = "block";
-                    // Force reflow to ensure display is set before adding class
-                    content.offsetHeight;
-                    content.classList.add("open");
-                    newButton.setAttribute("aria-expanded", "true");
+                    icon.classList.add("people-arrow-open");
                 }
-                
-                // Rotate arrow icon
-                const icon = newButton.querySelector(".people-accordion-arrow i");
-                if (icon) {
-                    icon.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+            }
+        };
+        
+        // Global document click handler - most reliable approach
+        if (!window.peopleAccordionGlobalHandler) {
+            window.peopleAccordionGlobalHandler = function(e) {
+                const target = e.target;
+                const button = target.closest ? target.closest(".people-widget-header[data-people-accordion]") : null;
+                if (button) {
+                    const accordionId = button.getAttribute("data-people-accordion");
+                    const debug = window.peopleAccordionDebug[accordionId];
+                    if (debug && debug.content) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const isOpen = debug.content.classList.contains("open");
+                        if (isOpen) {
+                            debug.content.classList.remove("open");
+                            button.setAttribute("aria-expanded", "false");
+                        } else {
+                            debug.content.classList.add("open");
+                            button.setAttribute("aria-expanded", "true");
+                        }
+                        const icon = button.querySelector(".people-accordion-arrow i");
+                        if (icon) {
+                            if (isOpen) {
+                                icon.classList.remove("people-arrow-open");
+                            } else {
+                                icon.classList.add("people-arrow-open");
+                            }
+                        }
+                    }
                 }
-            });
+            };
+            document.addEventListener("click", window.peopleAccordionGlobalHandler, true);
         }
+        
+        // Also try direct handlers as backup
+        headerButton.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleDrawer(e);
+        };
+        
+        headerButton.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+            toggleDrawer(e);
+        }, true);
+        
+        console.log("People accordion initialized", { container, headerButton, content });
     }
     
     // Run when DOM is ready
@@ -2256,16 +2333,25 @@ class WidgetRenderer {
     // Toggle contact accordion
     window.togglePeopleContact = function(contactId) {
         const content = document.getElementById(contactId + "-content");
-        const button = document.querySelector("[onclick*=\'" + contactId + "\']");
+        const button = document.querySelector("[onclick*=\"" + contactId + "\"]");
         if (!content || !button) return;
         
-        const isExpanded = content.style.display !== "none";
-        content.style.display = isExpanded ? "none" : "block";
-        button.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+        const isExpanded = !content.classList.contains("people-contact-content-closed");
+        if (isExpanded) {
+            content.classList.add("people-contact-content-closed");
+            button.setAttribute("aria-expanded", "false");
+        } else {
+            content.classList.remove("people-contact-content-closed");
+            button.setAttribute("aria-expanded", "true");
+        }
         
         const icon = button.querySelector(".people-contact-toggle i");
         if (icon) {
-            icon.style.transform = isExpanded ? "rotate(0deg)" : "rotate(180deg)";
+            if (isExpanded) {
+                icon.classList.remove("people-contact-arrow-open");
+            } else {
+                icon.classList.add("people-contact-arrow-open");
+            }
         }
     };
     

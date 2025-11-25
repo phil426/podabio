@@ -1113,7 +1113,8 @@ class ThemeCSSGenerator {
         $css .= "    max-width: var(--widget-width, 100%);\n";
         $css .= "    margin: 0 auto;\n";
         // CRITICAL: Use widget-specific spacing for interior padding
-        $css .= "    padding: var(--widget-space-sm, 0.75rem) var(--widget-space-md, 1rem);\n";
+        // Use 0.75rem on all sides for consistent spacing around thumbnails
+        $css .= "    padding: var(--widget-space-sm, 0.75rem);\n";
         $css .= "    box-sizing: border-box;\n";
         $css .= "    position: relative;\n";
         $css .= "    z-index: auto;\n";
@@ -1310,6 +1311,52 @@ class ThemeCSSGenerator {
         $css .= "    display: inline-block;\n";
         $css .= "    white-space: nowrap;\n";
         $css .= "    padding-right: 2em; /* Space between duplicates for better visual separation */\n";
+        $css .= "}\n\n";
+        
+        // Marquee animation for People widget paragraphs
+        $css .= ".widget-item .people-widget-paragraph.marquee {\n";
+        $css .= "    overflow: hidden;\n";
+        $css .= "    white-space: nowrap;\n";
+        $css .= "    position: relative;\n";
+        $css .= "    width: 100%;\n";
+        $css .= "    max-width: 100%;\n";
+        $css .= "}\n\n";
+        
+        $css .= ".widget-item .people-widget-paragraph .marquee-content {\n";
+        $css .= "    display: inline-flex;\n";
+        $css .= "    white-space: nowrap;\n";
+        $css .= "    animation: widget-marquee-scroll linear infinite;\n";
+        $css .= "    animation-duration: var(--marquee-duration, 12s);\n";
+        $css .= "    will-change: transform; /* Optimize animation performance */\n";
+        $css .= "}\n\n";
+        
+        $css .= ".widget-item .people-widget-paragraph .marquee-content .marquee-text {\n";
+        $css .= "    display: inline-block;\n";
+        $css .= "    white-space: nowrap;\n";
+        $css .= "    padding-right: 2em; /* Space between duplicates for better visual separation */\n";
+        $css .= "}\n\n";
+        
+        // People widget paragraph - match widget-description styling
+        $css .= ".people-widget-paragraph {\n";
+        $css .= "    font-size: var(--type-scale-sm, 1rem);\n";
+        // Typography color - use widget-specific colors (can be gradient)
+        if ($widgetBodyColor) {
+            if ($isWidgetBodyGradient) {
+                $css .= "    background: var(--widget-body-font-gradient);\n";
+                $css .= "    -webkit-background-clip: text;\n";
+                $css .= "    background-clip: text;\n";
+                $css .= "    color: transparent;\n";
+            } else {
+                $css .= "    color: var(--widget-body-font-color, var(--color-text-secondary, #64748b));\n";
+            }
+        } else {
+            $css .= "    color: var(--widget-body-font-color, var(--color-text-secondary, #64748b));\n";
+        }
+        $css .= "    opacity: 0.9;\n";
+        $css .= "    margin: var(--widget-space-2xs, 0.25rem) 0 0 0;\n";
+        $css .= "    font-family: var(--widget-secondary-font, var(--page-secondary-font), sans-serif);\n";
+        $css .= "    min-width: 0; /* Allow text to be constrained in flex container */\n";
+        $css .= "    line-height: 1.6;\n";
         $css .= "}\n\n";
         
         // Widget type-specific: Video

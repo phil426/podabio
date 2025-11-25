@@ -325,87 +325,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
           }
           // Special handling for people widget thumbnail - show upload interface
           if (widgetType === 'people' && field === 'thumbnail_image') {
-            return (
-              <div key={field} className={styles.control}>
-                <span>
-                  {(configFields[field]?.label as string) ?? 'Widget Thumbnail'}
-                  {configFields[field]?.required && <span className={styles.required}>*</span>}
-                </span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {resolvedThumbnail && (
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '200px' }}>
-                      <img
-                        src={resolvedThumbnail}
-                        alt="Widget thumbnail"
-                        style={{
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(0, 0, 0, 0.1)'
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleThumbnailRemove}
-                        style={{
-                          position: 'absolute',
-                          top: '0.5rem',
-                          right: '0.5rem',
-                          background: 'rgba(0, 0, 0, 0.7)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: '24px',
-                          height: '24px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        aria-label="Remove thumbnail"
-                      >
-                        <X size={14} weight="bold" />
-                      </button>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={handleChooseThumbnailFile}
-                      disabled={isUploadingThumbnail}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '6px',
-                        border: '1px solid rgba(0, 0, 0, 0.2)',
-                        background: 'white',
-                        cursor: isUploadingThumbnail ? 'not-allowed' : 'pointer',
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      {isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
-                    </button>
-                    <input
-                      ref={thumbnailInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      style={{ display: 'none' }}
-                      onChange={handleThumbnailFileChange}
-                    />
-                  </div>
-                  {thumbnailError && (
-                    <p style={{ color: '#dc3545', fontSize: '0.875rem', margin: 0 }}>{thumbnailError}</p>
-                  )}
-                  <input
-                    type="url"
-                    className={styles.input}
-                    value={currentThumbnail}
-                    onChange={(e) => handleInputChange('thumbnail_image', e.target.value)}
-                    placeholder="Or enter image URL"
-                    style={{ marginTop: '0.5rem' }}
-                  />
-                </div>
-              </div>
-            );
+            return null; // Handled separately below
           }
           // Special handling for people contacts field with CSV import
           if (widgetType === 'people' && field === 'contacts') {
@@ -442,10 +362,10 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
             />
           );
         })}
-        {(widgetType === 'custom_link' || widgetType === 'youtube_video') && (
+        {(widgetType === 'custom_link' || widgetType === 'youtube_video' || widgetType === 'people') && (
           <div className={styles.thumbnailSection}>
             <span className={styles.thumbnailLabel}>Thumbnail</span>
-            {widgetType === 'custom_link' ? (
+            {widgetType === 'custom_link' || widgetType === 'people' ? (
               <>
                 <div
                   className={styles.thumbnailPreview}
@@ -487,6 +407,16 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
                   onChange={handleThumbnailFileChange}
                 />
                 {thumbnailError && <p className={styles.thumbnailError}>{thumbnailError}</p>}
+                {widgetType === 'people' && (
+                  <input
+                    type="url"
+                    className={styles.input}
+                    value={currentThumbnail}
+                    onChange={(e) => handleInputChange('thumbnail_image', e.target.value)}
+                    placeholder="Or enter image URL"
+                    style={{ marginTop: '0.5rem' }}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -832,7 +762,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
             }
             window.removeEventListener('message', messageListener);
             try {
-              popup?.close();
+            popup?.close();
             } catch (e) {
               // Ignore COOP errors when closing
             }
@@ -841,7 +771,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
             setIsLoadingGoogle(false);
             window.removeEventListener('message', messageListener);
             try {
-              popup?.close();
+            popup?.close();
             } catch (e) {
               // Ignore COOP errors when closing
             }
