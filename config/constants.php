@@ -104,6 +104,12 @@ define('THEME_DEFAULT_FONT', 'Inter');
 // Timezone
 date_default_timezone_set('UTC');
 
+// Load local overrides if they exist (for local development)
+// This file is gitignored and allows machine-specific configuration
+if (file_exists(__DIR__ . '/local.php')) {
+    require_once __DIR__ . '/local.php';
+}
+
 // PHP Configuration Notes
 // - Recommended PHP version: 8.3
 // - Minimum PHP version: 8.0

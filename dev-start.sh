@@ -5,7 +5,21 @@
 
 set -e  # Exit on error
 
-PROJECT_ROOT="/Users/philybarrolaza/.cursor/podinbio"
+# Source shell profile to get PATH for php and npm
+if [ -f ~/.zshrc ]; then
+    source ~/.zshrc
+elif [ -f ~/.bash_profile ]; then
+    source ~/.bash_profile
+elif [ -f ~/.bashrc ]; then
+    source ~/.bashrc
+fi
+
+# Ensure Homebrew binaries are in PATH
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${SCRIPT_DIR}"
 ADMIN_UI_DIR="${PROJECT_ROOT}/admin-ui"
 PHP_PORT=8080
 VITE_PORT=5174
@@ -101,8 +115,8 @@ cd "${PROJECT_ROOT}"
 if lsof -ti:${PHP_PORT} >/dev/null 2>&1; then
     echo "   ⚠️  Port ${PHP_PORT} is already in use"
 else
-    # Start PHP server in background
-    nohup php -S localhost:${PHP_PORT} router.php > /tmp/podabio-php-server.log 2>&1 &
+    # Start PHP server in background with proper environment
+    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; cd '${PROJECT_ROOT}' && php -S localhost:'${PHP_PORT}' router.php' > /tmp/podabio-php-server.log 2>&1 &
     PHP_PID=$!
     sleep 2
     
@@ -125,8 +139,8 @@ cd "${ADMIN_UI_DIR}"
 if lsof -ti:${VITE_PORT} >/dev/null 2>&1; then
     echo "   ⚠️  Port ${VITE_PORT} is already in use"
 else
-    # Start Vite server in background
-    nohup npm run dev > /tmp/podabio-vite-server.log 2>&1 &
+    # Start Vite server in background with proper environment
+    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; cd '${ADMIN_UI_DIR}' && npm run dev' > /tmp/podabio-vite-server.log 2>&1 &
     VITE_PID=$!
     sleep 3
     
