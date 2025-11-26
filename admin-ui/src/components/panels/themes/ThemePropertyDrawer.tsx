@@ -47,10 +47,58 @@ export function ThemePropertyDrawer({
   }
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <Dialog.Portal>
-        <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.modal} aria-label={section.title}>
+        <Dialog.Overlay 
+          className={styles.overlay}
+          onClick={(e) => {
+            // Only close if clicking directly on overlay (not on Popover above it)
+            if (e.target === e.currentTarget) {
+              onClose();
+            }
+          }}
+        />
+        <Dialog.Content 
+          className={styles.modal} 
+          aria-label={section.title}
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            // Check if the click is inside a Popover Portal or any interactive element
+            const isInPopover = target.closest('[data-radix-popover-content]') ||
+                               target.closest('[data-radix-portal]') ||
+                               target.closest('[class*="backgroundPopover"]') ||
+                               target.closest('[class*="react-colorful"]') ||
+                               target.closest('[data-radix-slider-thumb]') ||
+                               target.closest('[data-radix-slider-track]') ||
+                               target.closest('[data-radix-slider-root]');
+            
+            // If inside a Popover or slider, return early WITHOUT preventing - allow native drag behavior
+            if (isInPopover) {
+              return; // Don't prevent - let events flow naturally
+            }
+            
+            // Only prevent if truly outside both Dialog and Popover
+            // Closing is handled by overlay click
+          }}
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement;
+            // Check if the interaction is inside a Popover Portal or any interactive element
+            const isInPopover = target.closest('[data-radix-popover-content]') ||
+                               target.closest('[data-radix-portal]') ||
+                               target.closest('[class*="backgroundPopover"]') ||
+                               target.closest('[class*="react-colorful"]') ||
+                               target.closest('[data-radix-slider-thumb]') ||
+                               target.closest('[data-radix-slider-track]') ||
+                               target.closest('[data-radix-slider-root]');
+            
+            // If inside a Popover or slider, return early WITHOUT preventing - allow native drag behavior
+            if (isInPopover) {
+              return; // Don't prevent - let events flow naturally
+            }
+            
+            // Only prevent if truly outside both Dialog and Popover
+          }}
+        >
           <header className={styles.header}>
             <div className={styles.headerContent}>
               <Dialog.Title className={styles.title}>{section.title}</Dialog.Title>

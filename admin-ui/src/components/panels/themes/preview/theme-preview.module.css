@@ -212,7 +212,7 @@
   font-style: var(--page-bio-style, normal);
   line-height: var(--page-bio-spacing, 1.5);
   text-align: center;
-  color: var(--page-description-color, #4b5563);
+  /* Color is set via inline styles to support gradients */
   font-family: var(--page-description-font, 'Inter, sans-serif');
   width: 80%;
   max-width: 100%;

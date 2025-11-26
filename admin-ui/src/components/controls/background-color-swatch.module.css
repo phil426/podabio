@@ -127,12 +127,16 @@
   z-index: 10002;
   min-width: 300px;
   max-width: 400px;
+  /* Ensure Popover can receive all pointer events for dragging */
+  pointer-events: auto;
 }
 
 .backgroundPopoverContent {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  /* Ensure content can receive all pointer events */
+  pointer-events: auto;
 }
 
 

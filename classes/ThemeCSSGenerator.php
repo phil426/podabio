@@ -1615,12 +1615,37 @@ class ThemeCSSGenerator {
         $css .= "    border: 3px solid var(--primary-color);\n";
         $css .= "}\n\n";
         
+        // Base .page-title styles (always applied)
         $css .= ".page-title {\n";
         $css .= "    color: var(--page-title-color);\n";
         // Apply direct font size if typography_tokens.size.heading is set, otherwise use scale
         if (!empty($this->typographyTokens['size']['heading'])) {
             $css .= "    font-size: var(--page-title-size, " . h($this->typographyTokens['size']['heading']) . "px) !important;\n";
         }
+        $css .= "}\n\n";
+        
+        // Check page-level effect first (new system), then fall back to theme-level (legacy)
+        $effectType = $this->page['page_name_effect'] ?? $this->typographyTokens['effect']['heading'] ?? 'none';
+        // Skip if effect is 'none' or empty
+        if ($effectType === 'none' || $effectType === '' || empty($effectType)) {
+            $effectType = 'none';
+        }
+        
+        // Only generate effect CSS if an effect is selected
+        if ($effectType !== 'none') {
+            // Generate CSS for the specific effect class (e.g., .page-title-effect-anaglyphic)
+            // Use higher specificity to ensure it overrides base .page-title styles
+            $effectClass = '.page-title.page-title-effect-' . h($effectType);
+            $css .= $effectClass . " {\n";
+            
+            // Get page background for effects that need it
+            $pageBgValue = $this->resolvedPageBackgroundValue ?? '#f1f1f1';
+            $bgColor = (is_string($pageBgValue) && (strpos($pageBgValue, 'gradient') !== false)) 
+                ? '#f1f1f1' // Default for gradients
+                : (is_string($pageBgValue) ? $pageBgValue : '#f1f1f1');
+            
+            // Set default color (will be overridden by effects that need specific colors)
+            $effectColorOverride = null;
         
         // Build text-shadow layers: border first (renders on top), then effect (renders behind)
         // In CSS text-shadow, first shadows render on top, so border should be first
@@ -1641,8 +1666,7 @@ class ThemeCSSGenerator {
             }
         }
         
-        // Apply text effects (shadow or glow) - these render behind the border
-        $effectType = $this->typographyTokens['effect']['heading'] ?? 'none';
+            // Apply text-shadow for all effects that need it
         if ($effectType === 'shadow') {
             $shadowColor = $this->typographyTokens['effect']['shadow']['color'] ?? '#000000';
             $shadowIntensity = floatval($this->typographyTokens['effect']['shadow']['intensity'] ?? 0.5);
@@ -1661,14 +1685,105 @@ class ThemeCSSGenerator {
             $textShadows[] = "0 0 " . h($glowWidth) . "px " . h($glowColorRgba);
             $textShadows[] = "0 0 " . h($glowWidth * 1.5) . "px " . h($glowColorRgba);
             $textShadows[] = "0 0 " . h($glowWidth * 2) . "px " . h($glowColorRgba);
+                $textShadows[] = "0 0 " . h($glowWidth * 3) . "px " . h($glowColorRgba);
+                $textShadows[] = "0 0 " . h($glowWidth * 4) . "px " . h($glowColorRgba);
+            } elseif ($effectType === 'retro') {
+                // Retro shadow - two shadows, first matches background, second is offset grey
+                $textShadows[] = "2px 2px 0px " . h($bgColor);
+                $textShadows[] = "3px 3px 0px #707070";
+            } elseif ($effectType === 'anaglyphic') {
+                // Anaglyphic - colored text with offset colored shadow
+                // Override text color to purple with transparency
+                $effectColorOverride = 'rgba(97, 70, 127, 0.7)';
+                $shadowRgba = 'rgba(62, 176, 180, 0.7)';
+                $textShadows[] = "5px 5px 0 " . h($shadowRgba);
+            } elseif ($effectType === 'deep') {
+                // Deep - layers of gradually darker shades offsetting downward
+                // Text color should be background color (white)
+                $effectColorOverride = $bgColor;
+                // Top highlight
+                $textShadows[] = "0 -1px 0 #fff";
+                // Multiple dark layers going down
+                for ($i = 1; $i <= 15; $i++) {
+                    $darkness = max(18, 46 - ($i * 2));
+                    $hex = sprintf("#%02x%02x%02x", $darkness, $darkness, $darkness);
+                    $textShadows[] = "0 " . $i . "px 0 " . h($hex);
+                }
+                // Final blur shadow
+                $textShadows[] = "0 22px 30px rgba(0, 0, 0, 0.9)";
+            } elseif ($effectType === 'game') {
+                // Game - alternating colored shadows
+                // Text color should be white
+                $effectColorOverride = '#ffffff';
+                $textShadows[] = "5px 5px 0 #ffd217";
+                $textShadows[] = "9px 9px 0 #5ac7ff";
+                $textShadows[] = "14px 14px 0 #ffd217";
+                $textShadows[] = "18px 18px 0 #5ac7ff";
+            } elseif ($effectType === 'fancy') {
+                // Fancy - elegant blurred grey shadow
+                // Text color should be white
+                $effectColorOverride = '#ffffff';
+                $textShadows[] = "-15px 5px 20px #ced0d3";
+            } elseif ($effectType === 'pretty') {
+                // Pretty - alternating background color and blue shadows
+                $blueColor = '#1c4b82';
+                $textShadows[] = "-1px -1px 0px " . h($bgColor);
+                $textShadows[] = "3px 3px 0px " . h($bgColor);
+                $textShadows[] = "6px 6px 0px " . h($blueColor);
+            } elseif ($effectType === 'flat') {
+                // Flat - elegant blurred shadow with white highlight
+                // Text color should be background color
+                $effectColorOverride = $bgColor;
+                $textShadows[] = "0 13.36px 8.896px #c4b59d";
+                $textShadows[] = "0 -2px 1px #fff";
+            } elseif ($effectType === 'long') {
+                // Long shadow - generated gradient shadow
+                $shadowColor = '#33313b';
+                $steps = 50;
+                for ($i = 1; $i <= $steps; $i++) {
+                    $opacity = 0.5 * (1 - ($i / $steps)); // Fade out
+                    $rgba = $this->hexToRgba($shadowColor, $opacity);
+                    $textShadows[] = $i . "px " . $i . "px 0 " . h($rgba);
+                }
+            } elseif ($effectType === 'party') {
+                // Party Time - multiple colorful shadows
+                // Text color should be white
+                $effectColorOverride = '#ffffff';
+                
+                // Get page title color to generate variations
+                $pageTitleColor = $this->typographyTokens['color']['heading'] ?? '#ffffff';
+                $baseColor = is_string($pageTitleColor) ? $pageTitleColor : '#ffffff';
+                
+                // Generate color variations from base color
+                $partyColors = $this->generatePartyColors($baseColor);
+                
+                // Get font size to calculate shadow offsets
+                $fontSize = $this->typographyTokens['scale']['heading'] ?? 24;
+                $fontSizeNum = is_numeric($fontSize) ? intval($fontSize) : 24;
+                
+                // Create shadows with increasing offsets
+                $baseOffset = max(2, $fontSizeNum * 0.05); // 5% of font size, min 2px
+                $offsets = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5];
+                
+                foreach ($offsets as $index => $multiplier) {
+                    $offset = $baseOffset * $multiplier;
+                    $color = $partyColors[$index] ?? $partyColors[count($partyColors) - 1];
+                    $textShadows[] = round($offset) . "px " . round($offset) . "px 0px " . h($color);
+                }
+            }
+            
+            // Apply color override if effect requires it
+            if ($effectColorOverride !== null) {
+                $css .= "    color: " . h($effectColorOverride) . " !important;\n";
+            }
+            
+            // Output combined text-shadow if any shadows exist
+            if (!empty($textShadows)) {
+                $css .= "    text-shadow: " . implode(", ", $textShadows) . ";\n";
+            }
+            
+            $css .= "}\n\n";
         }
-        
-        // Output combined text-shadow if any shadows exist
-        if (!empty($textShadows)) {
-            $css .= "    text-shadow: " . implode(", ", $textShadows) . ";\n";
-        }
-        
-        $css .= "}\n\n";
         
         $css .= ".page-description {\n";
         $css .= "    color: var(--page-description-color);\n";
@@ -1841,6 +1956,121 @@ class ThemeCSSGenerator {
         $opacityFloat = max(0, min(1, $opacityFloat)); // Clamp between 0 and 1
         
         return 'rgba(' . $rgb[0] . ', ' . $rgb[1] . ', ' . $rgb[2] . ', ' . $opacityFloat . ')';
+    }
+
+    /**
+     * Generate party colors from a base color
+     * Creates a vibrant gradient from the base color
+     * @param string $baseColor Hex color
+     * @return array Array of 9 hex colors
+     */
+    private function generatePartyColors($baseColor) {
+        // Parse base color
+        $cleanHex = ltrim($baseColor, '#');
+        $fullHex = strlen($cleanHex) === 3
+            ? $cleanHex[0] . $cleanHex[0] . $cleanHex[1] . $cleanHex[1] . $cleanHex[2] . $cleanHex[2]
+            : $cleanHex;
+        
+        if (strlen($fullHex) !== 6 || !preg_match('/^[0-9a-fA-F]{6}$/', $fullHex)) {
+            // Fallback colors if parsing fails
+            return ['#ff00ff', '#ff0080', '#ff0040', '#ff4000', '#ff8000', '#ffc000', '#ffff00', '#80ff00', '#00ff00'];
+        }
+        
+        $r = hexdec(substr($fullHex, 0, 2));
+        $g = hexdec(substr($fullHex, 2, 2));
+        $b = hexdec(substr($fullHex, 4, 2));
+        
+        // Convert RGB to HSL for easier color manipulation
+        $hsl = $this->rgbToHsl($r, $g, $b);
+        
+        // Generate 9 colors: lighter/more saturated -> darker/less saturated
+        $colors = [];
+        for ($i = 0; $i < 9; $i++) {
+            // Adjust hue slightly for variation (rotate around color wheel)
+            $hueShift = ($i * 30) % 360; // 30 degree steps
+            $newHue = ($hsl['h'] + $hueShift) % 360;
+            
+            // Start bright and saturated, gradually darken
+            $saturation = max(70, 100 - ($i * 3)); // 100% -> 70%
+            $lightness = max(30, 80 - ($i * 5)); // 80% -> 30%
+            
+            $rgb = $this->hslToRgb($newHue, $saturation, $lightness);
+            $colors[] = sprintf('#%02x%02x%02x', $rgb['r'], $rgb['g'], $rgb['b']);
+        }
+        
+        return $colors;
+    }
+    
+    /**
+     * Convert RGB to HSL
+     * @param int $r Red (0-255)
+     * @param int $g Green (0-255)
+     * @param int $b Blue (0-255)
+     * @return array Array with 'h', 's', 'l' keys
+     */
+    private function rgbToHsl($r, $g, $b) {
+        $r /= 255;
+        $g /= 255;
+        $b /= 255;
+        
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $h = 0;
+        $s = 0;
+        $l = ($max + $min) / 2;
+        
+        if ($max !== $min) {
+            $d = $max - $min;
+            $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
+            
+            switch ($max) {
+                case $r: $h = (($g - $b) / $d + ($g < $b ? 6 : 0)) / 6; break;
+                case $g: $h = (($b - $r) / $d + 2) / 6; break;
+                case $b: $h = (($r - $g) / $d + 4) / 6; break;
+            }
+        }
+        
+        return ['h' => $h * 360, 's' => $s * 100, 'l' => $l * 100];
+    }
+    
+    /**
+     * Convert HSL to RGB
+     * @param float $h Hue (0-360)
+     * @param float $s Saturation (0-100)
+     * @param float $l Lightness (0-100)
+     * @return array Array with 'r', 'g', 'b' keys (0-255)
+     */
+    private function hslToRgb($h, $s, $l) {
+        $h /= 360;
+        $s /= 100;
+        $l /= 100;
+        
+        $r = $l;
+        $g = $l;
+        $b = $l;
+        
+        if ($s !== 0) {
+            $hue2rgb = function($p, $q, $t) {
+                if ($t < 0) $t += 1;
+                if ($t > 1) $t -= 1;
+                if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
+                if ($t < 1/2) return $q;
+                if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
+                return $p;
+            };
+            
+            $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
+            $p = 2 * $l - $q;
+            $r = $hue2rgb($p, $q, $h + 1/3);
+            $g = $hue2rgb($p, $q, $h);
+            $b = $hue2rgb($p, $q, $h - 1/3);
+        }
+        
+        return [
+            'r' => round($r * 255),
+            'g' => round($g * 255),
+            'b' => round($b * 255)
+        ];
     }
 
     private function rgbToHex($rgb) {

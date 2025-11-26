@@ -216,7 +216,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         }
       }
 
-      // Save page-level fields (profile image styling)
+      // Save page-level fields (profile image styling and page title effects)
       const pageFields: Record<string, string | number> = {};
       
       // Profile image fields
@@ -241,6 +241,12 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           pageFields[dbFieldName] = typeof value === 'number' ? value : String(value);
         }
       });
+
+      // Page title effect (page-level field)
+      const pageTitleEffect = uiState['page-title-effect'];
+      if (pageTitleEffect !== undefined) {
+        pageFields['page_name_effect'] = pageTitleEffect === 'none' || pageTitleEffect === '' ? null : String(pageTitleEffect);
+      }
 
       if (Object.keys(pageFields).length > 0) {
         await updatePageMutation.mutateAsync(pageFields);
@@ -274,6 +280,13 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
   // Handle applying theme (sets as active without opening editor)
   const handleApplyTheme = useCallback(async (theme: ThemeRecord) => {
+    // Skip if theme is already active
+    const currentThemeId = snapshot?.page?.theme_id ?? null;
+    if (currentThemeId !== null && currentThemeId === theme.id) {
+      // Theme is already active, no need to apply again
+      return;
+    }
+
     try {
       // Extract page background from theme
       let pageBackground: string | null | undefined = theme.page_background;
@@ -332,7 +345,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       console.error('Failed to apply theme:', error);
       setStatus({ tone: 'error', message: 'Failed to apply theme. Please try again.' });
     }
-  }, [queryClient]);
+  }, [queryClient, snapshot?.page?.theme_id]);
 
   // Handle create new theme
   const handleCreateNew = useCallback(() => {

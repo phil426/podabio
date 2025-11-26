@@ -276,11 +276,37 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                 $bioTextSize = $page['bio_text_size'] ?? 'medium';
                                 $alignmentStyle = 'text-align: ' . h($bioAlignment) . '; ';
                                 $sizeClass = 'bio-size-' . h($bioTextSize);
+                                
+                                // Get bio color from theme typography tokens
+                                $bioColor = null;
+                                if ($theme && !empty($theme['typography_tokens'])) {
+                                    $typographyTokens = is_string($theme['typography_tokens']) 
+                                        ? json_decode($theme['typography_tokens'], true) 
+                                        : $theme['typography_tokens'];
+                                    $bioColor = $typographyTokens['color']['body'] ?? null;
+                                }
+                                
+                                // Build style with color/gradient support
+                                $colorStyle = '';
+                                if ($bioColor && $bioColor !== '') {
+                                    if (strpos($bioColor, 'gradient') !== false || strpos($bioColor, 'linear-gradient') !== false || strpos($bioColor, 'radial-gradient') !== false) {
+                                        // Gradient: use background-image with text clipping
+                                        $colorStyle = 'background-image: ' . h($bioColor) . '; ';
+                                        $colorStyle .= '-webkit-background-clip: text; ';
+                                        $colorStyle .= 'background-clip: text; ';
+                                        $colorStyle .= '-webkit-text-fill-color: transparent; ';
+                                        $colorStyle .= 'color: transparent; '; // Fallback
+                                    } else {
+                                        // Solid color: use color property
+                                        $colorStyle = 'color: ' . h($bioColor) . '; ';
+                                    }
+                                }
+                                
                                 $bioContent = $page['podcast_description'];
                                 $bioContent = nl2br($bioContent);
                                 $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
                             ?>
-                                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-body, inherit);"><?php echo $bioContent; ?></p>
+                                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"><?php echo $bioContent; ?></p>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>

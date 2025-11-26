@@ -3,7 +3,7 @@
  * Settings for page title only
  */
 
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
@@ -177,14 +177,23 @@ export function PageTitleSection({
           </>
         )}
 
+        {/* Page Title Color - Always visible */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Color</label>
+          <BackgroundColorSwatch
+            value={pageTitleColor}
+            onChange={(value) => onFieldChange('page-title-color', value)}
+            label="Page title color"
+          />
+        </div>
+
         {/* Font Border/Stroke Controls - Always visible */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Font Border Color</label>
-          <StandardColorPicker
-            label="Font border color"
+          <BackgroundColorSwatch
             value={borderColor}
             onChange={(value) => onFieldChange('page-title-border-color', value)}
-            hideWrapper
+            label="Font border color"
           />
         </div>
 
@@ -197,16 +206,6 @@ export function PageTitleSection({
             step={0.5}
             unit="px"
             onChange={(value) => onFieldChange('page-title-border-width', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Color</label>
-          <StandardColorPicker
-            label="Page title color"
-            value={pageTitleColor}
-            onChange={(value) => onFieldChange('page-title-color', value)}
-            hideWrapper
           />
         </div>
 

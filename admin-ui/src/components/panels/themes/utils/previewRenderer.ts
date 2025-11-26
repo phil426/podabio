@@ -48,7 +48,7 @@ class PreviewRenderer {
    * Maps all token values to CSS custom properties
    * uiState contains field IDs (e.g., 'page-title-color'), not token paths
    */
-  generateCSSVariables(theme: ThemeRecord | null, uiState?: Record<string, unknown>): CSSVariableMap {
+  generateCSSVariables(theme: ThemeRecord | null, uiState?: Record<string, unknown>, page?: Record<string, unknown>): CSSVariableMap {
     const cssVars: CSSVariableMap = {};
     const tokenValues = extractTokenValues(theme);
 
@@ -446,8 +446,11 @@ class PreviewRenderer {
     }
 
     // Map page title effect properties
-    // allValues already includes uiStateTokenValues, so effect properties should be there
-    const effectType = allValues['typography_tokens.effect.heading'] ?? 'none';
+    // Read from uiState directly (page-level field, not theme token)
+    // Also check if page object is passed (for preview)
+    const effectType = uiState?.['page-title-effect'] ?? 
+                      (typeof page !== 'undefined' && page && 'page_name_effect' in page ? (page as Record<string, unknown>).page_name_effect : null) ??
+                      'none';
     const effectShadows: string[] = [];
     
     // Get background color for effects that need it (retro, pretty, flat, long)
@@ -624,6 +627,13 @@ class PreviewRenderer {
       cssVars['--page-title-text-shadow'] = allShadows.join(', ');
     } else {
       cssVars['--page-title-text-shadow'] = 'none';
+    }
+
+    // Set the effect class name for use in components
+    if (effectType !== 'none') {
+      cssVars['--page-title-effect-class'] = `page-title-effect-${effectType}`;
+    } else {
+      cssVars['--page-title-effect-class'] = '';
     }
 
     return cssVars;

@@ -237,7 +237,7 @@ sectionRegistry.register({
 sectionRegistry.register({
   id: 'podcast-player-bar',
   title: 'Podcast Player Bar',
-  description: 'Customize podcast player bar appearance',
+  description: 'Customize podcast player bar appearance3',
   fields: [
     'podcast-player-background',
     'podcast-player-border-color',

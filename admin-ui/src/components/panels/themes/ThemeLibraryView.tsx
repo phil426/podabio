@@ -120,9 +120,8 @@ export function ThemeLibraryView({
               selected={true}
               onSelect={() => {
                 const theme = activeUserTheme || activeSystemTheme || activeTheme!;
-                if (onApplyTheme) {
-                  onApplyTheme(theme);
-                }
+                // Don't call onApplyTheme for the active theme - it's already applied
+                // Just open the editor
                 onSelectTheme(theme);
               }}
               tertiaryActions={activeUserTheme ? {

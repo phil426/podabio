@@ -36,19 +36,21 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
 
   // Generate CSS variables for preview
   const cssVars = useMemo(() => {
-    return previewRenderer.generateCSSVariables(theme, uiState);
-  }, [theme, uiState]);
+    return previewRenderer.generateCSSVariables(theme, uiState, page || undefined);
+  }, [theme, uiState, page]);
 
   if (!sectionId) return null;
 
   // Render preview based on section
   switch (sectionId) {
     case 'page-title':
+      const effectClass = cssVars['--page-title-effect-class'] || '';
+      const pageTitle = page?.podcast_name || page?.username || 'Sample Page Title';
       return (
         <div className={styles.previewContainer}>
           <div className={styles.previewLabel}>Preview</div>
           <h1 
-            className={styles.pageTitlePreview}
+            className={`${styles.pageTitlePreview} ${effectClass}`}
             style={{
               color: cssVars['--page-title-color'] || '#0f172a',
               fontFamily: cssVars['--page-title-font'] || "'Inter', sans-serif",
@@ -59,25 +61,43 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
               textShadow: cssVars['--page-title-text-shadow'] || 'none'
             }}
           >
-            Sample Page Title
+            {pageTitle}
           </h1>
         </div>
       );
 
     case 'page-description':
+      const bioColor = cssVars['--page-description-color'] || '#4b5563';
+      const isGradient = typeof bioColor === 'string' && (
+        bioColor.includes('gradient') || 
+        bioColor.includes('linear-gradient') || 
+        bioColor.includes('radial-gradient')
+      );
+      
+      const bioStyle: React.CSSProperties = {
+        fontFamily: cssVars['--page-description-font'] || "'Inter', sans-serif",
+        fontSize: cssVars['--page-description-size'] || '16px',
+        fontWeight: cssVars['--page-bio-weight'] || '400',
+        fontStyle: cssVars['--page-bio-style'] || 'normal',
+        lineHeight: cssVars['--page-bio-spacing'] || '1.5'
+      };
+      
+      if (isGradient) {
+        bioStyle.backgroundImage = bioColor;
+        bioStyle.WebkitBackgroundClip = 'text';
+        bioStyle.backgroundClip = 'text';
+        bioStyle.WebkitTextFillColor = 'transparent';
+        bioStyle.color = 'transparent';
+      } else {
+        bioStyle.color = bioColor;
+      }
+      
       return (
         <div className={styles.previewContainer}>
           <div className={styles.previewLabel}>Preview</div>
           <p 
             className={styles.pageDescriptionPreview}
-            style={{
-              color: cssVars['--page-description-color'] || '#4b5563',
-              fontFamily: cssVars['--page-description-font'] || "'Inter', sans-serif",
-              fontSize: cssVars['--page-description-size'] || '16px',
-              fontWeight: cssVars['--page-bio-weight'] || '400',
-              fontStyle: cssVars['--page-bio-style'] || 'normal',
-              lineHeight: cssVars['--page-bio-spacing'] || '1.5'
-            }}
+            style={bioStyle}
           >
             This is sample body text that shows how the page description will look with your current settings.
           </p>

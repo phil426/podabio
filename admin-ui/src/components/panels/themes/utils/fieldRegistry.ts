@@ -125,7 +125,7 @@ fieldRegistry.register({
   id: 'page-title-effect',
   label: 'Special Effect',
   type: 'select',
-  tokenPath: 'typography_tokens.effect.heading',
+  tokenPath: 'page.page_name_effect',
   section: 'page-customization',
   defaultValue: 'none',
   options: [

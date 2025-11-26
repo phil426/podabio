@@ -3,7 +3,6 @@
  * Settings for widget background, border, radius, shadow, and glow
  */
 
-import { useState, useEffect } from 'react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { StandardColorPicker } from '../../../controls/StandardColorPicker';
 import { WidgetBorderEffectSelect } from '../../ultimate-theme-modifier/WidgetBorderEffectSelect';
@@ -24,7 +23,6 @@ export function WidgetSettingsSection({
 }: WidgetSettingsSectionProps): JSX.Element {
   // Widget background/border/shadow/glow values
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
-  const [widgetBackgroundType, setWidgetBackgroundType] = useState<'solid' | 'gradient'>('solid');
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';
   const widgetBorderWidth = (uiState['widget-border-width'] as number) ?? 0;
   const widgetRounding = (uiState['widget-rounding'] as number) ?? 12;
@@ -36,19 +34,6 @@ export function WidgetSettingsSection({
   const widgetGlowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
   const widgetGlowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
 
-  // Determine background type
-  useEffect(() => {
-    if (!widgetBackground || typeof widgetBackground !== 'string') {
-      setWidgetBackgroundType('solid');
-      return;
-    }
-    if (widgetBackground.includes('gradient')) {
-      setWidgetBackgroundType('gradient');
-    } else {
-      setWidgetBackgroundType('solid');
-    }
-  }, [widgetBackground]);
-
   return (
     <div className={styles.section}>
       {/* Widget Background & Border */}
@@ -59,27 +44,17 @@ export function WidgetSettingsSection({
           <label className={styles.label}>Background</label>
           <BackgroundColorSwatch
             value={widgetBackground}
-            backgroundType={widgetBackgroundType}
             onChange={(value) => onFieldChange('widget-background', value)}
-            onTypeChange={(type) => {
-              setWidgetBackgroundType(type);
-              if (type === 'solid') {
-                onFieldChange('widget-background', '#ffffff');
-              } else if (type === 'gradient') {
-                onFieldChange('widget-background', 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)');
-              }
-            }}
             label="Widget background"
           />
         </div>
 
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
-          <StandardColorPicker
-            label="Widget border color"
+          <BackgroundColorSwatch
             value={widgetBorderColor}
             onChange={(value) => onFieldChange('widget-border-color', value)}
-            hideWrapper
+            label="Widget border color"
           />
         </div>
 
@@ -135,11 +110,10 @@ export function WidgetSettingsSection({
 
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <StandardColorPicker
-                label="Shadow color"
+              <BackgroundColorSwatch
                 value={widgetShadowColor}
                 onChange={(value) => onFieldChange('widget-shadow-color', value)}
-                hideWrapper
+                label="Shadow color"
               />
             </div>
 
@@ -172,11 +146,10 @@ export function WidgetSettingsSection({
 
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <StandardColorPicker
-                label="Glow color"
+              <BackgroundColorSwatch
                 value={widgetGlowColor}
                 onChange={(value) => onFieldChange('widget-glow-color', value)}
-                hideWrapper
+                label="Glow color"
               />
             </div>
 

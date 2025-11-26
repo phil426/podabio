@@ -5,6 +5,7 @@ import { EditorShell } from './components/layout/EditorShell';
 import { ColorPickerDemo } from './components/demo/ColorPickerDemo';
 import { PagePropertiesToolbarDemo } from './components/demo/PagePropertiesToolbarDemo';
 import { PageSettingsDemo } from './components/demo/PageSettingsDemo';
+import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
 import { TokenProvider } from './design-system/theme/TokenProvider';
 import { ThemeModeProvider } from './design-system/theme/ThemeModeProvider';
@@ -24,6 +25,10 @@ export default function App(): JSX.Element {
               <Route path="/demo/page-properties-toolbar.php" element={<PagePropertiesToolbarDemo />} />
               <Route path="/demo/page-settings" element={<PageSettingsDemo />} />
               <Route path="/demo/page-settings.php" element={<PageSettingsDemo />} />
+              <Route path="/demo/color-picker-drag-test" element={<ColorPickerDragTest />} />
+              <Route path="/demo/color-picker-drag-test.php" element={<ColorPickerDragTest />} />
+              {/* Also match when accessed directly via PHP file */}
+              <Route path="/demo/color-picker-drag-test.php/" element={<ColorPickerDragTest />} />
               <Route path="/studio-docs" element={<DocumentationViewer />} />
               <Route path="/studio-docs.php" element={<DocumentationViewer />} />
               <Route path="/*" element={<EditorShell />} />

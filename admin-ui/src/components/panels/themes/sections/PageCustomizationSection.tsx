@@ -277,11 +277,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <StandardColorPicker
-                label="Shadow color"
+              <BackgroundColorSwatch
                 value={(uiState['profile-image-shadow-color'] as string) ?? '#000000'}
                 onChange={(value) => onFieldChange('profile-image-shadow-color', value)}
-                hideWrapper
+                label="Shadow color"
               />
             </div>
 
@@ -327,11 +326,10 @@ export function PageCustomizationSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <StandardColorPicker
-                label="Glow color"
+              <BackgroundColorSwatch
                 value={(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}
                 onChange={(value) => onFieldChange('profile-image-glow-color', value)}
-                hideWrapper
+                label="Glow color"
               />
             </div>
 
@@ -352,11 +350,10 @@ export function PageCustomizationSection({
         {/* Border Controls */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
-          <StandardColorPicker
-            label="Border color"
+          <BackgroundColorSwatch
             value={(uiState['profile-image-border-color'] as string) ?? '#000000'}
             onChange={(value) => onFieldChange('profile-image-border-color', value)}
-            hideWrapper
+            label="Border color"
           />
         </div>
 
@@ -465,14 +462,23 @@ export function PageCustomizationSection({
           </>
         )}
 
+        {/* Page Title Color - Always visible */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Color</label>
+          <BackgroundColorSwatch
+            value={pageTitleColor}
+            onChange={(value) => onFieldChange('page-title-color', value)}
+            label="Page title color"
+          />
+        </div>
+
         {/* Font Border/Stroke Controls - Always visible */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Font Border Color</label>
-          <StandardColorPicker
-            label="Font border color"
+          <BackgroundColorSwatch
             value={borderColor}
             onChange={(value) => onFieldChange('page-title-border-color', value)}
-            hideWrapper
+            label="Font border color"
           />
         </div>
 
@@ -485,16 +491,6 @@ export function PageCustomizationSection({
             step={0.5}
             unit="px"
             onChange={(value) => onFieldChange('page-title-border-width', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Color</label>
-          <StandardColorPicker
-            label="Page title color"
-            value={pageTitleColor}
-            onChange={(value) => onFieldChange('page-title-color', value)}
-            hideWrapper
           />
         </div>
 
@@ -556,11 +552,10 @@ export function PageCustomizationSection({
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
-          <StandardColorPicker
-            label="Page bio color"
+          <BackgroundColorSwatch
             value={pageBioColor}
             onChange={(value) => onFieldChange('page-bio-color', value)}
-            hideWrapper
+            label="Page bio color"
           />
         </div>
 

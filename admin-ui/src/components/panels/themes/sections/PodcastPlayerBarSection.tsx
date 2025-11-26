@@ -3,7 +3,7 @@
  * Settings for podcast player bar appearance
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { StandardColorPicker } from '../../../controls/StandardColorPicker';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
@@ -22,25 +22,11 @@ export function PodcastPlayerBarSection({
   activeColor
 }: PodcastPlayerBarSectionProps): JSX.Element {
   const playerBackground = (uiState['podcast-player-background'] as string) ?? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
-  const [playerBackgroundType, setPlayerBackgroundType] = useState<'solid' | 'gradient'>('gradient');
   const playerBorderColor = (uiState['podcast-player-border-color'] as string) ?? 'rgba(255, 255, 255, 0.2)';
   const playerBorderWidth = (uiState['podcast-player-border-width'] as number) ?? 1;
   const playerShadowEnabled = (uiState['podcast-player-shadow-enabled'] as boolean) ?? true;
   const playerShadowDepth = (uiState['podcast-player-shadow-depth'] as number) ?? 16;
   const playerTextColor = (uiState['podcast-player-text-color'] as string) ?? '#ffffff';
-
-  // Determine background type
-  useEffect(() => {
-    if (!playerBackground || typeof playerBackground !== 'string') {
-      setPlayerBackgroundType('gradient');
-      return;
-    }
-    if (playerBackground.includes('gradient')) {
-      setPlayerBackgroundType('gradient');
-    } else {
-      setPlayerBackgroundType('solid');
-    }
-  }, [playerBackground]);
 
   return (
     <div className={styles.section}>
@@ -52,16 +38,7 @@ export function PodcastPlayerBarSection({
           <label className={styles.label}>Background</label>
           <BackgroundColorSwatch
             value={playerBackground}
-            backgroundType={playerBackgroundType}
             onChange={(value) => onFieldChange('podcast-player-background', value)}
-            onTypeChange={(type) => {
-              setPlayerBackgroundType(type);
-              if (type === 'solid') {
-                onFieldChange('podcast-player-background', '#6366f1');
-              } else if (type === 'gradient') {
-                onFieldChange('podcast-player-background', 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)');
-              }
-            }}
             label="Podcast player background"
           />
         </div>

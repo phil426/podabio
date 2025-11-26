@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
+import * as Slider from '@radix-ui/react-slider';
 
 import styles from './page-background-picker.module.css';
 
@@ -364,13 +365,11 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
                   />
                 </div>
                 {showSolidPicker && (
-                  <div className={styles.colorPickerContainer}>
                     <HexColorPicker
                       color={solidColor}
                       onChange={handleSolidColorChange}
                       className={styles.colorPicker}
                     />
-                  </div>
                 )}
               </div>
             </div>
@@ -471,14 +470,29 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
               <label className={styles.controlLabel}>
                 <span>Direction</span>
                 <div className={styles.directionRow}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    value={gradientDirection}
-                    onChange={(e) => handleGradientChange(parseInt(e.target.value, 10))}
-                    className={styles.directionSlider}
-                  />
+                  <Slider.Root
+                    className={styles.directionSliderRoot}
+                    value={[gradientDirection]}
+                    onValueChange={(values) => {
+                      const newDirection = values[0];
+                      setGradientDirection(newDirection);
+                      handleGradientChange(newDirection);
+                    }}
+                    onValueCommit={(values) => {
+                      // Final update when drag ends
+                      const newDirection = values[0];
+                      handleGradientChange(newDirection);
+                    }}
+                    // Removed onPointerDown - let Radix Slider handle all events naturally
+                    min={0}
+                    max={360}
+                    step={1}
+                  >
+                    <Slider.Track className={styles.directionSliderTrack}>
+                      <Slider.Range className={styles.directionSliderRange} />
+                    </Slider.Track>
+                    <Slider.Thumb className={styles.directionSliderThumb} aria-label="Gradient direction" />
+                  </Slider.Root>
                   <input
                     type="number"
                     min="0"
@@ -527,13 +541,11 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
                     />
                   </div>
                   {showGradientPicker1 && (
-                    <div className={styles.colorPickerContainer}>
                       <HexColorPicker
                         color={gradientColor1}
                         onChange={(color) => handleGradientChange(undefined, color)}
                         className={styles.colorPicker}
                       />
-                    </div>
                   )}
                 </div>
               </div>
@@ -568,13 +580,11 @@ export function PageBackgroundPicker({ value = '#FFFFFF', onChange, mode = 'both
                     />
                   </div>
                   {showGradientPicker2 && (
-                    <div className={styles.colorPickerContainer}>
                       <HexColorPicker
                         color={gradientColor2}
                         onChange={(color) => handleGradientChange(undefined, undefined, color)}
                         className={styles.colorPicker}
                       />
-                    </div>
                   )}
                 </div>
               </div>

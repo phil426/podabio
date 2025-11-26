@@ -3,7 +3,7 @@
  * Settings for page description/bio only
  */
 
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
@@ -34,11 +34,10 @@ export function PageDescriptionSection({
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
-          <StandardColorPicker
-            label="Page bio color"
+          <BackgroundColorSwatch
             value={pageBioColor}
             onChange={(value) => onFieldChange('page-bio-color', value)}
-            hideWrapper
+            label="Page bio color"
           />
         </div>
 

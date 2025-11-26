@@ -1,0 +1,118 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(15, 23, 42, 0.1);
+}
+
+.header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.testSection {
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.testSection h2 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.testSection p {
+  margin: 0 0 1rem;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.testBox {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  margin-bottom: 1rem;
+}
+
+.testBox label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.valueDisplay {
+  padding: 1rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.85rem;
+  color: #334155;
+  word-break: break-all;
+}
+
+.valueDisplay strong {
+  color: #0f172a;
+  margin-right: 0.5rem;
+}
+
+.instructions {
+  padding: 1.5rem;
+  background: #fef3c7;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+}
+
+.instructions h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.instructions ol {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+  color: #78350f;
+}
+
+.instructions li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.instructions p {
+  margin: 1rem 0 0;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 6px;
+  color: #78350f;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.instructions strong {
+  font-weight: 600;
+}
+

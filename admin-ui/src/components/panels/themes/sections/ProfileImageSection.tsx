@@ -6,7 +6,7 @@
 import { useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Upload, X } from '@phosphor-icons/react';
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
 import { usePageSnapshot, removeProfileImage } from '../../../../api/page';
@@ -192,11 +192,10 @@ export function ProfileImageSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <StandardColorPicker
-                label="Shadow color"
+              <BackgroundColorSwatch
                 value={(uiState['profile-image-shadow-color'] as string) ?? '#000000'}
                 onChange={(value) => onFieldChange('profile-image-shadow-color', value)}
-                hideWrapper
+                label="Shadow color"
               />
             </div>
 
@@ -242,11 +241,10 @@ export function ProfileImageSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <StandardColorPicker
-                label="Glow color"
+              <BackgroundColorSwatch
                 value={(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}
                 onChange={(value) => onFieldChange('profile-image-glow-color', value)}
-                hideWrapper
+                label="Glow color"
               />
             </div>
 
@@ -267,11 +265,10 @@ export function ProfileImageSection({
         {/* Border Controls */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
-          <StandardColorPicker
-            label="Border color"
+          <BackgroundColorSwatch
             value={(uiState['profile-image-border-color'] as string) ?? '#000000'}
             onChange={(value) => onFieldChange('profile-image-border-color', value)}
-            hideWrapper
+            label="Border color"
           />
         </div>
 

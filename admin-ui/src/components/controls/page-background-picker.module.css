@@ -120,16 +120,14 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
-.colorPickerContainer {
-  width: 100%;
-  position: relative;
-}
-
 .colorPicker {
   width: 100%;
   height: 200px;
   border-radius: var(--pod-core-shape-radius-sm, 8px);
   overflow: hidden;
+  /* Ensure color picker can receive all pointer events for dragging */
+  position: relative;
+  pointer-events: auto;
 }
 
 .hexInput {
@@ -175,35 +173,60 @@
   gap: 0.75rem;
 }
 
-.directionSlider {
+/* Radix UI Slider for direction control */
+.directionSliderRoot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 120px;
+  height: 20px;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.directionSliderTrack {
+  position: relative;
   flex: 1;
   height: 6px;
-  border-radius: 3px;
   background: rgba(15, 23, 42, 0.1);
+  border-radius: 3px;
+  /* Ensure track is properly aligned */
+  align-self: center;
+}
+
+.directionSliderRange {
+  position: absolute;
+  height: 100%;
+  background: var(--active-tab-color, #2563eb);
+  border-radius: 3px;
+}
+
+.directionSliderThumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: var(--active-tab-color, #2563eb);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+  /* Let Radix UI handle all positioning automatically - no manual positioning needed */
+}
+
+.directionSliderThumb:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.directionSliderThumb:active {
+  cursor: grabbing;
+}
+
+.directionSliderThumb:focus {
   outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.directionSlider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--active-tab-color, #2563eb);
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.directionSlider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--active-tab-color, #2563eb);
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(37, 99, 235, 0.2));
 }
 
 .directionInput {

@@ -601,11 +601,18 @@ switch ($action) {
         // Handle page name effect
         if (isset($_POST['page_name_effect'])) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
-            // Valid page-title effects (5 impressive new creations)
-            $validEffects = ['', 'none', 'aurora-borealis', 'holographic', 'liquid-neon', 'chrome-metallic', 'energy-pulse'];
+            // Valid page-title effects - includes all effects supported by the theme editor
+            $validEffects = [
+                '', 'none', // No effect
+                // Legacy/theme-driven effects
+                'glow', 'shadow',
+                // New text effects
+                'retro', 'anaglyphic', 'deep', 'game', 'fancy', 'pretty', 'flat', 'long', 'party',
+                // Impressive special effects (from special-effects.css)
+                'aurora-borealis', 'holographic', 'liquid-neon', 'chrome-metallic', 'energy-pulse'
+            ];
             if (in_array($pageNameEffect, $validEffects, true)) {
                 // Normalize 'none' and empty string to NULL (no effect)
-                // Other effects will be saved as-is for future implementation
                 if ($pageNameEffect === '' || $pageNameEffect === 'none') {
                     $updateData['page_name_effect'] = null;
                 } else {
