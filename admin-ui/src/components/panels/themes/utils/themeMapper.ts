@@ -218,7 +218,8 @@ export function databaseToUI(
     }
 
     // Use parsed value from theme/page, or default value
-    uiState[field.id] = parsedValue !== undefined ? parsedValue : field.defaultValue;
+    // Treat null the same as undefined (both mean "no value")
+    uiState[field.id] = parsedValue != null ? parsedValue : field.defaultValue;
   }
 
   return uiState;

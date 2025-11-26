@@ -722,6 +722,9 @@ class ThemeCSSGenerator {
         $pageBackgroundDark = $this->darkenBackground($pageBackgroundValue, 0.15); // 15% darker
         $css .= "    --page-background-dark: " . h($pageBackgroundDark) . ";\n";
         
+        // Page background animation flag (for gradient animation)
+        $css .= "    --page-background-animate: " . ($this->pageBackgroundAnimate ? 'true' : 'false') . ";\n";
+        
         // REMOVED: --widget-background CSS variable - using direct value in .widget-item instead
         // $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
         $css .= "    --widget-border-width: " . h($this->resolvedBorderWidth) . ";\n";
@@ -1013,6 +1016,9 @@ class ThemeCSSGenerator {
         
         // Check if background is a Vanta.js effect
         $isVanta = strpos($pageBackgroundValue, 'vanta:') === 0;
+        
+        // Check if gradient animation is enabled (only applies to gradients)
+        $shouldAnimate = $isGradient && $this->pageBackgroundAnimate;
         
         // Base body styles
         // CRITICAL: Use the resolved pageBackgroundValue directly (not CSS variable) to ensure it's applied

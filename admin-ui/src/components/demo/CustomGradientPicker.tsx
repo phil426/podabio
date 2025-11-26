@@ -55,7 +55,7 @@ export function PodaColorPicker({
 }: PodaColorPickerProps): JSX.Element {
   const isGrad = isGradient(value);
   const parsed = isGrad ? (parseGradient(value) || { direction: 135, color1: '#6366f1', color2: '#4f46e5' }) : null;
-  const solidColor = isGrad ? '#6366f1' : (value.startsWith('#') ? value : '#6366f1');
+  const solidColor = isGrad ? (parsed?.color1 ?? '#6366f1') : (value.startsWith('#') ? value : '#6366f1');
   
   const [mode, setMode] = useState<'solid' | 'gradient'>(isGrad ? 'gradient' : 'solid');
   const [direction, setDirection] = useState(parsed?.direction ?? 135);

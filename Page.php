@@ -485,7 +485,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                             object-fit: cover;
                         "
                         onerror="this.onerror=null; this.style.display='none';"
-                    >
+                    />
                     <img 
                         src="/api/qr-code.php?username=<?php echo h($page['username']); ?>" 
                         alt="QR Code" 
@@ -495,12 +495,13 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                             height: var(--profile-image-size, 120px);
                             border-radius: 0;
                             border: none !important;
-                            box-shadow: none !important;
+                            box-shadow: none;
                             object-fit: contain;
                             background: #ffffff;
                             box-sizing: border-box;
                         "
-                    >
+                        onerror="this.onerror=null; this.style.display='none';"
+                    />
                 </div>
             <?php endif; ?>
             
@@ -541,7 +542,10 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     $typographyTokens = is_string($theme['typography_tokens']) 
                         ? json_decode($theme['typography_tokens'], true) 
                         : $theme['typography_tokens'];
-                    $bioColor = $typographyTokens['color']['body'] ?? null;
+                    // Check if json_decode succeeded and result is an array before accessing
+                    if (is_array($typographyTokens) && isset($typographyTokens['color']['body'])) {
+                        $bioColor = $typographyTokens['color']['body'];
+                    }
                 }
                 
                 // Build style with color/gradient support
@@ -930,7 +934,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                             object-fit: cover;
                                         "
                                         onerror="this.onerror=null; this.style.display='none';"
-                                    >
+                                    />
                                     <img 
                                         src="/api/qr-code.php?username=<?php echo h($page['username']); ?>" 
                                         alt="QR Code" 
@@ -938,15 +942,15 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                         style="
                                             width: var(--profile-image-size, 120px);
                                             height: var(--profile-image-size, 120px);
-                                            border-radius: var(--profile-image-radius, 16%);
-                                            border-width: var(--profile-image-border-width, 0px);
-                                            border-color: var(--profile-image-border-color, transparent);
-                                            border-style: <?php echo (!empty($page['profile_image_border_width']) && $page['profile_image_border_width'] > 0) ? 'solid' : 'none'; ?>;
-                                            box-shadow: var(--profile-image-box-shadow, none);
+                                            border-radius: 0;
+                                            border: none !important;
+                                            box-shadow: none;
                                             object-fit: contain;
                                             background: #ffffff;
+                                            box-sizing: border-box;
                                         "
-                                    >
+                                        onerror="this.onerror=null; this.style.display='none';"
+                                    />
                                 </div>
                             <?php endif; ?>
                             
@@ -987,7 +991,10 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                     $typographyTokens = is_string($theme['typography_tokens']) 
                                         ? json_decode($theme['typography_tokens'], true) 
                                         : $theme['typography_tokens'];
-                                    $bioColor = $typographyTokens['color']['body'] ?? null;
+                                    // Check if json_decode succeeded and result is an array before accessing
+                                    if (is_array($typographyTokens) && isset($typographyTokens['color']['body'])) {
+                                        $bioColor = $typographyTokens['color']['body'];
+                                    }
                                 }
                                 
                                 // Build style with color/gradient support
@@ -1680,8 +1687,46 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             }
             
             // Profile image to QR code morphing animation
+            // Track initialization state and listener references to prevent memory leaks
+            let qrMorphingInitialized = false;
+            let resizeListener = null;
+            let clickListener = null;
+            
             function initQRCodeMorphing() {
+                // Prevent duplicate initialization
+                if (qrMorphingInitialized) {
+                    return;
+                }
+                
                 const containers = document.querySelectorAll('.profile-image-container');
+                const containerStates = new Map(); // Track state for each container
+                
+                // Single debounced resize listener for all containers
+                let resizeTimeout;
+                resizeListener = function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function() {
+                        containers.forEach(function(container) {
+                            adjustQRCodeSize(container);
+                        });
+                    }, 100);
+                };
+                window.addEventListener('resize', resizeListener);
+                
+                // Single document click listener for closing QR codes
+                clickListener = function(e) {
+                    containers.forEach(function(container) {
+                        const state = containerStates.get(container);
+                        if (state && state.isShowingQR && !container.contains(e.target)) {
+                            container.classList.remove('show-qr', 'fade-mode');
+                            state.isShowingQR = false;
+                        }
+                    });
+                };
+                document.addEventListener('click', clickListener);
+                
+                // Mark as initialized
+                qrMorphingInitialized = true;
                 
                 containers.forEach(function(container) {
                     const profileImage = container.querySelector('.profile-image');
@@ -1689,17 +1734,33 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     
                     if (!profileImage || !qrCode) return;
                     
+                    // Get existing state or create new one
+                    let state = containerStates.get(container);
+                    if (state) {
+                        // Remove existing listeners if re-initializing
+                        if (state.clickListener) {
+                            container.removeEventListener('click', state.clickListener);
+                        }
+                        if (state.touchStartListener) {
+                            container.removeEventListener('touchstart', state.touchStartListener);
+                        }
+                        if (state.touchEndListener) {
+                            container.removeEventListener('touchend', state.touchEndListener);
+                        }
+                    } else {
+                        // Initialize new container state
+                        state = {
+                            isShowingQR: false,
+                            touchStartTime: 0,
+                            clickListener: null,
+                            touchStartListener: null,
+                            touchEndListener: null
+                        };
+                        containerStates.set(container, state);
+                    }
+                    
                     // Adjust QR code size based on profile image shape
                     adjustQRCodeSize(container);
-                    
-                    // Recalculate on window resize
-                    let resizeTimeout;
-                    window.addEventListener('resize', function() {
-                        clearTimeout(resizeTimeout);
-                        resizeTimeout = setTimeout(function() {
-                            adjustQRCodeSize(container);
-                        }, 100);
-                    });
                     
                     // Preload QR code image
                     const qrImg = new Image();
@@ -1708,48 +1769,39 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     };
                     qrImg.src = qrCode.src;
                     
-                    // Toggle animation on click/touch
-                    let isShowingQR = false;
-                    
                     function toggleQR() {
-                        isShowingQR = !isShowingQR;
-                        if (isShowingQR) {
+                        state.isShowingQR = !state.isShowingQR;
+                        if (state.isShowingQR) {
                             container.classList.add('show-qr', 'fade-mode');
                         } else {
                             container.classList.remove('show-qr', 'fade-mode');
                         }
                     }
                     
-                    // Click handler
-                    container.addEventListener('click', function(e) {
+                    // Click handler - store reference for cleanup
+                    state.clickListener = function(e) {
                         e.preventDefault();
                         e.stopPropagation();
                         toggleQR();
-                    });
+                    };
+                    container.addEventListener('click', state.clickListener);
                     
-                    // Touch handler for mobile
-                    let touchStartTime = 0;
-                    container.addEventListener('touchstart', function(e) {
-                        touchStartTime = Date.now();
-                    }, { passive: true });
+                    // Touch handler for mobile - store references for cleanup
+                    state.touchStartListener = function(e) {
+                        state.touchStartTime = Date.now();
+                    };
+                    container.addEventListener('touchstart', state.touchStartListener, { passive: true });
                     
-                    container.addEventListener('touchend', function(e) {
-                        const touchDuration = Date.now() - touchStartTime;
+                    state.touchEndListener = function(e) {
+                        const touchDuration = Date.now() - state.touchStartTime;
                         // Only trigger if it was a quick tap (less than 300ms)
                         if (touchDuration < 300) {
                             e.preventDefault();
                             e.stopPropagation();
                             toggleQR();
                         }
-                    });
-                    
-                    // Click outside to close
-                    document.addEventListener('click', function(e) {
-                        if (isShowingQR && !container.contains(e.target)) {
-                            container.classList.remove('show-qr', 'fade-mode');
-                            isShowingQR = false;
-                        }
-                    });
+                    };
+                    container.addEventListener('touchend', state.touchEndListener);
                 });
             }
             

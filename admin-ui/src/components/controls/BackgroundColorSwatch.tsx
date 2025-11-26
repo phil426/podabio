@@ -64,6 +64,7 @@ export function BackgroundColorSwatch({
                   <PodaColorPicker
                     value={value}
                     onChange={onChange}
+                    onTypeChange={onTypeChange}
                     solidOnly={solidOnly}
                   />
                 </div>

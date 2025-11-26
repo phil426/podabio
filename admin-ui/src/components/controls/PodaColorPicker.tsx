@@ -17,7 +17,7 @@
  *   Licensed under MIT License
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import * as Slider from '@radix-ui/react-slider';
 import * as Popover from '@radix-ui/react-popover';
@@ -27,11 +27,12 @@ import styles from './poda-color-picker.module.css';
 interface PodaColorPickerProps {
   value?: string;
   onChange?: (value: string) => void;
+  onTypeChange?: (type: 'solid' | 'gradient') => void; // Callback when mode changes
   solidOnly?: boolean; // If true, only show solid color mode (hide gradient tab)
 }
 
-function isGradient(value: string): boolean {
-  return value.includes('gradient');
+function isGradient(value: string | undefined): boolean {
+  return value ? value.includes('gradient') : false;
 }
 
 function parseGradient(value: string): { direction: number; color1: string; color2: string } | null {
@@ -53,11 +54,12 @@ function buildGradient(direction: number, color1: string, color2: string): strin
 export function PodaColorPicker({ 
   value = 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
   onChange,
+  onTypeChange,
   solidOnly = false
 }: PodaColorPickerProps): JSX.Element {
-  const isGrad = isGradient(value);
-  const parsed = isGrad ? (parseGradient(value) || { direction: 135, color1: '#6366f1', color2: '#4f46e5' }) : null;
-  const solidColor = isGrad ? '#6366f1' : (value.startsWith('#') ? value : '#6366f1');
+  const isGrad = value ? isGradient(value) : false;
+  const parsed = isGrad ? (parseGradient(value!) || { direction: 135, color1: '#6366f1', color2: '#4f46e5' }) : null;
+  const solidColor = isGrad ? (parsed?.color1 ?? '#6366f1') : (value && typeof value === 'string' && value.startsWith('#') ? value : '#6366f1');
   
   // Force solid mode if solidOnly is true
   const [mode, setMode] = useState<'solid' | 'gradient'>(solidOnly ? 'solid' : (isGrad ? 'gradient' : 'solid'));
@@ -69,6 +71,9 @@ export function PodaColorPicker({
   const [picker2Open, setPicker2Open] = useState(false);
   const [solidPickerOpen, setSolidPickerOpen] = useState(false);
   const [isEyedropperSupported, setIsEyedropperSupported] = useState(false);
+  
+  // Track previous value to detect actual changes and avoid stale closure bugs
+  const prevValueRef = useRef<string | undefined>(value);
 
   // Check if EyeDropper API is supported
   useEffect(() => {
@@ -76,11 +81,14 @@ export function PodaColorPicker({
   }, []);
 
   // Update mode when value changes externally (only if not solidOnly)
+  // Note: onChange and onTypeChange are intentionally excluded from dependencies
+  // as they are callback functions that may be recreated on every parent render.
+  // They are only called conditionally within the effect, not depended upon for their identity.
   useEffect(() => {
     if (solidOnly) {
       // If solidOnly, always extract solid color and stay in solid mode
       const newIsGrad = isGradient(value);
-      if (newIsGrad) {
+      if (newIsGrad && value) {
         const newParsed = parseGradient(value);
         if (newParsed) {
           setSolid(newParsed.color1);
@@ -90,29 +98,59 @@ export function PodaColorPicker({
           onChange?.('#6366f1');
         }
       } else {
-        setSolid(value.startsWith('#') ? value : '#6366f1');
+        // Extract solid color from value
+        const newSolid = value && typeof value === 'string' && value.startsWith('#') ? value : '#6366f1';
+        // Extract solid color from previous value for comparison (avoid stale closure)
+        // Only compare if we have a previous value - skip onChange on first render
+        const hasPreviousValue = prevValueRef.current !== undefined;
+        const prevSolid = hasPreviousValue && typeof prevValueRef.current === 'string' && prevValueRef.current.startsWith('#') 
+          ? prevValueRef.current 
+          : (hasPreviousValue && prevValueRef.current && isGradient(prevValueRef.current) 
+            ? (parseGradient(prevValueRef.current)?.color1 ?? '#6366f1')
+            : newSolid); // Use newSolid as fallback to avoid false positives on first render
+        
+        // Always update state to stay in sync with external value prop
+        setSolid(newSolid);
+        // Only call onChange if the value actually changed AND we have a previous value to compare against
+        // This prevents unnecessary onChange calls on first render
+        if (hasPreviousValue && newSolid !== prevSolid) {
+          onChange?.(newSolid);
+        }
       }
-      setMode('solid');
+      // Update ref after processing
+      prevValueRef.current = value;
+      // Only update mode if it's not already 'solid' to prevent infinite loops
+      // Since mode is in the dependency array, changing it would trigger the effect again
+      if (mode !== 'solid') {
+        setMode('solid');
+        onTypeChange?.('solid');
+      }
       return;
     }
     
     const newIsGrad = isGradient(value);
-    if (newIsGrad && mode === 'solid') {
+    if (newIsGrad && mode === 'solid' && value) {
       const newParsed = parseGradient(value);
       if (newParsed) {
         setDirection(newParsed.direction);
         setColor1(newParsed.color1);
         setColor2(newParsed.color2);
         setMode('gradient');
+        onTypeChange?.('gradient');
       }
     } else if (!newIsGrad && mode === 'gradient') {
-      setSolid(value.startsWith('#') ? value : '#6366f1');
+      setSolid(value && typeof value === 'string' && value.startsWith('#') ? value : '#6366f1');
       setMode('solid');
+      onTypeChange?.('solid');
     }
-  }, [value, mode, solidOnly, onChange]);
+    // Update ref after processing to track current value for next comparison
+    prevValueRef.current = value;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, mode, solidOnly]);
 
 
   const handleModeChange = (newMode: 'solid' | 'gradient') => {
+    const oldMode = mode;
     setMode(newMode);
     if (newMode === 'solid') {
       // When switching to solid, use Color 1 as the solid color
@@ -122,6 +160,10 @@ export function PodaColorPicker({
       // When switching to gradient, use solid color as Color 1
       setColor1(solid);
       onChange?.(buildGradient(direction, solid, color2));
+    }
+    // Notify parent of mode change
+    if (oldMode !== newMode) {
+      onTypeChange?.(newMode);
     }
   };
 

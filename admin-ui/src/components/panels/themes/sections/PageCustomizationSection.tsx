@@ -467,6 +467,7 @@ export function PageCustomizationSection({
             value={pageTitleColor}
             onChange={(value) => onFieldChange('page-title-color', value)}
             label="Page title color"
+            solidOnly={true}
           />
         </div>
 

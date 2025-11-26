@@ -72,9 +72,11 @@ export function ThemePropertyDrawer({
                                target.closest('[data-radix-slider-track]') ||
                                target.closest('[data-radix-slider-root]');
             
-            // If inside a Popover or slider, return early WITHOUT preventing - allow native drag behavior
+            // If inside a Popover or slider, prevent dialog from closing
+            // Radix UI Dialog requires e.preventDefault() to prevent closing
             if (isInPopover) {
-              return; // Don't prevent - let events flow naturally
+              e.preventDefault();
+              return;
             }
             
             // Only prevent if truly outside both Dialog and Popover
@@ -91,9 +93,11 @@ export function ThemePropertyDrawer({
                                target.closest('[data-radix-slider-track]') ||
                                target.closest('[data-radix-slider-root]');
             
-            // If inside a Popover or slider, return early WITHOUT preventing - allow native drag behavior
+            // If inside a Popover or slider, prevent dialog from closing
+            // Radix UI Dialog requires e.preventDefault() to prevent closing
             if (isInPopover) {
-              return; // Don't prevent - let events flow naturally
+              e.preventDefault();
+              return;
             }
             
             // Only prevent if truly outside both Dialog and Popover
