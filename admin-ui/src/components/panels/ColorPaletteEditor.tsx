@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CaretDown, CaretUp, Palette } from '@phosphor-icons/react';
-import { StandardColorPicker } from '../controls/StandardColorPicker';
+import { PodaColorPicker } from '../controls/PodaColorPicker';
 import type { TabColorTheme } from '../layout/tab-colors';
 
 import styles from './color-palette-editor.module.css';
@@ -130,8 +130,7 @@ export function ColorPaletteEditor({ activeColor, groups }: ColorPaletteEditorPr
                       </div>
                       {activeColorPicker === color.id && (
                         <div className={styles.colorPickerContainer}>
-                          <StandardColorPicker
-                            label={color.label}
+                          <PodaColorPicker
                             value={color.value}
                             onChange={(value) => {
                               color.onChange(value);

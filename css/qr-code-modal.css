@@ -1,0 +1,108 @@
+/* Profile Image to QR Code Morphing Animation */
+
+.profile-image-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-image-container:hover {
+    transform: scale(1.05);
+}
+
+.profile-image-container:active {
+    transform: scale(0.98);
+}
+
+.profile-image-container .profile-image,
+.profile-image-container .profile-qr-code {
+    display: block;
+    margin: 0 auto;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.profile-image-container .profile-qr-code {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8) rotateY(180deg);
+    opacity: 0;
+    pointer-events: none;
+    /* QR code will be sized dynamically based on border-radius */
+    object-fit: contain;
+    background: #ffffff;
+    box-sizing: border-box;
+    /* Ensure QR code doesn't expand beyond profile image size */
+    max-width: 100%;
+    max-height: 100%;
+    /* Start with no border - JavaScript will copy it from profile image */
+    border: none !important;
+    box-shadow: none !important;
+    /* Ensure border-radius is applied and image is clipped */
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.profile-image-container.show-qr .profile-image {
+    transform: scale(0.8) rotateY(-180deg);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.profile-image-container.show-qr .profile-qr-code {
+    transform: translateX(-50%) scale(1) rotateY(0deg);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Alternative animation: Fade and scale */
+.profile-image-container.fade-mode .profile-image {
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-image-container.fade-mode .profile-qr-code {
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-image-container.fade-mode.show-qr .profile-image {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.profile-image-container.fade-mode.show-qr .profile-qr-code {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* Pulse animation when QR code is shown */
+@keyframes qrPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+    }
+}
+
+.profile-image-container.show-qr .profile-qr-code {
+    animation: qrPulse 2s ease-in-out infinite;
+}
+
+/* Preload QR code image */
+.profile-qr-code {
+    visibility: hidden;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+.profile-image-container .profile-qr-code.loaded {
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 50%;
+}
+

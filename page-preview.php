@@ -106,6 +106,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     
     <link rel="stylesheet" href="/css/special-effects.css?v=<?php echo filemtime(__DIR__ . '/css/special-effects.css'); ?>">
     <link rel="stylesheet" href="/css/profile.css?v=<?php echo filemtime(__DIR__ . '/css/profile.css'); ?>">
+    <link rel="stylesheet" href="/css/qr-code-modal.css?v=<?php echo filemtime(__DIR__ . '/css/qr-code-modal.css'); ?>">
     <link rel="stylesheet" href="/css/typography.css?v=<?php echo filemtime(__DIR__ . '/css/typography.css'); ?>">
     <link rel="stylesheet" href="/css/widgets.css?v=<?php echo filemtime(__DIR__ . '/css/widgets.css'); ?>">
     <link rel="stylesheet" href="/css/social-icons.css?v=<?php echo filemtime(__DIR__ . '/css/social-icons.css'); ?>">
@@ -228,22 +229,39 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
                         <div class="profile-header">
                             <?php if ($page['profile_image']): ?>
-                                <img 
-                                    src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" 
-                                    alt="Profile" 
-                                    class="profile-image"
-                                    style="
-                                        width: var(--profile-image-size, 120px);
-                                        height: var(--profile-image-size, 120px);
-                                        border-radius: var(--profile-image-radius, 16%);
-                                        border-width: var(--profile-image-border-width, 0px);
-                                        border-color: var(--profile-image-border-color, transparent);
-                                        border-style: <?php echo (!empty($page['profile_image_border_width']) && $page['profile_image_border_width'] > 0) ? 'solid' : 'none'; ?>;
-                                        box-shadow: var(--profile-image-box-shadow, none);
-                                        object-fit: cover;
-                                    "
-                                    onerror="this.onerror=null; this.style.display='none';"
-                                >
+                                <div class="profile-image-container" data-qr-url="/api/qr-code.php?username=<?php echo h($page['username']); ?>">
+                                    <img 
+                                        src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" 
+                                        alt="Profile" 
+                                        class="profile-image"
+                                        style="
+                                            width: var(--profile-image-size, 120px);
+                                            height: var(--profile-image-size, 120px);
+                                            border-radius: var(--profile-image-radius, 16%);
+                                            border-width: var(--profile-image-border-width, 0px);
+                                            border-color: var(--profile-image-border-color, transparent);
+                                            border-style: <?php echo (!empty($page['profile_image_border_width']) && $page['profile_image_border_width'] > 0) ? 'solid' : 'none'; ?>;
+                                            box-shadow: var(--profile-image-box-shadow, none);
+                                            object-fit: cover;
+                                        "
+                                        onerror="this.onerror=null; this.style.display='none';"
+                                    >
+                                    <img 
+                                        src="/api/qr-code.php?username=<?php echo h($page['username']); ?>" 
+                                        alt="QR Code" 
+                                        class="profile-qr-code"
+                                        style="
+                                            width: var(--profile-image-size, 120px);
+                                            height: var(--profile-image-size, 120px);
+                                            border-radius: 0;
+                                            border: none !important;
+                                            box-shadow: none !important;
+                                            object-fit: contain;
+                                            background: #ffffff;
+                                            box-sizing: border-box;
+                                        "
+                                    >
+                                </div>
                             <?php endif; ?>
                             
                             <?php if ($page['podcast_name']): 
@@ -720,6 +738,133 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             })();
         </script>
     <?php endif; ?>
+    
+    <!-- QR Code Morphing Animation Script -->
+    <script>
+        (function() {
+            // Apply QR code sizing - always square with consistent padding
+            function adjustQRCodeSize(container) {
+                const profileImage = container.querySelector('.profile-image');
+                const qrCode = container.querySelector('.profile-qr-code');
+                
+                if (!profileImage || !qrCode) return;
+                
+                // Get computed styles
+                const profileStyles = window.getComputedStyle(profileImage);
+                const size = parseFloat(profileStyles.width) || parseFloat(profileStyles.height) || 120;
+                
+                // Get border width as a number (not including 'px')
+                const borderWidth = parseFloat(profileStyles.borderWidth) || 0;
+                
+                // Ensure QR code container matches profile image size exactly
+                qrCode.style.width = profileStyles.width;
+                qrCode.style.height = profileStyles.height;
+                
+                // Copy border properties exactly from profile image - but only if border exists
+                if (borderWidth > 0) {
+                    const borderColor = profileStyles.borderColor || 'transparent';
+                    const borderStyle = profileStyles.borderStyle || 'solid';
+                    qrCode.style.border = borderWidth + 'px ' + borderStyle + ' ' + borderColor;
+                } else {
+                    qrCode.style.border = 'none';
+                }
+                
+                // QR code is always square - no border-radius
+                qrCode.style.borderRadius = '0';
+                
+                // Copy shadow to match profile image container
+                qrCode.style.boxShadow = profileStyles.boxShadow;
+                
+                // Ensure the image is clipped
+                qrCode.style.overflow = 'hidden';
+                
+                // Always use consistent padding for square QR code (12% of size)
+                const padding = size * 0.12;
+                qrCode.style.padding = padding + 'px';
+            }
+            
+            // Profile image to QR code morphing animation
+            function initQRCodeMorphing() {
+                const containers = document.querySelectorAll('.profile-image-container');
+                
+                containers.forEach(function(container) {
+                    const profileImage = container.querySelector('.profile-image');
+                    const qrCode = container.querySelector('.profile-qr-code');
+                    
+                    if (!profileImage || !qrCode) return;
+                    
+                    // Adjust QR code size based on profile image shape
+                    adjustQRCodeSize(container);
+                    
+                    // Recalculate on window resize
+                    let resizeTimeout;
+                    window.addEventListener('resize', function() {
+                        clearTimeout(resizeTimeout);
+                        resizeTimeout = setTimeout(function() {
+                            adjustQRCodeSize(container);
+                        }, 100);
+                    });
+                    
+                    // Preload QR code image
+                    const qrImg = new Image();
+                    qrImg.onload = function() {
+                        qrCode.classList.add('loaded');
+                    };
+                    qrImg.src = qrCode.src;
+                    
+                    // Toggle animation on click/touch
+                    let isShowingQR = false;
+                    
+                    function toggleQR() {
+                        isShowingQR = !isShowingQR;
+                        if (isShowingQR) {
+                            container.classList.add('show-qr', 'fade-mode');
+                        } else {
+                            container.classList.remove('show-qr', 'fade-mode');
+                        }
+                    }
+                    
+                    // Click handler
+                    container.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleQR();
+                    });
+                    
+                    // Touch handler for mobile
+                    let touchStartTime = 0;
+                    container.addEventListener('touchstart', function(e) {
+                        touchStartTime = Date.now();
+                    }, { passive: true });
+                    
+                    container.addEventListener('touchend', function(e) {
+                        const touchDuration = Date.now() - touchStartTime;
+                        // Only trigger if it was a quick tap (less than 300ms)
+                        if (touchDuration < 300) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleQR();
+                        }
+                    });
+                    
+                    // Click outside to close
+                    document.addEventListener('click', function(e) {
+                        if (isShowingQR && !container.contains(e.target)) {
+                            container.classList.remove('show-qr', 'fade-mode');
+                            isShowingQR = false;
+                        }
+                    });
+                });
+            }
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initQRCodeMorphing);
+            } else {
+                initQRCodeMorphing();
+            }
+        })();
+    </script>
 </body>
 </html>
 

@@ -122,6 +122,16 @@ fieldRegistry.register({
 });
 
 fieldRegistry.register({
+  id: 'page-background-animate',
+  label: 'Animate Gradient',
+  type: 'boolean',
+  tokenPath: 'page.page_background_animate',
+  section: 'page-background',
+  defaultValue: false,
+  implemented: true
+});
+
+fieldRegistry.register({
   id: 'page-title-effect',
   label: 'Special Effect',
   type: 'select',

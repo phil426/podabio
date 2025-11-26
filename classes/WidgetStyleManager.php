@@ -91,11 +91,27 @@ class WidgetStyleManager {
         
         $merged = array_merge(self::$defaults, $styles);
         
-        // Ensure enum values are valid
+        // Ensure enum values are valid (but preserve border_width pixel values and shadow fields)
         foreach (self::$validEnums as $field => $validValues) {
+            if ($field === 'border_width') {
+                // Skip border_width validation - it can be pixel values
+                continue;
+            }
             if (isset($merged[$field]) && !in_array($merged[$field], $validValues, true)) {
                 $merged[$field] = self::$defaults[$field];
             }
+        }
+        
+        // Preserve shadow fields (they're not enums, so they won't be overwritten by the enum validation above)
+        // But make sure they're included if they were in the input styles
+        if (isset($styles['shadow_depth'])) {
+            $merged['shadow_depth'] = $styles['shadow_depth'];
+        }
+        if (isset($styles['shadow_color'])) {
+            $merged['shadow_color'] = $styles['shadow_color'];
+        }
+        if (isset($styles['shadow_intensity'])) {
+            $merged['shadow_intensity'] = $styles['shadow_intensity'];
         }
         
         return $merged;
@@ -113,8 +129,30 @@ class WidgetStyleManager {
         
         $sanitized = [];
         
-        // Sanitize enum fields
+        // Handle border_width specially - can be numeric pixel value (e.g., "2px") or enum
+        if (isset($styles['border_width'])) {
+            $borderWidth = $styles['border_width'];
+            // Check if it's a valid enum value
+            if (in_array($borderWidth, self::$validEnums['border_width'], true)) {
+                $sanitized['border_width'] = $borderWidth;
+            } elseif (is_string($borderWidth) && preg_match('/^\d+px$/', $borderWidth)) {
+                // Valid pixel value (e.g., "2px", "3px")
+                $sanitized['border_width'] = $borderWidth;
+            } elseif (is_numeric($borderWidth)) {
+                // Numeric value - convert to pixel string
+                $sanitized['border_width'] = (int)$borderWidth . 'px';
+            } else {
+                // Invalid - use default
+                $sanitized['border_width'] = self::$defaults['border_width'];
+            }
+        }
+        
+        // Sanitize other enum fields
         foreach (self::$validEnums as $field => $validValues) {
+            // Skip border_width - already handled above
+            if ($field === 'border_width') {
+                continue;
+            }
             if (isset($styles[$field])) {
                 if (in_array($styles[$field], $validValues, true)) {
                     $sanitized[$field] = $styles[$field];
@@ -135,6 +173,29 @@ class WidgetStyleManager {
         
         if (isset($styles['background_color'])) {
             $sanitized['background_color'] = self::sanitizeColorOrGradient($styles['background_color'], self::$defaults['background_color']);
+        }
+        
+        // Sanitize shadow fields (new numeric fields)
+        if (isset($styles['shadow_depth'])) {
+            $shadowDepth = $styles['shadow_depth'];
+            // Validate shadow_depth is numeric and in range 0-10
+            if (is_numeric($shadowDepth)) {
+                $depth = floatval($shadowDepth);
+                $sanitized['shadow_depth'] = max(0, min(10, $depth)); // Clamp to 0-10
+            }
+        }
+        
+        if (isset($styles['shadow_color'])) {
+            $sanitized['shadow_color'] = self::sanitizeColorOrGradient($styles['shadow_color'], 'rgba(15, 23, 42, 0.12)');
+        }
+        
+        if (isset($styles['shadow_intensity'])) {
+            $shadowIntensity = $styles['shadow_intensity'];
+            // Validate shadow_intensity is numeric and in range 0-1
+            if (is_numeric($shadowIntensity)) {
+                $intensity = floatval($shadowIntensity);
+                $sanitized['shadow_intensity'] = max(0, min(1, $intensity)); // Clamp to 0-1
+            }
         }
         
         // Merge with defaults for any missing fields

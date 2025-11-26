@@ -83,6 +83,16 @@ class PreviewRenderer {
     if (pageBackground) {
       cssVars['--page-background'] = String(pageBackground);
     }
+    
+    // Handle page background animation
+    const pageBackgroundAnimate = uiState?.['page-background-animate'] ?? 
+                                   (page?.page_background_animate ? true : false) ?? 
+                                   false;
+    const isGradient = pageBackground && typeof pageBackground === 'string' && 
+                       (pageBackground.includes('gradient') || pageBackground.includes('linear-gradient') || pageBackground.includes('radial-gradient'));
+    if (pageBackgroundAnimate && isGradient) {
+      cssVars['--page-background-animate'] = 'true';
+    }
 
     const widgetBackground = directColumns['widget_background'] ?? 
                              (theme?.widget_background) ?? 
@@ -201,6 +211,14 @@ class PreviewRenderer {
       // Ensure it has 'px' unit if it's a number
       if (typeof borderWidth === 'number') {
         cssVars['--widget-border-width'] = `${borderWidth}px`;
+      } else if (typeof borderWidth === 'string') {
+        // If it's already a string with units, use as-is
+        // If it's "0" or "none", convert to "0px"
+        if (borderWidth === '0' || borderWidth === 'none') {
+          cssVars['--widget-border-width'] = '0px';
+        } else {
+          cssVars['--widget-border-width'] = borderWidth;
+        }
       } else {
         cssVars['--widget-border-width'] = String(borderWidth);
       }
@@ -271,8 +289,60 @@ class PreviewRenderer {
       }
     }
 
-    // Map widget glow effect (if border_effect is 'glow')
+    // Map widget shadow effect (if border_effect is 'shadow')
     const borderEffect = allValues['widget_styles.border_effect'] ?? 'none';
+    if (borderEffect === 'shadow') {
+      // Get shadow values from widget_styles
+      const shadowDepth = allValues['widget_styles.shadow_depth'] ?? 1;
+      const shadowColor = allValues['widget_styles.shadow_color'] ?? 'rgba(15, 23, 42, 0.12)';
+      const shadowIntensity = allValues['widget_styles.shadow_intensity'] ?? 1;
+      
+      // Only apply shadow if depth > 0
+      if (typeof shadowDepth === 'number' && shadowDepth > 0) {
+        // Calculate shadow blur based on depth (0-10)
+        // Match profile image shadow style: depth controls both offset and blur
+        // Profile image uses: depth depth blur color (e.g., 4px 4px 8px rgba(...))
+        // For widgets, scale blur relative to depth: depth 1 = 2px blur, depth 10 = 20px blur
+        const shadowBlur = shadowDepth * 2; // 0-20px (similar to profile image's 8px default for depth 4)
+        
+        // Convert shadow color to rgba if needed (same as profile image)
+        let shadowColorRgba = String(shadowColor);
+        if (typeof shadowColor === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i.test(shadowColor)) {
+          // Hex color - convert to rgba with intensity as opacity
+          shadowColorRgba = hexToRgba(shadowColor, shadowIntensity);
+        } else if (typeof shadowColor === 'string' && shadowColor.startsWith('rgba')) {
+          // Already rgba - adjust opacity by intensity
+          const rgbaMatch = shadowColor.match(/rgba\(([^)]+)\)/);
+          if (rgbaMatch) {
+            const parts = rgbaMatch[1].split(',').map(p => p.trim());
+            if (parts.length === 4) {
+              const opacity = parseFloat(parts[3]) * shadowIntensity;
+              shadowColorRgba = `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${opacity})`;
+            }
+          }
+        } else if (typeof shadowColor === 'string' && shadowColor.startsWith('rgb')) {
+          // RGB color - convert to rgba with intensity as opacity
+          const rgbMatch = shadowColor.match(/rgb\(([^)]+)\)/);
+          if (rgbMatch) {
+            const parts = rgbMatch[1].split(',').map(p => p.trim());
+            if (parts.length === 3) {
+              shadowColorRgba = `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${shadowIntensity})`;
+            }
+          }
+        }
+        
+        // Generate drop shadow like profile image: offset-x offset-y blur-radius color
+        // Both x and y offsets use depth for diagonal drop shadow effect
+        cssVars['--widget-shadow-box-shadow'] = `${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${shadowColorRgba}`;
+      } else {
+        cssVars['--widget-shadow-box-shadow'] = 'none';
+      }
+    } else {
+      // No shadow - set to none
+      cssVars['--widget-shadow-box-shadow'] = 'none';
+    }
+
+    // Map widget glow effect (if border_effect is 'glow')
     if (borderEffect === 'glow') {
       // Get glow values - check both UI state format and CSS generator format
       // UI saves: glow_intensity (number 0-1), glow_color, glow_width

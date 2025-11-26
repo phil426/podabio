@@ -4,6 +4,7 @@
  */
 
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
+import { PodaColorPicker } from '../../../controls/PodaColorPicker';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
@@ -105,11 +106,10 @@ export function PageTitleSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Color</label>
-              <StandardColorPicker
-                label="Shadow color"
+              <PodaColorPicker
                 value={shadowColor}
                 onChange={(value) => onFieldChange('page-title-shadow-color', value)}
-                hideWrapper
+                solidOnly
               />
             </div>
 
@@ -155,11 +155,10 @@ export function PageTitleSection({
           <>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Glow Color</label>
-              <StandardColorPicker
-                label="Glow color"
+              <PodaColorPicker
                 value={glowColor}
                 onChange={(value) => onFieldChange('page-title-glow-color', value)}
-                hideWrapper
+                solidOnly
               />
             </div>
 

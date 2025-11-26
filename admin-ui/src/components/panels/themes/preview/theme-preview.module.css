@@ -30,6 +30,19 @@
   transition: width 0.3s ease, height 0.3s ease;
 }
 
+/* Gradient animation when enabled */
+.previewPhone[style*="--page-background-animate: true"],
+.previewPhone:has([style*="--page-background-animate: true"]) {
+  background-size: 200% 200% !important;
+  animation: gradientShift 15s ease infinite !important;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Content wrapper that scales everything proportionally */
 .contentWrapper {
   position: relative;
@@ -239,7 +252,14 @@
   border-color: var(--widget-border-color, #e2e8f0);
   margin: 0 auto;
   box-sizing: border-box;
-  box-shadow: var(--widget-glow-box-shadow, none);
+  /* Use shadow or glow based on border effect - shadow takes precedence */
+  box-shadow: var(--widget-shadow-box-shadow, var(--widget-glow-box-shadow, none));
+}
+
+/* Hide border when width is 0px - using attribute selector for inline styles */
+.widget[style*="border-width: 0px"],
+.widget[style*="border-width:0px"] {
+  border: none !important;
 }
 
 /* Widget styling hotspot - positioned in top right corner */

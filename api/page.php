@@ -96,7 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'podcast_player_enabled' => isset($userPage['podcast_player_enabled']) ? (bool)$userPage['podcast_player_enabled'] : false,
             'profile_image_shape' => $userPage['profile_image_shape'] ?? 'circle',
             'profile_image_shadow' => $userPage['profile_image_shadow'] ?? 'subtle',
-            'profile_image_size' => $userPage['profile_image_size'] ?? 'medium',
+            'profile_image_size' => (function() use ($userPage) {
+                $size = $userPage['profile_image_size'] ?? null;
+                // Handle legacy string values
+                if (is_string($size)) {
+                    $sizeMap = ['small' => 80, 'medium' => 120, 'large' => 180];
+                    return $sizeMap[$size] ?? 120;
+                }
+                // Return numeric value or default
+                return is_numeric($size) ? (int)$size : 120;
+            })(),
             'profile_image_border' => $userPage['profile_image_border'] ?? 'none',
             'profile_image_radius' => $userPage['profile_image_radius'] ?? null,
             'profile_image_effect' => $userPage['profile_image_effect'] ?? 'none',
@@ -120,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'colors' => json_decode($userPage['colors'] ?? '', true),
             'fonts' => json_decode($userPage['fonts'] ?? '', true),
             'page_background' => $userPage['page_background'],
+            'page_background_animate' => isset($userPage['page_background_animate']) ? (bool)$userPage['page_background_animate'] : false,
             'widget_background' => $userPage['widget_background'],
             'widget_border_color' => $userPage['widget_border_color'],
             'page_primary_font' => $userPage['page_primary_font'],
@@ -547,6 +557,12 @@ switch ($action) {
             }
         }
         
+        // Handle page background animation
+        if (isset($_POST['page_background_animate'])) {
+            $animate = filter_var($_POST['page_background_animate'], FILTER_VALIDATE_BOOLEAN);
+            $updateData['page_background_animate'] = $animate ? 1 : 0;
+        }
+        
         // Handle widget background
         // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['widget_background'])) {
@@ -629,6 +645,8 @@ switch ($action) {
             $size = filter_var($_POST['profile_image_size'], FILTER_VALIDATE_INT);
             if ($size !== false && $size >= 40 && $size <= 200) {
                 $updateData['profile_image_size'] = $size;
+            } else {
+                error_log("API: profile_image_size validation FAILED. Raw value: " . var_export($_POST['profile_image_size'], true) . ", Validated: " . var_export($size, true) . ", Range: 40-200");
             }
         }
         

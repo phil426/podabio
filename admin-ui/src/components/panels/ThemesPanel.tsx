@@ -236,7 +236,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       profileImageFields.forEach(fieldId => {
         const value = uiState[fieldId];
-        if (value !== undefined) {
+        if (value !== undefined && value !== null) {
           const dbFieldName = fieldId.replace('profile-image-', 'profile_image_').replace(/-/g, '_');
           pageFields[dbFieldName] = typeof value === 'number' ? value : String(value);
         }
@@ -249,10 +249,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       }
 
       if (Object.keys(pageFields).length > 0) {
+        console.log('Saving page fields:', pageFields);
         await updatePageMutation.mutateAsync(pageFields);
       }
 
-      // Invalidate queries
+      // Invalidate queries - this will trigger refetch and update UI state via useEffect
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       

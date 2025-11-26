@@ -85,10 +85,20 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
     } else if (field.tokenPath.startsWith('widget_styles.')) {
       const path = field.tokenPath.replace('widget_styles.', '');
       if (!dbState.widget_styles) dbState.widget_styles = {};
-      setNestedValue(dbState.widget_styles, path, value);
+      // Format border_width with units if it's a number
+      let formattedValue = value;
+      if (path === 'border_width' && typeof value === 'number') {
+        formattedValue = `${value}px`;
+      }
+      // Ensure shadow_depth and shadow_intensity are saved as numbers (not strings)
+      if ((path === 'shadow_depth' || path === 'shadow_intensity') && typeof value === 'string') {
+        const numValue = parseFloat(value);
+        formattedValue = !isNaN(numValue) ? numValue : value;
+      }
+      setNestedValue(dbState.widget_styles, path, formattedValue);
       // Debug: Log widget_styles saves
-      if (field.id === 'widget-border-width') {
-        console.log('Saving widget-border-width:', { fieldId: field.id, value, path, widget_styles: dbState.widget_styles });
+      if (field.id === 'widget-border-width' || field.id === 'widget-shadow-depth' || field.id === 'widget-shadow-color' || field.id === 'widget-shadow-intensity') {
+        console.log('Saving widget field:', { fieldId: field.id, value, formattedValue, path, widget_styles: dbState.widget_styles });
       }
     } else if (field.tokenPath.startsWith('iconography_tokens.')) {
       const path = field.tokenPath.replace('iconography_tokens.', '');
@@ -157,33 +167,49 @@ export function databaseToUI(
     if (field.tokenPath.startsWith('page.')) {
       const pageField = field.tokenPath.replace('page.', '');
       value = page && pageField in page ? page[pageField] : undefined;
+      // Convert TINYINT(1) to boolean for boolean fields
+      if (field.type === 'boolean' && typeof value === 'number') {
+        value = value === 1;
+      }
     } else {
       // Theme-level fields
       value = getNestedValue(theme, field.tokenPath);
     }
 
-    // Debug: Log widget-border-width loading
-    if (field.id === 'widget-border-width') {
-      console.log('Loading widget-border-width:', { fieldId: field.id, tokenPath: field.tokenPath, rawValue: value, fieldType: field.type });
+    // Debug: Log widget-border-width and shadow fields loading
+    if (field.id === 'widget-border-width' || field.id === 'widget-shadow-depth' || field.id === 'widget-shadow-color' || field.id === 'widget-shadow-intensity') {
+      console.log('Loading widget field:', { fieldId: field.id, tokenPath: field.tokenPath, rawValue: value, fieldType: field.type });
     }
 
     // Parse value based on field type - extract numeric values from strings with units
     let parsedValue: unknown = value;
-    if (value !== undefined && (field.type === 'number' || field.type === 'border-width')) {
+    if (value !== undefined && (field.type === 'number' || field.type === 'border-width' || field.type === 'size' || field.type === 'spacing' || field.type === 'shadow' || field.type === 'glow')) {
       // If value is a string with units (e.g., "34px", "0.1rem"), extract the number
       if (typeof value === 'string') {
-        // Skip non-numeric strings like "none", "medium", etc.
-        if (value === 'none' || value === 'medium' || value === 'auto' || value === 'inherit' || value === 'initial' || value === 'unset') {
-          parsedValue = field.defaultValue;
-        } else {
-          // Remove common units and parse as float
-          const numericValue = parseFloat(value.replace(/px|rem|%|em|pt|pc|ex|ch|vw|vh|vmin|vmax|deg|rad|turn|s|ms|Hz|kHz|dpi|dpcm|dppx/gi, '').trim());
-          if (!isNaN(numericValue)) {
-            parsedValue = numericValue;
+        // Handle legacy profile image size values
+        if (field.id === 'profile-image-size') {
+          const sizeMap: Record<string, number> = { 'small': 80, 'medium': 120, 'large': 180 };
+          if (sizeMap[value] !== undefined) {
+            parsedValue = sizeMap[value];
           } else {
-            // If parsing fails, try to parse the whole string
-            const fallbackValue = parseFloat(value);
-            parsedValue = !isNaN(fallbackValue) ? fallbackValue : field.defaultValue;
+            // Try to parse as number
+            const numericValue = parseFloat(value.replace(/px|rem|%|em|pt|pc|ex|ch|vw|vh|vmin|vmax|deg|rad|turn|s|ms|Hz|kHz|dpi|dpcm|dppx/gi, '').trim());
+            parsedValue = !isNaN(numericValue) ? numericValue : field.defaultValue;
+          }
+        } else {
+          // Skip non-numeric strings like "none", "medium", etc.
+          if (value === 'none' || value === 'medium' || value === 'auto' || value === 'inherit' || value === 'initial' || value === 'unset') {
+            parsedValue = field.defaultValue;
+          } else {
+            // Remove common units and parse as float
+            const numericValue = parseFloat(value.replace(/px|rem|%|em|pt|pc|ex|ch|vw|vh|vmin|vmax|deg|rad|turn|s|ms|Hz|kHz|dpi|dpcm|dppx/gi, '').trim());
+            if (!isNaN(numericValue)) {
+              parsedValue = numericValue;
+            } else {
+              // If parsing fails, try to parse the whole string
+              const fallbackValue = parseFloat(value);
+              parsedValue = !isNaN(fallbackValue) ? fallbackValue : field.defaultValue;
+            }
           }
         }
       } else if (typeof value === 'number') {

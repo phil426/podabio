@@ -15,9 +15,21 @@
   z-index: 10002 !important;
 }
 
+/* Ensure Select Portal is above modal */
+[data-radix-select-portal] {
+  pointer-events: auto !important;
+  z-index: 10003 !important;
+}
+
 /* Popover content should definitely receive pointer events */
 [data-radix-popover-content] {
   pointer-events: auto !important;
+}
+
+/* Select content should definitely receive pointer events and be above modal */
+[data-radix-select-content] {
+  pointer-events: auto !important;
+  z-index: 10003 !important;
 }
 
 @keyframes fadeIn {

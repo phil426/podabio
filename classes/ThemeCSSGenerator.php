@@ -16,6 +16,7 @@ class ThemeCSSGenerator {
     private $pageFonts;
     private $widgetFonts;
     private $pageBackground;
+    private $pageBackgroundAnimate;
     private $widgetBackground;
     private $widgetBorderColor;
     private $widgetStyles;
@@ -46,6 +47,7 @@ class ThemeCSSGenerator {
         $this->pageFonts = $this->themeObj->getPageFonts($page, $theme);
         $this->widgetFonts = $this->themeObj->getWidgetFonts($page, $theme);
         $this->pageBackground = $this->themeObj->getPageBackground($page, $theme);
+        $this->pageBackgroundAnimate = isset($page['page_background_animate']) ? (bool)$page['page_background_animate'] : false;
         $this->widgetBackground = $this->themeObj->getWidgetBackground($page, $theme);
         $this->widgetBorderColor = $this->themeObj->getWidgetBorderColor($page, $theme);
         $this->widgetStyles = $this->themeObj->getWidgetStyles($page, $theme);
@@ -715,6 +717,11 @@ class ThemeCSSGenerator {
         
         // NO FALLBACKS - use only the theme background value
         $css .= "    --page-background: " . h($pageBackgroundValue) . ";\n";
+        
+        // Generate darker version of page background for desktop/tablet mode
+        $pageBackgroundDark = $this->darkenBackground($pageBackgroundValue, 0.15); // 15% darker
+        $css .= "    --page-background-dark: " . h($pageBackgroundDark) . ";\n";
+        
         // REMOVED: --widget-background CSS variable - using direct value in .widget-item instead
         // $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
         $css .= "    --widget-border-width: " . h($this->resolvedBorderWidth) . ";\n";
@@ -1019,6 +1026,10 @@ class ThemeCSSGenerator {
             if (!$isGradient) {
                 // For solid colors, use fixed attachment for full coverage
                 $css .= "    background-attachment: fixed !important;\n";
+            } else if ($shouldAnimate) {
+                // For animated gradients, use larger background size and animation
+                $css .= "    background-size: 200% 200% !important;\n";
+                $css .= "    animation: gradientShift 15s ease infinite !important;\n";
             }
         } else {
             // For Vanta.js, set a fallback background color
@@ -1034,11 +1045,24 @@ class ThemeCSSGenerator {
         $css .= "html {\n";
         if (!$isVanta) {
             $css .= "    background: " . h($pageBackgroundValue) . " !important;\n";
+            if ($isGradient && $shouldAnimate) {
+                $css .= "    background-size: 200% 200% !important;\n";
+                $css .= "    animation: gradientShift 15s ease infinite !important;\n";
+            }
         } else {
             $css .= "    background: #0a0e27 !important;\n";
         }
         $css .= "    min-height: 100%;\n";
         $css .= "}\n\n";
+        
+        // Add gradient animation keyframes if animation is enabled
+        if ($shouldAnimate) {
+            $css .= "@keyframes gradientShift {\n";
+            $css .= "    0% { background-position: 0% 50%; }\n";
+            $css .= "    50% { background-position: 100% 50%; }\n";
+            $css .= "    100% { background-position: 0% 50%; }\n";
+            $css .= "}\n\n";
+        }
         
         // Vanta.js container styles
         if ($isVanta) {
@@ -1563,19 +1587,52 @@ class ThemeCSSGenerator {
         // This ensures shadows always appear and aren't overridden by background re-application
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         if ($borderEffect === 'shadow') {
-            $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
+            // Use new shadow fields: shadow_depth, shadow_color, shadow_intensity
+            // Fall back to old enum-based border_shadow_intensity for backward compatibility
+            $shadowDepth = isset($this->widgetStyles['shadow_depth']) 
+                ? floatval($this->widgetStyles['shadow_depth']) 
+                : (isset($this->widgetStyles['border_shadow_intensity']) && $this->widgetStyles['border_shadow_intensity'] === 'pronounced' ? 5 : 1);
+            $shadowColor = $this->widgetStyles['shadow_color'] ?? 'rgba(15, 23, 42, 0.12)';
+            $shadowIntensity = isset($this->widgetStyles['shadow_intensity']) 
+                ? floatval($this->widgetStyles['shadow_intensity']) 
+                : 1.0;
             
-            // Map shadow intensity to shadow level
-            $shadowValue = null;
-            if ($shadowIntensity === 'none') {
-                $shadowValue = null;
-            } elseif ($shadowIntensity === 'pronounced') {
-                $shadowValue = $this->shapeTokens['shadow']['level_2'] ?? '0 16px 48px rgba(15, 23, 42, 0.5)';
-            } else {
-                $shadowValue = $this->shapeTokens['shadow']['level_1'] ?? '0 1px 2px rgba(15, 23, 42, 0.06)';
-            }
-            
-            if ($shadowValue) {
+            // Only apply shadow if depth > 0
+            if ($shadowDepth > 0) {
+                // Calculate shadow blur based on depth (0-10)
+                // Match profile image shadow style: depth controls both offset and blur
+                // Profile image uses: depth depth blur color (e.g., 4px 4px 8px rgba(...))
+                // For widgets, scale blur relative to depth: depth 1 = 2px blur, depth 10 = 20px blur
+                $shadowBlur = $shadowDepth * 2; // 0-20px (similar to profile image's 8px default for depth 4)
+                
+                // Convert shadow color to rgba if needed (same as profile image)
+                $shadowColorRgba = $shadowColor;
+                if (is_string($shadowColor) && preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i', $shadowColor)) {
+                    // Hex color - convert to rgba with intensity as opacity
+                    $shadowColorRgba = $this->hexToRgba($shadowColor, floatval($shadowIntensity));
+                } elseif (is_string($shadowColor) && strpos($shadowColor, 'rgba') === 0) {
+                    // Already rgba - adjust opacity by intensity
+                    if (preg_match('/rgba\(([^)]+)\)/', $shadowColor, $matches)) {
+                        $parts = explode(',', $matches[1]);
+                        if (count($parts) === 4) {
+                            $opacity = floatval(trim($parts[3])) * floatval($shadowIntensity);
+                            $shadowColorRgba = 'rgba(' . trim($parts[0]) . ', ' . trim($parts[1]) . ', ' . trim($parts[2]) . ', ' . $opacity . ')';
+                        }
+                    }
+                } elseif (is_string($shadowColor) && strpos($shadowColor, 'rgb') === 0) {
+                    // RGB color - convert to rgba with intensity as opacity
+                    if (preg_match('/rgb\(([^)]+)\)/', $shadowColor, $matches)) {
+                        $parts = explode(',', $matches[1]);
+                        if (count($parts) === 3) {
+                            $shadowColorRgba = 'rgba(' . trim($parts[0]) . ', ' . trim($parts[1]) . ', ' . trim($parts[2]) . ', ' . floatval($shadowIntensity) . ')';
+                        }
+                    }
+                }
+                
+                // Generate drop shadow like profile image: offset-x offset-y blur-radius color
+                // Both x and y offsets use depth for diagonal drop shadow effect
+                $shadowValue = h($shadowDepth) . "px " . h($shadowDepth) . "px " . h($shadowBlur) . "px " . h($shadowColorRgba);
+                
                 // Re-apply shadow with higher specificity to ensure it's always visible
                 // Exclude video widgets from shadow effects
                 $css .= "body .widget-item:not(.widget-video),\n";
@@ -2118,6 +2175,46 @@ class ThemeCSSGenerator {
         }
 
         return $this->mixHexColors($normalized, '#000000', max(0, min(1, $amount)));
+    }
+    
+    /**
+     * Darken a background (handles both solid colors and gradients)
+     * @param string $background Background value (hex color or gradient)
+     * @param float $amount Amount to darken (0-1, where 0.15 = 15% darker)
+     * @return string Darkened background
+     */
+    private function darkenBackground($background, $amount = 0.15) {
+        if (empty($background)) {
+            return $background;
+        }
+        
+        // Check if it's a gradient
+        if (strpos($background, 'gradient') !== false || strpos($background, 'linear-gradient') !== false || strpos($background, 'radial-gradient') !== false) {
+            // Extract colors from gradient
+            // Pattern: linear-gradient(135deg, #color1 0%, #color2 100%)
+            if (preg_match('/linear-gradient\s*\(([^,]+),\s*([^%]+)\s+(\d+)%[^,]*,\s*([^)]+)\s+(\d+)%\)/i', $background, $matches)) {
+                $direction = trim($matches[1]);
+                $color1 = trim($matches[2]);
+                $color2 = trim($matches[4]);
+                $stop1 = $matches[3];
+                $stop2 = $matches[5];
+                
+                // Darken both colors
+                $darkened1 = $this->darkenColor($color1, $amount);
+                $darkened2 = $this->darkenColor($color2, $amount);
+                
+                if ($darkened1 && $darkened2) {
+                    return "linear-gradient({$direction}, {$darkened1} {$stop1}%, {$darkened2} {$stop2}%)";
+                }
+            }
+            
+            // If gradient parsing fails, return original (better than broken CSS)
+            return $background;
+        }
+        
+        // It's a solid color - darken it
+        $darkened = $this->darkenColor($background, $amount);
+        return $darkened ?: $background;
     }
 }
 

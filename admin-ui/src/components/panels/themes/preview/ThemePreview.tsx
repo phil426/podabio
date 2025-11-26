@@ -239,7 +239,16 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
       </div>
 
       <div className={styles.previewWrapper}>
-        <div className={styles.previewPhone} style={phoneStyle}>
+        <div 
+          className={styles.previewPhone} 
+          style={{
+            ...phoneStyle,
+            ...(cssVars['--page-background-animate'] === 'true' && {
+              backgroundSize: '200% 200%',
+              animation: 'gradientShift 15s ease infinite'
+            } as React.CSSProperties)
+          }}
+        >
           {/* Content wrapper that scales everything proportionally */}
           <div className={styles.contentWrapper} style={contentWrapperStyle}>
             {/* Background Hotspot - positioned in top left */}
@@ -395,6 +404,9 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
               <div 
                 className={`${styles.socialIcons} ${hotspotsVisible ? styles.hotspot : ''}`}
                 data-hotspot="social-icons"
+                style={{
+                  gap: cssVars['--icon-spacing'] || cssVars['--social-icon-spacing'] || '1rem'
+                }}
                 onClick={(e) => {
                   if (!hotspotsVisible) return;
                   // Only trigger if clicking on the container, not the links
@@ -406,25 +418,45 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
                 }}
                 title={hotspotsVisible ? "Social Icons - Edit social icon appearance" : undefined}
               >
-                {socialIcons.map((icon) => (
-                  <a
-                    key={icon.id}
-                    href={icon.url}
-                    className={styles.socialIcon}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={icon.platform_name}
-                    onClick={(e) => {
-                      if (!hotspotsVisible) return;
-                      // In preview, prevent navigation and trigger hotspot instead
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onHotspotClick?.('social-icons');
-                    }}
-                  >
-                    {getPlatformIcon(icon.platform_name)}
-                  </a>
-                ))}
+                {socialIcons.map((icon) => {
+                  const iconSize = cssVars['--icon-size'] || cssVars['--social-icon-size'] || '32px';
+                  let iconColor = cssVars['--icon-color'] || cssVars['--social-icon-color'] || '#2563eb';
+                  
+                  // Extract solid color if gradient was set (fallback to default)
+                  if (typeof iconColor === 'string' && iconColor.includes('gradient')) {
+                    iconColor = '#2563eb';
+                  }
+                  
+                  const iconStyle: React.CSSProperties = {
+                    width: iconSize,
+                    height: iconSize,
+                    color: iconColor,
+                    fontSize: typeof iconSize === 'string' 
+                      ? `calc(${iconSize} * 0.625)` 
+                      : `${(parseFloat(String(iconSize)) || 32) * 0.625}px`
+                  };
+                  
+                  return (
+                    <a
+                      key={icon.id}
+                      href={icon.url}
+                      className={styles.socialIcon}
+                      style={iconStyle}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={icon.platform_name}
+                      onClick={(e) => {
+                        if (!hotspotsVisible) return;
+                        // In preview, prevent navigation and trigger hotspot instead
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onHotspotClick?.('social-icons');
+                      }}
+                    >
+                      {getPlatformIcon(icon.platform_name)}
+                    </a>
+                  );
+                })}
               </div>
             )}
 

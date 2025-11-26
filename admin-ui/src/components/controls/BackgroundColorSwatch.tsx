@@ -9,6 +9,7 @@ interface BackgroundColorSwatchProps {
   onChange: (value: string) => void;
   onTypeChange?: (type: 'solid' | 'gradient') => void; // Optional - kept for backward compatibility
   label: string;
+  solidOnly?: boolean; // If true, only allow solid colors (no gradients)
 }
 
 export function BackgroundColorSwatch({ 
@@ -16,7 +17,8 @@ export function BackgroundColorSwatch({
   backgroundType,
   onChange, 
   onTypeChange,
-  label
+  label,
+  solidOnly = false
 }: BackgroundColorSwatchProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
@@ -62,6 +64,7 @@ export function BackgroundColorSwatch({
                   <PodaColorPicker
                     value={value}
                     onChange={onChange}
+                    solidOnly={solidOnly}
                   />
                 </div>
               </Popover.Content>

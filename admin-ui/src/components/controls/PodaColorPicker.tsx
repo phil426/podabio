@@ -27,6 +27,7 @@ import styles from './poda-color-picker.module.css';
 interface PodaColorPickerProps {
   value?: string;
   onChange?: (value: string) => void;
+  solidOnly?: boolean; // If true, only show solid color mode (hide gradient tab)
 }
 
 function isGradient(value: string): boolean {
@@ -51,13 +52,15 @@ function buildGradient(direction: number, color1: string, color2: string): strin
 
 export function PodaColorPicker({ 
   value = 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-  onChange 
+  onChange,
+  solidOnly = false
 }: PodaColorPickerProps): JSX.Element {
   const isGrad = isGradient(value);
   const parsed = isGrad ? (parseGradient(value) || { direction: 135, color1: '#6366f1', color2: '#4f46e5' }) : null;
   const solidColor = isGrad ? '#6366f1' : (value.startsWith('#') ? value : '#6366f1');
   
-  const [mode, setMode] = useState<'solid' | 'gradient'>(isGrad ? 'gradient' : 'solid');
+  // Force solid mode if solidOnly is true
+  const [mode, setMode] = useState<'solid' | 'gradient'>(solidOnly ? 'solid' : (isGrad ? 'gradient' : 'solid'));
   const [direction, setDirection] = useState(parsed?.direction ?? 135);
   const [color1, setColor1] = useState(parsed?.color1 ?? '#6366f1');
   const [color2, setColor2] = useState(parsed?.color2 ?? '#4f46e5');
@@ -72,8 +75,27 @@ export function PodaColorPicker({
     setIsEyedropperSupported(typeof window !== 'undefined' && 'EyeDropper' in window);
   }, []);
 
-  // Update mode when value changes externally
+  // Update mode when value changes externally (only if not solidOnly)
   useEffect(() => {
+    if (solidOnly) {
+      // If solidOnly, always extract solid color and stay in solid mode
+      const newIsGrad = isGradient(value);
+      if (newIsGrad) {
+        const newParsed = parseGradient(value);
+        if (newParsed) {
+          setSolid(newParsed.color1);
+          onChange?.(newParsed.color1);
+        } else {
+          setSolid('#6366f1');
+          onChange?.('#6366f1');
+        }
+      } else {
+        setSolid(value.startsWith('#') ? value : '#6366f1');
+      }
+      setMode('solid');
+      return;
+    }
+    
     const newIsGrad = isGradient(value);
     if (newIsGrad && mode === 'solid') {
       const newParsed = parseGradient(value);
@@ -87,7 +109,7 @@ export function PodaColorPicker({
       setSolid(value.startsWith('#') ? value : '#6366f1');
       setMode('solid');
     }
-  }, [value, mode]);
+  }, [value, mode, solidOnly, onChange]);
 
 
   const handleModeChange = (newMode: 'solid' | 'gradient') => {
@@ -164,22 +186,24 @@ export function PodaColorPicker({
 
   return (
     <div className={styles.gradientPicker}>
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          className={`${styles.tab} ${mode === 'solid' ? styles.tabActive : ''}`}
-          onClick={() => handleModeChange('solid')}
-        >
-          Solid
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${mode === 'gradient' ? styles.tabActive : ''}`}
-          onClick={() => handleModeChange('gradient')}
-        >
-          Gradient
-        </button>
-      </div>
+      {!solidOnly && (
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'solid' ? styles.tabActive : ''}`}
+            onClick={() => handleModeChange('solid')}
+          >
+            Solid
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'gradient' ? styles.tabActive : ''}`}
+            onClick={() => handleModeChange('gradient')}
+          >
+            Gradient
+          </button>
+        </div>
+      )}
       <div className={styles.preview} style={previewStyle} />
       
       <div className={styles.controls}>

@@ -3,7 +3,7 @@
  * Settings for social icon appearance
  */
 
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './social-icons-section.module.css';
@@ -19,7 +19,9 @@ export function SocialIconsSection({
   onFieldChange,
   activeColor
 }: SocialIconsSectionProps): JSX.Element {
-  const socialIconColor = (uiState['social-icon-color'] as string) ?? '#2563eb';
+  // Extract solid color from value (in case a gradient was previously set)
+  const rawColor = (uiState['social-icon-color'] as string) ?? '#2563eb';
+  const socialIconColor = rawColor.includes('gradient') ? '#2563eb' : (rawColor.startsWith('#') ? rawColor : '#2563eb');
   const socialIconSize = (uiState['social-icon-size'] as number) ?? 32;
   const socialIconSpacing = (uiState['social-icon-spacing'] as number) ?? 1;
 
@@ -27,11 +29,11 @@ export function SocialIconsSection({
     <div className={styles.section}>
       <div className={styles.fieldGroup}>
         <label className={styles.label}>Color</label>
-        <StandardColorPicker
-          label="Social icon color"
+        <BackgroundColorSwatch
           value={socialIconColor}
           onChange={(value) => onFieldChange('social-icon-color', value)}
-          hideWrapper
+          label="Social icon color"
+          solidOnly={true}
         />
       </div>
 

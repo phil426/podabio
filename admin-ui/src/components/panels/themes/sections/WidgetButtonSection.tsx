@@ -4,7 +4,7 @@
  */
 
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { PodaColorPicker } from '../../../controls/PodaColorPicker';
 import { WidgetBorderEffectSelect } from '../../ultimate-theme-modifier/WidgetBorderEffectSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';

@@ -22,6 +22,7 @@ export function PageBackgroundSection({
 }: PageBackgroundSectionProps): JSX.Element {
   const pageBackground = (uiState['page-background'] as string) ?? '#ffffff';
   const pageVerticalSpacing = (uiState['page-vertical-spacing'] as number) ?? 24;
+  const pageBackgroundAnimate = (uiState['page-background-animate'] as boolean) ?? false;
   const [pageBackgroundType, setPageBackgroundType] = useState<'solid' | 'gradient'>('solid');
 
   // Determine background type
@@ -50,6 +51,8 @@ export function PageBackgroundSection({
             setPageBackgroundType(type);
             if (type === 'solid') {
               onFieldChange('page-background', '#ffffff');
+              // Disable animation when switching to solid
+              onFieldChange('page-background-animate', false);
             } else if (type === 'gradient') {
               onFieldChange('page-background', 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)');
             }
@@ -57,6 +60,23 @@ export function PageBackgroundSection({
           label="Page background"
         />
       </div>
+
+      {/* Gradient Animation Toggle - Only visible when gradient is selected */}
+      {pageBackgroundType === 'gradient' && (
+        <div className={styles.fieldGroup}>
+          <label className={styles.toggleRow}>
+            <span className={styles.label}>Animate Gradient</span>
+            <label className={styles.toggleSwitch}>
+              <input
+                type="checkbox"
+                checked={pageBackgroundAnimate}
+                onChange={(e) => onFieldChange('page-background-animate', e.target.checked)}
+              />
+              <span className={styles.toggleSlider} />
+            </label>
+          </label>
+        </div>
+      )}
 
       {/* Vertical Spacing */}
       <div className={styles.fieldGroup}>

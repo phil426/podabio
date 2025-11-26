@@ -1,6 +1,6 @@
 # PodaBio - Project Summary
 
-**Version:** 1.0.1 | **Status:** Production Ready | **Platform:** Link-in-Bio for Podcasters
+**Version:** 2.0.1 | **Status:** Production Ready | **Platform:** Link-in-Bio for Podcasters
 
 ---
 

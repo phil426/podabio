@@ -8,8 +8,8 @@
 - **Primary Branch:** `main`
 - **Local workspace:** `/Users/philybarrolaza/.cursor/podinbio`
 - **Deploy script:** `./deploy_git.sh` (runs git pull on server via SSH)
-- **Latest version tag:** `v1.0.1` (or see `git tag -l` for current tags)
-- **Application version:** See `/VERSION` file (currently `1.0.1`)
+- **Latest version tag:** `v2.0.1` (or see `git tag -l` for current tags)
+- **Application version:** See `/VERSION` file (currently `2.0.1`)
 
 ### Standard Deployment Workflow
 1. Commit local changes:

@@ -1,7 +1,7 @@
 # Priority Action List
 
 **Generated**: 2025-11-19  
-**Current Version**: 1.0.1  
+**Current Version**: 2.0.1  
 **Last Checkpoint**: CHECKPOINT_v1.0.1.md
 
 ---
@@ -246,7 +246,7 @@ database/
 - [ ] Consolidate deployment docs (move from root to `docs/deployment/`)
 - [ ] Update README.md with current project status
 - [ ] Review and update TODO.md (mark completed items)
-- [ ] Ensure all docs reference current version (1.0.1)
+- [x] Ensure all docs reference current version (2.0.1)
 - [ ] Create deployment checklist document
 
 **Deployment Docs to Move**:

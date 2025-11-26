@@ -1,6 +1,6 @@
 # PodaBio - Project Summary
 
-**Version:** 1.0.1  
+**Version:** 2.0.1  
 **Status:** Production Ready  
 **Last Updated:** November 2024
 

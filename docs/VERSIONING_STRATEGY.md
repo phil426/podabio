@@ -1,7 +1,7 @@
 # Versioning Strategy
 
 **Last Updated**: 2025-01-XX  
-**Current Application Version**: 1.0.1
+**Current Application Version**: 2.0.1
 
 ## Overview
 
@@ -96,22 +96,23 @@ The **`VERSION` file** is the single source of truth for the application version
 
 ## Current Version Status
 
-**Application Version**: `1.0.1`
+**Application Version**: `2.0.1`
 
 ### Version Locations
 
 | Location | Current Value | Status |
 |----------|---------------|--------|
-| `/VERSION` | `1.0.1` | ✅ Current |
-| `config/constants.php` (APP_VERSION) | `1.0.1` | ✅ Matches |
-| `admin-ui/package.json` (version) | `0.1.0` | ⚠️ **MISMATCH** |
-| Documentation references | Various | ⚠️ **INCONSISTENT** |
+| `/VERSION` | `2.0.1` | ✅ Current |
+| `config/constants.php` (APP_VERSION) | `2.0.1` | ✅ Matches |
+| `admin-ui/package.json` (version) | `2.0.1` | ✅ Matches |
+| Documentation references | Updated | ✅ Current |
 
 ### Actions Required
 
-- [ ] Update `admin-ui/package.json` version to `1.0.1`
-- [ ] Update `docs/SECONDARY_DEPLOYMENT_REFERENCE.md` (fix `v1.4.0` reference)
-- [ ] Verify all documentation references current version
+- [x] Update `admin-ui/package.json` version to `2.0.1`
+- [x] Update `config/constants.php` (APP_VERSION) to `2.0.1`
+- [x] Update `VERSION` file to `2.0.1`
+- [x] Update documentation references
 
 ## Version Checking Script
 
@@ -138,7 +139,9 @@ All three should match!
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.1 | 2025-01-XX | Current version |
+| 2.0.1 | 2025-01-XX | Current version - Gradient animation, QR code morphing, PodaColorPicker migration |
+| 2.0.0 | 2025-01-XX | Major version bump |
+| 1.0.1 | 2025-01-XX | Legacy admin panel archived, version reconciliation |
 | 1.0.0 | Initial | Initial release |
 
 ---

@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
-import { StandardColorPicker } from '../../../controls/StandardColorPicker';
+import { PodaColorPicker } from '../../../controls/PodaColorPicker';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './widget-button-section.module.css';
@@ -50,11 +50,10 @@ export function PodcastPlayerBarSection({
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
-          <StandardColorPicker
-            label="Podcast player border color"
+          <PodaColorPicker
             value={playerBorderColor}
             onChange={(value) => onFieldChange('podcast-player-border-color', value)}
-            hideWrapper
+            solidOnly
           />
         </div>
 
@@ -109,11 +108,10 @@ export function PodcastPlayerBarSection({
         
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Text Color</label>
-          <StandardColorPicker
-            label="Podcast player text color"
+          <PodaColorPicker
             value={playerTextColor}
             onChange={(value) => onFieldChange('podcast-player-text-color', value)}
-            hideWrapper
+            solidOnly
           />
         </div>
       </div>
