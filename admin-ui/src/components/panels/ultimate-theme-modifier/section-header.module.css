@@ -18,7 +18,7 @@
 
 .header:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(37, 99, 235, 0.2));
+  box-shadow: 0 0 0 2px var(--active-tab-light, rgba(0, 255, 127, 0.2));
 }
 
 .left {
@@ -32,13 +32,13 @@
   align-items: center;
   width: 16px;
   height: 16px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -51,7 +51,7 @@
   height: 18px;
   padding: 0 6px;
   border-radius: var(--pod-core-shape-radius-pill, 9999px);
-  background: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-color, #00FF7F);
   color: white;
   font-size: 11px;
   font-weight: 600;
@@ -65,7 +65,7 @@
 .chevron {
   width: 16px;
   height: 16px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 

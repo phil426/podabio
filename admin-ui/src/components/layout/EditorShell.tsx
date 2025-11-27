@@ -234,7 +234,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
               activeTab={activeTab} 
               onTabChange={onTabChange}
             />
-            <div style={{ flex: 1, height: '100%', overflow: 'hidden', background: 'var(--pod-semantic-surface-panel, #ffffff)', position: 'relative' }}>
+            <div style={{ flex: 1, height: '100%', overflow: 'hidden', background: 'var(--admin-bg-panel, #ffffff)', position: 'relative' }}>
               <LeftyContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
             </div>
           </div>

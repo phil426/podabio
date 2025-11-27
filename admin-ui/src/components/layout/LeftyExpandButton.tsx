@@ -10,24 +10,38 @@ export function LeftyExpandButton(): JSX.Element {
     <motion.button
       type="button"
       className={styles.expandButton}
+      data-expanded={isExpanded ? 'true' : undefined}
       onClick={toggleExpanded}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
       aria-expanded={isExpanded}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2 }}
+      title={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
     >
-      <motion.div
-        initial={false}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-      >
-        {isExpanded ? (
-          <Sidebar aria-hidden="true" className={styles.icon} size={18} weight="regular" />
-        ) : (
-          <SidebarSimple aria-hidden="true" className={styles.icon} size={18} weight="regular" />
-        )}
-      </motion.div>
+      {isExpanded ? (
+        <Sidebar 
+          aria-hidden="true" 
+          size={isExpanded ? 20 : 24} 
+          weight="regular" 
+        />
+      ) : (
+        <SidebarSimple 
+          aria-hidden="true" 
+          size={isExpanded ? 20 : 24} 
+          weight="regular" 
+        />
+      )}
+      {isExpanded && (
+        <motion.span
+          className={styles.label}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          Collapse
+        </motion.span>
+      )}
     </motion.button>
   );
 }

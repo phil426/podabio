@@ -3,8 +3,8 @@
   gap: 1rem;
   padding: 1.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.035);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.035));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .header {
@@ -22,13 +22,13 @@
 .header p {
   margin: 0.35rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .periodToggle {
   display: inline-flex;
   gap: 0.4rem;
-  background: rgba(15, 23, 42, 0.05);
+  background: var(--admin-surface-elevated, rgba(15, 23, 42, 0.05));
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
 }
@@ -45,13 +45,13 @@
 
 .periodButton {
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .periodActive {
-  background: var(--pod-component-button-primary-background, #2563eb);
+  background: var(--pod-component-button-primary-background, #00FF7F);
   color: var(--pod-component-button-primary-color, #ffffff);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 10px 20px rgba(0, 255, 127, 0.25);
 }
 
 .summaryRow {
@@ -60,7 +60,7 @@
   gap: 1.25rem;
   padding: 0.85rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(0, 255, 127, 0.08);
 }
 
 .metricLabel {
@@ -89,7 +89,7 @@
 .placeholder {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .error {
@@ -120,12 +120,12 @@
 }
 
 .rowButton:hover {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(0, 255, 127, 0.12);
   transform: translateY(-1px);
 }
 
 .rowActive .rowButton {
-  background: rgba(37, 99, 235, 0.18);
+  background: rgba(0, 255, 127, 0.18);
   box-shadow: 0 16px 32px -24px rgba(15, 23, 42, 0.45);
 }
 
@@ -142,7 +142,7 @@
 
 .rowMetric {
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .barTrack {
@@ -159,14 +159,14 @@
   left: 0;
   height: 100%;
   border-radius: var(--pod-core-shape-radius-pill, 9999px);
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.9));
+  background: linear-gradient(90deg, rgba(0, 255, 127, 0.9), rgba(0, 255, 127, 0.9));
 }
 
 .rowMeta {
   display: flex;
   gap: 1.25rem;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 @media (max-width: 420px) {

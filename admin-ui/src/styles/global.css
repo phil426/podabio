@@ -19,6 +19,61 @@
   --pod-app-color-account-border: rgba(37, 99, 235, 0.15);
   --pod-app-divider-soft: rgba(9, 18, 39, 0.1);
   --pod-app-color-menu-item-bg: rgba(9, 18, 39, 0.04);
+
+  /* ============================================
+     ADMIN UI THEME VARIABLES
+     DO NOT MIX WITH USER PAGE VARIABLES (--pod-*)
+     These are for admin UI only, not user-facing pages.
+     ============================================ */
+  
+  /* Brand colors (poda.bio brand guidelines) */
+  --admin-brand-bg-deep-black: #121212;
+  --admin-brand-accent-signal-green: #00FF7F;
+  --admin-brand-text-white: #FFFFFF;
+  --admin-brand-text-tech-grey: #8E8E93;
+  
+  /* Typography */
+  --admin-font-heading: 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --admin-font-body: 'Space Mono', 'Courier New', monospace;
+  
+  /* Backgrounds (light mode defaults) */
+  --admin-bg-page: #f5f7ff;
+  --admin-bg-panel: #ffffff;
+  --admin-bg-rail: #1e293b;
+  --admin-bg-canvas: #f8fafc;
+  --admin-bg-overlay: rgba(9, 18, 39, 0.6);
+  --admin-bg-button: #ffffff;
+  --admin-bg-button-hover: #f8fafc;
+  
+  /* Text colors (light mode defaults) */
+  --admin-text-primary: #0f172a;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: rgba(15, 23, 42, 0.5);
+  --admin-text-inverse: #ffffff;
+  --admin-text-accent: #2563eb;
+  
+  /* Borders (light mode defaults) */
+  --admin-border-default: rgba(15, 23, 42, 0.1);
+  --admin-border-subtle: rgba(15, 23, 42, 0.05);
+  --admin-border-strong: rgba(15, 23, 42, 0.2);
+  --admin-border-accent: #2563eb;
+  
+  /* Surfaces (light mode defaults) */
+  --admin-surface-panel: #ffffff;
+  --admin-surface-canvas: #f8fafc;
+  --admin-surface-overlay: rgba(9, 18, 39, 0.6);
+  --admin-surface-elevated: #ffffff;
+  
+  /* Shadows (light mode defaults) */
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --admin-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --admin-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --admin-shadow-glow: 0 0 8px rgba(37, 99, 235, 0.3), 0 0 16px rgba(37, 99, 235, 0.2);
+  
+  /* Accents (light mode defaults) */
+  --admin-accent-primary: #2563eb;
+  --admin-accent-primary-hover: #1d4ed8;
+  --admin-accent-secondary: #475569;
 }
 
 *,

@@ -13,6 +13,6 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 

@@ -1,8 +1,8 @@
 .wrapper {
   padding: 0.6rem 0.7rem;
   border-radius: 0;
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border: 1px solid var(--active-tab-border, var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08)));
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, var(--admin-border-default, rgba(15, 23, 42, 0.08))));
   display: grid;
   gap: 0.65rem;
   margin: 0 0 0.6rem;
@@ -26,13 +26,13 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .status_success {
@@ -55,7 +55,7 @@
   display: grid;
   gap: 0.65rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   border: 1px solid var(--active-tab-light, transparent);
   padding: 0.6rem 0.7rem;
 }
@@ -68,14 +68,14 @@
 .control span {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .sectionTitle {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .field {
@@ -91,13 +91,13 @@
 .labelText {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .helpText {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .inputWrapper {
@@ -111,7 +111,7 @@
   left: 0.75rem;
   width: 1em;
   height: 1em;
-  color: var(--active-tab-color, var(--pod-semantic-text-secondary, #64748b));
+  color: var(--active-tab-color, var(--admin-text-secondary, #64748b));
   opacity: 0.5;
   pointer-events: none;
   transition: color 200ms ease, opacity 200ms ease;
@@ -119,7 +119,7 @@
 }
 
 .inputWrapper:focus-within .inputIcon {
-  color: var(--active-tab-color, var(--pod-semantic-text-secondary, #64748b));
+  color: var(--active-tab-color, var(--admin-text-secondary, #64748b));
   opacity: 1;
 }
 
@@ -133,7 +133,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   transition: border-color 150ms ease;
 }
@@ -142,7 +142,7 @@
 .inputWrapper .input:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .control .inputWrapper .input:disabled,
@@ -201,17 +201,17 @@
 }
 
 .toggleSwitch input:checked + .toggleSlider {
-  background: var(--active-tab-color, #2563eb);
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(37, 99, 235, 0.2)), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--active-tab-color, #00FF7F);
+  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(0, 255, 127, 0.2)), inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggleSwitch input:checked + .toggleSlider::before {
   transform: translateX(22px);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 255, 127, 0.4);
 }
 
 .toggleSwitch input:focus-visible + .toggleSlider {
-  outline: 2px solid rgba(37, 99, 235, 0.5);
+  outline: 2px solid rgba(0, 255, 127, 0.5);
   outline-offset: 2px;
 }
 
@@ -222,20 +222,20 @@
 .toggleLabel {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   transition: color 200ms ease;
   min-width: 60px;
   text-align: left;
 }
 
 .toggleSwitch input:checked ~ .toggleLabel {
-  color: var(--active-tab-color, rgba(37, 99, 235, 0.9));
+  color: var(--active-tab-color, rgba(0, 255, 127, 0.9));
 }
 
 .comingSoon {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-style: italic;
 }
 
@@ -245,7 +245,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -259,15 +259,15 @@
 }
 
 .podlinksButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
 }
 
 .podlinksButton:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .podlinksButton:disabled {
@@ -299,13 +299,13 @@
 .podlinksResultsTitle {
   margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-weight: 500;
 }
 
 .podlinksResultsTitle strong {
   font-weight: 600;
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
 }
 
 .podlinksPlatforms {
@@ -339,7 +339,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   flex-shrink: 0;
 }
 
@@ -351,7 +351,7 @@
 .podlinksPlatformName {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .podlinksStatusFound {
@@ -392,7 +392,7 @@
 .podlinksUrl {
   flex: 1;
   font-size: 0.75rem;
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
   text-decoration: none;
   word-break: break-all;
   transition: opacity 150ms ease;
@@ -414,15 +414,15 @@
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .podlinksCopyButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
 }
 
 .podlinksCopyButton:active {
@@ -435,7 +435,7 @@
 }
 
 .podlinksCopyButton:hover .podlinksCopyIcon {
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
 }
 
 .podlinksError {
@@ -448,7 +448,7 @@
 .podlinksSkipped {
   margin: 0.5rem 0 0 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-style: italic;
 }
 
@@ -456,7 +456,7 @@
   margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .control .input {
@@ -465,7 +465,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   transition: border-color 150ms ease;
   font-family: inherit;
@@ -474,7 +474,7 @@
 .control .input:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .control .input:disabled {
@@ -488,7 +488,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   transition: border-color 150ms ease;
   font-family: inherit;
@@ -499,7 +499,7 @@
 .textarea:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .textarea:disabled {
@@ -543,7 +543,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.1));
   background: rgba(15, 23, 42, 0.02);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   min-height: 2.5rem;
   display: flex;
@@ -555,7 +555,7 @@
 
 .readOnlyField:empty::before {
   content: 'Not available';
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-style: italic;
 }
 
@@ -588,7 +588,7 @@
 
 .podcastInfoImagePlaceholder {
   font-size: 0.65rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   text-align: center;
   padding: 0.25rem;
   line-height: 1.2;
@@ -605,14 +605,14 @@
 .podcastInfoName {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   line-height: 1.3;
   word-break: break-word;
 }
 
 .podcastInfoDescription {
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   line-height: 1.4;
   word-break: break-word;
   display: -webkit-box;
@@ -637,7 +637,7 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
   background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -652,15 +652,15 @@
 }
 
 .loadFeedButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #00FF7F));
 }
 
 .loadFeedButton:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .loadFeedButton:disabled {

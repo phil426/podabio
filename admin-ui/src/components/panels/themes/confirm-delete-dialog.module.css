@@ -23,7 +23,7 @@
   transform: translate(-50%, -50%);
   width: 90vw;
   max-width: 420px;
-  background: var(--pod-semantic-background-primary, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   z-index: 10001;
@@ -55,13 +55,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   transition: all 0.2s;
 }
 
 .closeButton:hover {
-  background: rgba(15, 23, 42, 0.05);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--admin-surface-elevated, rgba(15, 23, 42, 0.05));
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .body {
@@ -88,14 +88,14 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .message {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .actions {
@@ -109,9 +109,9 @@
   flex: 1;
   padding: 12px 24px;
   border-radius: 8px;
-  border: 1px solid rgba(15, 23, 42, 0.2);
+  border: 1px solid var(--admin-border-strong, rgba(15, 23, 42, 0.2));
   background: transparent;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -119,7 +119,7 @@
 }
 
 .cancelButton:hover {
-  background: rgba(15, 23, 42, 0.05);
+  background: var(--admin-surface-elevated, rgba(15, 23, 42, 0.05));
 }
 
 .confirmButton {

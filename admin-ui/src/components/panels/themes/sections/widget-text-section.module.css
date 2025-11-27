@@ -24,15 +24,15 @@
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .columnTitle {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -46,7 +46,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .toggleGroup {
@@ -57,9 +57,9 @@
 .toggleButton {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -67,12 +67,13 @@
 }
 
 .toggleButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .toggleButton.active {
-  background: var(--pod-semantic-accent-primary, #2563eb);
-  color: #ffffff;
-  border-color: var(--pod-semantic-accent-primary, #2563eb);
+  background: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-text-inverse, #ffffff);
+  border-color: var(--admin-accent-primary, #00FF7F);
 }
 

@@ -6,6 +6,7 @@
   gap: 0;
   position: relative;
   overflow: hidden;
+  background: var(--admin-bg-canvas, #f8fafc);
 }
 
 .previewPanel {
@@ -22,8 +23,8 @@
   align-items: center;
   gap: 12px;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-panel, #ffffff);
   flex-shrink: 0;
 }
 
@@ -43,9 +44,9 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
   background: transparent;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -53,8 +54,8 @@
 .hotspotToggleButton:hover,
 .undoButton:hover:not(:disabled),
 .redoButton:hover:not(:disabled) {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border-color: var(--pod-semantic-divider, rgba(15, 23, 42, 0.2));
+  background: var(--admin-surface-subtle, #f8fafc);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .undoButton:disabled,
@@ -70,15 +71,15 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
   background: transparent;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .backButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-surface-subtle, #f8fafc);
 }
 
 .headerContent {
@@ -90,13 +91,13 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .headerContent p {
   margin: 2px 0 0;
   font-size: 13px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .saveButton {
@@ -105,9 +106,9 @@
   gap: 8px;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(15, 23, 42, 0.15);
-  background: #1e293b;
-  color: #ffffff;
+  border: 1px solid var(--admin-border-strong, rgba(15, 23, 42, 0.15));
+  background: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-bg-deep-black, #121212);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -116,7 +117,7 @@
 }
 
 .saveButton:hover:not(:disabled) {
-  background: #0f172a;
+  background: var(--admin-accent-primary-hover, rgba(0, 255, 127, 0.9));
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
@@ -129,20 +130,20 @@
 .saveButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #94a3b8;
+  background: var(--admin-text-muted, #94a3b8);
 }
 
 
 .tooltip {
   padding: 8px 12px;
   border-radius: 6px;
-  background: var(--pod-semantic-surface-elevated, #1e293b);
-  color: var(--pod-semantic-text-inverse, #ffffff);
+  background: var(--admin-bg-panel, #1e293b);
+  color: var(--admin-text-primary, #ffffff);
   font-size: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .tooltipArrow {
-  fill: var(--pod-semantic-surface-elevated, #1e293b);
+  fill: var(--admin-bg-panel, #1e293b);
 }
 

@@ -4,7 +4,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-bg-canvas, #f8fafc);
   overflow: hidden;
   position: relative;
 }
@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow: auto;
+  overflow: visible;
   min-height: 0;
 }
 
@@ -24,7 +24,7 @@
   max-height: 100%;
   background: var(--page-background, #ffffff);
   border-radius: 24px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: width 0.3s ease, height 0.3s ease;
@@ -50,6 +50,10 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px;
+  isolation: isolate;
+  clip-path: inset(0 round 24px);
 }
 
 .podcastBanner {
@@ -66,6 +70,8 @@
   box-shadow: var(--podcast-player-box-shadow, 0 6px 16px rgba(15, 23, 42, 0.16));
   border-bottom: var(--podcast-player-border-width, 1px) solid var(--podcast-player-border-color, rgba(255, 255, 255, 0.2));
   flex-shrink: 0;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
 }
 
 .podcastBanner.hotspot {
@@ -110,8 +116,8 @@
 
 .previewHeader {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-panel, #ffffff);
   flex-shrink: 0;
   width: 100%;
   display: flex;
@@ -129,13 +135,13 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .previewHeader p {
   margin: 4px 0 0;
   font-size: 13px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .deviceSelector {
@@ -148,9 +154,9 @@
 .deviceSelect {
   padding: 6px 12px;
   border-radius: 8px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -159,14 +165,14 @@
 }
 
 .deviceSelect:hover {
-  border-color: rgba(15, 23, 42, 0.2);
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+  background: var(--admin-surface-subtle, #f8fafc);
 }
 
 .deviceSelect:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #00FF7F;
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .previewContent {
@@ -370,14 +376,14 @@
   height: 16px;
   background: rgba(255, 255, 255, 1);
   border-radius: 50%;
-  border: 2px solid rgba(37, 99, 235, 1);
+  border: 2px solid #00FF7F;
   box-shadow: 
-    0 0 12px rgba(37, 99, 235, 1),
-    0 0 24px rgba(37, 99, 235, 0.8),
-    0 0 36px rgba(37, 99, 235, 0.6),
+    0 0 12px #00FF7F,
+    0 0 24px rgba(0, 255, 127, 0.8),
+    0 0 36px rgba(0, 255, 127, 0.6),
     0 0 0 2px rgba(255, 255, 255, 1);
   pointer-events: none;
-  z-index: 10000;
+  z-index: 100000;
   opacity: 1;
   animation: pulseGlow 2s ease-in-out infinite;
 }
@@ -387,18 +393,18 @@
     opacity: 1;
     transform: scale(1);
     box-shadow: 
-      0 0 12px rgba(37, 99, 235, 1),
-      0 0 24px rgba(37, 99, 235, 0.8),
-      0 0 36px rgba(37, 99, 235, 0.6),
+      0 0 12px #00FF7F,
+      0 0 24px rgba(0, 255, 127, 0.8),
+      0 0 36px rgba(0, 255, 127, 0.6),
       0 0 0 2px rgba(255, 255, 255, 1);
   }
   50% {
     opacity: 1;
     transform: scale(1.4);
     box-shadow: 
-      0 0 18px rgba(37, 99, 235, 1),
-      0 0 36px rgba(37, 99, 235, 0.9),
-      0 0 54px rgba(37, 99, 235, 0.7),
+      0 0 18px #00FF7F,
+      0 0 36px rgba(0, 255, 127, 0.9),
+      0 0 54px rgba(0, 255, 127, 0.7),
       0 0 0 3px rgba(255, 255, 255, 1);
   }
 }
@@ -452,8 +458,9 @@
 /* Social icons container - orb centered above */
 .socialIcons.hotspot::after {
   top: -12px;
-  right: 50%;
-  transform: translateX(50%);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
 
 /* Page title and bio - orb in top-right corner */
@@ -469,10 +476,33 @@
   right: 8px;
 }
 
-/* Podcast banner hotspot - orb in top-right corner */
+/* Podcast banner hotspot - orb to the right of "Tap to Listen" text */
 .podcastBanner.hotspot::after {
-  top: 8px;
-  right: 8px;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  animation: pulseGlowBanner 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlowBanner {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) translateY(-50%);
+    box-shadow: 
+      0 0 12px #00FF7F,
+      0 0 24px rgba(0, 255, 127, 0.8),
+      0 0 36px rgba(0, 255, 127, 0.6),
+      0 0 0 2px rgba(255, 255, 255, 1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4) translateY(-50%);
+    box-shadow: 
+      0 0 18px #00FF7F,
+      0 0 36px rgba(0, 255, 127, 0.9),
+      0 0 54px rgba(0, 255, 127, 0.7),
+      0 0 0 3px rgba(255, 255, 255, 1);
+  }
 }
 
 /* Background hotspot - positioned in top-left corner */

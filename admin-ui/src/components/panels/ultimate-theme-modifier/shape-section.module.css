@@ -29,7 +29,7 @@
   margin-top: 8px;
   width: 60px;
   height: 60px;
-  background: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-color, #00FF7F);
   opacity: 0.6;
 }
 
@@ -38,14 +38,14 @@
   width: 60px;
   height: 60px;
   border-style: solid;
-  border-color: var(--active-tab-color, #2563eb);
+  border-color: var(--active-tab-color, #00FF7F);
   background: transparent;
 }
 
 .comingSoon {
   padding: 16px;
   text-align: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 13px;
   font-style: italic;
 }

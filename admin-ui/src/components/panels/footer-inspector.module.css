@@ -2,7 +2,7 @@
   padding: 0.75rem 0.6rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
   background: rgba(248, 250, 252, 0.85);
-  border: 1px solid var(--active-tab-border, var(--pod-semantic-divider-subtle, rgba(148, 163, 184, 0.4)));
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(148, 163, 184, 0.4)));
   display: grid;
   gap: 0.75rem;
   margin: 0 0 0.75rem;
@@ -26,13 +26,13 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .fieldset {
@@ -64,12 +64,12 @@
 .fieldGroup label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #1e293b);
+  color: var(--admin-text-primary, #1e293b);
 }
 
 .charCounter {
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
   font-variant-numeric: tabular-nums;
 }
 
@@ -93,10 +93,10 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.4));
+  border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
   background: rgba(255, 255, 255, 1);
   box-shadow: 
-    0 0 0 3px rgba(37, 99, 235, 0.08),
+    0 0 0 3px rgba(0, 255, 127, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
@@ -116,10 +116,10 @@ input[type='url'] {
 input[type='text']:focus,
 input[type='url']:focus {
   outline: none;
-  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.4));
+  border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
   background: rgba(255, 255, 255, 1);
   box-shadow: 
-    0 0 0 3px rgba(37, 99, 235, 0.08),
+    0 0 0 3px rgba(0, 255, 127, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
@@ -135,12 +135,12 @@ input[type='url']:focus {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: var(--active-tab-bg, var(--pod-semantic-accent-primary, #2563eb));
+  accent-color: var(--active-tab-bg, var(--admin-accent-primary, #00FF7F));
 }
 
 .checkboxLabel span {
   font-size: 0.85rem;
-  color: var(--pod-semantic-text-primary, #1e293b);
+  color: var(--admin-text-primary, #1e293b);
 }
 
 .footer {
@@ -154,7 +154,7 @@ input[type='url']:focus {
 .saveButton {
   padding: 0.55rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: var(--active-tab-bg, var(--pod-semantic-accent-primary, #2563eb));
+  background: var(--active-tab-bg, var(--admin-accent-primary, #00FF7F));
   color: var(--active-tab-color, #ffffff);
   border: none;
   font-size: 0.85rem;
@@ -165,14 +165,14 @@ input[type='url']:focus {
 }
 
 .saveButton:hover:not(:disabled) {
-  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  background: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 255, 127, 0.25);
 }
 
 .saveButton:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 255, 127, 0.2);
 }
 
 .saveButton:disabled {

@@ -17,13 +17,14 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta name="description" content="See real examples of PodaBio pages created by podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/marketing.css?v=<?php echo filemtime(__DIR__ . '/css/marketing.css'); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
     <style>
         .examples-page {
             padding: 4rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
+            background: var(--poda-bg-primary);
         }
         
         .examples-header {
@@ -34,12 +35,12 @@ require_once __DIR__ . '/includes/helpers.php';
         .examples-header h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
-            color: #1f2937;
+            color: var(--poda-text-primary);
         }
         
         .examples-header p {
             font-size: 1.25rem;
-            color: #6b7280;
+            color: var(--poda-text-secondary);
         }
         
         .filter-buttons {
@@ -52,20 +53,20 @@ require_once __DIR__ . '/includes/helpers.php';
         
         .filter-btn {
             padding: 0.75rem 1.5rem;
-            border: 2px solid #e5e7eb;
-            background: white;
+            border: 2px solid var(--poda-border-subtle);
+            background: var(--poda-bg-secondary);
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--poda-text-secondary);
             transition: all 0.3s;
         }
         
         .filter-btn:hover,
         .filter-btn.active {
-            border-color: #667eea;
-            color: #667eea;
-            background: #f3f4f6;
+            border-color: var(--poda-accent-signal-green);
+            color: var(--poda-accent-signal-green);
+            background: var(--poda-bg-primary);
         }
         
         .examples-grid {
@@ -75,26 +76,28 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         .example-card {
-            background: white;
+            background: var(--poda-bg-secondary);
+            border: 1px solid var(--poda-border-subtle);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
         }
         
         .example-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-color: var(--poda-accent-signal-green);
+            box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
         }
         
         .example-screenshot {
             width: 100%;
             height: 400px;
-            background: #f9fafb;
+            background: var(--poda-bg-primary);
+            border-bottom: 1px solid var(--poda-border-subtle);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #9ca3af;
+            color: var(--poda-text-secondary);
             position: relative;
             overflow: hidden;
         }
@@ -112,7 +115,7 @@ require_once __DIR__ . '/includes/helpers.php';
         .example-info h3 {
             font-size: 1.25rem;
             margin-bottom: 0.5rem;
-            color: #1f2937;
+            color: var(--poda-text-primary);
         }
         
         .example-meta {
@@ -120,7 +123,7 @@ require_once __DIR__ . '/includes/helpers.php';
             gap: 1rem;
             margin-top: 1rem;
             font-size: 0.9rem;
-            color: #6b7280;
+            color: var(--poda-text-secondary);
         }
         
         .example-meta span {
@@ -137,8 +140,9 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         .feature-badge {
-            background: #f3f4f6;
-            color: #667eea;
+            background: var(--poda-bg-primary);
+            border: 1px solid var(--poda-accent-signal-green);
+            color: var(--poda-accent-signal-green);
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -148,10 +152,15 @@ require_once __DIR__ . '/includes/helpers.php';
         .placeholder-note {
             text-align: center;
             padding: 2rem;
-            background: #f9fafb;
+            background: var(--poda-bg-secondary);
+            border: 1px solid var(--poda-border-subtle);
             border-radius: 12px;
             margin: 2rem 0;
-            color: #6b7280;
+            color: var(--poda-text-secondary);
+        }
+        
+        .placeholder-note a {
+            color: var(--poda-accent-signal-green);
         }
         
         @media (max-width: 768px) {
@@ -166,12 +175,15 @@ require_once __DIR__ . '/includes/helpers.php';
     </style>
 </head>
 <body>
+    <!-- Logo - Top Left -->
+    <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
+    
     <header class="header">
         <nav class="nav">
-            <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
             <ul class="nav-links">
                 <li><a href="/features.php">Features</a></li>
                 <li><a href="/pricing.php">Pricing</a></li>
+                <li><a href="/examples.php">Examples</a></li>
                 <li><a href="/about.php">About</a></li>
                 <li><a href="/support/">Support</a></li>
             </ul>
@@ -322,6 +334,110 @@ require_once __DIR__ . '/includes/helpers.php';
                 }
             });
         }
+    </script>
+
+    <script>
+        // Segmented Control Navigation
+        (function() {
+            'use strict';
+            
+            const SELECTORS = {
+                container: '.nav-links',
+                link: '.nav-links a'
+            };
+            
+            const container = document.querySelector(SELECTORS.container);
+            if (!container) return;
+            
+            const links = container.querySelectorAll(SELECTORS.link);
+            let activeLink = null;
+            
+            function updateIndicator(target) {
+                if (!target) return;
+                
+                const targetRect = target.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                const left = targetRect.left - containerRect.left;
+                const width = targetRect.width;
+                
+                if (width > 0) {
+                    container.style.setProperty('--indicator-left', `${left}px`);
+                    container.style.setProperty('--indicator-width', `${width}px`);
+                    container.classList.add('has-indicator');
+                }
+            }
+            
+            function findActiveLink() {
+                const currentPath = window.location.pathname;
+                
+                for (const link of links) {
+                    const href = link.getAttribute('href');
+                    const isActive = href === currentPath || 
+                                   (currentPath !== '/' && href !== '/' && currentPath.startsWith(href));
+                    
+                    if (isActive) {
+                        link.classList.add('active');
+                        return link;
+                    }
+                }
+                
+                return null;
+            }
+            
+            function init() {
+                activeLink = findActiveLink();
+                
+                if (!activeLink && links.length > 0) {
+                    links[0].classList.add('active');
+                    activeLink = links[0];
+                }
+                
+                if (activeLink) {
+                    requestAnimationFrame(() => {
+                        updateIndicator(activeLink);
+                    });
+                }
+            }
+            
+            function handleLinkHover(e) {
+                updateIndicator(e.currentTarget);
+            }
+            
+            function handleContainerLeave() {
+                if (activeLink) {
+                    updateIndicator(activeLink);
+                } else {
+                    container.classList.remove('has-indicator');
+                }
+            }
+            
+            function handleLinkClick(e) {
+                links.forEach(link => link.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                activeLink = e.currentTarget;
+                updateIndicator(activeLink);
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            
+            window.addEventListener('load', () => {
+                if (!activeLink || !container.classList.contains('has-indicator')) {
+                    init();
+                }
+            });
+            
+            links.forEach(link => {
+                link.addEventListener('mouseenter', handleLinkHover);
+                link.addEventListener('click', handleLinkClick);
+            });
+            
+            container.addEventListener('mouseleave', handleContainerLeave);
+        })();
     </script>
 </body>
 </html>

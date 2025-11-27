@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--pod-component-layout-left-rail-background, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .header {
@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  border-bottom: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
 }
 
 .header > div:first-child {
@@ -22,20 +22,20 @@
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .header p {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
   line-height: 1.4;
 }
 
 .periodToggle {
   display: flex;
   gap: 0.25rem;
-  background: rgba(15, 23, 42, 0.04);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
 }
@@ -44,7 +44,7 @@
   padding: 0.4rem 0.75rem;
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
@@ -55,14 +55,14 @@
 
 .periodButton:hover:not(:disabled) {
   background: rgba(15, 23, 42, 0.06);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .periodActive {
   padding: 0.4rem 0.75rem;
   border: none;
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  color: var(--active-tab-color, #00FF7F);
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
@@ -86,7 +86,7 @@
   justify-content: center;
   padding: 3rem 1.5rem;
   text-align: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .loadingIcon,
@@ -95,7 +95,7 @@
   height: 48px;
   margin-bottom: 1rem;
   opacity: 0.3;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .loadingState p,
@@ -121,7 +121,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  border-bottom: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
 }
 
 .summaryCard {
@@ -136,7 +136,7 @@
 }
 
 .summaryCard:hover {
-  background: rgba(15, 23, 42, 0.04);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.15));
 }
 
@@ -147,8 +147,8 @@
   width: 36px;
   height: 36px;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: var(--active-tab-light, rgba(37, 99, 235, 0.06));
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-light, rgba(0, 255, 127, 0.06));
+  color: var(--active-tab-color, #00FF7F);
   flex-shrink: 0;
 }
 
@@ -167,7 +167,7 @@
 
 .summaryLabel {
   font-size: 0.7rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -176,14 +176,14 @@
 .summaryValue {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   line-height: 1.2;
 }
 
 /* Chart Section */
 .chartSection {
   padding: 1.25rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  border-bottom: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
 }
 
 .chartHeader {
@@ -197,7 +197,7 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .refreshButton {
@@ -210,15 +210,15 @@
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   background: #ffffff;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .refreshButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--active-tab-color, #2563eb);
+  color: var(--active-tab-color, #00FF7F);
 }
 
 .refreshButton:disabled {
@@ -281,7 +281,7 @@
   justify-content: space-between;
   margin-top: 0.5rem;
   font-size: 0.7rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .chartLabelStart,
@@ -300,7 +300,7 @@
   margin: 0 0 1rem 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .topLinksList {
@@ -323,7 +323,7 @@
 }
 
 .topLinkItem:hover {
-  background: rgba(15, 23, 42, 0.04);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.15));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
@@ -335,8 +335,8 @@
   width: 32px;
   height: 32px;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: var(--active-tab-light, rgba(37, 99, 235, 0.06));
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-light, rgba(0, 255, 127, 0.06));
+  color: var(--active-tab-color, #00FF7F);
   font-size: 0.85rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -360,7 +360,7 @@
 .topLinkTitle {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -370,7 +370,7 @@
 .topLinkCtr {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--active-tab-color, #2563eb);
+  color: var(--active-tab-color, #00FF7F);
   flex-shrink: 0;
 }
 
@@ -391,7 +391,7 @@
 }
 
 .topLinkUrlLink {
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -400,7 +400,7 @@
 }
 
 .topLinkUrlLink:hover {
-  color: var(--active-tab-color, #2563eb);
+  color: var(--active-tab-color, #00FF7F);
 }
 
 .externalIcon {
@@ -411,13 +411,13 @@
 }
 
 .topLinkType {
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-style: italic;
 }
 
 .topLinkClicks {
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   flex-shrink: 0;
 }
 
@@ -435,7 +435,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, var(--active-tab-color, #2563eb) 0%, color-mix(in srgb, var(--active-tab-color, #2563eb) 80%, transparent) 100%);
+  background: linear-gradient(90deg, var(--active-tab-color, #00FF7F) 0%, color-mix(in srgb, var(--active-tab-color, #00FF7F) 80%, transparent) 100%);
   border-radius: 2px;
   transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }

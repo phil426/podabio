@@ -3,8 +3,8 @@
   gap: 1rem;
   padding: 1.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.03);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.03));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .header {
@@ -23,7 +23,7 @@
 .header p {
   margin: 0.35rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .status {
@@ -45,7 +45,7 @@
 
 .row {
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   background: rgba(255, 255, 255, 0.85);
   padding: 0.85rem 1rem;
   display: grid;
@@ -53,15 +53,15 @@
 }
 
 .rowActive {
-  border: 1px solid rgba(37, 99, 235, 0.45);
-  box-shadow: 0 18px 25px -26px rgba(37, 99, 235, 0.6);
+  border: 1px solid rgba(0, 255, 127, 0.45);
+  box-shadow: 0 18px 25px -26px rgba(0, 255, 127, 0.6);
 }
 
 .rowMeta {
   display: flex;
   gap: 0.75rem;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .timestamp {
@@ -77,9 +77,9 @@
 .rowActions button {
   padding: 0.4rem 0.8rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  background: rgba(37, 99, 235, 0.08);
-  color: var(--pod-semantic-accent-primary, #2563eb);
+  border: 1px solid rgba(0, 255, 127, 0.2);
+  background: rgba(0, 255, 127, 0.08);
+  color: var(--admin-accent-primary, #00FF7F);
   font-weight: 600;
   cursor: pointer;
 }
@@ -91,7 +91,7 @@
 
 .diffPanel {
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(37, 99, 235, 0.05);
+  background: rgba(0, 255, 127, 0.05);
   padding: 0.75rem 0.9rem;
 }
 
@@ -118,12 +118,12 @@
 
 .diffPanel span {
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .placeholder {
   font-size: 0.85rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .error {

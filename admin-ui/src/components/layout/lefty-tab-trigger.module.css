@@ -23,8 +23,8 @@
 }
 
 .tabTrigger[data-active='true'] {
-  background: var(--active-bg, rgba(34, 211, 238, 0.2));
-  color: var(--active-color, #22d3ee);
+  background: var(--active-bg, rgba(0, 255, 127, 0.2));
+  color: var(--active-color, #00FF7F);
 }
 
 .iconWrapper {

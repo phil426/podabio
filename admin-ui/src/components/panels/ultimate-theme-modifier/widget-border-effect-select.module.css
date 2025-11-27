@@ -7,21 +7,21 @@
   min-width: 8rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  color: var(--color-text-primary, #111827);
-  background-color: var(--color-surface-elevated, #ffffff);
-  border: 1px solid var(--color-border-default, #e2e8f0);
+  color: var(--admin-text-primary, #111827);
+  background-color: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .trigger:hover:not(:disabled) {
-  background-color: var(--color-surface-hover, #f9fafb);
-  border-color: var(--color-border-hover, #cbd5e1);
+  background-color: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .trigger:focus-visible {
-  outline: 2px solid var(--color-focus-ring, #2563eb);
+  outline: 2px solid var(--admin-accent-primary, #00FF7F);
   outline-offset: 2px;
 }
 
@@ -32,7 +32,7 @@
 
 .icon {
   flex-shrink: 0;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   transition: transform 0.2s ease;
 }
 
@@ -42,10 +42,10 @@
 
 .content {
   overflow: hidden;
-  background-color: var(--color-surface-elevated, #ffffff);
-  border: 1px solid var(--color-border-default, #e2e8f0);
+  background-color: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
   border-radius: 0.375rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--admin-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
   z-index: 10003;
   min-width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
@@ -63,7 +63,7 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  color: var(--color-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
   border-radius: 0.25rem;
   cursor: pointer;
   outline: none;
@@ -73,18 +73,18 @@
 
 .item:hover,
 .item[data-highlighted] {
-  background-color: var(--color-surface-hover, #f9fafb);
-  color: var(--color-text-primary, #111827);
+  background-color: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
+  color: var(--admin-text-primary, #111827);
 }
 
 .item[data-state="checked"] {
-  background-color: var(--color-accent-primary, #2563eb);
-  color: white;
+  background-color: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-text-inverse, #ffffff);
 }
 
 .item[data-state="checked"]:hover,
 .item[data-state="checked"][data-highlighted] {
-  background-color: var(--color-accent-primary-hover, #1d4ed8);
+  background-color: var(--admin-accent-primary-hover, rgba(0, 255, 127, 0.9));
 }
 
 .indicator {

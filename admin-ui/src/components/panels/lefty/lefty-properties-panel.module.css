@@ -3,7 +3,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
   overflow: hidden;
 }
 

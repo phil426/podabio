@@ -223,8 +223,7 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
             style={{
               background: cssVars['--page-background'] || '#ffffff',
               minHeight: '60px',
-              borderRadius: '8px',
-              border: '1px solid rgba(15, 23, 42, 0.1)'
+              borderRadius: '8px'
             }}
           />
         </div>

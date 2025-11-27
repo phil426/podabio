@@ -17,7 +17,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .createButton {
@@ -26,9 +26,9 @@
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -36,8 +36,8 @@
 }
 
 .createButton:hover {
-  background: var(--active-tab-bg, rgba(15, 23, 42, 0.08));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  background: var(--active-tab-bg, var(--admin-border-default, rgba(15, 23, 42, 0.08)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
 }
 
 .categoryFilter {
@@ -45,15 +45,15 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .categoryButton {
   padding: 0.4rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-sm, 8px);
   border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(15, 23, 42, 0.04);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -61,14 +61,14 @@
 }
 
 .categoryButton:hover {
-  background: rgba(15, 23, 42, 0.08);
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.08));
   border-color: rgba(15, 23, 42, 0.2);
 }
 
 .categoryButtonActive {
   background: var(--active-tab-bg, rgba(15, 23, 42, 0.12));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
   font-weight: 600;
 }
 
@@ -93,7 +93,7 @@
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
   background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 8px var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .postItemSelected {
@@ -114,7 +114,7 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   flex: 1;
   line-height: 1.4;
 }
@@ -144,8 +144,8 @@
 }
 
 .actionButton:hover {
-  background: rgba(15, 23, 42, 0.08);
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
 }
 
 .postMeta {
@@ -211,9 +211,9 @@
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -221,8 +221,8 @@
 }
 
 .emptyButton:hover {
-  background: var(--active-tab-bg, rgba(15, 23, 42, 0.08));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  background: var(--active-tab-bg, var(--admin-border-default, rgba(15, 23, 42, 0.08)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
 }
 
 

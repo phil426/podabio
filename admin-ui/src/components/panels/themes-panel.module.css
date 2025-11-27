@@ -3,7 +3,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .scrollArea {
@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .scrollbar {
@@ -32,7 +32,7 @@
 }
 
 .thumb {
-  background: var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.2));
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.2));
   border-radius: 4px;
 }
 
@@ -45,7 +45,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
   z-index: 9999;
   animation: slideIn 200ms ease-out;
   max-width: 400px;

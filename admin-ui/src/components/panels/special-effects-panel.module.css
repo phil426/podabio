@@ -3,8 +3,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  color: #111827;
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #111827);
 }
 
 .scrollArea {
@@ -31,13 +31,13 @@
   gap: 12px;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   margin: 0 0 8px 0;
 }
 
 .header p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
 }
@@ -56,13 +56,13 @@
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   margin: 0 0 8px 0;
 }
 
 .sectionDescription {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -88,7 +88,7 @@
 
 .emptyState p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
 }
 
@@ -102,15 +102,15 @@
 .control label {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
 }
 
 .select {
   width: 100%;
   padding: 10px 12px;
   font-size: 14px;
-  color: #111827;
-  background: #ffffff;
+  color: var(--admin-text-primary, #111827);
+  background: var(--admin-bg-panel, #ffffff);
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
@@ -118,13 +118,13 @@
 }
 
 .select:hover:not(:disabled) {
-  border-color: var(--active-tab-color, #2563eb);
+  border-color: var(--active-tab-color, #00FF7F);
 }
 
 .select:focus {
   outline: none;
-  border-color: var(--active-tab-color, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--active-tab-color, #00FF7F);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .select:disabled {
@@ -134,7 +134,7 @@
 
 .help {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
 }

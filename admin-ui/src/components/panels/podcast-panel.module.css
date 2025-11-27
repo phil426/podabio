@@ -3,8 +3,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .scrollArea {
@@ -29,7 +29,7 @@
   gap: 12px;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .header h2 {
@@ -38,13 +38,13 @@
   gap: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   margin: 0;
 }
 
 .header p {
   font-size: 13px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   margin: 0;
   line-height: 1.6;
 }
@@ -67,13 +67,13 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   margin: 0 0 8px 0;
 }
 
 .sectionDescription {
   font-size: 13px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   margin: 0;
   line-height: 1.6;
 }
@@ -81,13 +81,13 @@
 .infoBox {
   padding: 16px;
   background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   border-radius: 8px;
 }
 
 .infoBox p {
   font-size: 13px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   margin: 0;
   line-height: 1.6;
 }

@@ -36,13 +36,13 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .header p {
   margin: 4px 0 0;
   font-size: 14px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .podcastButton,
@@ -53,8 +53,8 @@
   padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid var(--button-border, rgba(15, 23, 42, 0.12));
-  background: var(--button-bg, rgba(37, 99, 235, 0.12));
-  color: var(--button-color, #2563eb);
+  background: var(--button-bg, rgba(0, 255, 127, 0.12));
+  color: var(--button-color, #00FF7F);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -86,7 +86,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .themeGrid {
@@ -117,7 +117,7 @@
   gap: 16px;
   padding: 64px 24px;
   text-align: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .empty p {

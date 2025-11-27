@@ -12,7 +12,7 @@ import {
 
 import { normalizeImageUrl } from '../../api/utils';
 
-const LOGO_PATH = '/uploads/pnb_big.png';
+const LOGO_PATH = '/uploads/poda4.png';
 import { usePageSnapshot } from '../../api/page';
 import { useAccountProfile } from '../../api/account';
 import { useFeatureFlag } from '../../store/featureFlags';

@@ -3,11 +3,11 @@
   flex-shrink: 0;
   min-width: 64px;
   height: 100%;
-  background: var(--left-rail-bg, #1e293b);
+  background: var(--admin-bg-rail, #1e293b);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 8px var(--admin-shadow-sm, rgba(0, 0, 0, 0.1));
   z-index: 100;
 }
 
@@ -18,7 +18,7 @@
   right: 0;
   bottom: 0;
   width: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--admin-border-default, rgba(255, 255, 255, 0.1));
   pointer-events: none;
 }
 
@@ -45,6 +45,10 @@
 .expandButtonWrapper {
   width: 100%;
   flex-shrink: 0;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .tabsNav {
@@ -65,13 +69,28 @@
 }
 
 .thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--admin-border-strong, rgba(255, 255, 255, 0.2));
   border-radius: 4px;
   transition: background 200ms ease;
 }
 
 .thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--admin-text-secondary, rgba(255, 255, 255, 0.3));
+}
+
+.docsSection {
+  padding: 12px;
+  border-top: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.themeToggleSection {
+  padding: 0 12px 12px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .docsButton {
@@ -80,19 +99,18 @@
   gap: 12px;
   width: 100%;
   padding: 12px;
-  margin: 0 12px 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-border-subtle, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--admin-text-primary, rgba(255, 255, 255, 0.9));
   cursor: pointer;
   transition: all 250ms ease;
   font-size: 14px;
 }
 
 .docsButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
+  border-color: var(--admin-border-strong, rgba(255, 255, 255, 0.2));
 }
 
 .docsButton:not([data-expanded='true']) {
@@ -103,13 +121,13 @@
   height: 40px;
   min-width: 40px;
   min-height: 40px;
-  margin: 0 auto 8px auto;
+  margin: 0 auto;
 }
 
 .docsLabel {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--admin-text-primary, rgba(255, 255, 255, 0.9));
 }
 
 .docsButton:not([data-expanded='true']) .docsLabel {

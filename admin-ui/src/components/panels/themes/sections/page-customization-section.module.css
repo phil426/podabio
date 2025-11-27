@@ -10,15 +10,15 @@
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-canvas, #f8fafc);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .subsectionTitle {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -32,7 +32,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .toggleGroup {
@@ -43,9 +43,9 @@
 .toggleButton {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -53,13 +53,13 @@
 }
 
 .toggleButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-bg-canvas, #f8fafc);
 }
 
 .toggleButton.active {
-  background: var(--pod-semantic-accent-primary, #2563eb);
-  color: #ffffff;
-  border-color: var(--pod-semantic-accent-primary, #2563eb);
+  background: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-text-inverse, #ffffff);
+  border-color: var(--admin-accent-primary, #00FF7F);
 }
 
 .optionButtons {
@@ -73,9 +73,9 @@
   min-width: 0;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -84,14 +84,14 @@
 }
 
 .optionButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border-color: var(--pod-semantic-divider, rgba(15, 23, 42, 0.16));
+  background: var(--admin-bg-canvas, #f8fafc);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.16));
 }
 
 .optionButtonActive {
-  background: var(--pod-semantic-accent-primary, #2563eb);
-  color: #ffffff;
-  border-color: var(--pod-semantic-accent-primary, #2563eb);
+  background: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-text-inverse, #ffffff);
+  border-color: var(--admin-accent-primary, #00FF7F);
 }
 
 /* Profile Image Upload */
@@ -107,8 +107,8 @@
   height: 120px;
   border-radius: 8px;
   overflow: hidden;
-  border: 2px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  border: 2px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-canvas, #f8fafc);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,7 +127,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 12px;
   font-weight: 500;
 }
@@ -166,7 +166,7 @@
   border-radius: 6px;
   border: none;
   background: rgba(255, 255, 255, 0.95);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,17 +237,17 @@
 }
 
 .toggleSwitch input:checked + .toggleSlider {
-  background: var(--pod-semantic-accent-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--admin-accent-primary, #00FF7F);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggleSwitch input:checked + .toggleSlider::before {
   transform: translateX(22px);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 255, 127, 0.4);
 }
 
 .toggleSwitch input:focus-visible + .toggleSlider {
-  outline: 2px solid rgba(37, 99, 235, 0.5);
+  outline: 2px solid rgba(0, 255, 127, 0.5);
   outline-offset: 2px;
 }
 

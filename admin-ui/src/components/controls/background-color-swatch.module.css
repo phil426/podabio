@@ -3,9 +3,9 @@
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  background: var(--admin-bg-panel, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
+  box-shadow: var(--admin-shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.04));
 }
 
 .header {
@@ -26,7 +26,7 @@
   margin: 0;
   font-weight: 600;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
   line-height: 1.2;
 }
 
@@ -42,8 +42,8 @@
   gap: 0.25rem;
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: rgba(15, 23, 42, 0.05);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.05));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
 }
 
 .modeButton {
@@ -55,7 +55,7 @@
   border: none;
   border-radius: var(--pod-core-shape-radius-sm, 5px);
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   transition: all 150ms ease;
   font-size: 0.8rem;
@@ -64,14 +64,14 @@
 }
 
 .modeButton:hover {
-  background: rgba(15, 23, 42, 0.08);
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--admin-surface-elevated, rgba(15, 23, 42, 0.08));
+  color: var(--admin-text-primary, #111827);
 }
 
 .modeButtonActive {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.15));
-  color: var(--active-tab-color, #2563eb);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--admin-accent-primary, rgba(0, 255, 127, 0.2));
+  color: var(--admin-accent-primary, #00FF7F);
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .modeButton svg {
@@ -102,28 +102,28 @@
 
 .swatchButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(37, 99, 235, 0.25));
+  box-shadow: 0 0 0 3px var(--admin-accent-primary, rgba(0, 255, 127, 0.3));
 }
 
 .swatchButtonGradient {
-  border: 2.5px solid rgba(15, 23, 42, 0.2);
+  border: 2.5px solid var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .swatch {
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  border: 2.5px solid rgba(15, 23, 42, 0.2);
+  border: 2.5px solid var(--admin-border-strong, rgba(15, 23, 42, 0.2));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 /* Background Popover */
 .backgroundPopover {
-  background: white;
+  background: var(--admin-bg-panel, #ffffff);
   border-radius: 0.5rem;
   padding: 1rem;
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
-  border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.1));
+  box-shadow: var(--admin-shadow-lg, 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2));
+  border: 1px solid var(--admin-border-default, rgba(0, 0, 0, 0.1));
   z-index: 10002;
   min-width: 300px;
   max-width: 400px;
@@ -148,25 +148,27 @@
 
 .urlInput {
   padding: 0.5rem;
-  border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--admin-border-default, rgba(0, 0, 0, 0.15));
   border-radius: 0.375rem;
   font-size: 0.8125rem;
-  color: var(--color-text-primary, #111827);
-  background: #ffffff;
+  color: var(--admin-text-primary, #111827);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .urlInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--admin-accent-primary, #00FF7F);
+  box-shadow: 0 0 0 3px var(--admin-accent-primary, rgba(0, 255, 127, 0.2));
 }
 
 .fileInput {
   padding: 0.5rem;
-  border: 1px solid var(--color-divider-subtle, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--admin-border-default, rgba(0, 0, 0, 0.15));
   border-radius: 0.375rem;
   font-size: 0.8125rem;
   cursor: pointer;
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #111827);
 }
 
 

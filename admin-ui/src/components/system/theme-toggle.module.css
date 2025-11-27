@@ -1,22 +1,20 @@
-.expandButton {
+.toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 8px 12px;
   background: var(--admin-border-subtle, rgba(255, 255, 255, 0.05));
   border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--admin-text-primary, rgba(255, 255, 255, 0.9));
   cursor: pointer;
-  transition: all 250ms ease;
-  font-size: 14px;
+  transition: all 200ms ease;
+  font-size: 13px;
   font-weight: 500;
-  margin: 0;
-  flex-shrink: 0;
 }
 
-.expandButton:not([data-expanded='true']) {
+.toggle:not([data-expanded='true']) {
   justify-content: center;
   align-items: center;
   padding: 0;
@@ -27,23 +25,22 @@
   margin: 0 auto;
 }
 
-.expandButton:not([data-expanded='true']) .label {
+.toggle:not([data-expanded='true']) .label {
   display: none;
 }
 
-.expandButton:hover {
+.toggle:hover {
   background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
   border-color: var(--admin-border-strong, rgba(255, 255, 255, 0.2));
 }
 
-.expandButton:focus-visible {
+.toggle:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--admin-accent-primary, rgba(0, 255, 127, 0.3));
+  box-shadow: 0 0 0 2px var(--admin-accent-primary, rgba(37, 99, 235, 0.3));
 }
 
 .label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--admin-text-primary, rgba(255, 255, 255, 0.9));
 }
 

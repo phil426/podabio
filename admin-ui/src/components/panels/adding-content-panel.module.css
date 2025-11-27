@@ -3,8 +3,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  color: #111827;
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #111827);
 }
 
 .scrollArea {
@@ -28,13 +28,13 @@
 .header h2 {
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   margin: 0 0 8px 0;
 }
 
 .header p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
 }
@@ -63,15 +63,15 @@
   background: rgba(249, 250, 251, 1);
   border: 1px solid rgba(229, 231, 235, 1);
   border-radius: 8px;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   transition: all 200ms ease;
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--active-tab-color, #2563eb);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--active-tab-color, #00FF7F);
+  background: var(--admin-bg-panel, #ffffff);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .categoryRow {
@@ -87,7 +87,7 @@
   background: rgba(249, 250, 251, 1);
   border: 1px solid rgba(229, 231, 235, 1);
   border-radius: 6px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   transition: all 200ms ease;
 }
@@ -98,9 +98,9 @@
 }
 
 .categoryButtonActive {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-color, #2563eb);
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-color, #00FF7F);
+  color: var(--active-tab-color, #00FF7F);
 }
 
 .gridSection {
@@ -117,7 +117,7 @@
 }
 
 .card {
-  background: #ffffff;
+  background: var(--admin-bg-panel, #ffffff);
   border: 1px solid rgba(229, 231, 235, 1);
   border-radius: 8px;
   overflow: hidden;
@@ -127,7 +127,7 @@
 }
 
 .card:hover {
-  border-color: var(--active-tab-color, #2563eb);
+  border-color: var(--active-tab-color, #00FF7F);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -161,13 +161,13 @@
 .cardBody h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   margin: 0 0 8px 0;
 }
 
 .cardBody p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
 }
@@ -191,7 +191,7 @@
   padding: 6px 12px;
   font-size: 14px;
   font-weight: 500;
-  background: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-color, #00FF7F);
   color: #ffffff;
   border: none;
   border-radius: 6px;

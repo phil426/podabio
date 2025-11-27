@@ -17,15 +17,16 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta name="description" content="Discover all the powerful features PodaBio offers for podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/marketing.css?v=<?php echo filemtime(__DIR__ . '/css/marketing.css'); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
     <style>
-        /* Page-specific styles for features page */
+        /* Page-specific styles for features page - Dark Theme */
         
         .content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 4rem 2rem;
+            background: var(--poda-bg-primary);
         }
         
         .feature-section {
@@ -35,7 +36,7 @@ require_once __DIR__ . '/includes/helpers.php';
         .feature-section h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
-            color: #1f2937;
+            color: var(--poda-text-primary);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -43,11 +44,12 @@ require_once __DIR__ . '/includes/helpers.php';
         
         .feature-section .icon {
             font-size: 2.5rem;
+            color: var(--poda-accent-signal-green);
         }
         
         .feature-section p {
             font-size: 1.1rem;
-            color: #6b7280;
+            color: var(--poda-text-secondary);
             margin-bottom: 1.5rem;
         }
         
@@ -60,44 +62,71 @@ require_once __DIR__ . '/includes/helpers.php';
             padding: 0.75rem 0;
             padding-left: 2rem;
             position: relative;
-            color: #4b5563;
+            color: var(--poda-text-secondary);
         }
         
         .feature-list li:before {
             content: '✓';
             position: absolute;
             left: 0;
-            color: #10b981;
+            color: var(--poda-accent-signal-green);
             font-weight: bold;
             font-size: 1.2rem;
         }
         
         .cta-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--poda-bg-secondary);
+            border: 1px solid var(--poda-accent-signal-green);
+            color: var(--poda-text-primary);
             padding: 3rem;
             border-radius: 12px;
             text-align: center;
             margin-top: 4rem;
+            box-shadow: 0 0 30px rgba(0, 255, 127, 0.2);
         }
         
         .cta-box h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
+            color: var(--poda-text-primary);
         }
         
         .cta-box p {
             font-size: 1.1rem;
             margin-bottom: 2rem;
-            opacity: 0.95;
+            color: var(--poda-text-secondary);
+        }
+        
+        table {
+            background: var(--poda-bg-secondary);
+            border: 1px solid var(--poda-border-subtle);
+        }
+        
+        table th {
+            background: var(--poda-bg-primary);
+            color: var(--poda-text-primary);
+            border-bottom: 1px solid var(--poda-border-subtle);
+        }
+        
+        table td {
+            color: var(--poda-text-secondary);
+            border-bottom: 1px solid var(--poda-border-subtle);
+        }
+        
+        .feature-section div[style*="background: #f9fafb"] {
+            background: var(--poda-bg-primary) !important;
+            border: 1px solid var(--poda-border-subtle) !important;
+            color: var(--poda-text-secondary) !important;
         }
         
     </style>
 </head>
 <body>
+    <!-- Logo - Top Left -->
+    <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
+    
     <header class="header">
         <nav class="nav">
-            <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
             <ul class="nav-links">
                 <li><a href="/features.php">Features</a></li>
                 <li><a href="/pricing.php">Pricing</a></li>
@@ -122,51 +151,51 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section" style="margin-bottom: 4rem;">
             <h2 style="text-align: center; margin-bottom: 2rem;">Why PodaBio vs. Generic Link-in-Bio Tools</h2>
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <table style="width: 100%; border-collapse: collapse; background: var(--poda-bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--poda-border-subtle);">
                     <thead>
-                        <tr style="background: #f9fafb;">
-                            <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Feature</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">PodaBio</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Linktree</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Beacons</th>
+                        <tr style="background: var(--poda-bg-primary);">
+                            <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Feature</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">PodaBio</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Linktree</th>
+                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Beacons</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">RSS Feed Auto-Sync</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">RSS Feed Auto-Sync</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Built-in Podcast Player</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Built-in Podcast Player</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Podcast Directory Links</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #ef4444;">✗</td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast Directory Links</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Podcast-Specific Themes</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">49+ Themes</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Limited</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Limited</td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast-Specific Themes</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">49+ Themes</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">Email Subscription Integration</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #10b981;">6 Services</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Basic</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Basic</td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Email Subscription Integration</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">6 Services</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Basic</td>
+                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Basic</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem;">Free Plan</td>
-                            <td style="padding: 1rem; text-align: center; color: #10b981;">✓ Full Features</td>
-                            <td style="padding: 1rem; text-align: center; color: #6b7280;">Limited</td>
-                            <td style="padding: 1rem; text-align: center; color: #6b7280;">Limited</td>
+                            <td style="padding: 1rem; color: var(--poda-text-secondary);">Free Plan</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-accent-signal-green);">✓ Full Features</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
                         </tr>
                     </tbody>
                 </table>
@@ -176,7 +205,7 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎙️</span> RSS Feed Integration</h2>
             <p>Automatically import your podcast information, episodes, and artwork from your RSS feed.</p>
-            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
                 <p style="margin-bottom: 0.5rem;">[Visual: RSS feed integration screenshot]</p>
                 <p style="font-size: 0.9rem;">AI Prompt: "Screenshot showing RSS feed URL input and auto-populated podcast information with cover art, name, and description fields filled automatically."</p>
             </div>
@@ -202,7 +231,7 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎧</span> Podcast Player</h2>
             <p>Built-in audio player for your episodes using Shikwasa.js.</p>
-            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
                 <p style="margin-bottom: 0.5rem;">[Visual: Podcast player interface]</p>
                 <p style="font-size: 0.9rem;">AI Prompt: "Modern podcast player interface with waveform visualization, play/pause controls, and episode list drawer. Clean, minimalist design."</p>
             </div>
@@ -217,7 +246,7 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎨</span> Complete Customization</h2>
             <p>Make your page truly yours with extensive customization options.</p>
-            <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: #9ca3af;">
+            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
                 <p style="margin-bottom: 0.5rem;">[Visual: Theme preview grid]</p>
                 <p style="font-size: 0.9rem;">AI Prompt: "Grid showing 4 different beautiful website themes side by side. Each with different color schemes. Clean, modern design."</p>
             </div>
@@ -295,7 +324,7 @@ require_once __DIR__ . '/includes/helpers.php';
         <div class="cta-box">
             <h2>Ready to Get Started?</h2>
             <p>Create your free account and start building your podcast's link-in-bio page today.</p>
-            <a href="/signup.php" class="btn btn-primary" style="background: white; color: #667eea; font-size: 1.1rem; padding: 1rem 2rem;">Start Free</a>
+            <a href="/signup.php" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Start Free</a>
         </div>
     </div>
     
@@ -335,6 +364,110 @@ require_once __DIR__ . '/includes/helpers.php';
             <p>&copy; <?php echo date('Y'); ?> <?php echo h(APP_NAME); ?>. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // Segmented Control Navigation
+        (function() {
+            'use strict';
+            
+            const SELECTORS = {
+                container: '.nav-links',
+                link: '.nav-links a'
+            };
+            
+            const container = document.querySelector(SELECTORS.container);
+            if (!container) return;
+            
+            const links = container.querySelectorAll(SELECTORS.link);
+            let activeLink = null;
+            
+            function updateIndicator(target) {
+                if (!target) return;
+                
+                const targetRect = target.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                const left = targetRect.left - containerRect.left;
+                const width = targetRect.width;
+                
+                if (width > 0) {
+                    container.style.setProperty('--indicator-left', `${left}px`);
+                    container.style.setProperty('--indicator-width', `${width}px`);
+                    container.classList.add('has-indicator');
+                }
+            }
+            
+            function findActiveLink() {
+                const currentPath = window.location.pathname;
+                
+                for (const link of links) {
+                    const href = link.getAttribute('href');
+                    const isActive = href === currentPath || 
+                                   (currentPath !== '/' && href !== '/' && currentPath.startsWith(href));
+                    
+                    if (isActive) {
+                        link.classList.add('active');
+                        return link;
+                    }
+                }
+                
+                return null;
+            }
+            
+            function init() {
+                activeLink = findActiveLink();
+                
+                if (!activeLink && links.length > 0) {
+                    links[0].classList.add('active');
+                    activeLink = links[0];
+                }
+                
+                if (activeLink) {
+                    requestAnimationFrame(() => {
+                        updateIndicator(activeLink);
+                    });
+                }
+            }
+            
+            function handleLinkHover(e) {
+                updateIndicator(e.currentTarget);
+            }
+            
+            function handleContainerLeave() {
+                if (activeLink) {
+                    updateIndicator(activeLink);
+                } else {
+                    container.classList.remove('has-indicator');
+                }
+            }
+            
+            function handleLinkClick(e) {
+                links.forEach(link => link.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                activeLink = e.currentTarget;
+                updateIndicator(activeLink);
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            
+            window.addEventListener('load', () => {
+                if (!activeLink || !container.classList.contains('has-indicator')) {
+                    init();
+                }
+            });
+            
+            links.forEach(link => {
+                link.addEventListener('mouseenter', handleLinkHover);
+                link.addEventListener('click', handleLinkClick);
+            });
+            
+            container.addEventListener('mouseleave', handleContainerLeave);
+        })();
+    </script>
 </body>
 </html>
 

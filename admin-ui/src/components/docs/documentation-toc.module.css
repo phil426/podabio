@@ -3,19 +3,19 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: var(--admin-bg-canvas, #f8fafc);
 }
 
 .tocHeader {
   padding: 1.5rem 1.25rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--admin-border-default, #e5e7eb);
   flex-shrink: 0;
 }
 
 .tocTitle {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--admin-text-primary, #111827);
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -67,7 +67,7 @@
 .tocLink {
   display: block;
   padding: 0.375rem 1rem;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   text-decoration: none;
   transition: color 150ms ease, background 150ms ease;
   border-left: 2px solid transparent;
@@ -76,21 +76,21 @@
 }
 
 .tocLink:hover {
-  color: #111827;
-  background: #e5e7eb;
+  color: var(--admin-text-primary, #111827);
+  background: var(--admin-surface-elevated, #e5e7eb);
 }
 
 .tocLinkActive {
-  color: #2563eb;
-  border-left-color: #2563eb;
-  background: #dbeafe;
+  color: var(--admin-accent-primary, #00FF7F);
+  border-left-color: var(--admin-accent-primary, #00FF7F);
+  background: rgba(0, 255, 127, 0.1);
   font-weight: 500;
 }
 
 .emptyState {
   padding: 2rem 1.25rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 0.875rem;
 }
 
@@ -105,12 +105,12 @@
 }
 
 .thumb {
-  background: rgba(156, 163, 175, 0.3);
+  background: var(--admin-border-default, rgba(156, 163, 175, 0.3));
   border-radius: 4px;
   transition: background 200ms ease;
 }
 
 .thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
+  background: var(--admin-border-strong, rgba(156, 163, 175, 0.5));
 }
 

@@ -1,8 +1,8 @@
 .wrapper {
   padding: 0.6rem 0.7rem;
   border-radius: 0;
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border: 1px solid var(--active-tab-border, var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08)));
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, var(--admin-border-default, rgba(15, 23, 42, 0.08))));
   display: grid;
   gap: 0.65rem;
   margin: 0 0 0.6rem;
@@ -26,13 +26,13 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .closeButton {
@@ -44,7 +44,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   cursor: pointer;
   transition: all 150ms ease;
@@ -52,8 +52,8 @@
 }
 
 .closeButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.08));
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--active-tab-light, var(--admin-border-default, rgba(15, 23, 42, 0.08)));
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .closeButton svg {
@@ -94,7 +94,7 @@
 .control span {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .input,
@@ -105,7 +105,7 @@
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   font-size: 0.85rem;
   background: #ffffff;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   transition: border-color 150ms ease;
   font-family: inherit;
 }
@@ -114,7 +114,7 @@
 .select:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, rgba(15, 23, 42, 0.05));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
 }
 
 .select {
@@ -168,7 +168,7 @@
 }
 
 .toggleSwitch input:checked + .toggleSlider {
-  background-color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  background-color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
 }
 
 .toggleSwitch input:checked + .toggleSlider:before {
@@ -186,7 +186,7 @@
   padding: 0.55rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
-  background: var(--pod-component-button-primary-background, #2563eb);
+  background: var(--pod-component-button-primary-background, #00FF7F);
   color: var(--pod-component-button-primary-color, #ffffff);
   font-size: 0.85rem;
   font-weight: 500;
@@ -223,7 +223,7 @@
 .emptyState {
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.85rem;
 }
 

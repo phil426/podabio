@@ -7,7 +7,7 @@
   height: 40px;
   border-radius: 8px;
   border: none;
-  background: var(--active-color, #22d3ee);
+  background: var(--active-color, #00FF7F);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -154,13 +154,13 @@
 }
 
 .deviceSelectCompact:hover {
-  border-color: var(--active-color, #22d3ee);
+  border-color: var(--active-color, #00FF7F);
 }
 
 .deviceSelectCompact:focus {
   outline: none;
-  border-color: var(--active-color, #22d3ee);
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.1);
+  border-color: var(--active-color, #00FF7F);
+  box-shadow: 0 0 0 2px rgba(0, 255, 127, 0.1);
 }
 
 

@@ -16,10 +16,16 @@
  */
 
 // Instagram App ID (from Facebook Developer Console)
-define('INSTAGRAM_APP_ID', '');
+// Note: Instagram uses the same App ID and Secret as the main Facebook App
+// These values are now defined in config/meta.php
+// If meta.php is loaded, these will be set automatically
+if (!defined('INSTAGRAM_APP_ID')) {
+    define('INSTAGRAM_APP_ID', '');
+}
 
-// Instagram App Secret (from Facebook Developer Console)
-define('INSTAGRAM_APP_SECRET', '');
+if (!defined('INSTAGRAM_APP_SECRET')) {
+    define('INSTAGRAM_APP_SECRET', '');
+}
 
 // Long-lived access token (generated via OAuth flow)
 // Note: Long-lived tokens expire after 60 days. You'll need to refresh them.

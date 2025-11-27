@@ -23,14 +23,14 @@
   margin: 0 0 0.2rem 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   line-height: 1.3;
 }
 
 .header p {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: var(--admin-text-secondary, #475569);
   line-height: 1.4;
 }
 
@@ -43,7 +43,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   transition: all 150ms ease;
@@ -52,7 +52,7 @@
 
 .closeButton:hover {
   background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .closeButton svg {
@@ -69,7 +69,7 @@
   gap: 0.75rem;
   padding: 3rem 1.5rem;
   text-align: center;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.875rem;
 }
 
@@ -77,14 +77,14 @@
   width: 48px;
   height: 48px;
   opacity: 0.3;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .spinner {
   width: 24px;
   height: 24px;
   animation: spin 1s linear infinite;
-  color: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
 }
 
 @keyframes spin {
@@ -133,7 +133,7 @@
 .label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .statusCard {
@@ -156,7 +156,7 @@
   width: 32px;
   height: 32px;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: var(--active-tab-light, rgba(37, 99, 235, 0.06));
+  background: var(--active-tab-light, rgba(0, 255, 127, 0.06));
   flex-shrink: 0;
 }
 
@@ -169,7 +169,7 @@
 .statusIconX {
   width: 18px;
   height: 18px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .statusDetails {
@@ -183,12 +183,12 @@
 .statusText {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .statusDescription {
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   line-height: 1.3;
 }
 
@@ -210,7 +210,7 @@
 }
 
 .connectButton {
-  background: var(--active-tab-color, var(--pod-semantic-accent-primary, #2563eb));
+  background: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
   color: #ffffff;
 }
 
@@ -226,13 +226,13 @@
 
 .disconnectButton {
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
 }
 
 .disconnectButton:hover {
   background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   border-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
 }
 
@@ -250,7 +250,7 @@
 .helpText {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   line-height: 1.4;
 }
 

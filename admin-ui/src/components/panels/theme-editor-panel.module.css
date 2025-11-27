@@ -4,8 +4,8 @@
   gap: 0.85rem;
   padding: 0.9rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.03));
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.03)));
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.08)));
   height: 100%;
   overflow-y: auto;
 }
@@ -14,7 +14,7 @@
   display: grid;
   gap: 0;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  border-bottom: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
 }
 
 .headerActions {
@@ -32,7 +32,7 @@
 
 .actionHint {
   font-size: 0.7rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .srOnly {
@@ -51,13 +51,13 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.3rem 0 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   line-height: 1.4;
 }
 
@@ -73,24 +73,24 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   border-radius: var(--pod-core-shape-radius-md, 12px);
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   transition: all 150ms ease;
   flex-shrink: 0;
 }
 
 .closeButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
+  color: var(--admin-text-primary, #111827);
 }
 
 .closeButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .accordionTrigger {
@@ -102,7 +102,7 @@
 .accordionIcon {
   width: 16px;
   height: 16px;
-  color: var(--active-tab-color, var(--pod-semantic-text-primary, #0f172a));
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
   opacity: 0.6;
   flex-shrink: 0;
 }
@@ -120,22 +120,22 @@
 .nameLabel span {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .nameInput {
   padding: 0.5rem 0.65rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: #ffffff;
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--admin-bg-panel, #ffffff);
   font-size: 0.85rem;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .nameInput:focus {
   outline: none;
-  border-color: var(--active-tab-color, #2563eb);
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  border-color: var(--active-tab-color, #00FF7F);
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .colorSection {
@@ -156,40 +156,40 @@
 .control span {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .urlInput {
   width: 100%;
   padding: 0.5rem 0.65rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--admin-border-default, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   background: var(--pod-app-color-menu-item-bg, rgba(9, 18, 39, 0.04));
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 0.85rem;
   font-family: inherit;
 }
 
 .urlInput:focus {
   outline: none;
-  border-color: var(--pod-semantic-accent-primary, #2563eb);
+  border-color: var(--admin-accent-primary, #00FF7F);
   background: var(--pod-app-color-menu-item-bg, rgba(9, 18, 39, 0.06));
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .control select {
   padding: 0.5rem 0.65rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: #ffffff;
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--admin-bg-panel, #ffffff);
   font-size: 0.85rem;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .control select:focus {
   outline: none;
-  border-color: var(--active-tab-color, #2563eb);
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  border-color: var(--active-tab-color, #00FF7F);
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .presetGroup {
@@ -200,7 +200,7 @@
 .presetLabel {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .presetButtons {
@@ -212,9 +212,9 @@
 .presetButton {
   padding: 0.5rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: #ffffff;
-  color: var(--pod-semantic-text-primary, #111827);
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #111827);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -222,19 +222,19 @@
 }
 
 .presetButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
 }
 
 .presetButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .presetButtonActive {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-color, #2563eb);
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-color, #00FF7F);
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
 }
 
@@ -258,8 +258,8 @@
 .densityChip {
   padding: 0.6rem 0.85rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: #ffffff;
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--admin-bg-panel, #ffffff);
   text-align: left;
   cursor: pointer;
   transition: all 150ms ease;
@@ -270,35 +270,35 @@
 }
 
 .densityChip:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
 }
 
 .densityChip:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .densityChipActive {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-color, #00FF7F);
 }
 
 .densityChip span {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .densityChipActive span {
-  color: var(--active-tab-color, #2563eb);
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
 }
 
 .densityChip p {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .shapeSection {
@@ -314,7 +314,7 @@
 .controlLabel {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .optionButtons {
@@ -326,9 +326,9 @@
 .optionButton {
   padding: 0.45rem 0.85rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  background: #ffffff;
-  color: var(--pod-semantic-text-primary, #111827);
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #111827);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -336,19 +336,19 @@
 }
 
 .optionButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
 }
 
 .optionButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .optionButtonActive {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-color, #2563eb);
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-color, #00FF7F);
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
 }
 
@@ -356,7 +356,7 @@
   display: grid;
   gap: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.1));
+  border-top: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
   margin-top: auto;
 }
 
@@ -374,7 +374,7 @@
   padding: 0.6rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
-  background: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-color, #00FF7F);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 600;
@@ -389,9 +389,9 @@
   gap: 0.4rem;
   padding: 0.6rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.2));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.2)));
   background: transparent;
-  color: var(--active-tab-color, #2563eb);
+  color: var(--active-tab-color, #00FF7F);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -402,12 +402,12 @@
 .saveButton:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--active-tab-bg, rgba(37, 99, 235, 0.3));
+  box-shadow: 0 4px 12px var(--active-tab-bg, rgba(0, 255, 127, 0.3));
 }
 
 .saveButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .saveButton:disabled {
@@ -417,14 +417,14 @@
 }
 
 .saveAsNewButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-color, #00FF7F);
   transform: translateY(-1px);
 }
 
 .saveAsNewButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .saveAsNewButton:disabled {
@@ -436,9 +436,9 @@
 .resetButton {
   padding: 0.6rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -447,14 +447,14 @@
 }
 
 .resetButton:hover:not(:disabled) {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.25));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.25)));
+  color: var(--admin-text-primary, #111827);
 }
 
 .resetButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .resetButton:disabled {
@@ -516,7 +516,7 @@
   gap: 0.25rem;
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-pill, 9999px);
-  background: rgba(15, 23, 42, 0.04);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
   border: 1px solid var(--active-tab-border, rgba(148, 163, 184, 0.6));
 }
 
@@ -528,7 +528,7 @@
 .backgroundTabList {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border-bottom: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   padding-bottom: 0.5rem;
   flex-wrap: wrap;
   overflow-x: auto;
@@ -543,7 +543,7 @@
   border-radius: var(--pod-core-shape-radius-pill, 9999px);
   border: 1px solid transparent;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -552,19 +552,19 @@
 }
 
 .themeTabTrigger:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
+  color: var(--admin-text-primary, #111827);
 }
 
 .themeTabTrigger:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .themeTabTrigger[data-state="active"] {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-border, rgba(37, 99, 235, 0.4));
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
 }
 
@@ -577,7 +577,7 @@
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: 1px solid transparent;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -586,19 +586,19 @@
 }
 
 .backgroundTabTrigger:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.03));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.03)));
+  color: var(--admin-text-primary, #111827);
 }
 
 .backgroundTabTrigger:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .backgroundTabTrigger[data-state="active"] {
-  background: var(--active-tab-bg, rgba(37, 99, 235, 0.12));
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.15));
-  color: var(--active-tab-color, #2563eb);
+  background: var(--active-tab-bg, rgba(0, 255, 127, 0.12));
+  border-color: var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
 }
 
@@ -626,7 +626,7 @@
   background: rgba(249, 250, 251, 0.6);
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   margin-bottom: 0.75rem;
   position: relative;
 }
@@ -637,7 +637,7 @@
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -653,17 +653,17 @@
 
 .segmentedButton:hover {
   background: rgba(255, 255, 255, 0.6);
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .segmentedButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .segmentedButtonActive {
-  background: #ffffff;
-  color: var(--active-tab-color, #2563eb);
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transform: translateY(0);
@@ -683,7 +683,7 @@
   background: rgba(249, 250, 251, 0.6);
   padding: 0.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   position: relative;
 }
 
@@ -693,7 +693,7 @@
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -705,17 +705,17 @@
 
 .nestedTabTrigger:hover {
   background: rgba(255, 255, 255, 0.6);
-  color: var(--pod-semantic-text-primary, #111827);
+  color: var(--admin-text-primary, #111827);
 }
 
 .nestedTabTrigger:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(37, 99, 235, 0.4));
+  box-shadow: 0 0 0 3px var(--pod-core-elevation-shadow-focus, rgba(0, 255, 127, 0.4));
 }
 
 .nestedTabTrigger[data-state="active"] {
-  background: #ffffff;
-  color: var(--active-tab-color, #2563eb);
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--active-tab-color, #00FF7F);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transform: translateY(0);
@@ -756,11 +756,11 @@
   padding: 1rem;
   text-align: center;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   font-style: italic;
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.02));
+  background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.02)));
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 1px dashed var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px dashed var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
 }
 
 .colorSwatchContainer {
@@ -791,7 +791,7 @@
   width: 48px;
   height: 48px;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 2px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 2px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   transition: box-shadow 150ms ease, border-color 150ms ease;
@@ -799,16 +799,16 @@
 
 .colorSwatchButton:hover .colorSwatch {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: var(--active-tab-color, #2563eb);
+  border-color: var(--active-tab-color, #00FF7F);
 }
 
 .colorPickerContainer {
   position: relative;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background: #ffffff;
+  background: var(--admin-bg-panel, #ffffff);
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -816,9 +816,9 @@
   position: relative;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background: #ffffff;
+  background: var(--admin-bg-panel, #ffffff);
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 1px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -834,7 +834,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   cursor: pointer;
   border-radius: var(--pod-core-shape-radius-sm, 4px);
   transition: all 150ms ease;
@@ -842,8 +842,8 @@
 }
 
 .closePickerButton:hover {
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.05));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  color: var(--admin-text-primary, #111827);
 }
 
 .closePickerButton svg {
@@ -854,7 +854,7 @@
 .colorValue {
   font-size: 0.8rem;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   font-weight: 500;
 }
 
@@ -872,7 +872,7 @@
   margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -887,7 +887,7 @@
   width: 100%;
   aspect-ratio: 1;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 2px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
+  border: 2px solid var(--active-tab-border, var(--admin-border-strong, rgba(15, 23, 42, 0.15)));
   cursor: pointer;
   transition: all 150ms ease;
   padding: 0;
@@ -898,7 +898,7 @@
 .quickColorSwatch:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: var(--active-tab-color, #2563eb);
+  border-color: var(--active-tab-color, #00FF7F);
   z-index: 1;
   position: relative;
 }

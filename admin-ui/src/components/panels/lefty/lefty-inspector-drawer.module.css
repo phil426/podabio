@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--admin-bg-overlay, rgba(0, 0, 0, 0.2));
   z-index: 1000;
   pointer-events: auto;
 }
@@ -17,10 +17,10 @@
   max-height: 60vh;
   min-height: 200px;
   height: 60vh;
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  border-top: 2px solid var(--active-tab-border, rgba(34, 211, 238, 0.3));
+  background: var(--admin-bg-panel, #ffffff);
+  border-top: 2px solid var(--active-tab-border, rgba(0, 255, 127, 0.3));
   border-radius: 16px 16px 0 0;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--admin-shadow-lg, 0 -4px 24px rgba(0, 0, 0, 0.15));
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -37,16 +37,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   flex-shrink: 0;
-  background: var(--pod-semantic-surface-panel, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .drawerTitle {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .closeButton {
@@ -58,15 +58,15 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
   cursor: pointer;
   transition: all 200ms ease;
   flex-shrink: 0;
 }
 
 .closeButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--admin-bg-canvas, #f8fafc);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .closeButton:active {
@@ -101,12 +101,12 @@
 }
 
 .thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--admin-bg-overlay, rgba(0, 0, 0, 0.2));
   border-radius: 4px;
   transition: background 200ms ease;
 }
 
 .thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--admin-border-strong, rgba(0, 0, 0, 0.3));
 }
 

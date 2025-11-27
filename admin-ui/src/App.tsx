@@ -9,15 +9,17 @@ import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
 import { TokenProvider } from './design-system/theme/TokenProvider';
 import { ThemeModeProvider } from './design-system/theme/ThemeModeProvider';
+import { AdminThemeProvider } from './design-system/admin-theme/AdminThemeProvider';
 import { defaultTokenPreset } from './design-system/tokens';
 import { FeatureFlagProvider } from './store/featureFlags';
 
 export default function App(): JSX.Element {
   return (
-    <TokenProvider initialTokens={defaultTokenPreset}>
-      <ThemeModeProvider>
-        <FeatureFlagProvider>
-          <TokenSynchronizer>
+    <AdminThemeProvider defaultMode="dark">
+      <TokenProvider initialTokens={defaultTokenPreset}>
+        <ThemeModeProvider>
+          <FeatureFlagProvider>
+            <TokenSynchronizer>
             <Routes>
               <Route path="/demo/color-picker" element={<ColorPickerDemo />} />
               <Route path="/demo/color-picker.php" element={<ColorPickerDemo />} />
@@ -37,6 +39,7 @@ export default function App(): JSX.Element {
         </FeatureFlagProvider>
       </ThemeModeProvider>
     </TokenProvider>
+    </AdminThemeProvider>
   );
 }
 

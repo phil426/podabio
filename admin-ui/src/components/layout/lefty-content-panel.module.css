@@ -23,8 +23,8 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: #f9fafb;
-  color: #6b7280;
+  background: var(--admin-bg-canvas, #f9fafb);
+  color: var(--admin-text-secondary, #6b7280);
   font-size: 14px;
 }
 

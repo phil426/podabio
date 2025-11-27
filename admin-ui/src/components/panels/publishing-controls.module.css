@@ -3,8 +3,8 @@
   gap: 1rem;
   padding: 1rem 1.25rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.03);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.03));
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .header {
@@ -23,7 +23,7 @@
 .header p {
   margin: 0.35rem 0 0;
   font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .status_draft,
@@ -59,9 +59,9 @@
 .scheduleForm button {
   padding: 0.5rem 1.1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--pod-semantic-accent-primary, #2563eb);
+  border: 1px solid rgba(0, 255, 127, 0.35);
+  background: rgba(0, 255, 127, 0.12);
+  color: var(--admin-accent-primary, #00FF7F);
   font-weight: 600;
   cursor: pointer;
 }
@@ -83,7 +83,7 @@
   display: grid;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .scheduleForm input {
@@ -120,7 +120,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: var(--admin-text-secondary, #6b7280);
 }
 
 .metaList dt {

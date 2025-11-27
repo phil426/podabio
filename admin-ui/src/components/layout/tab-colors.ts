@@ -14,12 +14,12 @@ export interface TabColorTheme {
   text: string;
 }
 
-// Unified accent color for all tabs - bright cyan that works well on dark backgrounds
+// Unified accent color for all tabs - Signal Green (#00FF7F) from poda.bio brand
 const unifiedAccent = {
-  primary: 'rgba(34, 211, 238, 0.2)', // Bright cyan background
-  light: 'rgba(34, 211, 238, 0.1)',
-  border: 'rgba(34, 211, 238, 0.3)',
-  text: '#22d3ee' // Bright cyan text
+  primary: 'rgba(0, 255, 127, 0.2)', // Signal Green background
+  light: 'rgba(0, 255, 127, 0.1)',
+  border: 'rgba(0, 255, 127, 0.3)',
+  text: '#00FF7F' // Signal Green text
 };
 
 export const tabColors: Record<TabValue, TabColorTheme> = {

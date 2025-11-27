@@ -5,7 +5,7 @@
   flex-direction: column;
   padding: 13px;
   border-radius: 11px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -17,13 +17,13 @@
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.08);
-  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 20px var(--admin-border-strong, rgba(15, 23, 42, 0.12)), 0 4px 8px var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.12));
 }
 
 .cardSelected {
-  border: 3px solid #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15), 0 0 0 4px rgba(37, 99, 235, 0.1), 0 4px 16px rgba(37, 99, 235, 0.25), 0 8px 24px rgba(15, 23, 42, 0.15);
+  border: 3px solid #00FF7F;
+  box-shadow: 0 0 0 2px rgba(0, 255, 127, 0.15), 0 0 0 4px rgba(0, 255, 127, 0.1), 0 4px 16px rgba(0, 255, 127, 0.25), 0 8px 24px rgba(15, 23, 42, 0.15);
   transform: scale(1);
 }
 
@@ -39,8 +39,8 @@
 }
 
 .cardDark.cardSelected {
-  border-color: rgba(37, 99, 235, 0.9);
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3), 0 0 20px rgba(37, 99, 235, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 255, 127, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 255, 127, 0.3), 0 0 20px rgba(0, 255, 127, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Checkmark Button */

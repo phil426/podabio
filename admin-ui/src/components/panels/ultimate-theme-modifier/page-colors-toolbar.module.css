@@ -49,8 +49,8 @@
 
 .toolbarSelect:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--color-accent-primary, #00FF7F);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .toolbarDivider {
@@ -146,8 +146,8 @@
 
 .colorInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--color-accent-primary, #00FF7F);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 /* Background Popover */
@@ -223,8 +223,8 @@
 
 .urlInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--color-accent-primary, #00FF7F);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .fileInput {
@@ -257,8 +257,8 @@
 }
 
 .toolbarButtonActive {
-  background: var(--color-accent-primary, #2563eb);
+  background: var(--color-accent-primary, #00FF7F);
   color: white;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--color-accent-primary, #00FF7F);
 }
 

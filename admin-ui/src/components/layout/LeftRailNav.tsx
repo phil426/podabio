@@ -16,6 +16,7 @@ import { LeftyTabTrigger } from './LeftyTabTrigger';
 import { LeftyExpandButton } from './LeftyExpandButton';
 import { LeftyAppLogoSection } from './LeftyAppLogoSection';
 import { LeftyProfileSection } from './LeftyProfileSection';
+import { ThemeToggle } from '../system/ThemeToggle';
 import { useLeftRailExpanded } from '../../state/leftRailExpanded';
 import styles from './lefty-rail-nav.module.css';
 
@@ -126,7 +127,12 @@ export function LeftRailNav({ activeTab, onTabChange }: LeftRailNavProps): JSX.E
         </ScrollArea.Scrollbar>
       </ScrollArea.Root>
 
-      <DocumentationButton />
+      <div className={styles.docsSection}>
+        <DocumentationButton />
+      </div>
+      <div className={styles.themeToggleSection}>
+        <ThemeToggle />
+      </div>
       <LeftyProfileSection />
     </motion.div>
   );

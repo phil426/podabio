@@ -10,15 +10,15 @@
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .subsectionTitle {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -32,7 +32,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--pod-semantic-text-primary, #0f172a);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .toggleGroup {
@@ -43,9 +43,9 @@
 .toggleButton {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--pod-semantic-divider-subtle, rgba(15, 23, 42, 0.12));
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -53,35 +53,36 @@
 }
 
 .toggleButton:hover {
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .toggleButton.active {
-  background: var(--pod-semantic-accent-primary, #2563eb);
-  color: #ffffff;
-  border-color: var(--pod-semantic-accent-primary, #2563eb);
+  background: var(--admin-accent-primary, #00FF7F);
+  color: var(--admin-text-inverse, #ffffff);
+  border-color: var(--admin-accent-primary, #00FF7F);
 }
 
 .textInput {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid rgba(15, 23, 42, 0.15);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.15));
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  color: var(--pod-semantic-text-primary, #0f172a);
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .textInput:focus {
   outline: none;
-  border-color: rgba(15, 23, 42, 0.3);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.3));
+  box-shadow: 0 0 0 3px var(--admin-shadow-sm, rgba(15, 23, 42, 0.05));
 }
 
 .helpText {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #64748b);
 }
 

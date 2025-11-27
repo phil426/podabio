@@ -4,7 +4,7 @@
   min-height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .panelGroup {
@@ -13,38 +13,38 @@
 }
 
 .sidebarPanel {
-  background: #f8fafc;
-  border-right: 1px solid #e5e7eb;
+  background: var(--admin-bg-canvas, #f8fafc);
+  border-right: 1px solid var(--admin-border-default, #e5e7eb);
   display: flex;
   flex-direction: column;
 }
 
 .contentPanel {
-  background: #ffffff;
+  background: var(--admin-bg-panel, #ffffff);
   display: flex;
   flex-direction: column;
 }
 
 .tocPanel {
-  background: #f8fafc;
-  border-left: 1px solid #e5e7eb;
+  background: var(--admin-bg-canvas, #f8fafc);
+  border-left: 1px solid var(--admin-border-default, #e5e7eb);
   display: flex;
   flex-direction: column;
 }
 
 .resizeHandle {
   width: 4px;
-  background: #e5e7eb;
+  background: var(--admin-border-default, #e5e7eb);
   cursor: col-resize;
   transition: background 150ms ease;
 }
 
 .resizeHandle:hover {
-  background: #cbd5e1;
+  background: var(--admin-border-strong, #cbd5e1);
 }
 
 .resizeHandle[data-resize-handle-state='drag'] {
-  background: #94a3b8;
+  background: var(--admin-text-secondary, #94a3b8);
 }
 
 @media (max-width: 1024px) {
