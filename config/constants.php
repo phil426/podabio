@@ -23,6 +23,7 @@ define('UPLOAD_PROFILES', UPLOAD_PATH . '/profiles');
 define('UPLOAD_BACKGROUNDS', UPLOAD_PATH . '/backgrounds');
 define('UPLOAD_THUMBNAILS', UPLOAD_PATH . '/thumbnails');
 define('UPLOAD_BLOG', UPLOAD_PATH . '/blog');
+define('UPLOAD_MEDIA', UPLOAD_PATH . '/media'); // User media library
 
 // URL paths
 define('PUBLIC_URL', APP_URL);
@@ -51,6 +52,7 @@ define('BACKGROUND_IMAGE_MAX_HEIGHT', 1080);
 // Pagination
 define('ITEMS_PER_PAGE', 20);
 define('EPISODES_PER_PAGE', 10);
+define('MEDIA_PER_PAGE', 24);
 
 // Social media platforms
 define('SOCIAL_PLATFORMS', [
@@ -103,6 +105,12 @@ define('THEME_DEFAULT_FONT', 'Inter');
 
 // Timezone
 date_default_timezone_set('UTC');
+
+// Load local overrides if they exist (for local development)
+// This file is gitignored and allows machine-specific configuration
+if (file_exists(__DIR__ . '/local.php')) {
+    require_once __DIR__ . '/local.php';
+}
 
 // PHP Configuration Notes
 // - Recommended PHP version: 8.3
