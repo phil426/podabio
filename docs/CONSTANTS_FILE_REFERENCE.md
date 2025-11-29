@@ -19,7 +19,7 @@ Since constants are defined using PHP's `define()` function, they can be accesse
 ## Key Constants Defined
 
 ### Application Settings
-- **`APP_NAME`**: Application name (`'Podn.Bio'`)
+- **`APP_NAME`**: Application name (`'PodaBio'`)
 - **`APP_VERSION`**: Current application version (e.g., `'2.1.0'`)
 - **`APP_URL`**: Base URL for the application (`'https://poda.bio'` in production)
 

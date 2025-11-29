@@ -1,11 +1,11 @@
 <?php
 /**
  * Application Constants
- * Podn.Bio
+ * PodaBio
  */
 
 // Application settings
-define('APP_NAME', 'Podn.Bio');
+define('APP_NAME', 'PodaBio');
 define('APP_VERSION', '2.1.0');
 define('APP_URL', 'https://poda.bio'); // Production URL - override in config/local.php for local development
 
