@@ -21,12 +21,18 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'src/main.tsx'),
                 marketingNav: resolve(__dirname, 'src/marketing-nav.tsx'),
+                marketingIcons: resolve(__dirname, 'src/marketing-icons.tsx'),
+                smoothScroll: resolve(__dirname, 'src/smooth-scroll.tsx'),
             },
             output: {
                 entryFileNames: function (chunkInfo) {
-                    return chunkInfo.name === 'marketingNav'
-                        ? 'marketing-nav.js'
-                        : '[name].js';
+                    if (chunkInfo.name === 'marketingNav')
+                        return 'marketing-nav.js';
+                    if (chunkInfo.name === 'marketingIcons')
+                        return 'marketing-icons.js';
+                    if (chunkInfo.name === 'smoothScroll')
+                        return 'smooth-scroll.js';
+                    return '[name].js';
                 },
                 chunkFileNames: '[name]-[hash].js',
                 assetFileNames: 'assets/[name]-[hash][extname]',
