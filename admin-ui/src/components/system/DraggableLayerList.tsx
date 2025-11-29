@@ -159,7 +159,7 @@ function SortableLayerItem({ item, renderActions, onSelect, isSelected }: Sortab
     >
       {!isPodcastPlayer && !isProfileOrFooter && (
       <span className={styles.gripIcon} aria-hidden="true">
-        <DotsSixVertical size={16} weight="regular" />
+        <DotsSixVertical size={20} weight="regular" />
       </span>
       )}
       {item.thumbnail ? (

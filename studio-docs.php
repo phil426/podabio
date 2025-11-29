@@ -574,7 +574,6 @@ require_once __DIR__ . '/includes/helpers.php';
                 <h4>Company</h4>
                 <ul>
                     <li><a href="/about.php">About</a></li>
-                    <li><a href="/blog/">Blog</a></li>
                 </ul>
             </div>
             <div>

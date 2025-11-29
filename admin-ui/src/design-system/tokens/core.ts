@@ -30,9 +30,9 @@ export const coreTokens: CoreTokenGroup = {
   },
   typography: {
     font: {
-      heading: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      body: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      metatext: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      heading: "'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      body: "'Space Mono', 'Courier New', monospace",
+      metatext: "'Space Mono', 'Courier New', monospace"
     },
     scale: {
       xl: 2.488,

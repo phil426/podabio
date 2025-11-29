@@ -57,7 +57,14 @@ $googleAuthUrl = getGoogleAuthUrl();
     <title>Log In - <?php echo h(APP_NAME); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Nunito Sans Expanded';
+            src: url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@100,800&display=swap');
+            font-stretch: expanded;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/auth.css?v=<?php echo filemtime(__DIR__ . '/css/auth.css'); ?>">
 </head>
@@ -66,16 +73,14 @@ $googleAuthUrl = getGoogleAuthUrl();
         <div class="auth-box">
             <div class="auth-logo">
                 <a href="/" class="auth-logo-link" title="Back to Home">
-                    <div class="auth-logo-icon">
-                        <i class="fas fa-podcast"></i>
-                    </div>
+                    <img src="/assets/images/logo/marketing_logo.png" alt="<?php echo h(APP_NAME); ?>" class="auth-logo-image">
                 </a>
                 <h1>Log In</h1>
                 <p class="auth-subtitle">Welcome back to <?php echo h(APP_NAME); ?></p>
             </div>
             
             <?php if ($message): ?>
-                <div class="alert alert-info" style="background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 0.875rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                <div class="alert alert-info">
                     <?php echo h($message); ?>
                 </div>
             <?php endif; ?>

@@ -40,24 +40,24 @@ interface LayersPanelProps {
 }
 
 const widgetIconMap: Record<string, JSX.Element> = {
-  rss_feed: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  latest_episodes: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  custom_link: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  spotlight: <Star aria-hidden="true" size={20} weight="regular" />,
-  social_links: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  podcast_player_custom: <ApplePodcastsLogo aria-hidden="true" size={20} weight="regular" />,
-  youtube_video: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  text_html: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  image: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  email_subscription: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  heading_block: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  text_note: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  divider_rule: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  instagram_post: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  instagram_feed: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  instagram_gallery: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
-  people: <Cards aria-hidden="true" size={20} weight="regular" />,
-  rolodex: <Cards aria-hidden="true" size={20} weight="regular" />
+  rss_feed: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  latest_episodes: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  custom_link: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  spotlight: <Star aria-hidden="true" size={24} weight="regular" />,
+  social_links: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  podcast_player_custom: <ApplePodcastsLogo aria-hidden="true" size={24} weight="regular" />,
+  youtube_video: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  text_html: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  image: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  email_subscription: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  heading_block: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  text_note: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  divider_rule: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  instagram_post: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  instagram_feed: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  instagram_gallery: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
+  people: <Cards aria-hidden="true" size={24} weight="regular" />,
+  rolodex: <Cards aria-hidden="true" size={24} weight="regular" />
 };
 
 export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX.Element {
@@ -82,7 +82,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
       id: 'page:profile',
       label: 'Profile',
       description: 'Edit your profile image and bio.',
-      icon: <User aria-hidden="true" size={20} weight="regular" />,
+      icon: <User aria-hidden="true" size={24} weight="regular" />,
       displayOrder: -1,
       isActive: page?.profile_visible !== false,
       isLocked: true
@@ -97,7 +97,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
         return true;
       })
       .map((widget) => {
-        const icon = widgetIconMap[widget.widget_type] ?? <AlignLeft aria-hidden="true" size={20} weight="regular" />;
+        const icon = widgetIconMap[widget.widget_type] ?? <AlignLeft aria-hidden="true" size={24} weight="regular" />;
         const config =
           widget.config_data && typeof widget.config_data === 'object'
             ? (widget.config_data as Record<string, unknown>)
@@ -131,7 +131,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
       id: 'page:footer',
       label: 'Footer',
       description: 'Update the note shown at the bottom of your page.',
-      icon: <AlignLeft aria-hidden="true" size={20} weight="regular" />,
+      icon: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
       displayOrder: 999998,
       isActive: page?.footer_visible !== false,
       isLocked: true

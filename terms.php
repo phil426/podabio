@@ -91,19 +91,19 @@ require_once __DIR__ . '/includes/helpers.php';
     </style>
 </head>
 <body>
-    <!-- Logo - Top Left -->
-    <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
-    
     <!-- Header -->
     <header class="header">
         <nav class="nav">
-            <ul class="nav-links">
-                <li><a href="/features.php">Features</a></li>
-                <li><a href="/pricing.php">Pricing</a></li>
-                <li><a href="/examples.php">Examples</a></li>
-                <li><a href="/about.php">About</a></li>
-                <li><a href="/support/">Support</a></li>
-            </ul>
+            <a href="/" class="logo"><?php echo h(APP_NAME); ?></a>
+            <div class="nav-segmented">
+                <ul class="nav-links">
+                    <li><a href="/features.php">Features</a></li>
+                    <li><a href="/pricing.php">Pricing</a></li>
+                    <li><a href="/examples.php">Examples</a></li>
+                    <li><a href="/about.php">About</a></li>
+                    <li><a href="/support/">Support</a></li>
+                </ul>
+            </div>
             <div class="nav-actions">
                 <a href="/login.php" class="btn btn-secondary">Login</a>
                 <a href="/signup.php" class="btn btn-primary">Get Started</a>
@@ -355,7 +355,6 @@ require_once __DIR__ . '/includes/helpers.php';
                 <h4>Company</h4>
                 <ul>
                     <li><a href="/about.php">About</a></li>
-                    <li><a href="/blog/">Blog</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -372,106 +371,69 @@ require_once __DIR__ . '/includes/helpers.php';
     </footer>
 
     <script>
-        // Segmented Control Navigation
+        // Segmented Control Navigation - Sliding Indicator
         (function() {
-            'use strict';
+            const navLinksContainer = document.querySelector('.nav-links');
+            if (!navLinksContainer) return;
             
-            const SELECTORS = {
-                container: '.nav-links',
-                link: '.nav-links a'
-            };
-            
-            const container = document.querySelector(SELECTORS.container);
-            if (!container) return;
-            
-            const links = container.querySelectorAll(SELECTORS.link);
+            const links = navLinksContainer.querySelectorAll('a');
             let activeLink = null;
             
             function updateIndicator(target) {
-                if (!target) return;
+                const rect = target.getBoundingClientRect();
+                const containerRect = navLinksContainer.getBoundingClientRect();
                 
-                const targetRect = target.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
+                const left = rect.left - containerRect.left - 0.25rem; // Account for container padding
+                const width = rect.offsetWidth;
                 
-                const left = targetRect.left - containerRect.left;
-                const width = targetRect.width;
-                
-                if (width > 0) {
-                    container.style.setProperty('--indicator-left', `${left}px`);
-                    container.style.setProperty('--indicator-width', `${width}px`);
-                    container.classList.add('has-indicator');
-                }
+                navLinksContainer.style.setProperty('--indicator-left', left + 'px');
+                navLinksContainer.style.setProperty('--indicator-width', width + 'px');
+                navLinksContainer.classList.add('has-indicator');
             }
             
-            function findActiveLink() {
-                const currentPath = window.location.pathname;
-                
-                for (const link of links) {
-                    const href = link.getAttribute('href');
-                    const isActive = href === currentPath || 
-                                   (currentPath !== '/' && href !== '/' && currentPath.startsWith(href));
-                    
-                    if (isActive) {
-                        link.classList.add('active');
-                        return link;
-                    }
+            // Set initial active link based on current page
+            const currentPath = window.location.pathname;
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === currentPath || 
+                    (currentPath !== '/' && href !== '/' && currentPath.startsWith(href))) {
+                    link.classList.add('active');
+                    activeLink = link;
                 }
-                
-                return null;
+            });
+
+            // Set indicator position for active link on load
+            if (activeLink) {
+                requestAnimationFrame(() => {
+                    updateIndicator(activeLink);
+                });
             }
             
-            function init() {
-                activeLink = findActiveLink();
-                
-                if (!activeLink && links.length > 0) {
-                    links[0].classList.add('active');
-                    activeLink = links[0];
-                }
-                
-                if (activeLink) {
-                    requestAnimationFrame(() => {
-                        updateIndicator(activeLink);
-                    });
-                }
-            }
+            // Handle hover - indicator follows cursor
+            links.forEach(link => {
+                link.addEventListener('mouseenter', () => {
+                    updateIndicator(link);
+                });
+            });
             
-            function handleLinkHover(e) {
-                updateIndicator(e.currentTarget);
-            }
-            
-            function handleContainerLeave() {
+            // Return to active link on mouse leave
+            navLinksContainer.addEventListener('mouseleave', () => {
                 if (activeLink) {
                     updateIndicator(activeLink);
                 } else {
-                    container.classList.remove('has-indicator');
-                }
-            }
-            
-            function handleLinkClick(e) {
-                links.forEach(link => link.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                activeLink = e.currentTarget;
-                updateIndicator(activeLink);
-            }
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-            
-            window.addEventListener('load', () => {
-                if (!activeLink || !container.classList.contains('has-indicator')) {
-                    init();
+                    navLinksContainer.classList.remove('has-indicator');
                 }
             });
             
+            // Handle click - set as active
             links.forEach(link => {
-                link.addEventListener('mouseenter', handleLinkHover);
-                link.addEventListener('click', handleLinkClick);
+                link.addEventListener('click', (e) => {
+                    links.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    activeLink = link;
+                    updateIndicator(link);
+                });
             });
-            
-            container.addEventListener('mouseleave', handleContainerLeave);
         })();
     </script>
 </body>

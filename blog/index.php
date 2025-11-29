@@ -109,7 +109,7 @@ $categories = fetchAll("SELECT * FROM blog_categories ORDER BY display_order ASC
                                 <?php echo h(formatDate($post['created_at'], 'F j, Y')); ?>
                             </div>
                             <div class="post-excerpt">
-                                <?php echo h(truncate($post['content'], 200)); ?>
+                                <?php echo h($post['excerpt'] ?? $post['content']); ?>
                             </div>
                         </a>
                     </li>
