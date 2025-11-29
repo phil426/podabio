@@ -6,7 +6,7 @@
 
 // Application settings
 define('APP_NAME', 'Podn.Bio');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '2.1.0');
 define('APP_URL', 'https://getphily.com'); // Change to podn.bio for production
 
 // Server configuration
