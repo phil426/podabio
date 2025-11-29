@@ -2,6 +2,7 @@
 config/database.php
 config/oauth.php
 config/payments.php
+config/local.php
 *.env
 .env.*
 .env
