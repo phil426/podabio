@@ -17,7 +17,7 @@ $GLOBALS['SPA_CONFIG'] = [
         'manifest_file' => getenv('SPA_MANIFEST_FILE') ?: __DIR__ . '/../admin-ui/dist/.vite/manifest.json',
         
         // Key used in Vite manifest to find entry point
-        'manifest_key' => getenv('SPA_MANIFEST_KEY') ?: 'index.html',
+        'manifest_key' => getenv('SPA_MANIFEST_KEY') ?: 'src/main.tsx',
         
         // URL base path for production assets
         'dist_url_base' => getenv('SPA_DIST_URL_BASE') ?: '/admin-ui/dist',
