@@ -60,9 +60,10 @@ class ImageHandler {
     /**
      * Get upload directory for type
      * @param string $type
+     * @param int|null $userId Optional user ID for media_library type
      * @return string
      */
-    private function getUploadDir($type) {
+    private function getUploadDir($type, $userId = null) {
         switch ($type) {
             case 'profile':
                 return UPLOAD_PROFILES;
@@ -72,6 +73,16 @@ class ImageHandler {
                 return UPLOAD_THUMBNAILS;
             case 'blog':
                 return UPLOAD_BLOG;
+            case 'media_library':
+                // User-specific media library directory
+                if ($userId === null) {
+                    throw new Exception('User ID required for media_library upload type');
+                }
+                $userMediaDir = UPLOAD_MEDIA . '/' . (int)$userId;
+                if (!is_dir($userMediaDir)) {
+                    mkdir($userMediaDir, 0755, true);
+                }
+                return $userMediaDir;
             case 'theme_image':
                 // Temporary uploads for color extraction
                 $tempDir = UPLOAD_PATH . '/theme_temp';
@@ -82,6 +93,50 @@ class ImageHandler {
             default:
                 return UPLOAD_PATH;
         }
+    }
+    
+    /**
+     * Upload image to media library (user-specific)
+     * @param array $file
+     * @param int $userId
+     * @return array ['success' => bool, 'path' => string|null, 'url' => string|null, 'error' => string|null]
+     */
+    public function uploadToMediaLibrary($file, $userId) {
+        // Validate file
+        $validation = validateFileUpload($file);
+        
+        if (!$validation['valid']) {
+            return ['success' => false, 'path' => null, 'url' => null, 'error' => $validation['error']];
+        }
+        
+        // Determine upload directory
+        $uploadDir = $this->getUploadDir('media_library', $userId);
+        
+        // Generate secure filename
+        $extension = $validation['extension'];
+        $filename = generateSecureFilename($file['name']);
+        $filepath = $uploadDir . '/' . $filename;
+        
+        // Move uploaded file
+        if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+            return ['success' => false, 'path' => null, 'url' => null, 'error' => 'Failed to save file'];
+        }
+        
+        // For media library, we don't resize (keep original)
+        // But we could optionally create thumbnails here in the future
+        
+        // Return relative path
+        $relativePath = str_replace(ROOT_PATH, '', $filepath);
+        
+        return [
+            'success' => true,
+            'path' => $relativePath,
+            'url' => APP_URL . $relativePath,
+            'error' => null,
+            'filename' => $file['name'],
+            'file_size' => $file['size'],
+            'mime_type' => $validation['mime_type']
+        ];
     }
     
     /**

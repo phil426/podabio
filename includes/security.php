@@ -110,6 +110,59 @@ function verifyPassword($password, $hash) {
 }
 
 /**
+ * Get effective upload limit (minimum of app config, PHP ini, and server limits)
+ * @return int Maximum upload size in bytes
+ */
+function getEffectiveUploadLimit() {
+    static $cachedLimit = null;
+    
+    if ($cachedLimit !== null) {
+        return $cachedLimit;
+    }
+    
+    // Start with application limit
+    $limits = [MAX_FILE_SIZE];
+    
+    // Check PHP upload_max_filesize
+    $uploadMaxFilesize = ini_get('upload_max_filesize');
+    if ($uploadMaxFilesize) {
+        $limits[] = parsePhpSize($uploadMaxFilesize);
+    }
+    
+    // Check PHP post_max_size (must be at least as large as upload_max_filesize)
+    $postMaxSize = ini_get('post_max_size');
+    if ($postMaxSize) {
+        $limits[] = parsePhpSize($postMaxSize);
+    }
+    
+    // Return the minimum limit (most restrictive)
+    $cachedLimit = min($limits);
+    return $cachedLimit;
+}
+
+/**
+ * Parse PHP size string to bytes (e.g., "10M", "5M", "2G")
+ * @param string $size
+ * @return int Size in bytes
+ */
+function parsePhpSize($size) {
+    $size = trim($size);
+    $last = strtolower($size[strlen($size) - 1]);
+    $value = (int) $size;
+    
+    switch ($last) {
+        case 'g':
+            $value *= 1024;
+        case 'm':
+            $value *= 1024;
+        case 'k':
+            $value *= 1024;
+    }
+    
+    return $value;
+}
+
+/**
  * Validate file upload
  * @param array $file
  * @param array $allowedTypes
@@ -118,7 +171,14 @@ function verifyPassword($password, $hash) {
  */
 function validateFileUpload($file, $allowedTypes = null, $maxSize = null) {
     $allowedTypes = $allowedTypes ?? ALLOWED_IMAGE_TYPES;
-    $maxSize = $maxSize ?? MAX_FILE_SIZE;
+    
+    // Use effective upload limit if no maxSize specified
+    if ($maxSize === null) {
+        $maxSize = getEffectiveUploadLimit();
+    } else {
+        // Ensure we don't exceed effective limit even if a higher limit is specified
+        $maxSize = min($maxSize, getEffectiveUploadLimit());
+    }
     
     // Check if file was uploaded
     if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {

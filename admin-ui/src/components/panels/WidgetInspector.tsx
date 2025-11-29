@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, X, Check, CheckSquare, Square } from '@phosphor-icons/react';
+import { Upload, X, Check, CheckSquare, Square, Images } from '@phosphor-icons/react';
 
 import { useAvailableWidgetsQuery, useUpdateWidgetMutation } from '../../api/widgets';
 import { usePageSnapshot } from '../../api/page';
@@ -8,6 +8,8 @@ import { useWidgetSelection } from '../../state/widgetSelection';
 import { uploadWidgetThumbnail } from '../../api/uploads';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { normalizeImageUrl } from '../../api/utils';
+import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
+import type { MediaItem } from '../../api/media';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -65,6 +67,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isUploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
   const widgetType =
     selectedWidget?.widget_type ?? (typeof widgetDefinition?.widget_id === 'string' ? widgetDefinition?.widget_id : '');
@@ -249,6 +252,35 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
     }
   };
 
+  const handleSelectThumbnailFromLibrary = async (mediaItem: MediaItem) => {
+    if (!selectedWidget) return;
+    
+    try {
+      setUploadingThumbnail(true);
+      handleInputChange('thumbnail_image', mediaItem.file_url);
+      setMediaLibraryOpen(false);
+      
+      // Auto-save the widget after thumbnail selection
+      if (formState) {
+        await updateWidget({
+          widget_id: String(selectedWidget.id),
+          title: formState.title,
+          is_active: formState.isActive ? '1' : '0',
+          config_data: JSON.stringify({
+            ...formState.config,
+            thumbnail_image: mediaItem.file_url
+          })
+        });
+      }
+      setSaveStatus('success');
+    } catch (error) {
+      setThumbnailError(error instanceof Error ? error.message : 'Unable to update thumbnail.');
+      setSaveStatus('error');
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
   const handleThumbnailRemove = async () => {
     handleInputChange('thumbnail_image', '');
     setThumbnailError(null);
@@ -383,26 +415,41 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
                     <span>No image</span>
                   )}
                   <div className={styles.thumbnailOverlay}>
-                    <button
-                      type="button"
-                      className={styles.thumbnailActionButton}
-                      onClick={handleChooseThumbnailFile}
-                      disabled={isUploadingThumbnail}
-                      title={isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
-                    >
-                      <Upload aria-hidden="true" />
-                    </button>
-                    {resolvedThumbnail && (
+                    <div className={styles.segmentedBar}>
                       <button
                         type="button"
-                        className={styles.thumbnailActionButton}
-                        onClick={handleThumbnailRemove}
+                        className={styles.segmentedButton}
+                        onClick={handleChooseThumbnailFile}
                         disabled={isUploadingThumbnail}
-                        title="Remove thumbnail"
+                        title={isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
                       >
-                        <X aria-hidden="true" size={16} weight="regular" />
+                        <Upload size={16} weight="regular" aria-hidden="true" />
                       </button>
-                    )}
+                      <div className={styles.segmentedDivider} />
+                      <button
+                        type="button"
+                        className={styles.segmentedButton}
+                        onClick={() => setMediaLibraryOpen(true)}
+                        disabled={isUploadingThumbnail}
+                        title="Choose from library"
+                      >
+                        <Images size={16} weight="regular" aria-hidden="true" />
+                      </button>
+                      {resolvedThumbnail && (
+                        <>
+                          <div className={styles.segmentedDivider} />
+                          <button
+                            type="button"
+                            className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
+                            onClick={handleThumbnailRemove}
+                            disabled={isUploadingThumbnail}
+                            title="Remove thumbnail"
+                          >
+                            <X size={16} weight="regular" aria-hidden="true" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <input
@@ -411,6 +458,11 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
                   accept="image/png,image/jpeg,image/webp"
                   className={styles.hiddenInput}
                   onChange={handleThumbnailFileChange}
+                />
+                <MediaLibraryDrawer
+                  open={mediaLibraryOpen}
+                  onClose={() => setMediaLibraryOpen(false)}
+                  onSelect={handleSelectThumbnailFromLibrary}
                 />
                 {thumbnailError && <p className={styles.thumbnailError}>{thumbnailError}</p>}
                 {widgetType === 'people' && (

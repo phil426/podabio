@@ -1,0 +1,334 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.25);
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 200ms ease;
+  z-index: 10002; /* Above widget modal which is 10001 */
+}
+
+.backdropVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(600px, 100%);
+  height: 100%;
+  transform: translateX(100%);
+  background: var(--pod-semantic-surface-panel, #ffffff);
+  box-shadow: -24px 0 48px rgba(15, 23, 42, 0.18);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  transition: transform 220ms ease;
+  z-index: 10003; /* Above backdrop and widget modal */
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.header p {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.closeButton {
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  padding: 0.45rem 0.9rem;
+  background: rgba(15, 23, 42, 0.04);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.controls {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+  font-size: 0.875rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.uploadButton {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  padding: 0.5rem 0.9rem;
+  background: rgba(37, 99, 235, 0.12);
+  font-weight: 600;
+  color: var(--pod-semantic-accent-primary, #2563eb);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  justify-content: center;
+}
+
+.uploadButton:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.2);
+}
+
+.uploadButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.scrollArea {
+  overflow: hidden;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+}
+
+.gridSection {
+  padding-right: 0.25rem;
+}
+
+.grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.cardImageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: rgba(37, 99, 235, 0.08);
+  overflow: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.card:hover .cardOverlay {
+  opacity: 1;
+}
+
+.cardSelectButton {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.cardSelectButton:hover {
+  background: #ffffff;
+}
+
+.cardDeleteButton {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.4rem;
+  background: rgba(239, 68, 68, 0.9);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardDeleteButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 1);
+}
+
+.cardDeleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cardInfo {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.cardFilename {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pod-semantic-text-primary, #0f172a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.paginationButton {
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  padding: 0.4rem 0.9rem;
+  background: rgba(15, 23, 42, 0.04);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationInfo {
+  font-size: 0.875rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pod-semantic-text-secondary, #6b7280);
+}
+
+.emptyStateSubtext {
+  font-size: 0.75rem !important;
+  color: var(--pod-semantic-text-tertiary, #9ca3af) !important;
+}
+
+.scrollbar {
+  width: 8px;
+  padding: 2px;
+}
+
+.thumb {
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .drawer {
+    width: 100%;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+}
+

@@ -20,7 +20,8 @@ export const queryKeys = {
   tokenHistory: () => ['tokens', 'history'] as const,
   blogPosts: (params?: { page?: number; limit?: number; category_id?: number }) => ['blog', 'posts', params] as const,
   blogPost: (postId: number | null) => ['blog', 'post', postId] as const,
-  blogCategories: () => ['blog', 'categories'] as const
+  blogCategories: () => ['blog', 'categories'] as const,
+  media: (options?: { page?: number; per_page?: number; search?: string }) => ['media', options] as const
 };
 
 export function formPostInit(payload: Record<string, FormDataEntryValue | undefined>): RequestInit {

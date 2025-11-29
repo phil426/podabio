@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Image, Sparkle, Square } from '@phosphor-icons/react';
+import { Image, Sparkle, Square, Images } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
+import { MediaLibraryDrawer } from '../../overlays/MediaLibraryDrawer';
+import type { MediaItem } from '../../../api/media';
 import styles from '../theme-editor-panel.module.css';
 
 interface PageBackgroundSectionProps {
@@ -24,6 +27,12 @@ export function PageBackgroundSection({
   onBackgroundImageUpload,
   onBackgroundImageRemove
 }: PageBackgroundSectionProps): JSX.Element {
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+
+  const handleSelectFromLibrary = (mediaItem: MediaItem) => {
+    onBackgroundImageUrlChange(mediaItem.file_url);
+    setMediaLibraryOpen(false);
+  };
 
   return (
     <Tabs.Root 
@@ -78,20 +87,47 @@ export function PageBackgroundSection({
             <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--pod-semantic-text-secondary)' }}>or</span>
             </div>
-            <label style={{ marginTop: '0.5rem', display: 'block' }}>
-              <span>Upload Image</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    onBackgroundImageUpload(file);
-                  }
+            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+              <label style={{ flex: 1, display: 'block' }}>
+                <span>Upload Image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      onBackgroundImageUpload(file);
+                    }
+                  }}
+                  style={{ marginTop: '0.25rem', width: '100%' }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => setMediaLibraryOpen(true)}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--pod-semantic-divider-subtle)',
+                  background: 'var(--pod-semantic-surface-base)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500
                 }}
-                style={{ marginTop: '0.25rem', width: '100%' }}
-              />
-            </label>
+              >
+                <Images size={16} weight="regular" aria-hidden="true" />
+                Library
+              </button>
+            </div>
+            <MediaLibraryDrawer
+              open={mediaLibraryOpen}
+              onClose={() => setMediaLibraryOpen(false)}
+              onSelect={handleSelectFromLibrary}
+            />
             {pageBackgroundImage && (
               <div style={{ marginTop: '1rem' }}>
                 <div style={{ position: 'relative', display: 'inline-block' }}>

@@ -7,7 +7,8 @@ import {
   CreditCard,
   SignOut,
   Layout,
-  CaretUp
+  CaretUp,
+  Images
 } from '@phosphor-icons/react';
 import { useAccountProfile } from '../../api/account';
 import { usePageSnapshot } from '../../api/page';
@@ -15,6 +16,7 @@ import { useFeatureFlag } from '../../store/featureFlags';
 import { normalizeImageUrl } from '../../api/utils';
 import { useLeftRailExpanded } from '../../state/leftRailExpanded';
 import { trackTelemetry } from '../../services/telemetry';
+import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
 import styles from './lefty-profile-section.module.css';
 
 export function LeftyProfileSection(): JSX.Element {
@@ -23,6 +25,7 @@ export function LeftyProfileSection(): JSX.Element {
   const { accountWorkspaceEnabled } = useFeatureFlag();
   const isExpanded = useLeftRailExpanded((state) => state.isExpanded);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -155,6 +158,18 @@ export function LeftyProfileSection(): JSX.Element {
                         Manage account
                       </button>
                     )}
+                    <button
+                      type="button"
+                      className={styles.menuLink}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setMediaLibraryOpen(true);
+                        trackTelemetry({ event: 'lefty.profile_navigate', metadata: { destination: 'media_library' } });
+                      }}
+                    >
+                      <Images aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
+                      Media Library
+                    </button>
                     {/* Panel switcher removed - Lefty is now the only admin panel */}
                   </div>
                   <div className={styles.menuFooter}>
@@ -174,6 +189,10 @@ export function LeftyProfileSection(): JSX.Element {
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
+      <MediaLibraryModal
+        open={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+      />
     </div>
   );
 }

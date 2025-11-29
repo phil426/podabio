@@ -8,7 +8,7 @@ interface UploadResponse {
   message?: string;
 }
 
-export async function uploadProfileImage(file: File): Promise<UploadResponse> {
+export async function uploadProfileImage(file: File, saveToLibrary?: boolean): Promise<UploadResponse> {
   // Client-side validation: Check file size (5MB limit)
   const maxSize = 5 * 1024 * 1024; // 5MB in bytes
   if (file.size > maxSize) {
@@ -19,6 +19,9 @@ export async function uploadProfileImage(file: File): Promise<UploadResponse> {
   formData.append('csrf_token', getCsrfToken());
   formData.append('type', 'profile');
   formData.append('image', file);
+  if (saveToLibrary) {
+    formData.append('save_to_library', 'true');
+  }
 
   const response = await fetch('/api/upload.php', {
     method: 'POST',
@@ -40,11 +43,14 @@ export async function uploadProfileImage(file: File): Promise<UploadResponse> {
   return payload;
 }
 
-export async function uploadWidgetThumbnail(file: File): Promise<UploadResponse> {
+export async function uploadWidgetThumbnail(file: File, saveToLibrary?: boolean): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('csrf_token', getCsrfToken());
   formData.append('type', 'thumbnail');
   formData.append('image', file);
+  if (saveToLibrary) {
+    formData.append('save_to_library', 'true');
+  }
 
   const response = await fetch('/api/upload.php', {
     method: 'POST',
@@ -61,11 +67,14 @@ export async function uploadWidgetThumbnail(file: File): Promise<UploadResponse>
   return payload;
 }
 
-export async function uploadBackgroundImage(file: File): Promise<UploadResponse> {
+export async function uploadBackgroundImage(file: File, saveToLibrary?: boolean): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('csrf_token', getCsrfToken());
   formData.append('type', 'background');
   formData.append('image', file);
+  if (saveToLibrary) {
+    formData.append('save_to_library', 'true');
+  }
 
   const response = await fetch('/api/upload.php', {
     method: 'POST',

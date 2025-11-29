@@ -5,13 +5,15 @@
 
 import { useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, X } from '@phosphor-icons/react';
+import { Upload, X, Images } from '@phosphor-icons/react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
-import { usePageSnapshot, removeProfileImage } from '../../../../api/page';
+import { usePageSnapshot, removeProfileImage, updatePageSettings } from '../../../../api/page';
 import { uploadProfileImage } from '../../../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../../../api/utils';
+import { MediaLibraryDrawer } from '../../../overlays/MediaLibraryDrawer';
+import type { MediaItem } from '../../../../api/media';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './page-customization-section.module.css';
 
@@ -31,8 +33,23 @@ export function ProfileImageSection({
   const page = snapshot?.page;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   
   const profileImage = page?.profile_image ?? null;
+
+  const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
+    try {
+      setIsUploading(true);
+      await updatePageSettings({ profile_image: mediaItem.file_url });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      setMediaLibraryOpen(false);
+    } catch (error) {
+      console.error('Failed to update profile image:', error);
+      alert(error instanceof Error ? error.message : 'Unable to update profile image.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Map effect values to display names
   const effectValueToDisplay: Record<string, string> = {
@@ -72,36 +89,51 @@ export function ProfileImageSection({
                 </div>
               )}
               <div className={styles.imageOverlay}>
-                <button
-                  type="button"
-                  className={styles.imageActionButton}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                >
-                  <Upload aria-hidden="true" size={16} weight="regular" />
-                </button>
-                {profileImage && (
+                <div className={styles.segmentedBar}>
                   <button
                     type="button"
-                    className={styles.imageActionButton}
-                    onClick={async () => {
-                      try {
-                        setIsUploading(true);
-                        await removeProfileImage();
-                        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-                      } catch (error) {
-                        console.error('Failed to remove image:', error);
-                      } finally {
-                        setIsUploading(false);
-                      }
-                    }}
+                    className={styles.segmentedButton}
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    title="Remove image"
+                    title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
                   >
-                    <X aria-hidden="true" size={16} weight="regular" />
+                    <Upload size={16} weight="regular" aria-hidden="true" />
                   </button>
-                )}
+                  <div className={styles.segmentedDivider} />
+                  <button
+                    type="button"
+                    className={styles.segmentedButton}
+                    onClick={() => setMediaLibraryOpen(true)}
+                    disabled={isUploading}
+                    title="Choose from library"
+                  >
+                    <Images size={16} weight="regular" aria-hidden="true" />
+                  </button>
+                  {profileImage && (
+                    <>
+                      <div className={styles.segmentedDivider} />
+                      <button
+                        type="button"
+                        className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
+                        onClick={async () => {
+                          try {
+                            setIsUploading(true);
+                            await removeProfileImage();
+                            await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+                          } catch (error) {
+                            console.error('Failed to remove image:', error);
+                          } finally {
+                            setIsUploading(false);
+                          }
+                        }}
+                        disabled={isUploading}
+                        title="Remove image"
+                      >
+                        <X size={16} weight="regular" aria-hidden="true" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             <input
@@ -284,6 +316,11 @@ export function ProfileImageSection({
           />
         </div>
       </div>
+      <MediaLibraryDrawer
+        open={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+        onSelect={handleSelectFromLibrary}
+      />
     </div>
   );
 }

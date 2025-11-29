@@ -12,6 +12,7 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../classes/Page.php';
 require_once __DIR__ . '/../classes/ImageHandler.php';
+require_once __DIR__ . '/../classes/MediaLibrary.php';
 
 // Require authentication
 requireAuth();
@@ -87,6 +88,9 @@ if (!in_array($imageType, $allowedTypes)) {
     exit;
 }
 
+// Check if should save to library
+$saveToLibrary = isset($_POST['save_to_library']) && $_POST['save_to_library'] === 'true';
+
 // Upload image
 $imageHandler = new ImageHandler();
 $result = $imageHandler->uploadImage($_FILES['image'], $imageType);
@@ -97,6 +101,30 @@ if (!$result['success']) {
     http_response_code(400);
     echo json_encode($result);
     exit;
+}
+
+// Optionally save to media library
+if ($saveToLibrary && $imageType !== 'theme_image') {
+    require_once __DIR__ . '/../classes/MediaLibrary.php';
+    $mediaLibrary = new MediaLibrary();
+    
+    // Create a temporary file reference for migration
+    // Since the file is already uploaded, we need to create media library entry
+    // We'll use migrateExistingImage since the file is already on disk
+    $migrateResult = $mediaLibrary->migrateExistingImage(
+        $result['path'],
+        $userId,
+        [
+            'filename' => $_FILES['image']['name'],
+            'file_size' => $_FILES['image']['size'],
+            'mime_type' => mime_content_type(ROOT_PATH . $result['path']) ?: 'image/jpeg'
+        ]
+    );
+    
+    if (!$migrateResult['success']) {
+        // Log error but don't fail the upload
+        error_log('Failed to save to media library: ' . ($migrateResult['error'] ?? 'Unknown error'));
+    }
 }
 
 // Update page with image URL (skip for theme_image - just return path)

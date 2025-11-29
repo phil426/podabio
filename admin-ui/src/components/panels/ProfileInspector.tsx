@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { TextB, TextItalic, TextUnderline, UploadSimple, X } from '@phosphor-icons/react';
+import { TextB, TextItalic, TextUnderline, UploadSimple, X, Images } from '@phosphor-icons/react';
 
 import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../api/page';
 import { uploadProfileImage } from '../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
+import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
+import type { MediaItem } from '../../api/media';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -34,6 +36,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const [statusTone, setStatusTone] = useState<'success' | 'error'>('success');
   const [isSavingProfile, setSavingProfile] = useState(false);
   const [isUploading, setUploading] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const nameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bioTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -117,6 +120,22 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     } catch (error) {
       setStatusTone('error');
       setStatus(error instanceof Error ? error.message : 'Unable to remove profile image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
+    try {
+      setUploading(true);
+      await updatePageSettings({ profile_image: mediaItem.file_url });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      setMediaLibraryOpen(false);
+      setStatusTone('success');
+      setStatus('Profile image updated.');
+    } catch (error) {
+      setStatusTone('error');
+      setStatus(error instanceof Error ? error.message : 'Unable to update profile image.');
     } finally {
       setUploading(false);
     }
@@ -290,26 +309,41 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
         >
           {profileImage ? <img src={normalizeImageUrl(profileImage)} alt="Current profile" /> : <span>PB</span>}
           <div className={styles.imageOverlay}>
-            <button
-              type="button"
-              className={styles.imageActionButton}
-              onClick={handleChooseFile}
-              disabled={isUploading}
-              title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-            >
-              <UploadSimple aria-hidden="true" size={16} weight="regular" />
-            </button>
-            {profileImage && (
+            <div className={styles.segmentedBar}>
               <button
                 type="button"
-                className={styles.imageActionButton}
-                onClick={handleRemoveImage}
+                className={styles.segmentedButton}
+                onClick={handleChooseFile}
                 disabled={isUploading}
-                title="Remove image"
+                title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
               >
-                <X aria-hidden="true" size={16} weight="regular" />
+                <UploadSimple size={16} weight="regular" aria-hidden="true" />
               </button>
-            )}
+              <div className={styles.segmentedDivider} />
+              <button
+                type="button"
+                className={styles.segmentedButton}
+                onClick={() => setMediaLibraryOpen(true)}
+                disabled={isUploading}
+                title="Choose from library"
+              >
+                <Images size={16} weight="regular" aria-hidden="true" />
+              </button>
+              {profileImage && (
+                <>
+                  <div className={styles.segmentedDivider} />
+                  <button
+                    type="button"
+                    className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
+                    onClick={handleRemoveImage}
+                    disabled={isUploading}
+                    title="Remove image"
+                  >
+                    <X size={16} weight="regular" aria-hidden="true" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <input
@@ -318,6 +352,11 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
           accept="image/png,image/jpeg,image/webp"
           className={styles.hiddenInput}
           onChange={handleFileChange}
+        />
+        <MediaLibraryDrawer
+          open={mediaLibraryOpen}
+          onClose={() => setMediaLibraryOpen(false)}
+          onSelect={handleSelectFromLibrary}
         />
       </div>
 
