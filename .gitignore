@@ -61,3 +61,12 @@ ehthumbs.db
 Thumbs.db
 
 DEPLOYMENT_CREDENTIALS.md
+
+# Deployment scripts (may contain tokens/secrets)
+*_DEPLOY*.md
+*deploy*.sh
+QUICK_GIT_DEPLOY.md
+deploy_git.sh
+*CREDENTIALS*.md
+*SECRETS*.md
+*TOKENS*.md
