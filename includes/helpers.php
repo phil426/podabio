@@ -160,11 +160,16 @@ function getCurrentBaseUrl() {
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     
-    // If running on localhost, use local URL
-    if (in_array(strtolower($host), ['localhost', '127.0.0.1']) || strpos($host, 'localhost:') === 0) {
+    // If HTTP_HOST already contains the port (e.g., "localhost:8080"), use it directly
+    if (strpos($host, ':') !== false) {
+        return $protocol . '://' . $host;
+    }
+    
+    // If running on localhost, check if we need to add a port
+    if (in_array(strtolower($host), ['localhost', '127.0.0.1'])) {
         $port = $_SERVER['SERVER_PORT'] ?? ($protocol === 'https' ? 443 : 80);
         if ($port != 80 && $port != 443) {
-            return $protocol . '://' . $host;
+            return $protocol . '://' . $host . ':' . $port;
         }
         return $protocol . '://' . $host;
     }

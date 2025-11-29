@@ -24,7 +24,7 @@
 
 .header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
   display: flex;
@@ -40,7 +40,7 @@
 
 .header p {
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -57,7 +57,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   color: var(--admin-text-primary, #0f172a);
   cursor: pointer;
 }
@@ -75,7 +75,7 @@
 }
 
 .control span {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }
@@ -84,8 +84,8 @@
   padding: 0.55rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
-  font-size: 0.85rem;
-  background: #ffffff;
+  font-size: var(--admin-font-size-base, 1rem);
+  background: var(--admin-bg-panel, #ffffff);
   color: var(--admin-text-primary, #0f172a);
   transition: border-color 150ms ease;
   cursor: pointer;
@@ -99,13 +99,13 @@
 
 .help {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   color: var(--admin-text-secondary, #475569);
   line-height: 1.4;
 }
 
 .placeholder {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: var(--admin-text-secondary, #475569);
   text-align: center;
   padding: 1.5rem;
@@ -124,7 +124,7 @@
   border: none;
   background: var(--pod-component-button-primary-background, #00FF7F);
   color: var(--pod-component-button-primary-color, #ffffff);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   cursor: pointer;
   transition: opacity 150ms ease;
 }
@@ -140,7 +140,7 @@
   border: 1px solid rgba(15, 23, 42, 0.12);
   background: transparent;
   color: var(--admin-text-primary, #0f172a);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   cursor: pointer;
   transition: opacity 150ms ease;
 }

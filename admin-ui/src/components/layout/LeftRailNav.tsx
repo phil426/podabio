@@ -34,8 +34,8 @@ interface TabDefinition {
 const TABS: TabDefinition[] = [
   { value: 'layers', label: 'Layers', Icon: Stack },
   { value: 'themes', label: 'Themes', Icon: Palette },
-  { value: 'podcast', label: 'Podcast', Icon: ApplePodcastsLogo },
-  { value: 'integration', label: 'Integration', Icon: Plug },
+  { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
+  { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },
 ];
 

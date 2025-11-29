@@ -132,6 +132,9 @@ class WidgetRenderer {
             case 'instagram_gallery':
                 return self::renderInstagramGallery($widget, $configData, $userId);
                 
+            case 'instagram_carousel':
+                return self::renderInstagramCarousel($widget, $configData, $userId);
+                
             case 'giphy_search':
                 return self::renderGiphySearch($widget, $configData);
                 
@@ -1857,6 +1860,107 @@ class WidgetRenderer {
         }
         
         $html .= '</div></div>';
+        
+        return $html;
+    }
+    
+    /**
+     * Render Instagram carousel widget
+     */
+    private static function renderInstagramCarousel($widget, $configData, $userId = null) {
+        require_once __DIR__ . '/InstagramClient.php';
+        require_once __DIR__ . '/../config/instagram.php';
+        
+        $postCount = min(max((int)($configData['post_count'] ?? 10), 1), 50);
+        $showCaptions = isset($configData['show_captions']) ? (bool)$configData['show_captions'] : true;
+        $showTimestamps = isset($configData['show_timestamps']) ? (bool)$configData['show_timestamps'] : true;
+        $autoplay = isset($configData['autoplay']) ? (bool)$configData['autoplay'] : false;
+        $autoplayDelay = max((int)($configData['autoplay_delay'] ?? 5), 2); // Min 2 seconds
+        
+        // Get user's Instagram token
+        $accessToken = self::getUserInstagramToken($userId);
+        
+        if (!$accessToken) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Instagram is not connected. Please connect your Instagram account in the Integrations tab.</div></div></div>';
+        }
+        
+        // Use user's token, fallback to global config if needed
+        $appId = defined('INSTAGRAM_APP_ID') ? INSTAGRAM_APP_ID : '';
+        $appSecret = defined('INSTAGRAM_APP_SECRET') ? INSTAGRAM_APP_SECRET : '';
+        $client = new InstagramClient($appId, $appSecret, $accessToken);
+        $mediaItems = $client->getUserMedia($postCount);
+        
+        if (empty($mediaItems)) {
+            return '<div class="widget-item widget-instagram"><div class="widget-content"><div class="widget-note">No posts found</div></div></div>';
+        }
+        
+        $widgetId = 'instagram-carousel-' . ($widget['id'] ?? uniqid());
+        $carouselId = 'carousel-' . $widgetId;
+        
+        $html = '<div class="widget-item widget-instagram widget-instagram-carousel" data-carousel-id="' . h($carouselId) . '" data-autoplay="' . ($autoplay ? 'true' : 'false') . '" data-autoplay-delay="' . $autoplayDelay . '">';
+        $html .= '<div class="instagram-carousel-container">';
+        
+        // Navigation arrows
+        $html .= '<button class="instagram-carousel-nav instagram-carousel-prev" aria-label="Previous post" type="button">';
+        $html .= '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        $html .= '</button>';
+        
+        $html .= '<button class="instagram-carousel-nav instagram-carousel-next" aria-label="Next post" type="button">';
+        $html .= '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        $html .= '</button>';
+        
+        // Carousel track
+        $html .= '<div class="instagram-carousel-track" id="' . h($carouselId) . '">';
+        
+        foreach ($mediaItems as $index => $media) {
+            $mediaUrl = $media['media_url'] ?? $media['thumbnail_url'] ?? '';
+            $mediaType = $media['media_type'] ?? 'IMAGE';
+            $caption = $media['caption'] ?? '';
+            $permalink = $media['permalink'] ?? '';
+            $timestamp = $media['timestamp'] ?? '';
+            
+            $html .= '<div class="instagram-carousel-slide" data-slide-index="' . $index . '">';
+            $html .= '<a href="' . htmlspecialchars($permalink) . '" target="_blank" rel="noopener noreferrer" class="instagram-carousel-link">';
+            
+            // Media container
+            $html .= '<div class="instagram-carousel-media">';
+            if ($mediaUrl) {
+                $html .= '<img src="' . htmlspecialchars($mediaUrl) . '" alt="Instagram post" loading="lazy">';
+            }
+            if ($mediaType === 'VIDEO') {
+                $html .= '<div class="instagram-carousel-video-badge">▶</div>';
+            }
+            $html .= '</div>';
+            
+            // Caption and timestamp container
+            if ($showCaptions || $showTimestamps) {
+                $html .= '<div class="instagram-carousel-info">';
+                if ($showCaptions && $caption) {
+                    $html .= '<div class="instagram-carousel-caption">' . htmlspecialchars(InstagramClient::truncateCaption($caption, 200)) . '</div>';
+                }
+                if ($showTimestamps && $timestamp) {
+                    $html .= '<div class="instagram-carousel-timestamp">' . htmlspecialchars(InstagramClient::formatTimestamp($timestamp)) . '</div>';
+                }
+                $html .= '</div>';
+            }
+            
+            $html .= '</a>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // carousel-track
+        
+        // Dots navigation
+        if (count($mediaItems) > 1) {
+            $html .= '<div class="instagram-carousel-dots">';
+            foreach ($mediaItems as $index => $media) {
+                $html .= '<button class="instagram-carousel-dot' . ($index === 0 ? ' active' : '') . '" data-slide-index="' . $index . '" aria-label="Go to slide ' . ($index + 1) . '" type="button"></button>';
+            }
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // carousel-container
+        $html .= '</div>'; // widget-item
         
         return $html;
     }

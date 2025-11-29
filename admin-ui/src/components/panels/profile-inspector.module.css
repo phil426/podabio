@@ -1,8 +1,8 @@
 .wrapper {
   padding: 0.75rem 0.6rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(248, 250, 252, 0.85);
-  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(148, 163, 184, 0.4)));
+  background: var(--admin-surface-canvas, #f8fafc);
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
   display: grid;
   gap: 0.75rem;
   margin: 0 0 0.75rem;
@@ -39,14 +39,14 @@
 
 .header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -56,7 +56,7 @@
   border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.12)));
   background: var(--active-tab-light, var(--admin-border-subtle, rgba(15, 23, 42, 0.04)));
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
 }
 
 .controlGroup {
@@ -68,8 +68,8 @@
   display: grid;
   gap: 0.5rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   padding: 0.7rem 0.65rem;
 }
 
@@ -117,7 +117,7 @@
 
 .previewName {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: #020617;
@@ -167,12 +167,12 @@
 }
 
 .statusOk {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: #16a34a;
 }
 
 .statusError {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: #dc2626;
 }
 
@@ -305,7 +305,7 @@
 
 .optionGroupLabel {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
   letter-spacing: -0.01em;
@@ -346,7 +346,7 @@
 }
 
 .optionButtonLabel {
-  font-size: 0.7rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   font-weight: 500;
   color: var(--admin-text-primary, #1e293b);
   letter-spacing: -0.01em;
@@ -454,7 +454,7 @@
 }
 
 .sizeLabel {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 700;
   color: var(--admin-text-primary, #1e293b);
   line-height: 1;
@@ -508,7 +508,7 @@
   background: linear-gradient(135deg, var(--active-tab-bg, rgba(0, 255, 127, 0.9)) 0%, var(--active-tab-bg, rgba(0, 255, 127, 0.9)) 100%);
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   cursor: pointer;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
@@ -556,7 +556,7 @@
 }
 
 .nameHeader label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
   letter-spacing: -0.01em;
@@ -589,14 +589,14 @@
 }
 
 .bioHeader label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
   letter-spacing: -0.01em;
 }
 
 .charCounter {
-  font-size: 0.7rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   color: var(--admin-text-secondary, #64748b);
   font-weight: 500;
   padding: 0.2rem 0.45rem;
@@ -717,7 +717,7 @@
 }
 
 .textSizeLabel {
-  font-size: 0.7rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   font-weight: 700;
   line-height: 1;
 }
@@ -743,7 +743,7 @@
 
 .profileNote p {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   color: var(--admin-text-secondary, #64748b);
   font-style: italic;
   line-height: 1.4;
@@ -757,12 +757,12 @@ textarea,
 input[type='text'],
 input[type='url'] {
   border-radius: 10px;
-  border: 1.5px solid rgba(15, 23, 42, 0.1);
+  border: 1.5px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   padding: 0.6rem 0.85rem;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--admin-bg-panel, #ffffff);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
 }
@@ -772,7 +772,7 @@ input[type='text']:focus,
 input[type='url']:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
-  background: rgba(255, 255, 255, 1);
+  background: var(--admin-bg-panel, #ffffff);
   box-shadow: 
     0 0 0 3px rgba(0, 255, 127, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);
@@ -794,7 +794,7 @@ textarea {
 }
 
 .fieldGroup label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
 }
@@ -803,7 +803,7 @@ textarea {
 .status_error {
   padding: 0.6rem 0.85rem;
   border-radius: 10px;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 500;
   margin-top: 0.75rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);

@@ -60,7 +60,7 @@
 
 .section {
   padding: 16px;
-  background: var(--pod-semantic-surface-subtle, #f8fafc);
+  background: var(--admin-surface-canvas, #f8fafc);
   border-radius: 8px;
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
@@ -75,13 +75,13 @@
 .sectionContent {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   margin: 0;
 }
 
 .helpSection {
   padding: 16px;
-  background: var(--pod-semantic-surface-elevated, #ffffff);
+  background: var(--admin-surface-elevated, #ffffff);
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   border-radius: 8px;
 }
@@ -103,7 +103,7 @@
 .helpText {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--pod-semantic-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   margin: 0;
 }
 

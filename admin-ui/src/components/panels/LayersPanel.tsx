@@ -31,6 +31,7 @@ import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList
 import { getYouTubeThumbnail } from '../../utils/media';
 import type { TabColorTheme, LeftyTabValue } from '../layout/tab-colors';
 import { AddingContentPanel } from './AddingContentPanel';
+import { WidgetInspectorModal } from './WidgetInspectorModal';
 import styles from './layers-panel.module.css';
 
 interface LayersPanelProps {
@@ -74,6 +75,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
   const [lockedItems, setLockedItems] = useState<Set<string>>(new Set());
   const pageSettingsMutation = usePageSettingsMutation();
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [modalWidgetId, setModalWidgetId] = useState<string | null>(null);
 
   const layers = useMemo<LayerItem[]>(() => {
     const profileLayer: LayerItem = {
@@ -159,7 +161,18 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
   const handleEditLayer = (id: string) => {
     const widget = widgets?.find((entry) => String(entry.id) === id);
     if (!widget) return;
-    selectWidget(id);
+    // Open the modal - WidgetInspector will receive widgetId as prop, so we don't need to select globally
+    setModalWidgetId(id);
+  };
+
+  const handleCloseModal = () => {
+    // Deselect widget when closing modal to prevent drawer/panel from showing
+    if (modalWidgetId) {
+      selectWidget(null);
+    }
+    setModalWidgetId(null);
+    // Optionally clear widget selection when modal closes
+    // selectWidget(null);
   };
 
   const handleToggleVisibility = (id: string) => {
@@ -328,7 +341,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
                               className={styles.layerActionButton}
                               onClick={() => handleEditLayer(item.id)}
                               aria-label={`Edit ${item.label}`}
-                              title="Open settings for this block in the right-hand panel"
+                              title="Open settings for this block in a modal"
                               disabled={updateMutation.isPending}
                             >
                               <Pencil aria-hidden="true" size={16} weight="regular" />
@@ -408,6 +421,13 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
           </>
         )}
       </AnimatePresence>
+
+      {/* Widget Inspector Modal */}
+      <WidgetInspectorModal
+        activeColor={activeColor}
+        widgetId={modalWidgetId}
+        onClose={handleCloseModal}
+      />
 
     </div>
   );

@@ -220,16 +220,24 @@ function getInstagramAuthUrl($mode = 'link') {
         require_once __DIR__ . '/../includes/session.php';
     }
     
+    // Load helpers for getCurrentBaseUrl()
+    if (!function_exists('getCurrentBaseUrl')) {
+        require_once __DIR__ . '/../includes/helpers.php';
+    }
+    
     // Generate state token for CSRF protection
     $stateToken = generateToken(32);
     $_SESSION['instagram_oauth_state'] = $stateToken;
     $_SESSION['instagram_oauth_mode'] = $mode;
     
+    // Use dynamic redirect URI based on current host (for dev/prod flexibility)
+    $redirectUri = getCurrentBaseUrl() . '/auth/instagram/callback.php';
+    
     $scopes = 'user_profile,user_media';
     
     $params = [
         'client_id' => INSTAGRAM_APP_ID,
-        'redirect_uri' => INSTAGRAM_REDIRECT_URI,
+        'redirect_uri' => $redirectUri,
         'scope' => $scopes,
         'response_type' => 'code',
         'state' => $stateToken

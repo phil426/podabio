@@ -23,13 +23,18 @@ interface WidgetFormState {
 
 interface WidgetInspectorProps {
   activeColor: TabColorTheme;
+  /** Optional widget ID to use instead of global selection (for modal use) */
+  widgetId?: string | null;
 }
 
-export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Element {
+export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetInspectorProps): JSX.Element {
   const { data: snapshot, isLoading } = usePageSnapshot();
   const { data: availableWidgets } = useAvailableWidgetsQuery();
-  const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
+  const selectedWidgetIdFromState = useWidgetSelection((state) => state.selectedWidgetId);
   const selectWidget = useWidgetSelection((state) => state.selectWidget);
+  
+  // Use prop if provided, otherwise fall back to global selection
+  const selectedWidgetId = widgetIdProp !== undefined ? widgetIdProp : selectedWidgetIdFromState;
   const { mutateAsync: updateWidget, isPending: isSaving } = useUpdateWidgetMutation();
 
   const selectedWidget = useMemo<WidgetRecord | undefined>(() => {
@@ -308,6 +313,7 @@ export function WidgetInspector({ activeColor }: WidgetInspectorProps): JSX.Elem
         <label className={styles.control}>
           <span>Title</span>
           <input
+            className={styles.input}
             type="text"
             value={formState?.title ?? ''}
             onChange={(event) => handleTitleChange(event.target.value)}

@@ -38,10 +38,7 @@ export function PodcastPanel({ activeColor }: PodcastPanelProps): JSX.Element {
           <ScrollArea.Viewport className={styles.viewport}>
             <div className={styles.content}>
               <header className={styles.header}>
-                <h2>
-                  <ApplePodcastsLogo aria-hidden="true" size={20} weight="regular" />
-                  Podcast
-                </h2>
+                <h2>Podcast / rss</h2>
                 <p>Manage your podcast RSS feed, player, and platform links</p>
               </header>
 

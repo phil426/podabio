@@ -1,0 +1,18 @@
+CSS Inspector Files Backup
+==========================
+
+Created: $(date)
+Purpose: Backup before refactoring inspector CSS files to use font-size CSS variables
+
+Files backed up:
+- properties-panel.module.css
+- All *-inspector.module.css files in panels/
+- global.css (with font-size variables)
+- lefty-inspector-drawer.module.css
+
+To restore:
+1. Copy files back from this directory
+2. Or use: git stash pop (if you stashed)
+3. Or use: git checkout -- <file> (to revert specific files)
+
+Current git stash: Backup before refactoring inspector CSS to use font-size variables

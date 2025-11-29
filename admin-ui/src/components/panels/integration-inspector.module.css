@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 0.65rem;
   padding: 0.6rem 0.7rem;
-  background: var(--pod-component-layout-left-rail-background, #ffffff);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .header {
@@ -21,7 +21,7 @@
 
 .header h3 {
   margin: 0 0 0.2rem 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
   line-height: 1.3;
@@ -29,7 +29,7 @@
 
 .header p {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-sm, 0.9rem);
   color: var(--admin-text-secondary, #475569);
   line-height: 1.4;
 }
@@ -43,7 +43,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   cursor: pointer;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   transition: all 150ms ease;
@@ -69,15 +69,15 @@
   gap: 0.75rem;
   padding: 3rem 1.5rem;
   text-align: center;
-  color: var(--admin-text-secondary, #64748b);
-  font-size: 0.875rem;
+  color: var(--admin-text-secondary, #475569);
+  font-size: var(--admin-font-size-base, 1rem);
 }
 
 .emptyIcon {
   width: 48px;
   height: 48px;
   opacity: 0.3;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .spinner {
@@ -103,8 +103,8 @@
   padding: 0.6rem 0.85rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   background: var(--active-tab-light, rgba(34, 197, 94, 0.1));
-  color: var(--active-tab-color, var(--pod-semantic-state-success, #16a34a));
-  font-size: 0.8rem;
+  color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
+  font-size: var(--admin-font-size-md, 0.95rem);
   line-height: 1.4;
 }
 
@@ -119,8 +119,8 @@
   flex-direction: column;
   gap: 0.65rem;
   padding: 0.6rem 0.7rem;
-  background: rgba(15, 23, 42, 0.02);
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  background: var(--admin-surface-canvas, #f8fafc);
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
   border-radius: var(--pod-core-shape-radius-sm, 6px);
 }
 
@@ -131,15 +131,15 @@
 }
 
 .label {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }
 
 .statusCard {
   padding: 0.6rem 0.7rem;
-  background: #ffffff;
-  border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.08));
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
   border-radius: var(--pod-core-shape-radius-sm, 6px);
 }
 
@@ -163,13 +163,13 @@
 .statusIconCheck {
   width: 18px;
   height: 18px;
-  color: var(--pod-semantic-state-success, #16a34a);
+  color: var(--admin-accent-primary, #00FF7F);
 }
 
 .statusIconX {
   width: 18px;
   height: 18px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
 }
 
 .statusDetails {
@@ -181,14 +181,14 @@
 }
 
 .statusText {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }
 
 .statusDescription {
-  font-size: 0.75rem;
-  color: var(--admin-text-secondary, #64748b);
+  font-size: var(--admin-font-size-xs, 0.75rem);
+  color: var(--admin-text-secondary, #475569);
   line-height: 1.3;
 }
 
@@ -200,7 +200,7 @@
   gap: 0.5rem;
   padding: 0.55rem 1rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 500;
   line-height: 1.4;
   cursor: pointer;
@@ -226,7 +226,7 @@
 
 .disconnectButton {
   background: transparent;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary, #475569);
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.15));
 }
 
@@ -249,8 +249,8 @@
 
 .helpText {
   margin: 0;
-  font-size: 0.75rem;
-  color: var(--admin-text-secondary, #64748b);
+  font-size: var(--admin-font-size-xs, 0.75rem);
+  color: var(--admin-text-secondary, #475569);
   line-height: 1.4;
 }
 

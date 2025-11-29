@@ -65,6 +65,7 @@ export function useRefreshAccountData() {
       queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.authMethods() });
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionStatus() });
+      queryClient.invalidateQueries({ queryKey: ['integrations', 'status'] });
     }
   });
 }
@@ -179,6 +180,7 @@ export function useDisconnectInstagramMutation() {
     mutationFn: disconnectInstagram,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integrations', 'status'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
     }
   });
 }

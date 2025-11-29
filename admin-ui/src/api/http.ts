@@ -84,7 +84,10 @@ export async function requestJson<TResponse>(
       // Only redirect if we're not already on the login page
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         const currentUrl = window.location.pathname + window.location.search;
-        window.location.href = `/login.php?redirect=${encodeURIComponent(currentUrl)}`;
+        // Immediately redirect - don't wait for promise rejection
+        console.warn('[API] 401 Unauthorized - redirecting to login...');
+        // Use replace instead of href to prevent back button issues
+        window.location.replace(`/login.php?redirect=${encodeURIComponent(currentUrl)}`);
         // Return a rejected promise to stop further execution
         return Promise.reject(new ApiError('Unauthorized - redirecting to login', 401, payload));
       }

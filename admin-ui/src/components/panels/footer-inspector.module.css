@@ -1,8 +1,8 @@
 .wrapper {
   padding: 0.75rem 0.6rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(248, 250, 252, 0.85);
-  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(148, 163, 184, 0.4)));
+  background: var(--admin-surface-canvas, #f8fafc);
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, rgba(15, 23, 42, 0.1)));
   display: grid;
   gap: 0.75rem;
   margin: 0 0 0.75rem;
@@ -24,14 +24,14 @@
 
 .header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -39,8 +39,8 @@
   display: grid;
   gap: 0.5rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   padding: 0.7rem 0.65rem;
 }
 
@@ -62,13 +62,13 @@
 }
 
 .fieldGroup label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #1e293b);
 }
 
 .charCounter {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   color: var(--admin-text-secondary, #475569);
   font-variant-numeric: tabular-nums;
 }
@@ -79,12 +79,12 @@
 
 textarea {
   border-radius: 10px;
-  border: 1.5px solid rgba(15, 23, 42, 0.1);
+  border: 1.5px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   padding: 0.6rem 0.85rem;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--admin-bg-panel, #ffffff);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   resize: vertical;
@@ -94,7 +94,7 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
-  background: rgba(255, 255, 255, 1);
+  background: var(--admin-bg-panel, #ffffff);
   box-shadow: 
     0 0 0 3px rgba(0, 255, 127, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);
@@ -103,12 +103,12 @@ textarea:focus {
 input[type='text'],
 input[type='url'] {
   border-radius: 10px;
-  border: 1.5px solid rgba(15, 23, 42, 0.1);
+  border: 1.5px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   padding: 0.6rem 0.85rem;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--admin-bg-panel, #ffffff);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
 }
@@ -117,7 +117,7 @@ input[type='text']:focus,
 input[type='url']:focus {
   outline: none;
   border-color: var(--active-tab-border, rgba(0, 255, 127, 0.4));
-  background: rgba(255, 255, 255, 1);
+  background: var(--admin-bg-panel, #ffffff);
   box-shadow: 
     0 0 0 3px rgba(0, 255, 127, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);
@@ -139,7 +139,7 @@ input[type='url']:focus {
 }
 
 .checkboxLabel span {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   color: var(--admin-text-primary, #1e293b);
 }
 
@@ -157,7 +157,7 @@ input[type='url']:focus {
   background: var(--active-tab-bg, var(--admin-accent-primary, #00FF7F));
   color: var(--active-tab-color, #ffffff);
   border: none;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 150ms ease;
@@ -185,7 +185,7 @@ input[type='url']:focus {
 .statusError {
   padding: 0.6rem 0.85rem;
   border-radius: 10px;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 500;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }

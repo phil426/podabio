@@ -44,7 +44,7 @@
 
 .drawerTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }

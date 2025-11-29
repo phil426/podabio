@@ -10,6 +10,8 @@ require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../classes/User.php';
+// Load meta.php first (contains Facebook/Instagram credentials)
+require_once __DIR__ . '/../../config/meta.php';
 require_once __DIR__ . '/../../config/instagram.php';
 
 if (!isLoggedIn()) {

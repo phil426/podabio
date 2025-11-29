@@ -1,0 +1,229 @@
+.wrapper {
+  padding: 0.6rem 0.7rem;
+  border-radius: 0;
+  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border: 1px solid var(--active-tab-border, var(--admin-border-default, var(--admin-border-default, rgba(15, 23, 42, 0.08))));
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 0.6rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+.header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
+}
+
+.header p {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--admin-text-secondary, #475569);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary, #64748b);
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: var(--active-tab-light, var(--admin-border-default, rgba(15, 23, 42, 0.08)));
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.closeButton svg {
+  width: 1em;
+  height: 1em;
+}
+
+.status_success {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+  font-size: 0.85rem;
+}
+
+.status_error {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.fieldset {
+  display: grid;
+  gap: 0.65rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
+  border: 1px solid var(--active-tab-light, transparent);
+  padding: 0.6rem 0.7rem;
+}
+
+.control {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.control span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--pod-core-shape-radius-sm, 6px);
+  border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: var(--admin-text-primary, #0f172a);
+  transition: border-color 150ms ease;
+  font-family: inherit;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
+  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+}
+
+.select {
+  cursor: pointer;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
+  border-radius: 24px;
+  transition: background-color 0.2s ease;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggleSwitch input:checked + .toggleSlider {
+  background-color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
+}
+
+.toggleSwitch input:checked + .toggleSlider:before {
+  transform: translateX(18px);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.saveButton {
+  padding: 0.55rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: none;
+  background: var(--pod-component-button-primary-background, #00FF7F);
+  color: var(--pod-component-button-primary-color, #ffffff);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  padding: 0.55rem 1rem;
+  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.deleteButton:hover {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.emptyState {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--admin-text-secondary, #64748b);
+  font-size: 0.85rem;
+}
+

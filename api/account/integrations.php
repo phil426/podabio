@@ -3,11 +3,22 @@
  * Account Integrations API
  */
 
+// Suppress errors and warnings to ensure clean JSON output
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Start output buffering to catch any unexpected output
+ob_start();
+
 require_once __DIR__ . '/../../config/constants.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/helpers.php';
+
+// Clear any output that may have been generated
+ob_clean();
 
 header('Content-Type: application/json');
 
@@ -42,23 +53,45 @@ switch ($action) {
             $instagramExpired = $expiresAt < time();
         }
         
-        require_once __DIR__ . '/../../config/instagram.php';
-        $instagramLinkUrl = getInstagramAuthUrl('link');
-        
-        // Check if Instagram is configured
-        $instagramConfigured = !empty(INSTAGRAM_APP_ID) && !empty(INSTAGRAM_APP_SECRET);
-        
-        echo json_encode([
-            'success' => true,
-            'data' => [
-                'instagram' => [
-                    'connected' => $hasInstagram && !$instagramExpired,
-                    'expired' => $instagramExpired,
-                    'link_url' => $instagramLinkUrl,
-                    'configured' => $instagramConfigured
+        // Load meta.php first (contains Facebook/Instagram credentials)
+        try {
+            require_once __DIR__ . '/../../config/meta.php';
+            require_once __DIR__ . '/../../config/instagram.php';
+            
+            // Check if Instagram is configured
+            $instagramConfigured = !empty(INSTAGRAM_APP_ID) && !empty(INSTAGRAM_APP_SECRET);
+            
+            // Generate OAuth URL (may return empty string if not configured)
+            $instagramLinkUrl = '';
+            if ($instagramConfigured && function_exists('getInstagramAuthUrl')) {
+                try {
+                    $instagramLinkUrl = getInstagramAuthUrl('link');
+                } catch (Exception $e) {
+                    error_log("Failed to generate Instagram OAuth URL: " . $e->getMessage());
+                    $instagramLinkUrl = '';
+                }
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'instagram' => [
+                        'connected' => $hasInstagram && !$instagramExpired,
+                        'expired' => $instagramExpired,
+                        'link_url' => $instagramLinkUrl,
+                        'configured' => $instagramConfigured
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        } catch (Exception $e) {
+            error_log("Instagram integration error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Failed to load Instagram configuration: ' . $e->getMessage()
+            ]);
+        }
         break;
         
     case 'disconnect_instagram':

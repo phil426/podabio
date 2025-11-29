@@ -126,7 +126,7 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
         };
       case 'integration':
         return {
-          title: 'Integration',
+          title: 'Integrations',
           icon: <Plug size={20} weight="regular" />,
           sections: [
             {

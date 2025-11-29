@@ -18,7 +18,7 @@
   padding: 3rem 1.5rem;
   text-align: center;
   color: var(--admin-text-secondary, #64748b);
-  font-size: 0.875rem;
+  font-size: var(--admin-font-size-base, 1rem);
 }
 
 .header {
@@ -37,14 +37,14 @@
 
 .header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
 }
 
 .header p {
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -54,7 +54,7 @@
   border: 1px solid var(--active-tab-border, rgba(15, 23, 42, 0.12));
   background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
   color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
 }
 
 .content {
@@ -71,7 +71,7 @@
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid rgba(220, 38, 38, 0.2);
   color: #dc2626;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
 }
 
 .errorBanner p {
@@ -93,13 +93,13 @@
 }
 
 .control span {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }
 
 .label {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-size-md, 0.95rem);
   font-weight: 600;
   color: var(--admin-text-primary, #0f172a);
 }
@@ -110,7 +110,7 @@
 
 .helpText {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--admin-font-size-xs, 0.75rem);
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -120,9 +120,9 @@
   padding: 0.55rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
-  font-size: 0.85rem;
-  background: #ffffff;
-  color: var(--admin-text-primary, #0f172a);
+  font-size: var(--admin-font-size-base, 1rem);
+  background: var(--admin-bg-rail, #1e293b);
+  color: var(--admin-text-inverse, #ffffff);
   transition: border-color 150ms ease;
 }
 
@@ -146,7 +146,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-size-base, 1rem);
 }
 
 .checkbox {

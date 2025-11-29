@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, X, CircleNotch, ShoppingBag, TrendUp, Storefront, Ticket, Link } from '@phosphor-icons/react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 
@@ -167,38 +167,67 @@ export function IntegrationsPanel(): JSX.Element {
 
   const isLoading = methodsLoading || integrationsLoading;
 
+  // Handle URL parameters for success/error messages from OAuth callbacks
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+    
+    if (success) {
+      setStatus(success);
+      // Clear URL parameter
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', newUrl);
+    } else if (error) {
+      setStatus(error);
+      // Clear URL parameter
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', newUrl);
+    }
+    
+    // Refresh integrations status after OAuth callback
+    if (success || error) {
+      queryClient.invalidateQueries({ queryKey: ['integrations', 'status'] });
+      refreshAccount.mutateAsync();
+    }
+  }, [queryClient, refreshAccount]);
+
   if (isLoading) {
     return (
-      <ScrollArea.Root className={styles.scrollArea}>
-        <ScrollArea.Viewport className={styles.viewport}>
-          <div className={styles.container}>
-            <div className={styles.loadingState}>
-              <CircleNotch className={styles.spinner} size={20} weight="regular" />
-              <p>Loading integrations…</p>
+      <div className={styles.panel}>
+        <ScrollArea.Root className={styles.scrollArea}>
+          <ScrollArea.Viewport className={styles.viewport}>
+            <div className={styles.content}>
+              <div className={styles.loadingState}>
+                <CircleNotch className={styles.spinner} size={20} weight="regular" />
+                <p>Loading integrations…</p>
+              </div>
             </div>
-          </div>
-        </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-          <ScrollArea.Thumb className={styles.thumb} />
-        </ScrollArea.Scrollbar>
-      </ScrollArea.Root>
+          </ScrollArea.Viewport>
+          <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+            <ScrollArea.Thumb className={styles.thumb} />
+          </ScrollArea.Scrollbar>
+        </ScrollArea.Root>
+      </div>
     );
   }
 
   if (!methods) {
     return (
-      <ScrollArea.Root className={styles.scrollArea}>
-        <ScrollArea.Viewport className={styles.viewport}>
-          <div className={styles.container}>
-            <div className={styles.errorState}>
-              <p>We couldn't load your integrations. Try again later.</p>
+      <div className={styles.panel}>
+        <ScrollArea.Root className={styles.scrollArea}>
+          <ScrollArea.Viewport className={styles.viewport}>
+            <div className={styles.content}>
+              <div className={styles.errorState}>
+                <p>We couldn't load your integrations. Try again later.</p>
+              </div>
             </div>
-          </div>
-        </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-          <ScrollArea.Thumb className={styles.thumb} />
-        </ScrollArea.Scrollbar>
-      </ScrollArea.Root>
+          </ScrollArea.Viewport>
+          <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+            <ScrollArea.Thumb className={styles.thumb} />
+          </ScrollArea.Scrollbar>
+        </ScrollArea.Root>
+      </div>
     );
   }
 
@@ -260,16 +289,16 @@ export function IntegrationsPanel(): JSX.Element {
   };
 
   return (
-    <ScrollArea.Root className={styles.scrollArea}>
-      <ScrollArea.Viewport className={styles.viewport}>
-        <div className={styles.container}>
-          <section className={styles.wrapper} aria-label="Integrations">
-        <header className={styles.panelHeader}>
-          <h3 className={styles.panelTitle}>Integrations</h3>
-          <p className={styles.panelDescription}>
-            Connect tools that work with your PodaBio page. Start with Google sign-in, more coming soon.
-          </p>
-        </header>
+    <div className={styles.panel}>
+      <ScrollArea.Root className={styles.scrollArea}>
+        <ScrollArea.Viewport className={styles.viewport}>
+          <div className={styles.content}>
+            <header className={styles.header}>
+              <h2>Integrations</h2>
+              <p>Connect tools that work with your PodaBio page.</p>
+            </header>
+
+            <div className={styles.wrapper}>
 
         <div className={styles.fieldset}>
           <header className={styles.header}>
@@ -377,18 +406,26 @@ export function IntegrationsPanel(): JSX.Element {
           </div>
         </div>
 
-      {/* Instagram integration temporarily disabled */}
-      {/* 
-      <section className={styles.section}>
-        <header className={styles.header}>
-          <h3 className={styles.title}>Instagram</h3>
-          <p className={styles.description}>
-            Connect your Instagram account to display your latest posts.
-          </p>
-        </header>
+        <div className={styles.fieldset}>
+          <header className={styles.header}>
+            <h3 className={styles.title}>Instagram</h3>
+            <p className={styles.description}>
+              Connect your Instagram account to display your latest posts.
+            </p>
+          </header>
 
-        {integrations && (
-          <div className={styles.integrationCard}>
+          <div 
+            className={`${styles.integrationCard} ${selectedIntegrationId === 'instagram' ? styles.integrationCardSelected : ''}`}
+            onClick={() => selectIntegration('instagram')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectIntegration('instagram');
+              }
+            }}
+          >
             <div className={styles.integrationHeader}>
               <div className={styles.integrationInfo}>
                 <div className={styles.integrationIcon}>
@@ -399,11 +436,23 @@ export function IntegrationsPanel(): JSX.Element {
                 <div className={styles.integrationDetails}>
                   <p className={styles.integrationName}>Instagram</p>
                   <p className={styles.integrationStatus}>
-                    {integrations.instagram.connected ? (
+                    {integrationsLoading ? (
                       <>
-                        <Check className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
-                        <span>{integrations.instagram.expired ? 'Token expired' : 'Connected'}</span>
+                        <CircleNotch className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
+                        <span>Loading…</span>
                       </>
+                    ) : integrations && integrations.instagram ? (
+                      integrations.instagram.connected ? (
+                        <>
+                          <Check className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
+                          <span>{integrations.instagram.expired ? 'Token expired' : 'Connected'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
+                          <span>Not connected</span>
+                        </>
+                      )
                     ) : (
                       <>
                         <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
@@ -413,47 +462,14 @@ export function IntegrationsPanel(): JSX.Element {
                   </p>
                 </div>
               </div>
-              <div className={styles.integrationActions}>
-                {integrations.instagram.connected ? (
-                  <button
-                    type="button"
-                    className={styles.disconnectButton}
-                    onClick={handleDisconnectInstagram}
-                    disabled={disconnectInstagramPending}
-                  >
-                    {disconnectInstagramPending ? (
-                      <>
-                        <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
-                        <span>Disconnecting…</span>
-                      </>
-                    ) : (
-                      <span>Disconnect</span>
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.connectButton}
-                    onClick={() => {
-                      if (integrations.instagram.link_url) {
-                        window.location.href = integrations.instagram.link_url;
-                      } else {
-                        setStatus('Instagram integration is not configured. Please contact support.');
-                      }
-                    }}
-                    disabled={!integrations.instagram.link_url}
-                  >
-                    Connect Instagram
-                  </button>
-                )}
-              </div>
             </div>
-            {integrations.instagram.connected && (
+            {/* Note: Connect/Disconnect buttons are handled in the IntegrationInspector drawer */}
+            {integrations && integrations.instagram && integrations.instagram.connected && (
               <div className={styles.integrationDescription}>
                 <p>Your Instagram posts can be displayed on your page.</p>
               </div>
             )}
-            {integrations.instagram.configured === false && (
+            {integrations && integrations.instagram && integrations.instagram.configured === false && (
               <div className={styles.integrationDescription}>
                 <p style={{ color: '#dc2626', fontSize: '0.8rem' }}>
                   Instagram integration is not configured. Please configure your Instagram App ID and Secret in the server configuration.
@@ -461,16 +477,14 @@ export function IntegrationsPanel(): JSX.Element {
               </div>
             )}
           </div>
-        )}
 
-        {disconnectInstagramError && (
-          <div className={styles.errorBanner}>
-            <X aria-hidden="true" size={16} weight="regular" />
-            <span>{parseError(disconnectInstagramError)}</span>
-          </div>
-        )}
-      </section>
-      */}
+          {disconnectInstagramError && (
+            <div className={styles.errorBanner}>
+              <X aria-hidden="true" size={16} weight="regular" />
+              <span>{parseError(disconnectInstagramError)}</span>
+            </div>
+          )}
+        </div>
 
         <div className={styles.fieldset}>
         <header className={styles.header}>
@@ -506,8 +520,7 @@ export function IntegrationsPanel(): JSX.Element {
             </div>
           ))}
         </div>
-        </div>
-      </section>
+              </div>
 
       {/* Social Icons Section */}
       <div className={styles.fieldset}>
@@ -635,20 +648,22 @@ export function IntegrationsPanel(): JSX.Element {
         )}
       </div>
 
-          <SecurityActionDrawer
-            open={drawerAction !== null}
-            action={drawerAction ?? 'unlink_google'}
-            onClose={closeDrawer}
-            onConfirm={handleConfirm}
-            isProcessing={drawerProcessing}
-            error={drawerError}
-          />
-        </div>
-      </ScrollArea.Viewport>
-      <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-        <ScrollArea.Thumb className={styles.thumb} />
-      </ScrollArea.Scrollbar>
-    </ScrollArea.Root>
+              <SecurityActionDrawer
+                open={drawerAction !== null}
+                action={drawerAction ?? 'unlink_google'}
+                onClose={closeDrawer}
+                onConfirm={handleConfirm}
+                isProcessing={drawerProcessing}
+                error={drawerError}
+              />
+            </div>
+          </div>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+          <ScrollArea.Thumb className={styles.thumb} />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
+    </div>
   );
 }
 

@@ -199,6 +199,23 @@ class WidgetRegistry {
                 ]
             ],
             
+            // Instagram Social Media Widgets
+            'instagram_carousel' => [
+                'widget_id' => 'instagram_carousel',
+                'name' => 'Instagram Carousel',
+                'description' => 'Display your Instagram posts in a swipeable carousel',
+                'thumbnail' => '/assets/widget-thumbnails/instagram_carousel.png',
+                'category' => 'social',
+                'requires_api' => true,
+                'config_fields' => [
+                    'post_count' => ['type' => 'text', 'label' => 'Number of Posts', 'required' => false, 'default' => '10', 'help' => 'How many posts to display (1-50)'],
+                    'show_captions' => ['type' => 'checkbox', 'label' => 'Show Captions', 'required' => false, 'default' => true],
+                    'show_timestamps' => ['type' => 'checkbox', 'label' => 'Show Timestamps', 'required' => false, 'default' => true],
+                    'autoplay' => ['type' => 'checkbox', 'label' => 'Autoplay', 'required' => false, 'default' => false, 'help' => 'Automatically advance to next slide'],
+                    'autoplay_delay' => ['type' => 'text', 'label' => 'Autoplay Delay (seconds)', 'required' => false, 'default' => '5', 'help' => 'Time between slides when autoplay is enabled']
+                ]
+            ],
+            
             // Instagram Social Media Widgets - Temporarily disabled
             // 'instagram_post' => [
             //     'widget_id' => 'instagram_post',

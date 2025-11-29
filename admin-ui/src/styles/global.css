@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  font-family: var(--pod-core-typography-font-body, 'Inter', sans-serif);
+  font-family: var(--admin-font-body, 'Space Mono', 'Courier New', monospace);
   background-color: var(--pod-semantic-surface-page, #f5f7ff);
 
   --pod-app-brand-gradient: linear-gradient(
@@ -35,6 +35,13 @@
   /* Typography */
   --admin-font-heading: 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --admin-font-body: 'Space Mono', 'Courier New', monospace;
+  
+  /* Typography - Font Sizes (ADMIN UI ONLY - never used by marketing pages) */
+  --admin-font-size-xs: 0.75rem;      /* Small helper text, placeholders */
+  --admin-font-size-sm: 0.9rem;       /* Help text, status messages */
+  --admin-font-size-base: 1rem;       /* Input fields, body text, buttons */
+  --admin-font-size-md: 0.95rem;      /* Labels, descriptions, secondary text */
+  --admin-font-size-lg: 1.1rem;       /* Section headings (h3 in inspectors) */
   
   /* Backgrounds (light mode defaults) */
   --admin-bg-page: #f5f7ff;
@@ -95,6 +102,7 @@ body {
 body {
   color: var(--pod-semantic-text-primary, #0f172a);
   background-color: var(--pod-semantic-surface-page, #f5f7ff);
+  font-family: var(--admin-font-body, 'Space Mono', 'Courier New', monospace);
   /* Prevent body scrolling */
   overflow: hidden;
   position: fixed;
@@ -124,6 +132,14 @@ a {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Apply marketing fonts to headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--admin-font-heading, 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 100;
+  letter-spacing: -0.02em;
 }
 
 .sr-only {

@@ -10,7 +10,14 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 60_000
+      staleTime: 60_000,
+      retry: (failureCount, error) => {
+        // Don't retry on 401 errors - let the redirect happen
+        if (error instanceof Error && 'status' in error && (error as { status: number }).status === 401) {
+          return false;
+        }
+        return failureCount < 3;
+      }
     }
   }
 });

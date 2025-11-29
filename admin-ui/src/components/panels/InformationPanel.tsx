@@ -67,7 +67,7 @@ export function InformationPanel({ activeColor, activeTab }: InformationPanelPro
         };
       case 'podcast':
         return {
-          title: 'Podcast',
+          title: 'Podcast / rss',
           icon: <ApplePodcastsLogo size={20} weight="regular" />,
           sections: [
             {
@@ -82,7 +82,7 @@ export function InformationPanel({ activeColor, activeTab }: InformationPanelPro
         };
       case 'integration':
         return {
-          title: 'Integration',
+          title: 'Integrations',
           icon: <Plug size={20} weight="regular" />,
           sections: [
             {

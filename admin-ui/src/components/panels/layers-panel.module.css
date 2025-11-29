@@ -26,14 +26,14 @@
 }
 
 .header h2 {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--admin-text-primary, #111827);
   margin: 0 0 8px 0;
 }
 
 .header p {
-  font-size: 14px;
+  font-size: var(--admin-font-size-base, 1rem);
   color: var(--admin-text-secondary, #6b7280);
   margin: 0;
   line-height: 1.5;
@@ -51,7 +51,7 @@
   color: var(--active-tab-color, #00FF7F);
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--admin-font-size-base, 1rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 200ms ease;
@@ -71,7 +71,7 @@
   padding: 24px;
   text-align: center;
   color: var(--admin-text-muted, #9ca3af);
-  font-size: 14px;
+  font-size: var(--admin-font-size-base, 1rem);
 }
 
 .layerActions {
