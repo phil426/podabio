@@ -14,7 +14,7 @@ $local_pass = 'podnbio_local_pass';
 $remote_host = 'srv775.hstgr.io';
 $remote_db = 'u925957603_podabio';
 $remote_user = 'u925957603_pab';
-$remote_pass = '[REDACTED]';
+$remote_pass = '[REDACTED - Check secure credential storage]';
 
 try {
     // Connect to local database

@@ -2,6 +2,8 @@
 config/database.php
 config/oauth.php
 config/payments.php
+config/podcast-apis.php
+config/meta.php
 config/local.php
 *.env
 .env.*

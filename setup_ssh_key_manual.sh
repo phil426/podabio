@@ -24,7 +24,7 @@ echo "📋 Your public key:"
 cat "$SSH_KEY_FILE"
 echo ""
 echo "📤 Copying key to server..."
-echo "   You will be prompted for password: [REDACTED]"
+echo "   You will be prompted for password: [REDACTED - Check secure credential storage]"
 echo ""
 
 # Try ssh-copy-id with manual password entry

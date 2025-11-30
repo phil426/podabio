@@ -16,7 +16,7 @@ From your local machine, run:
 ./deploy_poda_bio.sh
 ```
 
-You will be prompted for the SSH password: `[REDACTED]`
+You will be prompted for the SSH password: `[REDACTED - Check secure credential storage]`
 
 ### Option 2: Manual SSH Deployment
 
@@ -25,7 +25,7 @@ If the script doesn't work, follow these steps:
 #### Step 1: Connect to Server
 ```bash
 ssh -p 65002 u925957603@195.179.237.142
-# Enter password when prompted: [REDACTED]
+# Enter password when prompted: [REDACTED - Check secure credential storage]
 ```
 
 #### Step 2: Initial Setup (First Time Only)
@@ -60,7 +60,7 @@ Create `config/database.php` with the following content:
 define('DB_HOST', 'srv775.hstgr.io');
 define('DB_NAME', 'u925957603_podabio');
 define('DB_USER', 'u925957603_pab');
-define('DB_PASS', '[REDACTED]');
+define('DB_PASS', '[REDACTED - Check secure credential storage]');
 define('DB_CHARSET', 'utf8mb4');
 
 // PDO connection options
@@ -182,7 +182,7 @@ For easier automated deployments, consider setting up SSH keys:
 
 If you encounter issues:
 
-1. **SSH Connection Failed**: Verify password is correct
+1. **SSH Connection Failed**: Verify password is correct (check secure credential storage)
 2. **Git Clone Failed**: Check repository URL and permissions
 3. **Database Connection Failed**: Verify MySQL credentials in `config/database.php`
 4. **React App Not Loading**: Check that `admin-ui/dist/` exists and has correct permissions

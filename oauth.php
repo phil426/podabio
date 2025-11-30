@@ -13,7 +13,7 @@
 // Status: Configured and ready to use
 
 define('GOOGLE_CLIENT_ID', '1059272027103-ic3mvq2p7guag9ektq8b982lov5fah7j.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', '[REDACTED]');
+define('GOOGLE_CLIENT_SECRET', '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');
 define('GOOGLE_REDIRECT_URI', APP_URL . '/auth/google/callback.php');
 
 // Google OAuth endpoints

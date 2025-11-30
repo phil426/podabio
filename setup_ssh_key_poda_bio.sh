@@ -6,7 +6,7 @@ set -e
 
 SSH_HOST="u925957603@195.179.237.142"
 SSH_PORT="65002"
-SSH_PASS='[REDACTED]'
+SSH_PASS='[REDACTED - Check secure credential storage]'
 
 echo "=========================================="
 echo "SSH Key Setup for poda.bio"

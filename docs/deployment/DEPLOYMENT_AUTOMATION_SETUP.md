@@ -10,7 +10,7 @@
 ### Step 1: Manually SSH into Server
 ```bash
 ssh -p 65002 u925957603@195.179.237.142
-# Enter password: [REDACTED]
+# Enter password: [REDACTED - Check secure credential storage]
 ```
 
 ### Step 2: Add SSH Key to Server

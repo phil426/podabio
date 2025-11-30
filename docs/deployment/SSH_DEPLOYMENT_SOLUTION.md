@@ -28,7 +28,7 @@ The deployment script now uses `sshpass` automatically:
 1. Manually connect once to accept the host key:
    ```bash
    ssh -p 65002 u925957603@195.179.237.142
-   # Enter password: [REDACTED]
+   # Enter password: [REDACTED - Check secure credential storage]
    ```
 2. Then the script should work
 
@@ -53,7 +53,7 @@ If automated methods fail, connect manually first:
 
 ```bash
 ssh -p 65002 u925957603@195.179.237.142
-# Enter password when prompted: [REDACTED]
+# Enter password when prompted: [REDACTED - Check secure credential storage]
 # Type 'yes' to accept host key
 # Then exit: exit
 ```

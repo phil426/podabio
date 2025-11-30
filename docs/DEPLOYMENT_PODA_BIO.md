@@ -9,7 +9,7 @@
 - **Host/IP:** `195.179.237.142`
 - **Port:** `65002`
 - **Username:** `u925957603`
-- **Password:** `[REDACTED]`
+- **Password:** `[REDACTED - Check secure credential storage]`
 - **Domain:** `poda.bio`
 - **Project Directory:** `/home/u925957603/domains/poda.bio/public_html/` (standard Hostinger path)
 - **SSH Command:** `ssh -p 65002 u925957603@195.179.237.142`
@@ -18,7 +18,7 @@
 - **Host:** `srv775.hstgr.io` (or IP: `195.179.237.102`)
 - **Database:** `u925957603_podabio`
 - **Username:** `u925957603_pab`
-- **Password:** `[REDACTED]`
+- **Password:** `[REDACTED - Check secure credential storage]`
 - **phpMyAdmin:** Accessible via Hostinger hPanel (Databases > phpMyAdmin)
 
 ### Git Repository
@@ -64,7 +64,7 @@ Create or update `config/database.php` with the following:
 define('DB_HOST', 'srv775.hstgr.io'); // or '195.179.237.102'
 define('DB_NAME', 'u925957603_podabio');
 define('DB_USER', 'u925957603_pab');
-define('DB_PASS', '[REDACTED]');
+define('DB_PASS', '[REDACTED - Check secure credential storage]');
 define('DB_CHARSET', 'utf8mb4');
 
 // PDO connection options
@@ -100,7 +100,7 @@ chmod 755 uploads/blog/
 **Option A: Via SSH**
 ```bash
 mysql -h srv775.hstgr.io -u u925957603_pab -p u925957603_podabio < database/schema.sql
-# Enter password when prompted: [REDACTED]
+# Enter password when prompted: [REDACTED - Check secure credential storage]
 ```
 
 **Option B: Via phpMyAdmin**

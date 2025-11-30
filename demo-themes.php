@@ -4,9 +4,10 @@
  * Showcases 5 different gradient-heavy themes for user pages
  */
 
-// Enable error reporting for debugging
+// Enable error reporting for debugging (errors logged, not displayed)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 // Define APP_NAME if constants.php fails
 if (!defined('APP_NAME')) {

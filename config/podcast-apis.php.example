@@ -4,11 +4,15 @@
  * PodaBio
  * 
  * Stores API credentials for podcast platform search services
+ * 
+ * COPY THIS FILE TO config/podcast-apis.php AND FILL IN YOUR CREDENTIALS
+ * cp config/podcast-apis.php.example config/podcast-apis.php
  */
 
 // Spotify Web API Credentials
-define('SPOTIFY_CLIENT_ID', '[REDACTED]');
-define('SPOTIFY_CLIENT_SECRET', '[REDACTED]');
+// Get credentials from: https://developer.spotify.com/dashboard/applications
+define('SPOTIFY_CLIENT_ID', 'YOUR_SPOTIFY_CLIENT_ID_HERE');
+define('SPOTIFY_CLIENT_SECRET', 'YOUR_SPOTIFY_CLIENT_SECRET_HERE');
 define('SPOTIFY_REDIRECT_URI', 'https://poda.bio/callback');
 
 // Spotify API Endpoints

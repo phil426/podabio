@@ -21,7 +21,7 @@ if [ -f "$SSH_KEY_FILE" ]; then
 else
     SSH_OPTS=""
     echo "⚠️  SSH key not found. You will be prompted for password."
-    echo "   Password: [REDACTED]"
+    echo "   Password: ?g-2A+mJV&a%KP$"
     echo "   (Run ./setup_ssh_key_manual.sh first to avoid password prompts)"
     echo ""
 fi

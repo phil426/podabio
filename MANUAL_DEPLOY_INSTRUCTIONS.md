@@ -10,7 +10,7 @@ Open your terminal and run:
 ssh -p 65002 u925957603@195.179.237.142
 ```
 
-When prompted, enter the password: `[REDACTED]`
+When prompted, enter the password: `[REDACTED - Check secure credential storage]`
 
 **Note:** If this is your first time connecting, type `yes` when asked to accept the host key.
 
@@ -74,7 +74,7 @@ Paste this content (use Ctrl+X, then Y, then Enter to save in nano):
 define('DB_HOST', 'srv775.hstgr.io');
 define('DB_NAME', 'u925957603_podabio');
 define('DB_USER', 'u925957603_pab');
-define('DB_PASS', '[REDACTED]');
+define('DB_PASS', '[REDACTED - Check secure credential storage]');
 define('DB_CHARSET', 'utf8mb4');
 
 // PDO connection options

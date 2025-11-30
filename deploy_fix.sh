@@ -1,6 +1,6 @@
 #!/bin/bash
 # Quick deployment script for admin loading fix
-# Run this and enter password when prompted: [REDACTED]
+# Run this and enter password when prompted: [REDACTED - Check secure credential storage]
 
 echo "Deploying admin loading fix to poda.bio..."
 echo ""

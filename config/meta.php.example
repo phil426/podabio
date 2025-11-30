@@ -5,9 +5,9 @@
  * 
  * Meta App Dashboard: https://developers.facebook.com/apps/
  * App Name: PodaBio
- * App ID: 738310402631107
  * 
- * Last Updated: December 2024
+ * COPY THIS FILE TO config/meta.php AND FILL IN YOUR CREDENTIALS
+ * cp config/meta.php.example config/meta.php
  * 
  * IMPORTANT NOTES:
  * - The Threads App Secret is masked in the Meta Dashboard
@@ -24,11 +24,11 @@
 // ============================================================================
 
 // Facebook App ID
-define('FACEBOOK_APP_ID', '738310402631107');
+define('FACEBOOK_APP_ID', 'YOUR_FACEBOOK_APP_ID_HERE');
 
 // Facebook App Secret
 // WARNING: Keep this secret secure. Do not commit to public repositories.
-define('FACEBOOK_APP_SECRET', '[REDACTED]');
+define('FACEBOOK_APP_SECRET', 'YOUR_FACEBOOK_APP_SECRET_HERE');
 
 // App Display Name
 define('FACEBOOK_APP_NAME', 'PodaBio');
@@ -73,12 +73,12 @@ define('INSTAGRAM_GRAPH_API_URL', 'https://graph.instagram.com');
 // ============================================================================
 
 // Threads App ID
-define('THREADS_APP_ID', '1561760304877775');
+define('THREADS_APP_ID', 'YOUR_THREADS_APP_ID_HERE');
 
 // Threads App Secret
 // NOTE: This is masked in the dashboard. You'll need to retrieve it or reset it.
 // To view: Go to Meta App Dashboard > App Settings > Basic > Threads app secret > Show
-define('THREADS_APP_SECRET', ''); // TODO: Set this value from Meta Dashboard
+define('THREADS_APP_SECRET', ''); // Set this value from Meta Dashboard
 
 // Threads Display Name
 define('THREADS_DISPLAY_NAME', 'PodaBio');

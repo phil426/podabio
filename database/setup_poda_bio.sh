@@ -13,7 +13,7 @@ echo ""
 DB_HOST="srv775.hstgr.io"
 DB_NAME="u925957603_podabio"
 DB_USER="u925957603_pab"
-DB_PASS="[REDACTED]"
+DB_PASS="[REDACTED - Check secure credential storage]"
 
 echo "📊 Step 1: Importing database schema..."
 if [ -f "database/schema.sql" ]; then
