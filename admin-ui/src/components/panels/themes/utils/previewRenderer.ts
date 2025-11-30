@@ -290,12 +290,24 @@ class PreviewRenderer {
     }
 
     // Map widget shadow effect (if border_effect is 'shadow')
-    const borderEffect = allValues['widget_styles.border_effect'] ?? 'none';
+    // Check both allValues (from theme + converted uiState) and uiState directly as fallback
+    const borderEffect = allValues['widget_styles.border_effect'] ?? 
+                         (uiState?.['widget-border-effect'] as string) ?? 
+                         'none';
+    
+    // Only set shadow CSS variable if borderEffect is 'shadow'
+    // Don't set it to 'none' for other effects - let CSS fallback work
     if (borderEffect === 'shadow') {
-      // Get shadow values from widget_styles
-      const shadowDepth = allValues['widget_styles.shadow_depth'] ?? 1;
-      const shadowColor = allValues['widget_styles.shadow_color'] ?? 'rgba(15, 23, 42, 0.12)';
-      const shadowIntensity = allValues['widget_styles.shadow_intensity'] ?? 1;
+      // Get shadow values from widget_styles, with fallback to uiState directly
+      const shadowDepth = allValues['widget_styles.shadow_depth'] ?? 
+                          (uiState?.['widget-shadow-depth'] as number) ?? 
+                          1;
+      const shadowColor = allValues['widget_styles.shadow_color'] ?? 
+                          (uiState?.['widget-shadow-color'] as string) ?? 
+                          'rgba(15, 23, 42, 0.12)';
+      const shadowIntensity = allValues['widget_styles.shadow_intensity'] ?? 
+                              (uiState?.['widget-shadow-intensity'] as number) ?? 
+                              1;
       
       // Only apply shadow if depth > 0
       if (typeof shadowDepth === 'number' && shadowDepth > 0) {
@@ -335,23 +347,34 @@ class PreviewRenderer {
         // Both x and y offsets use depth for diagonal drop shadow effect
         cssVars['--widget-shadow-box-shadow'] = `${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${shadowColorRgba}`;
       } else {
+        // Shadow depth is 0 - set to none
         cssVars['--widget-shadow-box-shadow'] = 'none';
       }
-    } else {
-      // No shadow - set to none
-      cssVars['--widget-shadow-box-shadow'] = 'none';
     }
+    // Don't set shadow CSS variable for glow or none - let CSS fallback handle it
 
     // Map widget glow effect (if border_effect is 'glow')
-    if (borderEffect === 'glow') {
+    // Also check if glow values exist in uiState even if borderEffect isn't set correctly
+    const hasGlowValues = borderEffect === 'glow' || 
+                         (uiState?.['widget-glow-color'] !== undefined || 
+                          uiState?.['widget-glow-width'] !== undefined || 
+                          uiState?.['widget-glow-intensity'] !== undefined);
+    
+    if (borderEffect === 'glow' || (hasGlowValues && borderEffect !== 'shadow')) {
       // Get glow values - check both UI state format and CSS generator format
       // UI saves: glow_intensity (number 0-1), glow_color, glow_width
       // CSS generator uses: border_glow_intensity (enum 'subtle'/'pronounced'), glow_color
+      // Also check uiState directly as fallback
       const glowIntensity = allValues['widget_styles.border_glow_intensity'] ?? 
                            allValues['widget_styles.glow_intensity'] ?? 
+                           (uiState?.['widget-glow-intensity'] as number) ??
                            'subtle';
-      const glowColor = allValues['widget_styles.glow_color'] ?? '#ff00ff';
-      const glowWidth = allValues['widget_styles.glow_width'] ?? null;
+      const glowColor = allValues['widget_styles.glow_color'] ?? 
+                       (uiState?.['widget-glow-color'] as string) ?? 
+                       '#2563eb';
+      const glowWidth = allValues['widget_styles.glow_width'] ?? 
+                       (uiState?.['widget-glow-width'] as number) ?? 
+                       null;
       
       // Convert intensity to blur and opacity
       // If glowIntensity is a number (0-1), convert to enum-like behavior
@@ -404,10 +427,8 @@ class PreviewRenderer {
       
       // Generate box-shadow for glow: 0 0 blur spread color
       cssVars['--widget-glow-box-shadow'] = `0 0 ${glowBlur} ${glowSpread} ${glowColorRgba}`;
-    } else {
-      // No glow - set to none
-      cssVars['--widget-glow-box-shadow'] = 'none';
     }
+    // Don't set glow CSS variable for shadow or none - let CSS fallback handle it
 
     // Map iconography tokens (use same variable names as CSS generator)
     if (allValues['iconography_tokens.color']) {

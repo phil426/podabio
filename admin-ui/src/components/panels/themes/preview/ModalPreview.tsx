@@ -240,13 +240,86 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
       const widgetBorderRadius = cssVars['--widget-border-radius'] || '12px';
       
       // Get border effect to determine which shadow/glow to use
+      // Check CSS vars first (from previewRenderer), then uiState as fallback
       const borderEffect = (uiState['widget-border-effect'] as string) || 'none';
       let widgetBoxShadow = 'none';
       
+      // Helper function to convert hex to rgba
+      const hexToRgba = (hex: string, opacity: number): string => {
+        // Handle hex colors with or without #
+        const cleanHex = hex.startsWith('#') ? hex.slice(1) : hex;
+        if (cleanHex.length === 3) {
+          // Short hex format (e.g., #f00 -> #ff0000)
+          const r = parseInt(cleanHex[0] + cleanHex[0], 16);
+          const g = parseInt(cleanHex[1] + cleanHex[1], 16);
+          const b = parseInt(cleanHex[2] + cleanHex[2], 16);
+          return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        } else if (cleanHex.length === 6) {
+          const r = parseInt(cleanHex.slice(0, 2), 16);
+          const g = parseInt(cleanHex.slice(2, 4), 16);
+          const b = parseInt(cleanHex.slice(4, 6), 16);
+          return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
+        return hex; // Return as-is if not a valid hex color
+      };
+      
+      // Always check both shadow and glow CSS variables, and use the appropriate one based on borderEffect
+      // This ensures we get the value even if the previewRenderer logic didn't set it correctly
       if (borderEffect === 'shadow') {
         widgetBoxShadow = cssVars['--widget-shadow-box-shadow'] || 'none';
+        // If shadow CSS variable is 'none' but borderEffect is 'shadow', generate it manually as fallback
+        if (widgetBoxShadow === 'none') {
+          const shadowDepth = (uiState['widget-shadow-depth'] as number) ?? 1;
+          const shadowColor = (uiState['widget-shadow-color'] as string) ?? 'rgba(15, 23, 42, 0.12)';
+          const shadowIntensity = (uiState['widget-shadow-intensity'] as number) ?? 1;
+          
+          if (shadowDepth > 0) {
+            const shadowBlur = shadowDepth * 2;
+            let shadowColorRgba = shadowColor;
+            
+            // Convert hex to rgba if needed
+            if (typeof shadowColor === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i.test(shadowColor)) {
+              shadowColorRgba = hexToRgba(shadowColor, shadowIntensity);
+            } else if (shadowColor.startsWith('rgba')) {
+              // Adjust existing rgba opacity by intensity
+              const rgbaMatch = shadowColor.match(/rgba\(([^)]+)\)/);
+              if (rgbaMatch) {
+                const parts = rgbaMatch[1].split(',').map(p => p.trim());
+                if (parts.length === 4) {
+                  const opacity = parseFloat(parts[3]) * shadowIntensity;
+                  shadowColorRgba = `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${opacity})`;
+                }
+              }
+            } else if (shadowColor.startsWith('rgb')) {
+              // Convert rgb to rgba with intensity as opacity
+              const rgbMatch = shadowColor.match(/rgb\(([^)]+)\)/);
+              if (rgbMatch) {
+                const parts = rgbMatch[1].split(',').map(p => p.trim());
+                if (parts.length === 3) {
+                  shadowColorRgba = `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${shadowIntensity})`;
+                }
+              }
+            }
+            
+            widgetBoxShadow = `${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${shadowColorRgba}`;
+          }
+        }
       } else if (borderEffect === 'glow') {
         widgetBoxShadow = cssVars['--widget-glow-box-shadow'] || 'none';
+        // If glow CSS variable is 'none' but borderEffect is 'glow', generate it manually as fallback
+        if (widgetBoxShadow === 'none') {
+          const glowWidth = (uiState['widget-glow-width'] as number) ?? 2;
+          const glowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
+          const glowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
+          
+          // Calculate glow values
+          const glowBlur = `${glowWidth}px`;
+          const glowSpread = `${glowWidth / 2}px`;
+          const glowOpacity = 0.3 + (glowIntensity * 0.5); // 0.3 to 0.8
+          
+          const glowColorRgba = hexToRgba(String(glowColor), glowOpacity);
+          widgetBoxShadow = `0 0 ${glowBlur} ${glowSpread} ${glowColorRgba}`;
+        }
       }
       
       return (
