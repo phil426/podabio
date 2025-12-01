@@ -14,9 +14,10 @@
 .page-description {
     color: var(--body-font-color, var(--page-description-color, var(--color-text-secondary)));
     opacity: 0.9;
-    font-size: var(--page-body-size, var(--type-scale-sm, 1rem));
+    font-size: var(--page-description-size, var(--page-body-size, var(--type-scale-sm, 1rem)));
     line-height: var(--type-line-height-normal, 1.5);
-    margin-bottom: var(--page-vertical-spacing, var(--space-lg));
+    margin-top: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
+    margin-bottom: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
     font-family: var(--font-family-body);
     width: 80%;
     max-width: 100%;

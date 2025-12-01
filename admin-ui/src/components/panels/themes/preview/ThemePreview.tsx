@@ -4,10 +4,13 @@
  * No iframe - pure React component
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { DeviceMobile } from '@phosphor-icons/react';
 import { usePageSnapshot } from '../../../../api/page';
 import { normalizeImageUrl } from '../../../../api/utils';
+import { ContextMenu, type ContextMenuOption } from './ContextMenu';
+import { Pencil, Palette, Eye, EyeSlash, Trash } from '@phosphor-icons/react';
+import { sectionRegistry } from '../utils/sectionRegistry';
 import styles from './theme-preview.module.css';
 
 interface DevicePreset {
@@ -31,15 +34,133 @@ const PREVIEW_SCALE = 0.7; // 70% scale
 
 interface ThemePreviewProps {
   cssVars: Record<string, string>;
-  onHotspotClick?: (sectionId: string) => void;
+  onHotspotClick?: (sectionId: string, widgetId?: string | null) => void;
+  onEditContent?: (sectionId: string, widgetId?: string | null) => void;
+  onEditStyle?: (sectionId: string) => void;
+  onToggleVisibility?: (widgetId: string) => void;
+  onDeleteWidget?: (widgetId: string) => void;
   hotspotsVisible?: boolean;
 }
 
-export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }: ThemePreviewProps): JSX.Element {
+export function ThemePreview({ 
+  cssVars, 
+  onHotspotClick, 
+  onEditContent,
+  onEditStyle,
+  onToggleVisibility,
+  onDeleteWidget,
+  hotspotsVisible = true 
+}: ThemePreviewProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const page = snapshot?.page;
   const socialIcons = snapshot?.social_icons || [];
+  const widgets = snapshot?.widgets || [];
   const [selectedDevice, setSelectedDevice] = useState<DevicePreset>(DEVICE_PRESETS[0]);
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [dataVersion, setDataVersion] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    sectionId: string;
+    widgetId: string | null;
+  } | null>(null);
+
+  // Increment version when cssVars change to force iframe refresh
+  useEffect(() => {
+    setDataVersion((prev) => prev + 1);
+  }, [cssVars]);
+
+  // Listen for hotspot clicks from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Verify origin for security
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data?.type === 'hotspot-click' && event.data?.sectionId) {
+        const { sectionId, widgetId, x, y } = event.data;
+        
+        // Convert iframe coordinates to parent window coordinates
+        // The iframe is scaled and positioned, so we need to account for that
+        let hotspotX = x || window.innerWidth / 2;
+        let hotspotY = y || window.innerHeight / 2;
+        
+        if (iframeRef.current && x !== undefined && y !== undefined) {
+          const iframeRect = iframeRef.current.getBoundingClientRect();
+          
+          // Convert iframe coordinates to parent window coordinates
+          // The coordinates from page.php are in the iframe's viewport coordinates (unscaled)
+          // The iframe has transform: scale(PREVIEW_SCALE) applied, so we need to:
+          // 1. Scale the coordinates by PREVIEW_SCALE to get the visual position
+          // 2. Add the iframe's position in the parent window
+          hotspotX = iframeRect.left + (x * PREVIEW_SCALE);
+          hotspotY = iframeRect.top + (y * PREVIEW_SCALE);
+        }
+        
+        // Show context menu for all hotspots
+        setContextMenu({
+          x: hotspotX,
+          y: hotspotY,
+          sectionId,
+          widgetId: widgetId || null
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onHotspotClick]);
+
+
+  // Construct the public page URL with preview mode enabled
+  const publicPageUrl = useMemo(() => {
+    if (!page?.username) return null;
+    const baseUrl = window.location.origin;
+    const timestamp = Date.now();
+    return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_mode=1&preview_width=${selectedDevice.actualWidth}&_v=${dataVersion}&_t=${timestamp}`;
+  }, [page?.username, selectedDevice.actualWidth, dataVersion]);
+
+  const handleIframeLoad = () => {
+    setIframeLoading(false);
+    injectCSSVars();
+  };
+
+  // Inject CSS variables into iframe
+  const injectCSSVars = () => {
+    if (iframeRef.current?.contentWindow && cssVars) {
+      try {
+        const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
+        if (!iframeDoc) return;
+
+        const style = iframeDoc.createElement('style');
+        style.id = 'preview-css-vars';
+        style.textContent = `:root {\n${Object.entries(cssVars).map(([key, value]) => `  ${key}: ${value};`).join('\n')}\n}`;
+        
+        // Remove existing style if present
+        const existing = iframeDoc.getElementById('preview-css-vars');
+        if (existing) {
+          existing.remove();
+        }
+        
+        iframeDoc.head.appendChild(style);
+      } catch (e) {
+        // Cross-origin or other error - ignore
+        console.warn('Could not inject CSS into iframe:', e);
+      }
+    }
+  };
+
+  // Inject CSS vars when they change (after iframe loads)
+  useEffect(() => {
+    if (!iframeLoading) {
+      injectCSSVars();
+    }
+  }, [cssVars, iframeLoading]);
 
   // Decode HTML entities in text
   const decodeHtmlEntities = (text: string): string => {
@@ -238,18 +359,49 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
         </div>
       </div>
 
-      <div className={styles.previewWrapper}>
+      <div className={styles.previewWrapper} ref={previewWrapperRef}>
         <div 
           className={styles.previewPhone} 
           style={{
-            ...phoneStyle,
-            ...(cssVars['--page-background-animate'] === 'true' && {
-              backgroundSize: '200% 200%',
-              animation: 'gradientShift 15s ease infinite'
-            } as React.CSSProperties)
+            width: `${scaledDimensions.width}px`,
+            height: `${scaledDimensions.height}px`,
+            position: 'relative'
           }}
         >
-          {/* Content wrapper that scales everything proportionally */}
+          {publicPageUrl && (
+            <iframe
+              ref={iframeRef}
+              src={publicPageUrl}
+              className={styles.previewIframe}
+              title="Live page preview"
+              onLoad={handleIframeLoad}
+              sandbox="allow-same-origin allow-scripts allow-forms"
+              style={{
+                opacity: iframeLoading ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out',
+                width: `${selectedDevice.actualWidth}px`,
+                height: `${selectedDevice.actualHeight}px`,
+                transform: `scale(${PREVIEW_SCALE})`,
+                transformOrigin: 'top left',
+                border: 'none',
+                pointerEvents: hotspotsVisible ? 'auto' : 'none'
+              }}
+            />
+          )}
+          {iframeLoading && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#666',
+              fontSize: '14px'
+            }}>
+              Loading preview...
+            </div>
+          )}
+          {/* Legacy React content - keeping for fallback or can be removed */}
+          {false && (
           <div className={styles.contentWrapper} style={contentWrapperStyle}>
             {/* Background Hotspot - positioned in top left */}
             {hotspotsVisible && (
@@ -373,7 +525,8 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
                 fontSize: cssVars['--page-description-size'] || '16px',
                 fontWeight: cssVars['--page-bio-weight'] || '400',
                 fontStyle: cssVars['--page-bio-style'] || 'normal',
-                lineHeight: cssVars['--page-bio-spacing'] || '1.5'
+                marginTop: cssVars['--page-bio-spacing'] ? `calc(${cssVars['--page-bio-spacing']} / 100 * 24px)` : undefined,
+                marginBottom: cssVars['--page-bio-spacing'] ? `calc(${cssVars['--page-bio-spacing']} / 100 * 24px)` : undefined
               };
               
               if (isGradient) {
@@ -493,10 +646,114 @@ export function ThemePreview({ cssVars, onHotspotClick, hotspotsVisible = true }
                 </p>
               </div>
             </div>
+            </div>
           </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          previewContainerRef={previewWrapperRef}
+          widgetTitle={contextMenu.widgetId ? widgets.find(w => String(w.id) === contextMenu.widgetId)?.title : undefined}
+          options={(() => {
+            const options: ContextMenuOption[] = [];
+            
+            // Determine if this hotspot has content editing available
+            const hasContentEditing = contextMenu.widgetId || 
+              ['profile-image', 'page-title', 'page-description', 'podcast-player-bar', 'social-icons'].includes(contextMenu.sectionId);
+            
+            if (contextMenu.widgetId) {
+              const widget = widgets.find(w => String(w.id) === contextMenu.widgetId);
+              const isVisible = widget?.is_active !== 0;
+              
+              // Widget hotspots - show both content and style editing, plus layer actions
+              options.push(
+                {
+                  label: 'Edit Content',
+                  icon: <Pencil size={16} weight="regular" />,
+                  ariaLabel: `Edit content for ${widget?.title || 'widget'}`,
+                  action: () => {
+                    if (onEditContent) {
+                      onEditContent(contextMenu.sectionId, contextMenu.widgetId);
+                    }
+                  }
+                },
+                {
+                  label: 'Edit Style',
+                  icon: <Palette size={16} weight="regular" />,
+                  ariaLabel: `Edit style for ${contextMenu.sectionId === 'widget-settings' ? 'widget settings' : 'widget text'}`,
+                  action: () => {
+                    if (onEditStyle) {
+                      onEditStyle(contextMenu.sectionId);
+                    } else if (onHotspotClick) {
+                      onHotspotClick(contextMenu.sectionId, contextMenu.widgetId);
+                    }
+                  }
+                },
+                {
+                  label: isVisible ? 'Hide Widget' : 'Show Widget',
+                  icon: isVisible ? <EyeSlash size={16} weight="regular" /> : <Eye size={16} weight="regular" />,
+                  ariaLabel: isVisible ? `Hide ${widget?.title || 'widget'}` : `Show ${widget?.title || 'widget'}`,
+                  action: () => {
+                    if (contextMenu.widgetId && onToggleVisibility) {
+                      onToggleVisibility(contextMenu.widgetId);
+                    }
+                  }
+                },
+                {
+                  label: 'Delete Widget',
+                  icon: <Trash size={16} weight="regular" />,
+                  ariaLabel: `Delete ${widget?.title || 'widget'}`,
+                  action: () => {
+                    if (contextMenu.widgetId && onDeleteWidget) {
+                      onDeleteWidget(contextMenu.widgetId);
+                    }
+                  }
+                }
+              );
+            } else {
+              // Non-widget hotspot - show content and style editing if available
+              const section = sectionRegistry.get(contextMenu.sectionId);
+              const sectionTitle = section?.title || contextMenu.sectionId;
+              
+              // Add content editing if available
+              if (hasContentEditing) {
+                options.push({
+                  label: 'Edit Content',
+                  icon: <Pencil size={16} weight="regular" />,
+                  ariaLabel: `Edit content for ${sectionTitle}`,
+                  action: () => {
+                    if (onEditContent) {
+                      onEditContent(contextMenu.sectionId, null);
+                    }
+                  }
+                });
+              }
+              
+              // Always show style editing
+              options.push({
+                label: 'Edit Style',
+                icon: <Palette size={16} weight="regular" />,
+                ariaLabel: `Edit style for ${sectionTitle}`,
+                action: () => {
+                  if (onEditStyle) {
+                    onEditStyle(contextMenu.sectionId);
+                  } else if (onHotspotClick) {
+                    onHotspotClick(contextMenu.sectionId, null);
+                  }
+                }
+              });
+            }
+            
+            return options;
+          })()}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }

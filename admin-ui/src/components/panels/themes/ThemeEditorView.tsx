@@ -10,6 +10,11 @@ import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import { ThemePreview } from './preview/ThemePreview';
 import { ThemePropertyDrawer } from './ThemePropertyDrawer';
+import { ContentEditorModal, type ContentEditorType } from './ContentEditorModal';
+import { useUpdateWidgetMutation, useDeleteWidgetMutation } from '../../../api/widgets';
+import { usePageSnapshot } from '../../../api/page';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../api/utils';
 import styles from './theme-editor-view.module.css';
 
 interface StateChange {
@@ -41,6 +46,7 @@ export function ThemeEditorView({
   activeColor
 }: ThemeEditorViewProps): JSX.Element {
   const [openModalSection, setOpenModalSection] = useState<string | null>(null);
+  const [contentEditor, setContentEditor] = useState<ContentEditorType | null>(null);
   const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(true);
   const [undoStack, setUndoStack] = useState<StateChange[]>([]);
   const [redoStack, setRedoStack] = useState<StateChange[]>([]);
@@ -48,6 +54,13 @@ export function ThemeEditorView({
   const isUndoRedoRef = useRef<boolean>(false);
   const changeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingChangesRef = useRef<StateChange[]>([]);
+  
+  // Widget mutations for layer actions
+  const { data: snapshot } = usePageSnapshot();
+  const widgets = snapshot?.widgets || [];
+  const updateWidgetMutation = useUpdateWidgetMutation();
+  const deleteWidgetMutation = useDeleteWidgetMutation();
+  const queryClient = useQueryClient();
 
   // Track changes to uiState for undo/redo
   useEffect(() => {
@@ -101,13 +114,99 @@ export function ThemeEditorView({
     previousUiStateRef.current = { ...uiState };
   }, [uiState]);
 
-  const handleHotspotClick = (sectionId: string) => {
-    // Open the modal with the relevant property panel
+  const handleHotspotClick = (sectionId: string, widgetId?: string | null) => {
+    // For non-widget hotspots, open style editor directly
+    if (!widgetId) {
+      setOpenModalSection(sectionId);
+    }
+    // For widget hotspots, context menu will handle the action
+  };
+
+  const handleEditContent = (sectionId: string, widgetId?: string | null) => {
+    // Close style editor if open
+    setOpenModalSection(null);
+    
+    // Map section ID to content editor type
+    let editor: ContentEditorType | null = null;
+    
+    if (widgetId) {
+      // Widget content editing
+      editor = { type: 'widget', widgetId };
+    } else {
+      // Non-widget content editing
+      switch (sectionId) {
+        case 'profile-image':
+          editor = { type: 'profile', focus: 'image' };
+          break;
+        case 'page-title':
+          editor = { type: 'profile', focus: 'profile' };
+          break;
+        case 'page-description':
+          editor = { type: 'profile', focus: 'bio' };
+          break;
+        case 'podcast-player-bar':
+          editor = { type: 'podcast-player' };
+          break;
+        case 'social-icons':
+          editor = { type: 'social-icons' };
+          break;
+        default:
+          // No content editor for this section
+          return;
+      }
+    }
+    
+    setContentEditor(editor);
+  };
+
+  const handleEditStyle = (sectionId: string) => {
+    // Close content editor if open
+    setContentEditor(null);
+    // Open style editor
     setOpenModalSection(sectionId);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseStyleModal = () => {
     setOpenModalSection(null);
+  };
+
+  const handleCloseContentModal = () => {
+    setContentEditor(null);
+  };
+
+  const handleToggleVisibility = (widgetId: string) => {
+    const widget = widgets.find((w) => String(w.id) === widgetId);
+    if (!widget) return;
+
+    updateWidgetMutation.mutate(
+      { widget_id: widgetId, is_active: widget.is_active ? '0' : '1' },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+        }
+      }
+    );
+  };
+
+  const handleDeleteWidget = (widgetId: string) => {
+    const widget = widgets.find((w) => String(w.id) === widgetId);
+    if (!widget) return;
+
+    const confirmDelete = window.confirm(`Delete "${widget.title}"? This cannot be undone.`);
+    if (!confirmDelete) return;
+
+    deleteWidgetMutation.mutate(
+      { widget_id: widgetId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+          // Close content editor if it was open for this widget
+          if (contentEditor?.type === 'widget' && contentEditor.widgetId === widgetId) {
+            setContentEditor(null);
+          }
+        }
+      }
+    );
   };
 
   const toggleHotspots = () => {
@@ -311,19 +410,30 @@ export function ThemeEditorView({
         <ThemePreview 
           cssVars={previewCSSVars} 
           onHotspotClick={handleHotspotClick}
+          onEditContent={handleEditContent}
+          onEditStyle={handleEditStyle}
+          onToggleVisibility={handleToggleVisibility}
+          onDeleteWidget={handleDeleteWidget}
           hotspotsVisible={hotspotsVisible}
         />
       </div>
 
-      {/* Property Modal - Opens when hotspot is clicked */}
+      {/* Style Editor Modal - Opens when style hotspot is clicked */}
       <ThemePropertyDrawer
         isOpen={openModalSection !== null}
         sectionId={openModalSection}
-        onClose={handleCloseModal}
+        onClose={handleCloseStyleModal}
         theme={theme}
         uiState={uiState}
         onFieldChange={onFieldChange}
         activeColor={activeColor}
+      />
+
+      {/* Content Editor Modal - Opens when content edit is clicked */}
+      <ContentEditorModal
+        activeColor={activeColor}
+        editor={contentEditor}
+        onClose={handleCloseContentModal}
       />
     </div>
   );

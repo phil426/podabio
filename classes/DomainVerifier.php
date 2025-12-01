@@ -2,6 +2,9 @@
 /**
  * Domain Verifier Class
  * PodaBio - Verifies DNS configuration for custom domains
+ * 
+ * NOTE: Custom domain functionality is currently ON HOLD - using poda.bio URLs only
+ * This class is kept for future use when custom domains are re-enabled
  */
 
 class DomainVerifier {

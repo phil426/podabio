@@ -353,7 +353,7 @@ fieldRegistry.register({
   tokenPath: 'spacing_tokens.page_spacing',
   section: 'page-customization',
   defaultValue: 100,
-  min: 50,
+  min: 0,
   max: 200,
   unit: '%',
   implemented: true

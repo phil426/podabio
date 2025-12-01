@@ -432,6 +432,7 @@ switch ($action) {
             }
         }
         
+        // NOTE: Custom domain functionality is currently ON HOLD - using poda.bio URLs only
         // Handle custom domain
         if (isset($_POST['custom_domain'])) {
             $customDomain = trim(sanitizeInput($_POST['custom_domain']));

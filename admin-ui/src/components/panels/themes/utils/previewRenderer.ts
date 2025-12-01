@@ -116,10 +116,14 @@ class PreviewRenderer {
       cssVars['--page-description-color'] = String(allValues['typography_tokens.color.body']);
     }
     if (allValues['typography_tokens.color.widget_heading']) {
-      cssVars['--widget-heading-color'] = String(allValues['typography_tokens.color.widget_heading']);
+      const headingColor = String(allValues['typography_tokens.color.widget_heading']);
+      cssVars['--widget-heading-color'] = headingColor;
+      cssVars['--widget-heading-font-color'] = headingColor; // Match ThemeCSSGenerator
     }
     if (allValues['typography_tokens.color.widget_body']) {
-      cssVars['--widget-body-color'] = String(allValues['typography_tokens.color.widget_body']);
+      const bodyColor = String(allValues['typography_tokens.color.widget_body']);
+      cssVars['--widget-body-color'] = bodyColor;
+      cssVars['--widget-body-font-color'] = bodyColor; // Match ThemeCSSGenerator
     }
     if (allValues['typography_tokens.font.heading']) {
       const fontName = String(allValues['typography_tokens.font.heading']);
@@ -132,15 +136,27 @@ class PreviewRenderer {
     if (allValues['typography_tokens.scale.heading']) {
       cssVars['--page-title-size'] = `${allValues['typography_tokens.scale.heading']}px`;
     }
-    if (allValues['typography_tokens.scale.body']) {
-      cssVars['--page-description-size'] = `${allValues['typography_tokens.scale.body']}px`;
+    // Page description/bio size - check uiState first, then allValues
+    const pageBioSize = uiState?.['page-bio-size'] ?? allValues['typography_tokens.scale.body'];
+    if (pageBioSize !== undefined) {
+      const sizeValue = typeof pageBioSize === 'number' ? pageBioSize : parseFloat(String(pageBioSize));
+      if (!isNaN(sizeValue)) {
+        cssVars['--page-description-size'] = `${sizeValue}px`;
+      }
     }
     // Page bio color is already mapped via typography_tokens.color.body above
     if (allValues['typography_tokens.line_height.heading']) {
       cssVars['--page-title-spacing'] = String(allValues['typography_tokens.line_height.heading']);
     }
-    if (allValues['typography_tokens.line_height.body']) {
-      cssVars['--page-bio-spacing'] = String(allValues['typography_tokens.line_height.body']);
+    // Page description/bio spacing - check uiState first, then allValues from spacing_tokens
+    // This controls margin above and below the bio text, not line-height
+    const pageBioSpacing = uiState?.['page-bio-spacing'] ?? allValues['spacing_tokens.page_spacing'];
+    if (pageBioSpacing !== undefined) {
+      const spacingValue = typeof pageBioSpacing === 'number' ? pageBioSpacing : parseFloat(String(pageBioSpacing));
+      if (!isNaN(spacingValue)) {
+        // Convert percentage to a multiplier for margin (100% = 1x base spacing)
+        cssVars['--page-bio-spacing'] = `${spacingValue}%`;
+      }
     }
     
     // Map font weights and styles
@@ -177,20 +193,28 @@ class PreviewRenderer {
       }
     }
     
-    // Map widget text tokens
+    // Map widget text tokens - use variable names that match ThemeCSSGenerator
     if (allValues['typography_tokens.font.widget_heading']) {
       const fontName = String(allValues['typography_tokens.font.widget_heading']);
       cssVars['--widget-heading-font'] = `'${fontName}', sans-serif`;
+      cssVars['--widget-primary-font'] = `'${fontName}', sans-serif`; // Match ThemeCSSGenerator
     }
     if (allValues['typography_tokens.font.widget_body']) {
       const fontName = String(allValues['typography_tokens.font.widget_body']);
       cssVars['--widget-body-font'] = `'${fontName}', sans-serif`;
+      cssVars['--widget-secondary-font'] = `'${fontName}', sans-serif`; // Match ThemeCSSGenerator
     }
     if (allValues['typography_tokens.scale.widget_heading']) {
-      cssVars['--widget-heading-size'] = `${allValues['typography_tokens.scale.widget_heading']}px`;
+      const size = Number(allValues['typography_tokens.scale.widget_heading']);
+      cssVars['--widget-heading-size'] = `${size}px`;
+      // Convert px to rem (assuming 16px base)
+      cssVars['--type-scale-md'] = `${size / 16}rem`; // Match ThemeCSSGenerator scale
     }
     if (allValues['typography_tokens.scale.widget_body']) {
-      cssVars['--widget-body-size'] = `${allValues['typography_tokens.scale.widget_body']}px`;
+      const size = Number(allValues['typography_tokens.scale.widget_body']);
+      cssVars['--widget-body-size'] = `${size}px`;
+      // Convert px to rem (assuming 16px base)
+      cssVars['--type-scale-sm'] = `${size / 16}rem`; // Match ThemeCSSGenerator scale
     }
     if (allValues['typography_tokens.line_height.widget_heading']) {
       cssVars['--widget-heading-spacing'] = String(allValues['typography_tokens.line_height.widget_heading']);
@@ -473,9 +497,13 @@ class PreviewRenderer {
     cssVars['--profile-image-spacing-bottom'] = `${verticalSpacingNum}px`;
 
     // Map widget border radius (rounding)
-    if (allValues['shape_tokens.corner.radius']) {
-      const radius = allValues['shape_tokens.corner.radius'];
-      cssVars['--widget-border-radius'] = `${radius}px`;
+    // Check uiState first (unsaved changes), then allValues
+    const widgetRounding = uiState?.['widget-rounding'] ?? allValues['shape_tokens.corner.radius'];
+    if (widgetRounding !== undefined) {
+      const radiusValue = typeof widgetRounding === 'number' ? widgetRounding : parseFloat(String(widgetRounding));
+      if (!isNaN(radiusValue)) {
+        cssVars['--widget-border-radius'] = `${radiusValue}px`;
+      }
     } else {
       // Default fallback
       cssVars['--widget-border-radius'] = '12px';

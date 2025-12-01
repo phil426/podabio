@@ -115,6 +115,15 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
       const path = field.tokenPath.replace('spacing_tokens.', '');
       if (!dbState.spacing_tokens) dbState.spacing_tokens = {};
       setNestedValue(dbState.spacing_tokens, path, value);
+    } else if (field.tokenPath.startsWith('shape_tokens.')) {
+      const path = field.tokenPath.replace('shape_tokens.', '');
+      if (!dbState.shape_tokens) dbState.shape_tokens = {};
+      // Format corner.radius with units if it's a number
+      let formattedValue = value;
+      if (path === 'corner.radius' && typeof value === 'number') {
+        formattedValue = `${value}px`;
+      }
+      setNestedValue(dbState.shape_tokens, path, formattedValue);
     } else if (field.tokenPath.startsWith('podcast_player.')) {
       // Store podcast player fields in color_tokens
       const path = field.tokenPath.replace('podcast_player.', '');
@@ -316,6 +325,14 @@ function getNestedValue(obj: Record<string, unknown> | null | undefined, path: s
     const subPath = path.replace('spacing_tokens.', '');
     return getNestedValue(spacingTokens as Record<string, unknown>, subPath);
   }
+  if (path.startsWith('shape_tokens.')) {
+    const shapeTokens = typeof obj.shape_tokens === 'string'
+      ? JSON.parse(obj.shape_tokens)
+      : obj.shape_tokens;
+    if (!shapeTokens || typeof shapeTokens !== 'object') return undefined;
+    const subPath = path.replace('shape_tokens.', '');
+    return getNestedValue(shapeTokens as Record<string, unknown>, subPath);
+  }
 
   // Default: treat as nested path
   const parts = path.split('.');
@@ -436,6 +453,13 @@ export function extractTokenValues(theme: ThemeRecord | null): Record<string, un
       ? JSON.parse(theme.spacing_tokens)
       : theme.spacing_tokens;
     Object.assign(tokens, flattenObject(parsed, 'spacing_tokens'));
+  }
+
+  if (theme.shape_tokens) {
+    const parsed = typeof theme.shape_tokens === 'string'
+      ? JSON.parse(theme.shape_tokens)
+      : theme.shape_tokens;
+    Object.assign(tokens, flattenObject(parsed, 'shape_tokens'));
   }
 
   return tokens;

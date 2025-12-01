@@ -275,16 +275,24 @@ class ThemeCSSGenerator {
             $spacing = (floatval($baseSpacing) * $multiplier) . 'rem';
         }
         
-        // Get border radius from shape_tokens.corner - NO LEGACY FALLBACKS
-        // CRITICAL: We need to find which corner value is the "active" one
-        // The theme saves only ONE corner value (the active one), but mergeTokens keeps all defaults
-        // So we need to check which corner value was explicitly set by the theme
+        // Get border radius from shape_tokens.corner.radius (widget-rounding field) or shape_tokens.corner
+        // Priority: shape_tokens.corner.radius (from widget-rounding field) > shape_tokens.corner (legacy)
         $borderRadiusValue = '0.75rem'; // Default rounded (md)
-        if (!empty($this->shapeTokens['corner']) && is_array($this->shapeTokens['corner'])) {
-            // If theme has no corner, defaults are used (which have all values)
-            // So we need to handle both cases:
-            // 1. Theme has corner: only one value exists, use it
-            // 2. Theme has no corner: all default values exist, use 'md' (rounded) as default
+        
+        // Priority 1: Check for shape_tokens.corner.radius (from widget-rounding field)
+        if (!empty($this->shapeTokens['corner']['radius'])) {
+            $radiusValue = $this->shapeTokens['corner']['radius'];
+            // Ensure it has units if it's a number
+            if (is_numeric($radiusValue) && $radiusValue > 0) {
+                $borderRadiusValue = $radiusValue . 'px';
+            } else {
+                $borderRadiusValue = $radiusValue;
+            }
+        } elseif (!empty($this->shapeTokens['corner']) && is_array($this->shapeTokens['corner'])) {
+            // Priority 2: Check shape_tokens.corner (legacy enum values: md, lg, sm, etc.)
+            // CRITICAL: We need to find which corner value is the "active" one
+            // The theme saves only ONE corner value (the active one), but mergeTokens keeps all defaults
+            // So we need to check which corner value was explicitly set by the theme
             $cornerKeys = array_keys($this->shapeTokens['corner']);
             $cornerValues = array_values($this->shapeTokens['corner']);
             
@@ -685,6 +693,16 @@ class ThemeCSSGenerator {
         // Text colors with guaranteed contrast
         $css .= "    --page-title-color: " . h($pageTitleColor) . ";\n";
         $css .= "    --page-description-color: " . h($pageDescriptionColor) . ";\n";
+        
+        // Page description/bio size from typography_tokens.scale.body
+        if (!empty($this->typographyTokens['scale']['body'])) {
+            $css .= "    --page-description-size: " . h($this->typographyTokens['scale']['body']) . "px;\n";
+        }
+        
+        // Page description/bio spacing from spacing_tokens.page_spacing (controls margin above/below)
+        if (!empty($this->spacingTokens['page_spacing'])) {
+            $css .= "    --page-bio-spacing: " . h($this->spacingTokens['page_spacing']) . "%;\n";
+        }
         $css .= "    --social-icon-color: " . h($socialIconColor) . ";\n";
         
         // Iconography tokens - Always generate variables (use fallbacks if not set)
@@ -1583,10 +1601,11 @@ class ThemeCSSGenerator {
         // Add glow animation CSS and styles if glow effect is enabled
         $css .= $this->generateGlowAnimationCSS();
         
-        // CRITICAL: Re-apply widget-item background AFTER spatial effects to ensure it's not overridden
-        // This ensures the theme widget background always takes precedence
+        // CRITICAL: Re-apply widget-item background and border-radius AFTER spatial effects to ensure it's not overridden
+        // This ensures the theme widget background and border-radius always take precedence
         $css .= ".widget-item {\n";
         $css .= "    background: " . h($this->resolvedWidgetBackgroundValue) . " !important;\n";
+        $css .= "    border-radius: " . h($this->resolvedBorderRadius) . " !important;\n";
         $css .= "}\n\n";
         
         // CRITICAL: Re-apply shadow effect styles AFTER background (similar to glow)
@@ -1853,6 +1872,15 @@ class ThemeCSSGenerator {
         // Apply direct font size if typography_tokens.size.body is set, otherwise use scale
         if (!empty($this->typographyTokens['size']['body'])) {
             $css .= "    font-size: var(--page-body-size, " . h($this->typographyTokens['size']['body']) . "px) !important;\n";
+        }
+        // Apply font size from typography_tokens.scale.body if available
+        if (!empty($this->typographyTokens['scale']['body'])) {
+            $css .= "    font-size: var(--page-description-size, " . h($this->typographyTokens['scale']['body']) . "px) !important;\n";
+        }
+        // Apply bio spacing (margin above and below) from spacing_tokens.page_spacing
+        if (!empty($this->spacingTokens['page_spacing'])) {
+            $pageSpacing = $this->spacingTokens['page_spacing'];
+            $css .= "    --page-bio-spacing: " . h($pageSpacing) . "%;\n";
         }
         $css .= "}\n\n";
         

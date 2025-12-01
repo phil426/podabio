@@ -38,24 +38,25 @@ if (!$page || !$page['is_active']) {
 }
 
 // Generate page URL - match the logic from page.php
+// NOTE: Custom domain functionality is currently ON HOLD - using poda.bio URLs only
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $currentDomain = $_SERVER['HTTP_HOST'];
 $mainDomains = ['getphily.com', 'www.getphily.com', 'poda.bio', 'www.poda.bio', 'localhost', '127.0.0.1'];
 
-// Check if page has a custom domain
-if (!empty($page['custom_domain'])) {
-    // Use custom domain
-    $pageUrl = $protocol . '://' . $page['custom_domain'];
-} elseif (!in_array(strtolower($currentDomain), $mainDomains)) {
-    // Current domain is a custom domain - use it
-    $pageUrl = $protocol . '://' . $currentDomain;
-} else {
+// Custom domain check disabled - always use poda.bio URLs
+// if (!empty($page['custom_domain'])) {
+//     // Use custom domain
+//     $pageUrl = $protocol . '://' . $page['custom_domain'];
+// } elseif (!in_array(strtolower($currentDomain), $mainDomains)) {
+//     // Current domain is a custom domain - use it
+//     $pageUrl = $protocol . '://' . $currentDomain;
+// } else {
     // Use username with main domain
     $mainDomain = in_array(strtolower($currentDomain), ['localhost', '127.0.0.1']) 
         ? $currentDomain 
         : 'poda.bio';
     $pageUrl = $protocol . '://' . $mainDomain . '/' . $page['username'];
-}
+// }
 
 // Check cache directory
 $cacheDir = __DIR__ . '/../uploads/qr-codes';

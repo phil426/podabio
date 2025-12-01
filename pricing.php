@@ -238,7 +238,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     <li>Custom colors & fonts</li>
                     <li>Advanced analytics (referrers, device data, insights)</li>
                     <li>Email subscription integration (6 providers)</li>
-                    <li>Custom domain support</li>
+                    <!-- Custom domain support - ON HOLD -->
                     <li>Priority support</li>
                     <li>No PodaBio branding</li>
                 </ul>
@@ -320,7 +320,7 @@ require_once __DIR__ . '/includes/helpers.php';
                             <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Custom Domain</td>
+                            <!-- Custom Domain - ON HOLD -->
                             <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
                             <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
                             <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
@@ -358,7 +358,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 </div>
                 <div style="background: var(--poda-bg-secondary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin-bottom: 1rem;">
                     <h3 style="margin-bottom: 0.75rem; color: var(--poda-text-primary);">What's included in Pro?</h3>
-                    <p style="color: var(--poda-text-secondary); line-height: 1.6;">Pro includes unlimited links, all 49+ themes, custom colors & fonts, advanced analytics, email subscriptions, custom domain support, and priority support.</p>
+                    <p style="color: var(--poda-text-secondary); line-height: 1.6;">Pro includes unlimited links, all 49+ themes, custom colors & fonts, advanced analytics, email subscriptions, and priority support.</p>
                 </div>
                 <div style="background: var(--poda-bg-secondary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin-bottom: 1rem;">
                     <h3 style="margin-bottom: 0.75rem; color: var(--poda-text-primary);">When will Enterprise be available?</h3>
@@ -478,6 +478,20 @@ require_once __DIR__ . '/includes/helpers.php';
             });
         })();
     </script>
+    
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 </html>
 

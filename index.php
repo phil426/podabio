@@ -1218,7 +1218,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The minimalist design philosophy really shines. My content is the star, not the platform. Plus, the custom domain support gives me the professional look I need."</p>
+                    <p class="testimonial-text">"The minimalist design philosophy really shines. My content is the star, not the platform. The clean poda.bio URL gives me the professional look I need."</p>
                 </div>
                 
                 <!-- Testimonial 5 -->
@@ -1335,7 +1335,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The free plan got me started, and I quickly upgraded to Pro. The value is incredible. All 49+ themes give me so many options to showcase my brand. Plus, the custom domain makes me look like a major player even though I'm just starting out!"</p>
+                    <p class="testimonial-text">"The free plan got me started, and I quickly upgraded to Pro. The value is incredible. All 49+ themes give me so many options to showcase my brand. The clean poda.bio URL makes me look professional even though I'm just starting out!"</p>
                 </div>
                 
                 <!-- Testimonial 14 -->
@@ -2094,6 +2094,20 @@ require_once __DIR__ . '/includes/helpers.php';
         })();
         
     </script>
+    
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 </html>
 

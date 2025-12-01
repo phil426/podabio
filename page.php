@@ -25,7 +25,10 @@ if (isset($_GET['preview_width']) || isset($_GET['username'])) {
     header("ETag: \"$etag\"");
 }
 
+// NOTE: Custom domain functionality is currently ON HOLD - using poda.bio URLs only
 // Check if request is for custom domain or username
+// NOTE: Custom domain feature is currently ON HOLD - we're sticking with poda.bio URLs for now
+// The code below still supports custom domains for backward compatibility, but new custom domains are not being set up
 $domain = $_SERVER['HTTP_HOST'];
 $username = $_GET['username'] ?? '';
 
@@ -51,6 +54,7 @@ $page = null;
 $mainDomains = ['getphily.com', 'www.getphily.com', 'poda.bio', 'www.poda.bio', 'localhost', '127.0.0.1'];
 
 // First check if this is a custom domain (not our main domains)
+// NOTE: Custom domain feature is ON HOLD - this is for backward compatibility only
 if (!in_array(strtolower($domain), $mainDomains)) {
     // Try custom domain first
     $page = $pageClass->getByCustomDomain(strtolower($domain));
@@ -66,9 +70,33 @@ if (!$page || !$page['is_active']) {
     die('Page not found');
 }
 
-// Track page view
-$analytics = new Analytics();
-$analytics->trackView($page['id']);
+// SECURITY: Check if preview mode is requested
+$previewMode = isset($_GET['preview_mode']) && $_GET['preview_mode'] == '1';
+
+if ($previewMode) {
+    // Require authentication
+    require_once __DIR__ . '/includes/auth.php';
+    requireAuth();
+    
+    // Verify user owns this page
+    $currentUserId = getUserId();
+    if (!$currentUserId || $page['user_id'] != $currentUserId) {
+        // User doesn't own this page - deny preview mode
+        http_response_code(403);
+        die('Access denied: You can only preview your own page');
+    }
+    
+    // User is authenticated and owns the page - enable preview mode
+    $enablePreviewMode = true;
+} else {
+    $enablePreviewMode = false;
+}
+
+// Track page view (only if not in preview mode to avoid inflating analytics)
+if (!$previewMode) {
+    $analytics = new Analytics();
+    $analytics->trackView($page['id']);
+}
 
 // Get page data
 require_once __DIR__ . '/classes/WidgetRenderer.php';
@@ -148,6 +176,96 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <meta name="twitter:card" content="summary_large_image">
     
     <?php echo $cssGenerator->generateCompleteStyleBlock(); ?>
+    
+    <?php if ($enablePreviewMode): ?>
+    <!-- Preview Mode: Disable interactions except hotspots -->
+    <style>
+        /* Disable all interactions except hotspots */
+        body.preview-mode a:not([data-hotspot]):not([data-hotspot-text]),
+        body.preview-mode button:not([data-hotspot]):not([data-hotspot-text]),
+        body.preview-mode [onclick]:not([data-hotspot]):not([data-hotspot-text]),
+        body.preview-mode [href]:not([data-hotspot]):not([data-hotspot-text]) {
+            pointer-events: none !important;
+            cursor: default !important;
+        }
+        /* Enable hotspot interactions */
+        body.preview-mode [data-hotspot],
+        body.preview-mode [data-hotspot-text] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            position: relative;
+        }
+        /* Visual indicator for hotspots - pulsing glowing orb */
+        body.preview-mode [data-hotspot]::after,
+        body.preview-mode [data-hotspot-text]::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 1);
+            border-radius: 50%;
+            border: 2px solid #00FF7F;
+            box-shadow: 
+                inset 0 0 0 1px rgba(0, 0, 0, 0.8),
+                0 0 12px #00FF7F,
+                0 0 24px rgba(0, 255, 127, 0.8),
+                0 0 36px rgba(0, 255, 127, 0.6),
+                0 0 0 2px rgba(255, 255, 255, 1);
+            pointer-events: auto;
+            z-index: 100000;
+            opacity: 1;
+            animation: pulseGlow 2s ease-in-out infinite;
+            top: 8px;
+            right: 8px;
+        }
+        /* Position hotspot indicators for different elements */
+        body.preview-mode .page-background-hotspot[data-hotspot]::after {
+            top: 0;
+            left: 0;
+            right: auto;
+        }
+        body.preview-mode .profile-image-container[data-hotspot]::after {
+            top: 0;
+            right: 0;
+        }
+        body.preview-mode .page-title[data-hotspot]::after,
+        body.preview-mode .page-description[data-hotspot]::after {
+            top: 0;
+            right: -24px;
+        }
+        /* Widget hotspot indicators - use same green styling as others */
+        body.preview-mode .widget-wrapper[data-hotspot]::after {
+            top: 8px;
+            right: 8px;
+        }
+        body.preview-mode [data-hotspot-text]::after {
+            top: 8px;
+            left: 8px;
+            right: auto;
+        }
+        body.preview-mode .podcast-top-banner[data-hotspot]::after,
+        body.preview-mode .social-icons[data-hotspot]::after {
+            top: 8px;
+            right: 8px;
+        }
+        /* Hover effect for hotspots */
+        body.preview-mode [data-hotspot]:hover,
+        body.preview-mode [data-hotspot-text]:hover {
+            outline: 2px dashed rgba(0, 255, 127, 0.5);
+            outline-offset: 2px;
+        }
+        @keyframes pulseGlow {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+    </style>
+    <?php endif; ?>
     
     <!-- Extracted CSS files (must load after ThemeCSSGenerator output) -->
     <link rel="stylesheet" href="/css/profile.css?v=<?php echo filemtime(__DIR__ . '/css/profile.css'); ?>">
@@ -462,14 +580,14 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
         }
     </style>
 </head>
-<body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass); ?>">
+<body class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass . ($enablePreviewMode ? ' preview-mode' : '')); ?>">
     <!-- Mobile: Normal single column layout -->
     <div class="mobile-page-container">
         <div class="page-container">
         <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
         <div class="profile-header">
             <?php if ($page['profile_image']): ?>
-                <div class="profile-image-container" data-qr-url="/api/qr-code.php?username=<?php echo h($page['username']); ?>">
+                <div class="profile-image-container" data-qr-url="/api/qr-code.php?username=<?php echo h($page['username']); ?>"<?php if ($enablePreviewMode): ?> data-hotspot="profile-image"<?php endif; ?>>
                     <img 
                         src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" 
                         alt="Profile" 
@@ -520,14 +638,14 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 $nameContent = nl2br($nameContent);
                 $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
             ?>
-                <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>" style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);"><?php echo $nameContent; ?></h1>
+                <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>" style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-title"<?php endif; ?>><?php echo $nameContent; ?></h1>
             <?php elseif ($page['username']): 
                 $effectClass = '';
                 if (!empty($page['page_name_effect'])) {
                     $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
                 }
             ?>
-                <h1 class="page-title <?php echo $effectClass; ?>" style="font-family: var(--font-family-heading, inherit);"><?php echo h($page['username']); ?></h1>
+                <h1 class="page-title <?php echo $effectClass; ?>" style="font-family: var(--font-family-heading, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-title"<?php endif; ?>><?php echo h($page['username']); ?></h1>
             <?php endif; ?>
             
             <?php if ($page['podcast_description']): 
@@ -568,14 +686,19 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 $bioContent = nl2br($bioContent);
                 $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
             ?>
-                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"><?php echo $bioContent; ?></p>
+                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-description"<?php endif; ?>><?php echo $bioContent; ?></p>
             <?php endif; ?>
         </div>
         <?php endif; ?>
         
+        <!-- Page Background Hotspot (positioned below podcast bar) -->
+        <?php if ($enablePreviewMode): ?>
+            <div class="page-background-hotspot" data-hotspot="page-background" style="position: absolute; top: <?php echo $showPodcastPlayer ? '60px' : '16px'; ?>; left: 16px; width: 24px; height: 24px; z-index: 99999; pointer-events: auto; cursor: pointer;"></div>
+        <?php endif; ?>
+        
         <!-- Podcast Player Top Banner -->
         <?php if ($showPodcastPlayer): ?>
-            <div class="podcast-top-banner" id="podcast-top-banner">
+            <div class="podcast-top-banner" id="podcast-top-banner"<?php if ($enablePreviewMode): ?> data-hotspot="podcast-player-bar"<?php endif; ?>>
                 <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player" title="Open Podcast Player">
                     <i class="fas fa-podcast"></i>
                     <span>Tap to Listen</span>
@@ -783,7 +906,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
         
         <!-- Social Icons -->
         <?php if (!empty($socialIcons)): ?>
-            <div class="social-icons">
+            <div class="social-icons"<?php if ($enablePreviewMode): ?> data-hotspot="social-icons"<?php endif; ?>>
                 <?php foreach ($socialIcons as $icon): ?>
                     <a href="<?php echo h($icon['url']); ?>" 
                        class="social-icon" 
@@ -844,11 +967,33 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     try {
                         $rendered = WidgetRenderer::render($widget, $page);
                         if (!empty($rendered)) {
+                            // Wrap widget with hotspot attributes in preview mode
+                            if ($enablePreviewMode) {
+                                echo '<div class="widget-wrapper" data-hotspot="widget-settings" data-widget-id="' . htmlspecialchars($widget['id']) . '">';
+                            }
                             if ($isFeatured && $featuredEffect) {
                                 echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
                             }
+                            // Add hotspot to widget text content
+                            if ($enablePreviewMode) {
+                                // Inject hotspot into widget-item elements and text content
+                                $rendered = preg_replace(
+                                    '/(<div[^>]*class="[^"]*widget-item[^"]*"[^>]*)(>)/i',
+                                    '$1 data-hotspot-text="widget-text"$2',
+                                    $rendered
+                                );
+                                // Also add to widget title and heading text elements
+                                $rendered = preg_replace(
+                                    '/(<(div|h1|h2|h3|p)[^>]*class="[^"]*(widget-title|widget-heading-text|widget-text-content)[^"]*"[^>]*)(>)/i',
+                                    '$1 data-hotspot-text="widget-text"$4',
+                                    $rendered
+                                );
+                            }
                             echo $rendered;
                             if ($isFeatured && $featuredEffect) {
+                                echo '</div>';
+                            }
+                            if ($enablePreviewMode) {
                                 echo '</div>';
                             }
                         }
@@ -860,6 +1005,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 foreach ($links as $link): ?>
                     <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
                        class="widget-item" 
+                       <?php if ($enablePreviewMode): ?>data-hotspot="widget-settings"<?php endif; ?>
                        target="_blank" 
                        rel="noopener noreferrer">
                         <?php if ($link['thumbnail_image']): ?>
@@ -969,14 +1115,14 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                 $nameContent = nl2br($nameContent);
                                 $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
                             ?>
-                                <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>" style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);"><?php echo $nameContent; ?></h1>
+                                <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>" style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-title"<?php endif; ?>><?php echo $nameContent; ?></h1>
                             <?php elseif ($page['username']): 
                                 $effectClass = '';
                                 if (!empty($page['page_name_effect'])) {
                                     $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
                                 }
                             ?>
-                                <h1 class="page-title <?php echo $effectClass; ?>" style="font-family: var(--font-family-heading, inherit);"><?php echo h($page['username']); ?></h1>
+                                <h1 class="page-title <?php echo $effectClass; ?>" style="font-family: var(--font-family-heading, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-title"<?php endif; ?>><?php echo h($page['username']); ?></h1>
                             <?php endif; ?>
                             
                             <?php if ($page['podcast_description']): 
@@ -1017,14 +1163,14 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                 $bioContent = nl2br($bioContent);
                                 $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
                             ?>
-                                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"><?php echo $bioContent; ?></p>
+                                <p class="page-description <?php echo $sizeClass; ?>" style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"<?php if ($enablePreviewMode): ?> data-hotspot="page-description"<?php endif; ?>><?php echo $bioContent; ?></p>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
                         
                         <!-- Social Icons -->
                         <?php if (!empty($socialIcons)): ?>
-                            <div class="social-icons">
+                            <div class="social-icons"<?php if ($enablePreviewMode): ?> data-hotspot="social-icons"<?php endif; ?>>
                                 <?php foreach ($socialIcons as $icon): ?>
                                     <a href="<?php echo h($icon['url']); ?>" 
                                        class="social-icon" 
@@ -1082,25 +1228,42 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                     $isFeatured = !empty($widget['is_featured']);
                                     $featuredEffect = $widget['featured_effect'] ?? '';
                                     
-                                    try {
-                                        $rendered = WidgetRenderer::render($widget, $page);
-                                        if (!empty($rendered)) {
-                                            if ($isFeatured && $featuredEffect) {
-                                                echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
+                                        try {
+                                            $rendered = WidgetRenderer::render($widget, $page);
+                                            if (!empty($rendered)) {
+                                                // Wrap widget with hotspot attributes in preview mode
+                                                if ($enablePreviewMode) {
+                                                    echo '<div class="widget-wrapper" data-hotspot="widget-settings" data-widget-id="' . htmlspecialchars($widget['id']) . '">';
+                                                }
+                                                if ($isFeatured && $featuredEffect) {
+                                                    echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
+                                                }
+                                                // Add hotspot to widget text content
+                                                if ($enablePreviewMode) {
+                                                    // Inject hotspot into widget-item elements
+                                                    $rendered = preg_replace(
+                                                        '/(<div[^>]*class="[^"]*widget-item[^"]*"[^>]*)(>)/i',
+                                                        '$1 data-hotspot-text="widget-text"$2',
+                                                        $rendered
+                                                    );
+                                                }
+                                                echo $rendered;
+                                                if ($isFeatured && $featuredEffect) {
+                                                    echo '</div>';
+                                                }
+                                                if ($enablePreviewMode) {
+                                                    echo '</div>';
+                                                }
                                             }
-                                            echo $rendered;
-                                            if ($isFeatured && $featuredEffect) {
-                                                echo '</div>';
-                                            }
+                                        } catch (Exception $e) {
+                                            echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
                                         }
-                                    } catch (Exception $e) {
-                                        echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
-                                    }
                                 endforeach;
                             elseif (!empty($links)):
                                 foreach ($links as $link): ?>
                                     <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>" 
                                        class="widget-item" 
+                                       <?php if ($enablePreviewMode): ?>data-hotspot="widget-settings"<?php endif; ?>
                                        target="_blank" 
                                        rel="noopener noreferrer">
                                         <?php if ($link['thumbnail_image']): ?>
@@ -1462,6 +1625,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     </div>
                     <button type="submit" 
                             class="widget-item" 
+                            <?php if ($enablePreviewMode): ?>data-hotspot="widget-settings"<?php endif; ?>
                             style="margin-top: 1rem; width: 100%; text-align: center; cursor: pointer;">
                         Subscribe
                     </button>
@@ -1813,5 +1977,120 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             }
         })();
     </script>
+    
+    <?php if ($enablePreviewMode): ?>
+    <!-- Preview Mode: Handle hotspot clicks and communicate with parent -->
+    <script>
+        (function() {
+            // Only run if in iframe and preview mode is enabled
+            if (window.parent === window) {
+                return; // Not in iframe
+            }
+            
+            // Listen for clicks on hotspot elements
+            document.addEventListener('click', function(e) {
+                // Check for widget text hotspot first (more specific)
+                const textHotspot = e.target.closest('[data-hotspot-text]');
+                if (textHotspot) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const sectionId = textHotspot.getAttribute('data-hotspot-text');
+                    if (sectionId) {
+                        // Find widget ID from parent wrapper
+                        const widgetWrapper = textHotspot.closest('[data-widget-id]');
+                        const widgetId = widgetWrapper ? widgetWrapper.getAttribute('data-widget-id') : null;
+                        
+                        // Calculate hotspot indicator center position
+                        // For text hotspots, indicator is at top: 8px, left: 8px (16px circle, so center is at 8px + 8px = 16px from left, 8px + 8px = 16px from top)
+                        const rect = textHotspot.getBoundingClientRect();
+                        const indicatorCenterX = rect.left + 16; // 8px left + 8px (half of 16px circle)
+                        const indicatorCenterY = rect.top + 16; // 8px top + 8px (half of 16px circle)
+                        
+                        // Send message to parent window with hotspot indicator center
+                        window.parent.postMessage({
+                            type: 'hotspot-click',
+                            sectionId: sectionId,
+                            widgetId: widgetId,
+                            x: indicatorCenterX,
+                            y: indicatorCenterY
+                        }, '*');
+                        return;
+                    }
+                }
+                
+                // Check for regular hotspot
+                const hotspot = e.target.closest('[data-hotspot]');
+                if (hotspot) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const sectionId = hotspot.getAttribute('data-hotspot');
+                    if (sectionId) {
+                        // Find widget ID from hotspot or parent wrapper
+                        const widgetId = hotspot.getAttribute('data-widget-id') || 
+                                        hotspot.closest('[data-widget-id]')?.getAttribute('data-widget-id') || 
+                                        null;
+                        
+                        // Calculate hotspot indicator center position based on element type
+                        const rect = hotspot.getBoundingClientRect();
+                        let indicatorCenterX, indicatorCenterY;
+                        
+                        // Determine indicator position based on element classes or tag name
+                        if (hotspot.classList.contains('page-background-hotspot')) {
+                            // Page background hotspot: top: 0, left: 0, so center is at left + 12px, top + 12px (half of 24px)
+                            indicatorCenterX = rect.left + 12;
+                            indicatorCenterY = rect.top + 12;
+                        } else if (hotspot.classList.contains('profile-image-container')) {
+                            // Profile image: top: 0, right: 0, so center is at right - 8px, top + 8px
+                            indicatorCenterX = rect.right - 8;
+                            indicatorCenterY = rect.top + 8;
+                        } else if (hotspot.classList.contains('page-title') || hotspot.classList.contains('page-description')) {
+                            // Page title/description: top: 0, right: -24px, so center is at right - 24px - 8px, top + 8px
+                            indicatorCenterX = rect.right - 24 - 8;
+                            indicatorCenterY = rect.top + 8;
+                        } else if (hotspot.classList.contains('widget-wrapper')) {
+                            // Widget: top: 8px, right: 8px, so center is at right - 8px - 8px, top + 8px + 8px
+                            indicatorCenterX = rect.right - 16;
+                            indicatorCenterY = rect.top + 16;
+                        } else if (hotspot.classList.contains('podcast-top-banner') || hotspot.classList.contains('social-icons')) {
+                            // Podcast banner/social icons: top: 8px, right: 8px
+                            indicatorCenterX = rect.right - 16;
+                            indicatorCenterY = rect.top + 16;
+                        } else {
+                            // Default: top: 8px, right: 8px
+                            indicatorCenterX = rect.right - 16;
+                            indicatorCenterY = rect.top + 16;
+                        }
+                        
+                        // Send message to parent window with hotspot indicator center
+                        window.parent.postMessage({
+                            type: 'hotspot-click',
+                            sectionId: sectionId,
+                            widgetId: widgetId,
+                            x: indicatorCenterX,
+                            y: indicatorCenterY
+                        }, '*');
+                    }
+                }
+            }, true); // Use capture phase to catch clicks before they're blocked
+            
+            // Also prevent default behavior on all links/buttons when not hotspots
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('[data-hotspot]')) {
+                    // Check if it's a link or button
+                    const isLink = e.target.tagName === 'A' || e.target.closest('a');
+                    const isButton = e.target.tagName === 'BUTTON' || e.target.closest('button');
+                    const hasOnClick = e.target.hasAttribute('onclick') || e.target.closest('[onclick]');
+                    
+                    if (isLink || isButton || hasOnClick) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }
+            }, true);
+        })();
+    </script>
+    <?php endif; ?>
 </body>
 </html>

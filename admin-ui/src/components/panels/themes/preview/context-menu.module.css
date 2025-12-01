@@ -1,0 +1,113 @@
+.contextMenu {
+  position: fixed;
+  z-index: 10000;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 16px -4px rgba(0, 0, 0, 0.3),
+    0 4px 8px -2px rgba(0, 0, 0, 0.2),
+    0 20px 40px -8px rgba(0, 0, 0, 0.4);
+  padding: 6px;
+  min-width: 220px;
+  max-width: 320px;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuItem:hover:not(:disabled),
+.menuItem:focus-visible:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline-offset: -2px;
+  color: rgba(255, 255, 255, 1);
+}
+
+.menuItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menuItem:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.98);
+}
+
+.menuIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.menuItem:hover .menuIcon,
+.menuItem:focus-visible .menuIcon {
+  color: rgba(255, 255, 255, 1);
+}
+
+.menuLabel {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .contextMenu {
+    min-width: calc(100vw - 32px);
+    max-width: 300px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .menuItem {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .contextMenu {
+    border-width: 2px;
+  }
+
+  .menuItem:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .menuItem {
+    transition: none;
+  }
+
+  .menuItem:active {
+    transform: none;
+  }
+}
+
+

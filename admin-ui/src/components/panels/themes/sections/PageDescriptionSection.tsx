@@ -62,10 +62,10 @@ export function PageDescriptionSection({
         </div>
 
         <div className={styles.fieldGroup}>
-          <label className={styles.label}>Spacing</label>
+          <label className={styles.label}>Padding</label>
           <SliderInput
             value={pageBioSpacing}
-            min={50}
+            min={0}
             max={200}
             step={5}
             unit="%"

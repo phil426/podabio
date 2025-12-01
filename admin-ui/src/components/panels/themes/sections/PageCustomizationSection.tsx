@@ -175,15 +175,15 @@ export function PageCustomizationSection({
               )}
               <div className={styles.imageOverlay}>
                 <div className={styles.segmentedBar}>
-                  <button
-                    type="button"
+                <button
+                  type="button"
                     className={styles.segmentedButton}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                  >
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
+                >
                     <Upload size={16} weight="regular" aria-hidden="true" />
-                  </button>
+                </button>
                   <div className={styles.segmentedDivider} />
                   <button
                     type="button"
@@ -200,24 +200,24 @@ export function PageCustomizationSection({
                       <button
                         type="button"
                         className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
-                        onClick={async () => {
-                          try {
-                            setIsUploading(true);
-                            await removeProfileImage();
-                            await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-                          } catch (error) {
-                            console.error('Failed to remove image:', error);
-                          } finally {
-                            setIsUploading(false);
-                          }
-                        }}
-                        disabled={isUploading}
-                        title="Remove image"
-                      >
+                    onClick={async () => {
+                      try {
+                        setIsUploading(true);
+                        await removeProfileImage();
+                        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+                      } catch (error) {
+                        console.error('Failed to remove image:', error);
+                      } finally {
+                        setIsUploading(false);
+                      }
+                    }}
+                    disabled={isUploading}
+                    title="Remove image"
+                  >
                         <X size={16} weight="regular" aria-hidden="true" />
-                      </button>
+                  </button>
                     </>
-                  )}
+                )}
                 </div>
               </div>
             </div>
@@ -616,10 +616,10 @@ export function PageCustomizationSection({
         </div>
 
         <div className={styles.fieldGroup}>
-          <label className={styles.label}>Spacing</label>
+          <label className={styles.label}>Padding</label>
           <SliderInput
             value={pageBioSpacing}
-            min={50}
+            min={0}
             max={200}
             step={5}
             unit="%"
