@@ -3,10 +3,10 @@
  * Main component for theme management with extensible architecture
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { usePageSnapshot, usePageAppearanceMutation, updatePageThemeId } from '../../api/page';
-import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation, useDeleteThemeMutation } from '../../api/themes';
+import { useThemeLibraryQuery, useUpdateThemeMutation } from '../../api/themes';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../api/utils';
 import type { ThemeRecord } from '../../api/types';
@@ -16,7 +16,6 @@ import { sectionRegistry } from './themes/utils/sectionRegistry';
 import { previewRenderer } from './themes/utils/previewRenderer';
 import { ThemeLibraryView } from './themes/ThemeLibraryView';
 import { ThemeEditorView } from './themes/ThemeEditorView';
-import { ConfirmDeleteDialog } from './themes/ConfirmDeleteDialog';
 import styles from './themes-panel.module.css';
 
 interface ThemesPanelProps {
@@ -34,28 +33,25 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const { data: themeLibrary, isLoading: themesLoading } = useThemeLibraryQuery();
   const updateMutation = useUpdateThemeMutation();
-  const createMutation = useCreateThemeMutation();
-  const deleteMutation = useDeleteThemeMutation();
   const updatePageMutation = usePageAppearanceMutation();
   const queryClient = useQueryClient();
 
-  const [viewMode, setViewMode] = useState<ViewMode>('library');
+  const [viewMode, setViewMode] = useState<ViewMode>('editor');
   const [selectedTheme, setSelectedTheme] = useState<ThemeRecord | null>(null);
   const [uiState, setUIState] = useState<Record<string, unknown>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [status, setStatus] = useState<StatusMessage | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [themeToDelete, setThemeToDelete] = useState<ThemeRecord | null>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Derive active theme from theme library
+  // Derive active theme from theme library (user themes retired - only system themes)
   const activeTheme = useMemo(() => {
     if (!themeLibrary) return null;
     const themeId = snapshot?.page?.theme_id ?? null;
     if (themeId == null) {
-      return themeLibrary.system?.[0] ?? themeLibrary.user?.[0] ?? null;
+      return themeLibrary.system?.[0] ?? null;
     }
-    const combined = [...(themeLibrary.user ?? []), ...(themeLibrary.system ?? [])];
-    return combined.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? themeLibrary.user?.[0] ?? null;
+    return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
   }, [themeLibrary, snapshot?.page?.theme_id]);
 
   // Initialize UI state when theme changes
@@ -65,9 +61,13 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       const initialState = databaseToUI(activeTheme, page);
       setUIState(initialState);
       setSelectedTheme(activeTheme);
+      // Ensure editor view is shown when theme is available
+      setViewMode('editor');
     } else {
       setUIState(getDefaultUIState());
       setSelectedTheme(null);
+      // Show library if no theme is available
+      setViewMode('library');
     }
   }, [activeTheme?.id, snapshot?.page]);
 
@@ -78,17 +78,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     return () => window.clearTimeout(timer);
   }, [status]);
 
-  // Handle field change
-  const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
-    setUIState(prev => ({
-      ...prev,
-      [fieldId]: value
-    }));
-  }, []);
-
-  // Save theme
-  const handleSave = useCallback(async () => {
-    if (!selectedTheme || isSaving) return;
+  // Save theme (autosave if isAutoSave is true)
+  const handleSave = useCallback(async (isAutoSave = false) => {
+    if (!selectedTheme || isSaving) {
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -103,7 +97,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         themeName: selectedTheme.name,
         userId: selectedTheme.user_id,
         isUserTheme: selectedTheme.user_id !== null && selectedTheme.user_id !== undefined,
-        dbStateKeys: Object.keys(dbState)
+        dbStateKeys: Object.keys(dbState),
+        spacingTokens: dbState.spacing_tokens,
+        uiStatePageSpacing: uiState['page-spacing'],
+        pageSpacingValue: dbState.spacing_tokens?.page_spacing,
+        fullDbState: JSON.stringify(dbState, null, 2)
       });
 
       // Merge with existing theme data to preserve fields not in UI state
@@ -170,32 +168,18 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
             data: themeData
           });
           console.log('Updated custom theme:', updateResult);
-        } else {
-          // Create new custom theme
-          const response = await createMutation.mutateAsync({
-            name: customName,
-            ...themeData
-          });
-
-          console.log('Created custom theme:', response);
           
-          if (response.theme_id) {
-            // Update page to use new theme
-            const newThemeId = typeof response.theme_id === 'string' 
-              ? parseInt(response.theme_id, 10) 
-              : response.theme_id;
-            
-            // Refresh theme library to get new theme
-            await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
-            
-            // Update selected theme to the new custom theme
-            await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
-            const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-            const newTheme = refreshedLibrary?.user?.find(t => t.id === newThemeId);
-            if (newTheme) {
-              setSelectedTheme(newTheme);
-            }
+          // Refresh the selected theme data
+          await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
+          const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
+          const updatedTheme = refreshedLibrary?.user?.find(t => t.id === existingCustom.id) ||
+                              refreshedLibrary?.system?.find(t => t.id === existingCustom.id);
+          if (updatedTheme) {
+            setSelectedTheme(updatedTheme);
           }
+        } else {
+          // User themes retired - only system themes can be customized
+          throw new Error('Cannot create new themes. Please select a system theme to customize.');
         }
       } else {
         // User theme - update directly
@@ -263,18 +247,67 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       
-      // Show success message
-      setStatus({ tone: 'success', message: 'Theme saved successfully!' });
+      // Update autosave status
+      setAutoSaveStatus('saved');
+      
+      // Show success message only for manual saves
+      if (!isAutoSave) {
+        setStatus({ tone: 'success', message: 'Theme saved successfully!' });
+      }
+      
+      // Reset saved status after 2 seconds
+      setTimeout(() => {
+        setAutoSaveStatus(prev => prev === 'saved' ? 'idle' : prev);
+      }, 2000);
     } catch (error) {
       console.error('Failed to save theme:', error);
+      setAutoSaveStatus('error');
       setStatus({ 
         tone: 'error', 
         message: error instanceof Error ? error.message : 'Failed to save theme. Please try again.' 
       });
+      
+      // Reset error status after 3 seconds
+      setTimeout(() => {
+        setAutoSaveStatus('idle');
+      }, 3000);
     } finally {
       setIsSaving(false);
     }
-  }, [selectedTheme, uiState, isSaving, updateMutation, createMutation, updatePageMutation, queryClient, themeLibrary]);
+  }, [selectedTheme, uiState, isSaving, updateMutation, updatePageMutation, queryClient, themeLibrary]);
+
+  // Handle field change
+  const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
+    setUIState(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+    
+    // Trigger autosave after a delay (debounce)
+    if (selectedTheme) {
+      // Clear existing timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Set status to saving (will be updated after save completes)
+      setAutoSaveStatus('saving');
+      
+      // Schedule autosave after 1 second of inactivity
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        handleSave(true); // Pass true to indicate it's an autosave
+      }, 1000);
+    }
+  }, [selectedTheme, handleSave]);
+  
+  // Cleanup autosave timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle theme selection (opens editor)
   const handleSelectTheme = useCallback((theme: ThemeRecord) => {
@@ -354,54 +387,6 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     }
   }, [queryClient, snapshot?.page]);
 
-  // Handle create new theme
-  const handleCreateNew = useCallback(() => {
-    const newTheme: ThemeRecord = {
-      id: 0,
-      name: 'New Theme',
-      user_id: null
-    };
-    setSelectedTheme(newTheme);
-    setUIState(getDefaultUIState());
-    setViewMode('editor');
-  }, []);
-
-  // Handle delete theme (opens confirmation dialog)
-  const handleDeleteTheme = useCallback((theme: ThemeRecord) => {
-    // Only allow deleting user themes (not system themes)
-    if (!theme.user_id || theme.user_id === null) {
-      return;
-    }
-
-    setThemeToDelete(theme);
-    setDeleteDialogOpen(true);
-  }, []);
-
-  // Confirm delete theme (called from dialog)
-  const handleConfirmDelete = useCallback(async () => {
-    if (!themeToDelete) return;
-
-    try {
-      await deleteMutation.mutateAsync(themeToDelete.id);
-      
-      // If the deleted theme was selected, go back to library view
-      if (selectedTheme?.id === themeToDelete.id) {
-        setViewMode('library');
-        setSelectedTheme(null);
-      }
-      
-      // Refresh theme library
-      await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      setStatus({ tone: 'success', message: `Theme "${themeToDelete.name}" deleted successfully.` });
-    } catch (error) {
-      console.error('Failed to delete theme:', error);
-      setStatus({ tone: 'error', message: 'Failed to delete theme. Please try again.' });
-    } finally {
-      setThemeToDelete(null);
-      setDeleteDialogOpen(false);
-    }
-  }, [deleteMutation, queryClient, selectedTheme, themeToDelete]);
 
   // Generate CSS variables for preview
   const previewCSSVars = useMemo(() => {
@@ -426,8 +411,6 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
               activeTheme={activeTheme}
               onSelectTheme={handleSelectTheme}
               onApplyTheme={handleApplyTheme}
-              onCreateNew={handleCreateNew}
-              onDeleteTheme={handleDeleteTheme}
               activeColor={activeColor}
             />
           </ScrollArea.Viewport>
@@ -440,9 +423,10 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           theme={selectedTheme}
           uiState={uiState}
           onFieldChange={handleFieldChange}
-          onSave={handleSave}
+          onSave={() => handleSave(false)}
           onBack={() => setViewMode('library')}
           isSaving={isSaving}
+          autoSaveStatus={autoSaveStatus}
           previewCSSVars={previewCSSVars}
           activeColor={activeColor}
         />
@@ -455,19 +439,6 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDeleteDialog
-        isOpen={deleteDialogOpen}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setThemeToDelete(null);
-        }}
-        onConfirm={handleConfirmDelete}
-        title="Delete Theme"
-        message={themeToDelete ? `Are you sure you want to delete "${themeToDelete.name}"? This action cannot be undone.` : ''}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-      />
     </div>
   );
 }

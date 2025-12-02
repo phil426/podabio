@@ -7,7 +7,8 @@
     flex-wrap: wrap;
     gap: var(--icon-spacing, 0.75rem);
     justify-content: center;
-    margin: var(--page-vertical-spacing, 1.5rem) 0;
+    margin-top: var(--page-spacing, 16px);
+    margin-bottom: 0;
 }
 
 .social-icon {

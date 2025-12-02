@@ -1,9 +1,7 @@
 .container {
   padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
-  align-items: start;
+  background: var(--admin-bg-page, #121212);
+  min-height: 100%;
 }
 
 .mainContent {
@@ -11,12 +9,7 @@
   flex-direction: column;
   gap: 32px;
   min-width: 0;
-}
-
-.infoPanel {
-  position: sticky;
-  top: 24px;
-  height: fit-content;
+  max-width: 100%;
 }
 
 .header {
@@ -36,13 +29,13 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
+  color: var(--admin-text-primary);
 }
 
 .header p {
   margin: 4px 0 0;
   font-size: 14px;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary);
 }
 
 .podcastButton,
@@ -86,7 +79,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
+  color: var(--admin-text-primary);
 }
 
 .themeGrid {
@@ -101,7 +94,7 @@
   flex-direction: column;
   gap: 16px;
   padding-bottom: 24px;
-  border-bottom: 2px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 2px solid var(--admin-border-default);
 }
 
 .section:last-of-type {
@@ -117,7 +110,7 @@
   gap: 16px;
   padding: 64px 24px;
   text-align: center;
-  color: var(--admin-text-secondary, #64748b);
+  color: var(--admin-text-secondary);
 }
 
 .empty p {
@@ -125,14 +118,4 @@
   font-size: 16px;
 }
 
-/* Responsive: Stack info panel below on smaller screens */
-@media (max-width: 1024px) {
-  .container {
-    grid-template-columns: 1fr;
-  }
-
-  .infoPanel {
-    position: static;
-  }
-}
 

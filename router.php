@@ -53,8 +53,16 @@ foreach ($excludedPaths as $excluded) {
     }
 }
 
-// If it's an excluded path or empty, let it fall through to normal handling
-if ($isExcluded || empty($path)) {
+// If path is empty (root), serve index.php
+if (empty($path) || $path === '/') {
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    $_SERVER['PHP_SELF'] = '/index.php';
+    require __DIR__ . '/index.php';
+    exit;
+}
+
+// If it's an excluded path, let it fall through to normal handling
+if ($isExcluded) {
     return false;
 }
 

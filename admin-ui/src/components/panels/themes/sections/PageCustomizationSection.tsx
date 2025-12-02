@@ -59,7 +59,6 @@ export function PageCustomizationSection({
 
   // Extract values with defaults
   const pageBackground = (uiState['page-background'] as string) ?? '#ffffff';
-  const pageVerticalSpacing = (uiState['page-vertical-spacing'] as number) ?? 24;
   const [pageBackgroundType, setPageBackgroundType] = useState<'solid' | 'gradient'>('solid');
   
   // Map effect values to display names
@@ -99,7 +98,6 @@ export function PageCustomizationSection({
   const pageBioColor = (uiState['page-bio-color'] as string) ?? '#4b5563';
   const pageBioFont = (uiState['page-bio-font'] as string) ?? 'Inter';
   const pageBioSize = (uiState['page-bio-size'] as number) ?? 16;
-  const pageBioSpacing = (uiState['page-bio-spacing'] as number) ?? 100;
   const pageBioWeight = (uiState['page-bio-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
 
   // Determine background type from value
@@ -134,19 +132,6 @@ export function PageCustomizationSection({
             }
           }}
           label="Page background"
-        />
-      </div>
-
-      {/* Vertical Spacing */}
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Vertical Spacing</label>
-        <SliderInput
-          value={pageVerticalSpacing}
-          min={0}
-          max={100}
-          step={4}
-          unit="px"
-          onChange={(value) => onFieldChange('page-vertical-spacing', value)}
         />
       </div>
 
@@ -612,18 +597,6 @@ export function PageCustomizationSection({
             step={1}
             unit="px"
             onChange={(value) => onFieldChange('page-bio-size', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Padding</label>
-          <SliderInput
-            value={pageBioSpacing}
-            min={0}
-            max={200}
-            step={5}
-            unit="%"
-            onChange={(value) => onFieldChange('page-bio-spacing', value)}
           />
         </div>
 

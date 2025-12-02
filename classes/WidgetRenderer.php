@@ -99,6 +99,9 @@ class WidgetRenderer {
             case 'divider_rule':
                 return self::renderDividerRule($configData);
                 
+            case 'profile_carousel':
+                return self::renderProfileCarousel($widget, $configData);
+                
             case 'image':
                 return self::renderImage($widget, $configData);
                 
@@ -349,6 +352,285 @@ class WidgetRenderer {
     /**
      * Render image widget
      */
+    /**
+     * Render profile carousel widget
+     * Displays multiple profile-oriented images in a swipeable carousel
+     */
+    private static function renderProfileCarousel($widget, $configData) {
+        $title = $widget['title'] ?? 'Gallery';
+        $images = $configData['images'] ?? [];
+        
+        if (empty($images) || !is_array($images)) {
+            return '';
+        }
+        
+        // Filter out empty image URLs
+        $images = array_filter($images, function($img) {
+            return !empty($img) && is_string($img);
+        });
+        
+        if (empty($images)) {
+            return '';
+        }
+        
+        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+        $carouselId = 'profile-carousel-' . $widgetId;
+        
+        $html = '<div class="widget-item widget-profile-carousel" id="' . htmlspecialchars($carouselId) . '">';
+        $html .= '<div class="widget-content">';
+        if ($title) {
+            $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        }
+        
+        $html .= '<div class="profile-carousel-container">';
+        $html .= '<div class="profile-carousel-track">';
+        
+        foreach ($images as $index => $imageUrl) {
+            $html .= '<div class="profile-carousel-slide" data-slide-index="' . $index . '">';
+            $html .= '<div class="profile-carousel-frame">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="Gallery image ' . ($index + 1) . '" loading="lazy">';
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // Close profile-carousel-track
+        
+        // Navigation dots
+        if (count($images) > 1) {
+            $html .= '<div class="profile-carousel-dots">';
+            foreach ($images as $index => $imageUrl) {
+                $isActive = $index === 0 ? 'active' : '';
+                $html .= '<button type="button" class="profile-carousel-dot ' . $isActive . '" data-slide-index="' . $index . '" aria-label="Go to slide ' . ($index + 1) . '"></button>';
+            }
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // Close profile-carousel-container
+        $html .= '</div>'; // Close widget-content
+        $html .= '</div>'; // Close widget-item
+        
+        // Add carousel JavaScript
+        $html .= '<script>
+(function() {
+    const carouselId = ' . json_encode($carouselId) . ';
+    
+    function initProfileCarousel() {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) {
+            console.warn("Carousel not found yet, will retry:", carouselId);
+            return false;
+        }
+        
+        const track = carousel.querySelector(".profile-carousel-track");
+        const slides = Array.from(carousel.querySelectorAll(".profile-carousel-slide"));
+        const dots = Array.from(carousel.querySelectorAll(".profile-carousel-dot"));
+        
+        if (!track) {
+            console.error("Carousel track not found");
+            return;
+        }
+        
+        if (slides.length === 0) {
+            console.error("No slides found in carousel");
+            return;
+        }
+        
+        let currentIndex = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        let offset = 0;
+        
+        if (slides.length <= 1) {
+            // Single slide - no navigation needed
+            return;
+        }
+        
+        function updateCarousel() {
+            for (let i = 0; i < dots.length; i++) {
+                if (dots[i]) {
+                    dots[i].classList.toggle("active", i === currentIndex);
+                }
+            }
+            if (track) {
+                const translateX = -currentIndex * 100;
+                track.style.transform = "translateX(" + translateX + "%)";
+                track.style.transition = "transform 0.3s ease";
+            }
+            console.log("Carousel updated to index:", currentIndex);
+        }
+        
+        function goToSlide(index) {
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            currentIndex = index;
+            updateCarousel();
+        }
+        
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+        
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+        
+        // Initialize track width and position
+        track.style.width = (slides.length * 100) + "%";
+        updateCarousel();
+        
+        // Touch events for swipe
+        track.addEventListener("touchstart", function(e) {
+            if (e.touches.length === 0) return;
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            track.style.transition = "none";
+            console.log("Touch start:", startX);
+        }, { passive: false });
+        
+        track.addEventListener("touchmove", function(e) {
+            if (!isDragging || e.touches.length === 0) return;
+            e.preventDefault(); // Prevent scrolling while dragging
+            currentX = e.touches[0].clientX;
+            offset = currentX - startX;
+            const currentTranslate = -currentIndex * 100;
+            const trackWidth = track.offsetWidth || track.clientWidth;
+            if (trackWidth > 0) {
+                track.style.transform = "translateX(" + (currentTranslate + (offset / trackWidth) * 100) + "%)";
+            }
+        }, { passive: false });
+        
+        track.addEventListener("touchend", function() {
+            if (!isDragging) return;
+            console.log("Touch end, offset:", offset);
+            isDragging = false;
+            track.style.transition = "transform 0.3s ease";
+            
+            const trackWidth = track.offsetWidth || track.clientWidth;
+            const threshold = trackWidth * 0.3;
+            if (Math.abs(offset) > threshold) {
+                if (offset > 0) {
+                    console.log("Swipe right, going to previous slide");
+                    prevSlide();
+                } else {
+                    console.log("Swipe left, going to next slide");
+                    nextSlide();
+                }
+            } else {
+                console.log("Swipe not far enough, resetting");
+                updateCarousel();
+            }
+            offset = 0;
+        });
+        
+        // Mouse events for desktop drag
+        track.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+            startX = e.clientX;
+            isDragging = true;
+            track.style.transition = "none";
+            track.style.cursor = "grabbing";
+            console.log("Mouse down:", startX);
+        });
+        
+        document.addEventListener("mousemove", function(e) {
+            if (!isDragging) return;
+            currentX = e.clientX;
+            offset = currentX - startX;
+            const currentTranslate = -currentIndex * 100;
+            const trackWidth = track.offsetWidth || track.clientWidth;
+            if (trackWidth > 0) {
+                track.style.transform = "translateX(" + (currentTranslate + (offset / trackWidth) * 100) + "%)";
+            }
+        });
+        
+        document.addEventListener("mouseup", function() {
+            if (!isDragging) return;
+            isDragging = false;
+            track.style.transition = "transform 0.3s ease";
+            track.style.cursor = "grab";
+            
+            const trackWidth = track.offsetWidth || track.clientWidth;
+            const threshold = trackWidth * 0.3;
+            if (Math.abs(offset) > threshold) {
+                if (offset > 0) {
+                    prevSlide();
+                } else {
+                    nextSlide();
+                }
+            } else {
+                updateCarousel();
+            }
+            offset = 0;
+        });
+        
+        
+        // Dot navigation
+        for (let i = 0; i < dots.length; i++) {
+            if (dots[i]) {
+                dots[i].addEventListener("click", function() {
+                    console.log("Dot clicked, going to slide:", i);
+                    goToSlide(i);
+                });
+            }
+        }
+        
+        console.log("Event listeners attached:", {
+            track: !!track,
+            dotsCount: dots.length,
+            slidesCount: slides.length
+        });
+        
+        // Keyboard navigation
+        carousel.addEventListener("keydown", function(e) {
+            if (e.key === "ArrowLeft" || e.keyCode === 37) {
+                e.preventDefault();
+                console.log("Left arrow pressed");
+                prevSlide();
+            } else if (e.key === "ArrowRight" || e.keyCode === 39) {
+                e.preventDefault();
+                console.log("Right arrow pressed");
+                nextSlide();
+            }
+        });
+        
+        // Make carousel focusable for keyboard navigation
+        carousel.setAttribute("tabindex", "0");
+        carousel.style.outline = "none";
+        
+        console.log("Profile carousel initialized:", {
+            carouselId: carouselId,
+            slidesCount: slides.length,
+            dotsCount: dots.length
+        });
+        return true;
+    }
+    
+    // Try to initialize immediately
+    if (!initProfileCarousel()) {
+        // If not found, wait for DOM and try again
+        function tryInit() {
+            if (initProfileCarousel()) {
+                return; // Success!
+            }
+            // Retry after a short delay
+            setTimeout(tryInit, 50);
+        }
+        
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", function() {
+                setTimeout(tryInit, 50);
+            });
+        } else {
+            setTimeout(tryInit, 50);
+        }
+    }
+})();
+</script>';
+        
+        return $html;
+    }
+    
     private static function renderImage($widget, $configData) {
         $imageUrl = $configData['image_url'] ?? '';
         $title = $widget['title'] ?? 'Image';

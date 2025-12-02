@@ -114,41 +114,22 @@
   opacity: 0.8;
 }
 
-.previewHeader {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
-  background: var(--admin-bg-panel, #ffffff);
-  flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.previewHeaderLeft {
-  flex: 1;
-  min-width: 0;
-}
-
-.previewHeader h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
-}
-
-.previewHeader p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--admin-text-secondary, #64748b);
-}
-
-.deviceSelector {
+/* Floating Device Selector */
+.floatingDeviceSelector {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  padding: 8px 12px;
+  background: var(--admin-bg-panel, #ffffff);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .deviceSelect {
@@ -212,7 +193,8 @@
 }
 
 .pageTitle {
-  margin: var(--page-vertical-spacing, 24px) 0;
+  margin-top: var(--page-spacing, 16px);
+  margin-bottom: 0;
   font-size: var(--page-title-size, 24px);
   font-weight: var(--page-title-weight, 600);
   font-style: var(--page-title-style, normal);
@@ -225,8 +207,8 @@
 
 .pageBio {
   margin: 0;
-  margin-top: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
-  margin-bottom: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
+  margin-top: var(--page-spacing, 16px);
+  margin-bottom: 0;
   font-size: var(--page-description-size, 16px);
   font-weight: var(--page-bio-weight, 400);
   font-style: var(--page-bio-style, normal);
@@ -243,9 +225,11 @@
 .widgetsContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--widget-gap, var(--widget-spacing, 1rem));
-  margin-top: var(--page-vertical-spacing, 24px);
+  gap: var(--page-spacing, 16px);
+  margin-top: var(--page-spacing, 16px);
+  margin-bottom: 0;
   width: 100%;
+  position: relative;
 }
 
 .widget {
@@ -321,10 +305,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--icon-spacing, var(--social-icon-spacing, 1rem));
+  gap: var(--icon-spacing, 0.75rem);
   width: 100%;
   flex-wrap: wrap;
-  margin: var(--page-vertical-spacing, 24px) 0;
+  margin-top: var(--page-spacing, 16px);
+  margin-bottom: 0;
 }
 
 .socialIcon {

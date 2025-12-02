@@ -89,6 +89,24 @@ class WidgetRegistry {
                 ]
             ],
 
+            'profile_carousel' => [
+                'widget_id' => 'profile_carousel',
+                'name' => 'Profile Carousel',
+                'description' => 'Display multiple profile-oriented images in a swipeable carousel',
+                'thumbnail' => '/assets/widget-thumbnails/profile_carousel.png',
+                'category' => 'media',
+                'requires_api' => false,
+                'config_fields' => [
+                    'images' => [
+                        'type' => 'media_gallery',
+                        'label' => 'Images',
+                        'required' => true,
+                        'help' => 'Select or upload images from the media library. Images will be displayed in profile orientation (portrait).',
+                        'multiple' => true
+                    ]
+                ]
+            ],
+            
             'divider_rule' => [
                 'widget_id' => 'divider_rule',
                 'name' => 'Divider',

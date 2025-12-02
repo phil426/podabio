@@ -23,7 +23,6 @@ export function PageDescriptionSection({
   const pageBioColor = (uiState['page-bio-color'] as string) ?? '#4b5563';
   const pageBioFont = (uiState['page-bio-font'] as string) ?? 'Inter';
   const pageBioSize = (uiState['page-bio-size'] as number) ?? 16;
-  const pageBioSpacing = (uiState['page-bio-spacing'] as number) ?? 100;
   const pageBioWeight = (uiState['page-bio-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
 
   return (
@@ -58,18 +57,6 @@ export function PageDescriptionSection({
             step={1}
             unit="px"
             onChange={(value) => onFieldChange('page-bio-size', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Padding</label>
-          <SliderInput
-            value={pageBioSpacing}
-            min={0}
-            max={200}
-            step={5}
-            unit="%"
-            onChange={(value) => onFieldChange('page-bio-spacing', value)}
           />
         </div>
 

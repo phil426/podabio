@@ -8,19 +8,46 @@ import { PodaColorPicker } from '../../../controls/PodaColorPicker';
 import { WidgetBorderEffectSelect } from '../../ultimate-theme-modifier/WidgetBorderEffectSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import type { TabColorTheme } from '../../../layout/tab-colors';
+import { usePageSnapshot } from '../../../../api/page';
+import { useUpdateWidgetMutation } from '../../../../api/widgets';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../../api/utils';
 import styles from './widget-button-section.module.css';
 
 interface WidgetSettingsSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  widgetId?: string | null;
 }
 
 export function WidgetSettingsSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  widgetId
 }: WidgetSettingsSectionProps): JSX.Element {
+  const { data: snapshot } = usePageSnapshot();
+  const widgets = snapshot?.widgets || [];
+  // Try multiple ways to find the widget (handle both string and number IDs)
+  const widget = widgetId ? widgets.find((w) => {
+    const wId = String(w.id);
+    const searchId = String(widgetId);
+    return wId === searchId || wId === widgetId || String(w.id) === widgetId;
+  }) : null;
+  const isFeatured = widget?.is_featured === 1;
+  const updateWidgetMutation = useUpdateWidgetMutation();
+  const queryClient = useQueryClient();
+  
+  // Debug logging
+  console.log('WidgetSettingsSection Debug:', {
+    widgetId,
+    widgetFound: !!widget,
+    widget: widget ? { id: widget.id, is_featured: widget.is_featured, featured_effect: widget.featured_effect } : null,
+    isFeatured,
+    totalWidgets: widgets.length,
+    allWidgetIds: widgets.map(w => ({ id: w.id, idType: typeof w.id, is_featured: w.is_featured }))
+  });
   // Widget background/border/shadow/glow values
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';
@@ -33,6 +60,22 @@ export function WidgetSettingsSection({
   const widgetGlowWidth = (uiState['widget-glow-width'] as number) ?? 2;
   const widgetGlowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
   const widgetGlowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
+  
+  // Featured widget effect
+  const featuredEffect = widget?.featured_effect ?? 'jiggle';
+  
+  const handleFeaturedEffectChange = (effect: string) => {
+    if (widgetId) {
+      updateWidgetMutation.mutate(
+        { widget_id: widgetId, featured_effect: effect },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+          }
+        }
+      );
+    }
+  };
 
   return (
     <div className={styles.section}>
@@ -166,6 +209,28 @@ export function WidgetSettingsSection({
           </>
         )}
       </div>
+      
+      {/* Featured Widget Properties - Only show if widget is featured */}
+      {isFeatured && (
+        <div className={styles.subsection}>
+          <h4 className={styles.subsectionTitle}>Featured Widget</h4>
+          
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Featured Effect</label>
+            <select
+              value={featuredEffect}
+              onChange={(e) => handleFeaturedEffectChange(e.target.value)}
+              className={styles.select}
+            >
+              <option value="jiggle">Jiggle</option>
+              <option value="pulse">Pulse</option>
+              <option value="bounce">Bounce</option>
+              <option value="glow">Glow</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

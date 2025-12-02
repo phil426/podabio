@@ -108,15 +108,15 @@ fieldRegistry.register({
 });
 
 fieldRegistry.register({
-  id: 'page-vertical-spacing',
-  label: 'Vertical Spacing',
+  id: 'page-spacing',
+  label: 'Spacing',
   type: 'number',
-  tokenPath: 'spacing_tokens.vertical_spacing',
-  section: 'page-customization',
-  defaultValue: 24,
-  min: 0,
-  max: 100,
-  step: 4,
+  tokenPath: 'spacing_tokens.page_spacing',
+  section: 'page-background',
+  defaultValue: 16,
+  min: 8,
+  max: 48,
+  step: 2,
   unit: 'px',
   implemented: true
 });
@@ -343,19 +343,6 @@ fieldRegistry.register({
   min: 10,
   max: 24,
   unit: 'px',
-  implemented: true
-});
-
-fieldRegistry.register({
-  id: 'page-bio-spacing',
-  label: 'Page Bio Spacing',
-  type: 'spacing',
-  tokenPath: 'spacing_tokens.page_spacing',
-  section: 'page-customization',
-  defaultValue: 100,
-  min: 0,
-  max: 200,
-  unit: '%',
   implemented: true
 });
 

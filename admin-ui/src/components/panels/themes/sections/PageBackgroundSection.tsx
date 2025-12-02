@@ -21,7 +21,7 @@ export function PageBackgroundSection({
   activeColor
 }: PageBackgroundSectionProps): JSX.Element {
   const pageBackground = (uiState['page-background'] as string) ?? '#ffffff';
-  const pageVerticalSpacing = (uiState['page-vertical-spacing'] as number) ?? 24;
+  const pageSpacing = (uiState['page-spacing'] as number) ?? 16;
   const pageBackgroundAnimate = (uiState['page-background-animate'] as boolean) ?? false;
   const [pageBackgroundType, setPageBackgroundType] = useState<'solid' | 'gradient'>('solid');
 
@@ -78,16 +78,19 @@ export function PageBackgroundSection({
         </div>
       )}
 
-      {/* Vertical Spacing */}
+      {/* Spacing */}
       <div className={styles.fieldGroup}>
-        <label className={styles.label}>Vertical Spacing</label>
+        <label className={styles.label}>Spacing</label>
+        <p className={styles.description}>
+          Controls spacing between all page elements (cover image, title, bio, social icons, widgets, and footer)
+        </p>
         <SliderInput
-          value={pageVerticalSpacing}
-          min={0}
-          max={100}
-          step={4}
+          value={pageSpacing}
+          min={8}
+          max={48}
+          step={2}
           unit="px"
-          onChange={(value) => onFieldChange('page-vertical-spacing', value)}
+          onChange={(value) => onFieldChange('page-spacing', value)}
         />
       </div>
     </div>

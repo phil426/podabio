@@ -69,7 +69,7 @@ sectionRegistry.register({
   description: 'Customize the page background and vertical spacing',
   fields: [
     'page-background',
-    'page-vertical-spacing'
+    'page-spacing'
   ],
   order: 0
 });
@@ -125,7 +125,6 @@ sectionRegistry.register({
     'page-bio-color',
     'page-bio-font',
     'page-bio-size',
-    'page-bio-spacing',
     'page-bio-weight'
   ],
   order: 0.7
@@ -137,7 +136,7 @@ sectionRegistry.register({
   description: 'Customize the page background, title, and bio appearance',
   fields: [
     'page-background',
-    'page-vertical-spacing',
+    'page-spacing',
     'profile-image-size',
     'profile-image-radius',
     'profile-image-effect',
@@ -158,7 +157,6 @@ sectionRegistry.register({
     'page-bio-color',
     'page-bio-font',
     'page-bio-size',
-    'page-bio-spacing',
     'page-bio-weight'
   ],
   order: 1

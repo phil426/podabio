@@ -109,8 +109,10 @@ class PreviewRenderer {
     }
 
     // Map typography tokens
-    if (allValues['typography_tokens.color.heading']) {
-      cssVars['--page-title-color'] = String(allValues['typography_tokens.color.heading']);
+    // Page title color - check uiState first, then allValues
+    const pageTitleColor = uiState?.['page-title-color'] ?? allValues['typography_tokens.color.heading'];
+    if (pageTitleColor !== undefined) {
+      cssVars['--page-title-color'] = String(pageTitleColor);
     }
     if (allValues['typography_tokens.color.body']) {
       cssVars['--page-description-color'] = String(allValues['typography_tokens.color.body']);
@@ -125,16 +127,23 @@ class PreviewRenderer {
       cssVars['--widget-body-color'] = bodyColor;
       cssVars['--widget-body-font-color'] = bodyColor; // Match ThemeCSSGenerator
     }
-    if (allValues['typography_tokens.font.heading']) {
-      const fontName = String(allValues['typography_tokens.font.heading']);
+    // Page title font - check uiState first, then allValues
+    const pageTitleFont = uiState?.['page-title-font'] ?? allValues['typography_tokens.font.heading'];
+    if (pageTitleFont !== undefined) {
+      const fontName = String(pageTitleFont);
       cssVars['--page-title-font'] = `'${fontName}', sans-serif`;
     }
     if (allValues['typography_tokens.font.body']) {
       const fontName = String(allValues['typography_tokens.font.body']);
       cssVars['--page-description-font'] = `'${fontName}', sans-serif`;
     }
-    if (allValues['typography_tokens.scale.heading']) {
-      cssVars['--page-title-size'] = `${allValues['typography_tokens.scale.heading']}px`;
+    // Page title size - check uiState first, then allValues
+    const pageTitleSize = uiState?.['page-title-size'] ?? allValues['typography_tokens.scale.heading'];
+    if (pageTitleSize !== undefined) {
+      const sizeValue = typeof pageTitleSize === 'number' ? pageTitleSize : parseFloat(String(pageTitleSize));
+      if (!isNaN(sizeValue)) {
+        cssVars['--page-title-size'] = `${sizeValue}px`;
+      }
     }
     // Page description/bio size - check uiState first, then allValues
     const pageBioSize = uiState?.['page-bio-size'] ?? allValues['typography_tokens.scale.body'];
@@ -145,27 +154,26 @@ class PreviewRenderer {
       }
     }
     // Page bio color is already mapped via typography_tokens.color.body above
-    if (allValues['typography_tokens.line_height.heading']) {
-      cssVars['--page-title-spacing'] = String(allValues['typography_tokens.line_height.heading']);
-    }
-    // Page description/bio spacing - check uiState first, then allValues from spacing_tokens
-    // This controls margin above and below the bio text, not line-height
-    const pageBioSpacing = uiState?.['page-bio-spacing'] ?? allValues['spacing_tokens.page_spacing'];
-    if (pageBioSpacing !== undefined) {
-      const spacingValue = typeof pageBioSpacing === 'number' ? pageBioSpacing : parseFloat(String(pageBioSpacing));
-      if (!isNaN(spacingValue)) {
-        // Convert percentage to a multiplier for margin (100% = 1x base spacing)
-        cssVars['--page-bio-spacing'] = `${spacingValue}%`;
-      }
+    // Page title spacing - check uiState first, then allValues
+    const pageTitleSpacing = uiState?.['page-title-spacing'] ?? allValues['typography_tokens.line_height.heading'];
+    if (pageTitleSpacing !== undefined) {
+      cssVars['--page-title-spacing'] = String(pageTitleSpacing);
     }
     
     // Map font weights and styles
-    if (allValues['typography_tokens.weight.heading']) {
-      const weight = allValues['typography_tokens.weight.heading'];
-      if (typeof weight === 'object' && weight !== null) {
-        const weightObj = weight as { bold?: boolean; italic?: boolean };
+    // Page title weight - check uiState first, then allValues
+    const pageTitleWeight = uiState?.['page-title-weight'] ?? allValues['typography_tokens.weight.heading'];
+    if (pageTitleWeight !== undefined) {
+      if (typeof pageTitleWeight === 'object' && pageTitleWeight !== null) {
+        const weightObj = pageTitleWeight as { bold?: boolean; italic?: boolean };
         cssVars['--page-title-weight'] = weightObj.bold ? 'bold' : 'normal';
         cssVars['--page-title-style'] = weightObj.italic ? 'italic' : 'normal';
+      } else if (typeof pageTitleWeight === 'string') {
+        // Handle string format like "bold" or "italic" or "bold italic"
+        const isBold = pageTitleWeight.includes('bold') || pageTitleWeight === 'bold';
+        const isItalic = pageTitleWeight.includes('italic') || pageTitleWeight === 'italic';
+        cssVars['--page-title-weight'] = isBold ? 'bold' : 'normal';
+        cssVars['--page-title-style'] = isItalic ? 'italic' : 'normal';
       }
     }
     if (allValues['typography_tokens.weight.body']) {
@@ -474,27 +482,26 @@ class PreviewRenderer {
       cssVars['--social-icon-spacing'] = spacingValue; // Also set for compatibility
     }
 
-    // Map spacing tokens
-    if (allValues['spacing_tokens.page_spacing']) {
-      cssVars['--page-spacing'] = `${allValues['spacing_tokens.page_spacing']}%`;
-    }
-    // Calculate page vertical spacing (used by profile image spacing)
+    // Calculate unified page spacing (used for all element spacing)
     // Check uiState first (unsaved changes), then allValues (from theme), then default
-    const pageVerticalSpacingFromUI = uiState?.['page-vertical-spacing'];
-    const pageVerticalSpacingValue = pageVerticalSpacingFromUI !== undefined 
-      ? pageVerticalSpacingFromUI 
-      : (allValues['spacing_tokens.vertical_spacing'] ?? 24);
-    const verticalSpacingNum = typeof pageVerticalSpacingValue === 'number' 
-      ? pageVerticalSpacingValue 
-      : (typeof pageVerticalSpacingValue === 'string' 
-        ? Number(String(pageVerticalSpacingValue).replace(/px|rem|%|em/gi, '').trim()) || 24
-        : 24);
-    cssVars['--page-vertical-spacing'] = `${verticalSpacingNum}px`;
+    const pageSpacingFromUI = uiState?.['page-spacing'];
+    const pageSpacingValue = pageSpacingFromUI !== undefined 
+      ? pageSpacingFromUI 
+      : (allValues['spacing_tokens.page_spacing'] ?? 16);
+    const spacingNum = typeof pageSpacingValue === 'number' 
+      ? pageSpacingValue 
+      : (typeof pageSpacingValue === 'string' 
+        ? Number(String(pageSpacingValue).replace(/px|rem|%|em/gi, '').trim()) || 16
+        : 16);
     
-    // Profile image spacing - fixed: page vertical spacing + 20px top, page vertical spacing bottom
+    // Use unified spacing for all elements
+    cssVars['--page-spacing'] = `${spacingNum}px`;
+    cssVars['--page-element-spacing'] = `${spacingNum}px`;
+    
+    // Profile image spacing - use unified spacing with small offset for top (accounting for podcast bar)
     // Always calculate this (not just when uiState exists) so spacing works even without uiState
-    cssVars['--profile-image-spacing-top'] = `${verticalSpacingNum + 20}px`;
-    cssVars['--profile-image-spacing-bottom'] = `${verticalSpacingNum}px`;
+    cssVars['--profile-image-spacing-top'] = `${spacingNum + 12}px`;
+    cssVars['--profile-image-spacing-bottom'] = `${spacingNum}px`;
 
     // Map widget border radius (rounding)
     // Check uiState first (unsaved changes), then allValues
@@ -567,9 +574,11 @@ class PreviewRenderer {
     // Map page title effect properties
     // Read from uiState directly (page-level field, not theme token)
     // Also check if page object is passed (for preview)
-    const effectType = uiState?.['page-title-effect'] ?? 
-                      (typeof page !== 'undefined' && page && 'page_name_effect' in page ? (page as Record<string, unknown>).page_name_effect : null) ??
-                      'none';
+    // CRITICAL: If uiState has 'page-title-effect' set to 'none', use that (even if page data has an effect)
+    // This allows users to turn off effects in real-time preview
+    const effectType = uiState?.['page-title-effect'] !== undefined 
+                      ? (uiState['page-title-effect'] as string) ?? 'none'
+                      : ((typeof page !== 'undefined' && page && 'page_name_effect' in page ? (page as Record<string, unknown>).page_name_effect : null) ?? 'none');
     const effectShadows: string[] = [];
     
     // Get background color for effects that need it (retro, pretty, flat, long)
@@ -579,6 +588,7 @@ class PreviewRenderer {
       ? '#f1f1f1' // Default for gradients
       : (typeof pageBgValue === 'string' ? pageBgValue : '#f1f1f1');
     
+    // Only generate effect shadows if effect is not 'none'
     if (effectType === 'shadow') {
       // Drop Shadow effect
       const shadowColor = allValues['typography_tokens.effect.shadow.color'] ?? '#000000';
@@ -741,17 +751,22 @@ class PreviewRenderer {
 
     // Combine shadows: border first (renders on top), then effect (renders behind)
     // In CSS text-shadow, first shadows render on top, so border should be first
-    const allShadows = [...borderShadows, ...effectShadows];
+    // CRITICAL: If effect is 'none', only use border shadows (if any)
+    // If effect is 'none' and no border shadows, set text-shadow to 'none' to clear any existing effects
+    const allShadows = effectType === 'none' ? borderShadows : [...borderShadows, ...effectShadows];
     if (allShadows.length > 0) {
       cssVars['--page-title-text-shadow'] = allShadows.join(', ');
     } else {
+      // Explicitly set to 'none' to clear any existing text-shadow from previous effects
       cssVars['--page-title-text-shadow'] = 'none';
     }
 
     // Set the effect class name for use in components
-    if (effectType !== 'none') {
+    // CRITICAL: If effect is 'none', explicitly set to empty string to remove any existing effect class
+    if (effectType !== 'none' && effectType !== '' && effectType !== null) {
       cssVars['--page-title-effect-class'] = `page-title-effect-${effectType}`;
     } else {
+      // Explicitly set to empty string to ensure effect class is removed
       cssVars['--page-title-effect-class'] = '';
     }
 

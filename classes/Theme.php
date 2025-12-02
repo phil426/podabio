@@ -452,6 +452,7 @@ class Theme {
     private function getDefaultSpacingTokens() {
         return [
             'density' => 'comfortable',
+            'page_spacing' => 16, // Default unified page spacing (px)
             'base_scale' => [
                 '2xs' => 0.25,
                 'xs' => 0.5,
@@ -641,7 +642,16 @@ class Theme {
         $pageTokens = $this->parseJsonColumn($page['spacing_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['spacing_tokens'] ?? null, []) : [];
         
+        // Debug: Log spacing tokens
+        error_log("THEME getSpacingTokens DEBUG: theme_id=" . ($theme['id'] ?? 'null'));
+        error_log("THEME getSpacingTokens DEBUG: themeTokens from DB=" . json_encode($themeTokens));
+        error_log("THEME getSpacingTokens DEBUG: themeTokens.page_spacing=" . ($themeTokens['page_spacing'] ?? 'NOT SET'));
+        
         $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
+        
+        // Debug: Log merged result
+        error_log("THEME getSpacingTokens DEBUG: merged.page_spacing=" . ($merged['page_spacing'] ?? 'NOT SET'));
+        error_log("THEME getSpacingTokens DEBUG: full merged=" . json_encode($merged));
         
         $density = $this->resolveLayoutDensity($page, $theme, $merged['density'] ?? 'comfortable');
         $baseScale = $merged['base_scale'] ?? $defaults['base_scale'];
@@ -1331,14 +1341,29 @@ class Theme {
             ];
             
             // Only add widget_background if column exists
+            // CRITICAL: Double-check column exists before adding to prevent SQL errors
             $allColumns = $this->getThemeColumns();
             error_log("THEME CREATE DEBUG: Available columns: " . implode(', ', $allColumns));
             error_log("THEME CREATE DEBUG: Checking widget_background: " . ($this->hasThemeColumn('widget_background') ? 'EXISTS' : 'NOT FOUND'));
             
+            // Store widget_background in color_tokens if column doesn't exist
             if ($this->hasThemeColumn('widget_background')) {
                 $columns[] = 'widget_background';
                 $params[] = $widgetBackground;
                 error_log("THEME CREATE DEBUG: Adding widget_background = " . ($widgetBackground ?? 'NULL'));
+            } else if ($widgetBackground !== null) {
+                // Store in color_tokens as fallback if column doesn't exist
+                if (!isset($themeData['color_tokens']) || !is_array($themeData['color_tokens'])) {
+                    $themeData['color_tokens'] = [];
+                }
+                if (!isset($themeData['color_tokens']['semantic'])) {
+                    $themeData['color_tokens']['semantic'] = [];
+                }
+                if (!isset($themeData['color_tokens']['semantic']['background'])) {
+                    $themeData['color_tokens']['semantic']['background'] = [];
+                }
+                $themeData['color_tokens']['semantic']['background']['widget'] = $widgetBackground;
+                error_log("THEME CREATE DEBUG: Storing widget_background in color_tokens (column doesn't exist)");
             }
             if ($this->hasThemeColumn('widget_border_color')) {
                 $columns[] = 'widget_border_color';

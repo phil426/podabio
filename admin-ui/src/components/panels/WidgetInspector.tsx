@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, X, Check, CheckSquare, Square, Images } from '@phosphor-icons/react';
+import { Upload, X, Check, CheckSquare, Square, Images, Plus, Trash } from '@phosphor-icons/react';
 
 import { useAvailableWidgetsQuery, useUpdateWidgetMutation } from '../../api/widgets';
 import { usePageSnapshot } from '../../api/page';
@@ -10,6 +10,7 @@ import { getYouTubeThumbnail } from '../../utils/media';
 import { normalizeImageUrl } from '../../api/utils';
 import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
 import type { MediaItem } from '../../api/media';
+import { useUploadToMediaLibraryMutation, useMediaLibraryQuery } from '../../api/media';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -390,6 +391,21 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
               />
             );
           }
+          
+          // Special handling for profile_carousel images field with media gallery
+          if (widgetType === 'profile_carousel' && field === 'images' && fieldDef.type === 'media_gallery') {
+            return (
+              <ProfileCarouselImagesField
+                key={field}
+                field={field}
+                definition={fieldDef}
+                value={formState?.config?.[field]}
+                onChange={handleInputChange}
+                activeColor={activeColor}
+              />
+            );
+          }
+          
           return (
             <WidgetField
               key={field}
@@ -1787,6 +1803,168 @@ function parseCSVLine(line: string): string[] {
   fields.push(currentField);
 
   return fields;
+}
+
+interface ProfileCarouselImagesFieldProps {
+  field: string;
+  definition: Record<string, unknown>;
+  value: ConfigValue;
+  onChange: (field: string, value: ConfigValue) => void;
+  activeColor: TabColorTheme;
+}
+
+function ProfileCarouselImagesField({ field, definition, value, onChange, activeColor }: ProfileCarouselImagesFieldProps): JSX.Element {
+  const label = (definition.label ?? field) as string;
+  const help = (definition.help ?? '') as string;
+  const required = Boolean(definition.required);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadMutation = useUploadToMediaLibraryMutation();
+  
+  // Parse images array from value
+  const images = useMemo(() => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.filter((img): img is string => typeof img === 'string' && img.length > 0);
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter((img): img is string => typeof img === 'string' && img.length > 0) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }, [value]);
+  
+  const handleAddImage = (imageUrl: string) => {
+    const newImages = [...images, imageUrl];
+    onChange(field, newImages);
+  };
+  
+  const handleRemoveImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    onChange(field, newImages);
+  };
+  
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    const newImages = [...images];
+    const [removed] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, removed);
+    onChange(field, newImages);
+  };
+  
+  const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
+    handleAddImage(mediaItem.file_url);
+    setMediaLibraryOpen(false);
+  };
+  
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setIsUploading(true);
+      const result = await uploadMutation.mutateAsync(file);
+      if (result.media?.file_url) {
+        handleAddImage(result.media.file_url);
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+  
+  return (
+    <div className={styles.control}>
+      <span>
+        {label}
+        {required && <span className={styles.required}>*</span>}
+      </span>
+      {help && <p className={styles.help}>{help}</p>}
+      
+      <div className={styles.carouselImagesGrid}>
+        {images.map((imageUrl, index) => (
+          <div key={index} className={styles.carouselImageItem}>
+            <img src={normalizeImageUrl(imageUrl)} alt={`Carousel image ${index + 1}`} />
+            <button
+              type="button"
+              className={styles.carouselImageRemove}
+              onClick={() => handleRemoveImage(index)}
+              aria-label={`Remove image ${index + 1}`}
+            >
+              <X size={16} weight="regular" />
+            </button>
+            {index > 0 && (
+              <button
+                type="button"
+                className={styles.carouselImageMove}
+                onClick={() => handleReorder(index, index - 1)}
+                aria-label="Move left"
+              >
+                ←
+              </button>
+            )}
+            {index < images.length - 1 && (
+              <button
+                type="button"
+                className={styles.carouselImageMove}
+                onClick={() => handleReorder(index, index + 1)}
+                aria-label="Move right"
+              >
+                →
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      <div className={styles.carouselImageActions}>
+        <button
+          type="button"
+          className={styles.carouselImageAddButton}
+          onClick={() => setMediaLibraryOpen(true)}
+          disabled={isUploading}
+        >
+          <Images size={16} weight="regular" />
+          Choose from Library
+        </button>
+        <button
+          type="button"
+          className={styles.carouselImageAddButton}
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+        >
+          <Upload size={16} weight="regular" />
+          Upload Image
+        </button>
+      </div>
+      
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className={styles.hiddenInput}
+        onChange={handleFileUpload}
+      />
+      
+      <MediaLibraryDrawer
+        open={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+        onSelect={handleSelectFromLibrary}
+      />
+      
+      {images.length === 0 && (
+        <p className={styles.help} style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>
+          No images added yet. Add at least one image to display the carousel.
+        </p>
+      )}
+    </div>
+  );
 }
 
 

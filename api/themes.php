@@ -173,6 +173,11 @@ if ($method === 'POST') {
             }
 
             $result = $themeClass->createTheme($userId, $name, $themeData);
+            
+            // Ensure we always return JSON, even on errors
+            if (!$result['success']) {
+                http_response_code(500);
+            }
             echo json_encode($result);
             break;
 

@@ -100,37 +100,45 @@
   color: var(--admin-text-secondary, #64748b);
 }
 
-.saveButton {
+.autoSaveStatus {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--admin-border-strong, rgba(15, 23, 42, 0.15));
-  background: var(--admin-accent-primary, #00FF7F);
-  color: var(--admin-bg-deep-black, #121212);
-  font-size: 14px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
-  cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  user-select: none;
 }
 
-.saveButton:hover:not(:disabled) {
-  background: var(--admin-accent-primary-hover, rgba(0, 255, 127, 0.9));
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+.autoSaveStatus[data-status="idle"] {
+  color: var(--admin-text-secondary, #64748b);
 }
 
-.saveButton:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.autoSaveStatus[data-status="saving"] {
+  color: var(--admin-accent-primary, #00FF7F);
 }
 
-.saveButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: var(--admin-text-muted, #94a3b8);
+.autoSaveStatus[data-status="saved"] {
+  color: var(--admin-success, #10b981);
+}
+
+.autoSaveStatus[data-status="error"] {
+  color: var(--admin-error, #ef4444);
+}
+
+.autoSaveStatus .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 

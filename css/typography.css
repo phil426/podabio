@@ -7,7 +7,8 @@
     line-height: var(--type-line-height-tight, 1.2);
     font-family: var(--font-family-heading);
     font-weight: var(--type-weight-bold, 600);
-    margin: var(--page-vertical-spacing, var(--space-xs)) 0;
+    margin-top: var(--page-spacing, 16px);
+    margin-bottom: 0;
     color: var(--heading-font-color, var(--page-title-color, var(--color-text-primary)));
 }
 
@@ -16,8 +17,8 @@
     opacity: 0.9;
     font-size: var(--page-description-size, var(--page-body-size, var(--type-scale-sm, 1rem)));
     line-height: var(--type-line-height-normal, 1.5);
-    margin-top: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
-    margin-bottom: calc(var(--page-bio-spacing, 100) / 100 * var(--page-vertical-spacing, 24px));
+    margin-top: var(--page-spacing, 16px);
+    margin-bottom: 0;
     font-family: var(--font-family-body);
     width: 80%;
     max-width: 100%;

@@ -699,10 +699,8 @@ class ThemeCSSGenerator {
             $css .= "    --page-description-size: " . h($this->typographyTokens['scale']['body']) . "px;\n";
         }
         
-        // Page description/bio spacing from spacing_tokens.page_spacing (controls margin above/below)
-        if (!empty($this->spacingTokens['page_spacing'])) {
-            $css .= "    --page-bio-spacing: " . h($this->spacingTokens['page_spacing']) . "%;\n";
-        }
+        // Page description/bio spacing - now handled by unified --page-spacing variable
+        // Legacy --page-bio-spacing removed - use --page-spacing instead
         $css .= "    --social-icon-color: " . h($socialIconColor) . ";\n";
         
         // Iconography tokens - Always generate variables (use fallbacks if not set)
@@ -777,24 +775,29 @@ class ThemeCSSGenerator {
         $widgetGap = $this->spacingValues['lg'] ?? '1.5rem';
         $css .= "    --widget-gap: " . h($widgetGap) . ";\n";
         
-        // Page vertical spacing (spacing between page elements) - from spacing_tokens.vertical_spacing
-        $verticalSpacing = '24px'; // Default
-        $verticalSpacingValue = '24'; // Default numeric value
-        if (!empty($this->spacingTokens['vertical_spacing'])) {
-            $verticalSpacingValue = $this->spacingTokens['vertical_spacing'];
+        // Unified page spacing (spacing between all page elements) - from spacing_tokens.page_spacing
+        $pageSpacing = '16px'; // Default
+        $pageSpacingValue = '16'; // Default numeric value
+        if (!empty($this->spacingTokens['page_spacing'])) {
+            $pageSpacingValue = $this->spacingTokens['page_spacing'];
             // Ensure it has units if it's a number
-            if (is_numeric($verticalSpacingValue)) {
-                $verticalSpacing = $verticalSpacingValue . 'px';
+            if (is_numeric($pageSpacingValue)) {
+                $pageSpacing = $pageSpacingValue . 'px';
             } else {
-                $verticalSpacing = $verticalSpacingValue;
+                $pageSpacing = $pageSpacingValue;
             }
+            // Debug logging
+            error_log("ThemeCSSGenerator: page_spacing found: " . $pageSpacingValue . " -> " . $pageSpacing);
+        } else {
+            error_log("ThemeCSSGenerator: page_spacing NOT found, using default 16px. spacingTokens: " . json_encode($this->spacingTokens));
         }
-        $css .= "    --page-vertical-spacing: " . h($verticalSpacing) . ";\n";
+        $css .= "    --page-spacing: " . h($pageSpacing) . ";\n";
+        $css .= "    --page-element-spacing: " . h($pageSpacing) . ";\n";
         
-        // Profile image spacing - fixed: page vertical spacing + 20px top, page vertical spacing bottom
-        $verticalSpacingNum = is_numeric($verticalSpacingValue) ? floatval($verticalSpacingValue) : 24;
-        $profileImageSpacingTop = ($verticalSpacingNum + 20) . 'px';
-        $profileImageSpacingBottom = $verticalSpacingNum . 'px';
+        // Profile image spacing - use unified spacing with small offset for top (accounting for podcast bar)
+        $spacingNum = is_numeric($pageSpacingValue) ? floatval($pageSpacingValue) : 16;
+        $profileImageSpacingTop = ($spacingNum + 12) . 'px';
+        $profileImageSpacingBottom = $spacingNum . 'px';
         $css .= "    --profile-image-spacing-top: " . h($profileImageSpacingTop) . ";\n";
         $css .= "    --profile-image-spacing-bottom: " . h($profileImageSpacingBottom) . ";\n";
         
@@ -1876,11 +1879,6 @@ class ThemeCSSGenerator {
         // Apply font size from typography_tokens.scale.body if available
         if (!empty($this->typographyTokens['scale']['body'])) {
             $css .= "    font-size: var(--page-description-size, " . h($this->typographyTokens['scale']['body']) . "px) !important;\n";
-        }
-        // Apply bio spacing (margin above and below) from spacing_tokens.page_spacing
-        if (!empty($this->spacingTokens['page_spacing'])) {
-            $pageSpacing = $this->spacingTokens['page_spacing'];
-            $css .= "    --page-bio-spacing: " . h($pageSpacing) . "%;\n";
         }
         $css .= "}\n\n";
         

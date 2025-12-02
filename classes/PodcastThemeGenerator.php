@@ -31,22 +31,32 @@ class PodcastThemeGenerator {
             $colors = array_merge($colors, $this->getDefaultColors(5 - count($colors)));
         }
 
-        // Map colors to theme properties
-        $pageBackground = $colors[0]; // Most dominant
-        $pageTitleColor = isset($colors[1]) ? $colors[1] : $this->adjustBrightness($colors[0], -30);
-        $pageBodyColor = isset($colors[2]) ? $colors[2] : $this->adjustBrightness($colors[0], -50);
-        $widgetBackground = isset($colors[3]) ? $colors[3] : $this->adjustBrightness($colors[0], 10);
-        $accentColor = isset($colors[4]) ? $colors[4] : $colors[0];
+        // CRITICAL: Use all 5 extracted colors from the podcast cover
+        // These are the only colors that will be used throughout the theme
+        $color1 = $colors[0]; // Most dominant - used for page background gradient start
+        $color2 = isset($colors[1]) ? $colors[1] : $this->adjustBrightness($colors[0], -20); // Gradient end
+        $color3 = isset($colors[2]) ? $colors[2] : $this->adjustBrightness($colors[0], -30); // Page title
+        $color4 = isset($colors[3]) ? $colors[3] : $this->adjustBrightness($colors[0], -50); // Page body / widget background
+        $color5 = isset($colors[4]) ? $colors[4] : $colors[0]; // Accent / widget border / effects
 
-        // Ensure contrast ratios using our own methods
-        $pageTitleColor = $this->ensureContrast($pageTitleColor, $pageBackground, 3.0);
-        $pageBodyColor = $this->ensureContrast($pageBodyColor, $pageBackground, 4.5);
-        $widgetTextColor = $this->ensureContrast($pageBodyColor, $widgetBackground, 4.5);
+        // Map colors to theme properties using all 5 colors
+        // CRITICAL: Use all 5 colors visibly throughout the theme
+        $pageBackground = $color1; // Most dominant for gradient start
+        $pageTitleColor = $color3; // Use color 3 for page title (will adjust for contrast if needed)
+        $pageBodyColor = $color4; // Use color 4 for page body text (will adjust for contrast if needed)
+        $widgetBackground = $color3; // Use color 3 for widget background (different from page background)
+        $accentColor = $color5; // Use color 5 for accents
+        $widgetBorderColor = $color2; // Use color 2 for widget borders (different from accent)
+        $widgetTextColor = $color4; // Use color 4 for widget text
 
-        // Create gradient background from first two colors
-        $gradientStart = $pageBackground;
-        $gradientEnd = isset($colors[1]) ? $colors[1] : $this->adjustBrightness($pageBackground, -20);
-        $pageBackgroundGradient = "linear-gradient(135deg, {$gradientStart} 0%, {$gradientEnd} 100%)";
+        // CRITICAL: Adjust colors for contrast WITHOUT replacing with black/white
+        // Use gentle brightness adjustments to maintain the original color palette
+        $pageTitleColor = $this->adjustColorForContrast($pageTitleColor, $pageBackground, 3.0);
+        $pageBodyColor = $this->adjustColorForContrast($pageBodyColor, $pageBackground, 4.5);
+        $widgetTextColor = $this->adjustColorForContrast($widgetTextColor, $widgetBackground, 4.5);
+
+        // Create gradient background using only the first two colors
+        $pageBackgroundGradient = "linear-gradient(135deg, {$color1} 0%, {$color2} 100%)";
 
         // Popular font pairs
         // Page fonts: Playfair Display + Source Sans Pro (elegant)
@@ -72,15 +82,24 @@ class PodcastThemeGenerator {
                 ],
                 'semantic' => [
                     'text' => [
-                        'primary' => $pageTitleColor,
-                        'secondary' => $pageBodyColor
+                        'primary' => $pageTitleColor, // color3
+                        'secondary' => $pageBodyColor // color4
                     ],
                     'background' => [
-                        'primary' => $pageBackgroundGradient,
-                        'secondary' => $widgetBackground
+                        'primary' => $pageBackgroundGradient, // All 5 colors in gradient
+                        'secondary' => $widgetBackground, // color3
+                        'surface' => $color2, // Use color2 for surface
+                        'surface_raised' => $this->adjustBrightness($color2, 10) // Slightly lighter color2
                     ],
                     'accent' => [
-                        'primary' => $accentColor
+                        'primary' => $accentColor, // color5
+                        'secondary' => $color2, // Use color2 as secondary accent
+                        'muted' => $this->adjustBrightness($accentColor, -20) // Lighter color5
+                    ],
+                    'border' => [
+                        'default' => $widgetBorderColor, // color2
+                        'focus' => $accentColor, // color5
+                        'subtle' => $color4 // Use color4 for subtle borders
                     ]
                 ],
                 'core' => [
@@ -108,37 +127,37 @@ class PodcastThemeGenerator {
                     'widget_body' => $widgetTextColor
                 ]
             ],
-            'page_background' => $pageBackgroundGradient,
-            'widget_background' => $widgetBackground,
-            'widget_border_color' => $this->adjustBrightness($widgetBackground, -15),
+            'page_background' => $pageBackgroundGradient, // All 5 colors in gradient
+            'widget_background' => $widgetBackground, // color3
+            'widget_border_color' => $widgetBorderColor, // color2
             'page_primary_font' => $pageHeadingFont,
             'page_secondary_font' => $pageBodyFont,
             'widget_primary_font' => $widgetHeadingFont,
             'widget_secondary_font' => $widgetBodyFont,
-            // Page title effects: 3px outline and drop shadow
+            // Page title effects: Use color2 for shadow and color5 for border (use 2 different colors)
             'page_name_effect' => 'shadow',
-            'page_name_shadow_color' => $this->adjustBrightness($pageTitleColor, -40),
+            'page_name_shadow_color' => $color2, // Use color2 from cover
             'page_name_shadow_intensity' => 0.8,
             'page_name_shadow_depth' => 3,
             'page_name_shadow_blur' => 6,
-            'page_name_border_color' => $this->adjustBrightness($pageTitleColor, -20),
+            'page_name_border_color' => $color5, // Use color5 from cover (different from shadow)
             'page_name_border_width' => 3,
-            // Profile image styling: 15% radius, moderate drop shadow
+            // Profile image styling: Use color4 for shadow (another color)
             'profile_image_radius' => 15,
             'profile_image_effect' => 'shadow',
-            'profile_image_shadow_color' => '#000000',
+            'profile_image_shadow_color' => $color4, // Use color4 from cover
             'profile_image_shadow_intensity' => 0.4,
             'profile_image_shadow_depth' => 4,
             'profile_image_shadow_blur' => 12,
-            // Widget styling: glow and border
+            // Widget styling: Use color5 for glow and color2 for border (use 2 different colors)
             'widget_styles' => [
                 'border_width' => 2,
                 'border_radius' => 12,
-                'glow_enabled' => true,
-                'glow_color' => $accentColor,
+                'border_effect' => 'glow', // Use glow effect
+                'glow_color' => $color5, // Use color5 from cover
                 'glow_width' => 8,
                 'glow_intensity' => 0.6,
-                'glow_blur' => 'medium'
+                'border_glow_intensity' => 'subtle'
             ]
         ];
 
@@ -155,30 +174,76 @@ class PodcastThemeGenerator {
 
     /**
      * Shuffle colors while maintaining contrast ratios
-     * @param array $colors Array of 2-5 hex colors
+     * CRITICAL: Only shuffles the provided 5 colors - no new extraction or default colors
+     * @param array $colors Array of exactly 5 hex colors (from extracted palette)
      * @return array Shuffled colors with validated contrast
      */
     public function shuffleColors($colors) {
-        // Ensure we have at least 2 colors, pad to 5 if needed
-        if (count($colors) < 2) {
-            $colors = array_merge($colors, $this->getDefaultColors(2 - count($colors)));
-        }
-        if (count($colors) < 5) {
-            $colors = array_merge($colors, $this->getDefaultColors(5 - count($colors)));
+        // CRITICAL: Require exactly 5 colors - these are the only colors to shuffle
+        if (count($colors) !== 5) {
+            throw new Exception('Exactly 5 colors are required for shuffling');
         }
 
-        // Randomly shuffle color assignments
+        // Randomly shuffle the 5 color assignments
         $shuffled = $colors;
         shuffle($shuffled);
 
-        // Ensure contrast after shuffle
+        // CRITICAL: Only adjust brightness of the shuffled colors - NEVER replace with black/white
+        // We want to keep the original 5 colors, just adjust them slightly for contrast
         $pageBackground = $shuffled[0];
-        $shuffled[1] = $this->ensureContrast($shuffled[1], $pageBackground, 3.0);
-        $shuffled[2] = $this->ensureContrast($shuffled[2], $pageBackground, 4.5);
-        $shuffled[3] = $this->ensureContrast($shuffled[3], $pageBackground, 2.5); // Widget bg can be lower contrast
-        $shuffled[4] = $this->ensureContrast($shuffled[4], $pageBackground, 2.0); // Accent can be lower contrast
+        
+        // Adjust colors for contrast by lightening/darkening, but keep them within the 5-color palette
+        // Use a gentler contrast adjustment that doesn't replace colors
+        $shuffled[1] = $this->adjustColorForContrast($shuffled[1], $pageBackground, 3.0);
+        $shuffled[2] = $this->adjustColorForContrast($shuffled[2], $pageBackground, 4.5);
+        $shuffled[3] = $this->adjustColorForContrast($shuffled[3], $pageBackground, 2.5); // Widget bg can be lower contrast
+        $shuffled[4] = $this->adjustColorForContrast($shuffled[4], $pageBackground, 2.0); // Accent can be lower contrast
 
         return $shuffled;
+    }
+    
+    /**
+     * Adjust color for contrast by lightening/darkening only - never replace with black/white
+     * @param string $foreground Foreground color
+     * @param string $background Background color
+     * @param float $minRatio Minimum contrast ratio
+     * @return string Adjusted color (always from the original palette, just adjusted)
+     */
+    private function adjustColorForContrast($foreground, $background, $minRatio) {
+        $currentRatio = $this->calculateContrastRatio($foreground, $background);
+        
+        if ($currentRatio >= $minRatio) {
+            return $foreground; // Already has enough contrast
+        }
+
+        // Calculate background luminance
+        $bgLuminance = $this->getLuminance($background);
+        
+        // Only adjust brightness - never replace with black/white
+        // Try adjusting the original color first
+        if ($bgLuminance > 0.5) {
+            // Light background - darken foreground (try multiple levels)
+            for ($adjustment = -10; $adjustment >= -50; $adjustment -= 10) {
+                $adjusted = $this->adjustBrightness($foreground, $adjustment);
+                $adjustedRatio = $this->calculateContrastRatio($adjusted, $background);
+                if ($adjustedRatio >= $minRatio) {
+                    return $adjusted;
+                }
+            }
+        } else {
+            // Dark background - lighten foreground (try multiple levels)
+            for ($adjustment = 10; $adjustment <= 50; $adjustment += 10) {
+                $adjusted = $this->adjustBrightness($foreground, $adjustment);
+                $adjustedRatio = $this->calculateContrastRatio($adjusted, $background);
+                if ($adjustedRatio >= $minRatio) {
+                    return $adjusted;
+                }
+            }
+        }
+        
+        // If we can't achieve contrast by adjusting, return the original color
+        // Better to have low contrast than replace with black/white
+        return $foreground;
     }
 
     /**

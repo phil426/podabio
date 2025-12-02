@@ -71,6 +71,7 @@ switch ($action) {
         $podcastName = $_POST['podcast_name'] ?? null;
         $podcastDescription = $_POST['podcast_description'] ?? null;
         
+        // Require at least 2 colors (generateTheme will pad to 5 if needed)
         if (empty($colors) || !is_array($colors) || count($colors) < 2) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'At least 2 colors are required']);
@@ -78,6 +79,7 @@ switch ($action) {
         }
         
         try {
+            // Use up to 5 colors (generateTheme will pad if needed, but ideally we have 5)
             $themeData = $themeGenerator->generateTheme(
                 array_slice($colors, 0, 5), // Use up to 5 colors
                 $podcastName,
@@ -110,14 +112,16 @@ switch ($action) {
             $colors = is_array($colorsInput) ? $colorsInput : [];
         }
         
-        if (empty($colors) || !is_array($colors) || count($colors) < 2) {
+        // CRITICAL: Require exactly 5 colors for shuffling (matching the PHP method requirement)
+        if (empty($colors) || !is_array($colors) || count($colors) !== 5) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'At least 2 colors are required']);
+            echo json_encode(['success' => false, 'error' => 'Exactly 5 colors are required for shuffling']);
             exit;
         }
         
         try {
-            $shuffled = $themeGenerator->shuffleColors(array_slice($colors, 0, 5));
+            // Use exactly 5 colors (no slicing needed since we already validated)
+            $shuffled = $themeGenerator->shuffleColors($colors);
             
             echo json_encode([
                 'success' => true,

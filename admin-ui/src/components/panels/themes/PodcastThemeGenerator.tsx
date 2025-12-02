@@ -39,22 +39,17 @@ export function PodcastThemeGenerator({
   const [isShuffling, setIsShuffling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewCSSVars, setPreviewCSSVars] = useState<Record<string, string>>({});
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Extract colors on mount if cover image is available
-  useEffect(() => {
-    if (coverImageUrl && colors.length === 0) {
-      handleExtractColors();
-    }
-  }, [coverImageUrl]);
-
-  // Update preview when colors change
-  useEffect(() => {
-    if (colors.length >= 2) {
-      updatePreview();
-    }
-  }, [colors]);
-
+  // Prevent re-extraction once we have colors
   const handleExtractColors = useCallback(async () => {
+    // CRITICAL: Once we have 5 colors, prevent re-extraction
+    if (colors.length >= 5) {
+      setError('Colors already extracted. Use shuffle to rearrange them.');
+      return;
+    }
+    
     if (!coverImageUrl) {
       setError('No cover image URL provided');
       return;
@@ -65,18 +60,57 @@ export function PodcastThemeGenerator({
 
     try {
       const extractedColors = await extractColorsFromImage(coverImageUrl);
-      setColors(extractedColors);
+      // Ensure we have exactly 5 colors
+      if (extractedColors.length < 5) {
+        setError('Failed to extract 5 colors from image');
+        return;
+      }
+      setColors(extractedColors.slice(0, 5)); // Take exactly 5 colors
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract colors');
       console.error('Color extraction error:', err);
     } finally {
       setIsExtracting(false);
     }
-  }, [coverImageUrl]);
+  }, [coverImageUrl, colors.length]);
+
+  // Extract colors on mount if cover image is available
+  // CRITICAL: Only extract once - once we have 5 colors, we only shuffle those
+  useEffect(() => {
+    if (coverImageUrl && colors.length === 0) {
+      handleExtractColors();
+    }
+  }, [coverImageUrl, colors.length, handleExtractColors]);
+  
+  // Clear preview when component unmounts or colors are reset
+  useEffect(() => {
+    return () => {
+      setPreviewCSSVars({});
+    };
+  }, []);
+
+  // Update preview when colors change
+  // CRITICAL: Force preview update when colors change to clear previous theme
+  useEffect(() => {
+    if (colors.length >= 2) {
+      // Clear preview first to remove old CSS variables
+      setPreviewCSSVars({});
+      // Small delay to ensure clearing happens, then update
+      const timer = setTimeout(() => {
+        updatePreview();
+      }, 10);
+      return () => clearTimeout(timer);
+    } else {
+      // Clear preview if we don't have enough colors
+      setPreviewCSSVars({});
+    }
+  }, [colors]);
 
   const handleShuffle = useCallback(async () => {
-    if (colors.length < 5) {
-      setError('Please extract colors first');
+    // CRITICAL: Only shuffle if we have exactly 5 colors (the extracted palette)
+    // Once colors are extracted, we only shuffle those 5, never extract new ones
+    if (colors.length !== 5) {
+      setError('Please extract colors first (5 colors required)');
       return;
     }
 
@@ -84,6 +118,7 @@ export function PodcastThemeGenerator({
     setError(null);
 
     try {
+      // Shuffle only the existing 5 colors - no new extraction
       const shuffled = await shuffleThemeColors(colors);
       setColors(shuffled);
     } catch (err) {
@@ -94,8 +129,69 @@ export function PodcastThemeGenerator({
     }
   }, [colors]);
 
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newColors = [...colors];
+    const draggedColor = newColors[draggedIndex];
+    
+    // Remove dragged color
+    newColors.splice(draggedIndex, 1);
+    
+    // Insert at new position
+    newColors.splice(dropIndex, 0, draggedColor);
+    
+    setColors(newColors);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Color role labels
+  const getColorRole = (index: number): string => {
+    const roles = [
+      'Background Gradient Start',
+      'Background Gradient End',
+      'Page Title & Widget Background',
+      'Body Text & Widget Text',
+      'Accents & Borders'
+    ];
+    return roles[index] || `Color ${index + 1}`;
+  };
+
   const updatePreview = useCallback(async () => {
-    if (colors.length < 2) return;
+    if (colors.length < 2) {
+      // Clear preview when we don't have enough colors
+      setPreviewCSSVars({});
+      return;
+    }
 
     try {
       const themeData = await generateThemeFromPodcast({
@@ -105,28 +201,98 @@ export function PodcastThemeGenerator({
         colors
       });
 
-      // Convert theme data to CSS variables for preview
+      // CRITICAL: Clear previous CSS variables and set ALL new ones
+      // This ensures no leftover values from previous themes
+      // We need to set ALL CSS variables that ThemePreview uses, not just a few
+      
+      // Extract color values first (can't use const inside object literal)
+      const headingColor = (themeData.typography_tokens?.color?.heading as string) || '#000000';
+      const bodyColor = (themeData.typography_tokens?.color?.body as string) || '#666666';
+      const widgetHeadingColor = (themeData.typography_tokens?.color?.widget_heading as string) || '#000000';
+      const widgetBodyColor = (themeData.typography_tokens?.color?.widget_body as string) || '#666666';
+      
       const cssVars: Record<string, string> = {
-        '--page-background': themeData.page_background,
-        '--widget-background': themeData.widget_background,
-        '--widget-border-color': themeData.widget_border_color,
-        '--page-title-color': (themeData.typography_tokens?.color?.heading as string) || '#000000',
-        '--page-description-color': (themeData.typography_tokens?.color?.body as string) || '#666666',
-        '--widget-heading-color': (themeData.typography_tokens?.color?.widget_heading as string) || '#000000',
-        '--widget-body-color': (themeData.typography_tokens?.color?.widget_body as string) || '#666666',
+        // Backgrounds - CRITICAL: These must be set to clear previous theme
+        '--page-background': themeData.page_background || '#ffffff',
+        '--widget-background': themeData.widget_background || '#ffffff',
+        '--widget-border-color': themeData.widget_border_color || '#e5e7eb',
+        
+        // Typography colors - CRITICAL: Clear previous theme colors
+        // Set all possible variable names that CSS files might use
+        '--page-title-color': headingColor,
+        '--page-description-color': bodyColor,
+        '--widget-heading-color': widgetHeadingColor,
+        '--widget-body-color': widgetBodyColor,
+        
+        // Additional color variables that page.php and CSS files use
+        '--heading-font-color': headingColor,
+        '--body-font-color': bodyColor,
+        '--widget-heading-font-color': widgetHeadingColor,
+        '--widget-body-font-color': widgetBodyColor,
+        '--color-text-primary': headingColor,
+        '--color-text-secondary': bodyColor,
+        '--text-color': bodyColor,
+        
+        // Typography fonts - CRITICAL: Set fonts to clear previous theme
+        '--page-title-font': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
+        '--page-description-font': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Inter', sans-serif",
+        '--widget-heading-font': themeData.widget_primary_font ? `'${themeData.widget_primary_font}', sans-serif` : "'Inter', sans-serif",
+        '--widget-body-font': themeData.widget_secondary_font ? `'${themeData.widget_secondary_font}', sans-serif` : "'Inter', sans-serif",
+        '--page-primary-font': themeData.page_primary_font || 'Inter',
+        '--page-secondary-font': themeData.page_secondary_font || 'Inter',
+        '--widget-primary-font': themeData.widget_primary_font || 'Inter',
+        '--widget-secondary-font': themeData.widget_secondary_font || 'Inter',
+        '--font-family-heading': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
+        '--font-family-body': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Inter', sans-serif",
+        
+        // Typography sizes - Set defaults to clear previous theme
+        '--page-title-size': '32px',
+        '--page-description-size': '16px',
+        '--widget-heading-size': '20px',
+        '--widget-body-size': '14px',
+        
+        // Accent colors - CRITICAL: Clear previous theme accents
         '--icon-color': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
+        '--social-icon-color': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
+        '--color-accent-primary': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
+        
+        // Profile image - CRITICAL: Clear previous theme settings
         '--profile-image-radius': themeData.profile_image_radius ? `${themeData.profile_image_radius}%` : '15%',
+        '--profile-image-size': '120px',
+        '--profile-image-border-width': '0px',
+        '--profile-image-border-color': 'transparent',
+        '--profile-image-box-shadow': 'none',
+        
+        // Icon settings - CRITICAL: Clear previous theme
+        '--icon-size': '32px',
+        '--social-icon-size': '32px',
+        '--icon-spacing': '1rem',
+        '--social-icon-spacing': '1rem',
+        
+        // Widget styling
+        '--widget-border-width': '2px',
+        '--widget-border-radius': '12px',
+        '--widget-spacing': '1rem',
+        
+        // Clear any effect-related variables from previous theme
+        '--page-title-effect-class': '',
+        '--page-title-text-shadow': 'none',
+        '--widget-shadow-box-shadow': 'none',
+        '--widget-glow-box-shadow': 'none',
       };
 
       setPreviewCSSVars(cssVars);
     } catch (err) {
       console.error('Preview update error:', err);
+      // Clear preview on error
+      setPreviewCSSVars({});
     }
   }, [colors, coverImageUrl, podcastName, podcastDescription]);
 
   const handleGenerateTheme = useCallback(async () => {
-    if (colors.length < 2) {
-      setError('At least 2 colors are required');
+    // CRITICAL: Require exactly 5 colors for theme generation
+    if (colors.length !== 5) {
+      setError('Please extract 5 colors from the cover image first');
       return;
     }
 
@@ -288,30 +454,32 @@ export function PodcastThemeGenerator({
       </header>
 
       <div className={styles.content}>
-        {/* Podcast Info */}
-        <section className={styles.section}>
-          <h3>Podcast Information</h3>
-          {coverImageUrl && (
-            <div className={styles.coverImage}>
-              <img src={coverImageUrl} alt={podcastName || 'Podcast cover'} />
+        {/* Podcast Info Card */}
+        <section className={styles.card}>
+          <h3 className={styles.cardTitle}>Podcast Information</h3>
+          <div className={styles.cardContent}>
+            {coverImageUrl && (
+              <div className={styles.coverImage}>
+                <img src={coverImageUrl} alt={podcastName || 'Podcast cover'} />
+              </div>
+            )}
+            <div className={styles.podcastInfo}>
+              <p className={styles.podcastName}>{truncatedName}</p>
+              <p className={styles.podcastDescription}>{truncatedDescription}</p>
             </div>
-          )}
-          <div className={styles.podcastInfo}>
-            <p className={styles.podcastName}>{truncatedName}</p>
-            <p className={styles.podcastDescription}>{truncatedDescription}</p>
           </div>
         </section>
 
-        {/* Color Extraction */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h3>Color Palette</h3>
+        {/* Color Palette Card */}
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Color Palette</h3>
             {colors.length === 0 && (
               <button
                 type="button"
                 className={styles.extractButton}
                 onClick={handleExtractColors}
-                disabled={isExtracting || !coverImageUrl}
+                disabled={isExtracting || !coverImageUrl || colors.length >= 5}
               >
                 {isExtracting ? (
                   <>
@@ -323,6 +491,9 @@ export function PodcastThemeGenerator({
                 )}
               </button>
             )}
+            {colors.length >= 5 && (
+              <p className={styles.infoText}>5 colors extracted. Drag to reorder or shuffle to rearrange.</p>
+            )}
           </div>
 
           {isExtracting && (
@@ -333,16 +504,24 @@ export function PodcastThemeGenerator({
           )}
 
           {colors.length > 0 && (
-            <>
+            <div className={styles.cardContent}>
               <div className={styles.colorSwatches}>
                 {colors.map((color, index) => (
                   <div
-                    key={index}
-                    className={styles.swatch}
+                    key={`${color}-${index}`}
+                    className={`${styles.swatch} ${draggedIndex === index ? styles.dragging : ''} ${dragOverIndex === index ? styles.dragOver : ''}`}
                     style={{ backgroundColor: color }}
-                    title={color}
+                    title={`${getColorRole(index)}: ${color}`}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
                   >
                     <span className={styles.swatchLabel}>{index + 1}</span>
+                    <div className={styles.swatchRole}>{getColorRole(index)}</div>
+                    <div className={styles.swatchColorCode}>{color}</div>
                   </div>
                 ))}
               </div>
@@ -366,7 +545,7 @@ export function PodcastThemeGenerator({
                   )}
                 </button>
               </div>
-            </>
+            </div>
           )}
         </section>
 
@@ -375,7 +554,10 @@ export function PodcastThemeGenerator({
           <section className={styles.section}>
             <h3>Preview</h3>
             <div className={styles.previewContainer}>
-              <ThemePreview cssVars={previewCSSVars} />
+              <ThemePreview 
+                cssVars={previewCSSVars} 
+                hotspotsVisible={false}
+              />
             </div>
           </section>
         )}
@@ -401,7 +583,7 @@ export function PodcastThemeGenerator({
             type="button"
             className={styles.generateButton}
             onClick={handleGenerateTheme}
-            disabled={isGenerating || colors.length < 2}
+            disabled={isGenerating || colors.length !== 5}
           >
             {isGenerating ? (
               <>

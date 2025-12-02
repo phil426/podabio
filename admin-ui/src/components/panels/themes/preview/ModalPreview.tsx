@@ -135,8 +135,8 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
         fontSize: cssVars['--page-description-size'] || '16px',
         fontWeight: cssVars['--page-bio-weight'] || '400',
         fontStyle: cssVars['--page-bio-style'] || 'normal',
-        marginTop: cssVars['--page-bio-spacing'] ? `calc(${cssVars['--page-bio-spacing']} / 100 * 24px)` : undefined,
-        marginBottom: cssVars['--page-bio-spacing'] ? `calc(${cssVars['--page-bio-spacing']} / 100 * 24px)` : undefined
+        marginTop: cssVars['--page-spacing'] || '16px',
+        marginBottom: '0'
       };
       
       if (isGradient) {

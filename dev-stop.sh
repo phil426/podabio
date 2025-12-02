@@ -5,7 +5,7 @@
 
 set -e  # Exit on error
 
-PROJECT_ROOT="/Users/philybarrolaza/.cursor/podinbio"
+PROJECT_ROOT="/Users/philybarrolaza/.cursor/podabio"
 ADMIN_UI_DIR="${PROJECT_ROOT}/admin-ui"
 
 echo "🛑 PodaBio Development Session Shutdown"

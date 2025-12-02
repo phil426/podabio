@@ -4,7 +4,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ArrowLeft, FloppyDisk, Eye, EyeSlash, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowLeft, Eye, EyeSlash, ArrowCounterClockwise, CheckCircle, Circle, XCircle, Spinner } from '@phosphor-icons/react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
@@ -31,6 +31,7 @@ interface ThemeEditorViewProps {
   onSave: () => void;
   onBack: () => void;
   isSaving: boolean;
+  autoSaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   previewCSSVars: Record<string, string>;
   activeColor: TabColorTheme;
 }
@@ -42,10 +43,12 @@ export function ThemeEditorView({
   onSave,
   onBack,
   isSaving,
+  autoSaveStatus,
   previewCSSVars,
   activeColor
 }: ThemeEditorViewProps): JSX.Element {
   const [openModalSection, setOpenModalSection] = useState<string | null>(null);
+  const [openModalWidgetId, setOpenModalWidgetId] = useState<string | null>(null);
   const [contentEditor, setContentEditor] = useState<ContentEditorType | null>(null);
   const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(true);
   const [undoStack, setUndoStack] = useState<StateChange[]>([]);
@@ -159,15 +162,18 @@ export function ThemeEditorView({
     setContentEditor(editor);
   };
 
-  const handleEditStyle = (sectionId: string) => {
+  const handleEditStyle = (sectionId: string, widgetId?: string | null) => {
     // Close content editor if open
     setContentEditor(null);
     // Open style editor
     setOpenModalSection(sectionId);
+    // Track which widget is being edited (if any)
+    setOpenModalWidgetId(widgetId || null);
   };
 
   const handleCloseStyleModal = () => {
     setOpenModalSection(null);
+    setOpenModalWidgetId(null);
   };
 
   const handleCloseContentModal = () => {
@@ -204,6 +210,42 @@ export function ThemeEditorView({
           if (contentEditor?.type === 'widget' && contentEditor.widgetId === widgetId) {
             setContentEditor(null);
           }
+        }
+      }
+    );
+  };
+
+  const handleToggleFeatured = (widgetId: string) => {
+    const widget = widgets.find((w) => String(w.id) === widgetId);
+    if (!widget) return;
+
+    const isCurrentlyFeatured = widget.is_featured === 1;
+    const newFeaturedValue = isCurrentlyFeatured ? '0' : '1';
+    
+    // The backend will automatically unfeature other widgets when one is featured
+    updateWidgetMutation.mutate(
+      { widget_id: widgetId, is_featured: newFeaturedValue },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+        }
+      }
+    );
+  };
+
+  const handleToggleLock = (widgetId: string) => {
+    const widget = widgets.find((w) => String(w.id) === widgetId);
+    if (!widget) return;
+
+    // Assuming is_locked field exists (0 or 1), similar to is_active
+    // If the field doesn't exist yet, this will need to be added to the database
+    const currentLocked = (widget as any).is_locked ?? 0;
+    const newLockedValue = currentLocked ? '0' : '1';
+    updateWidgetMutation.mutate(
+      { widget_id: widgetId, is_locked: newLockedValue },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
         }
       }
     );
@@ -377,18 +419,36 @@ export function ThemeEditorView({
             </Tooltip.Root>
           </Tooltip.Provider>
           
+          {/* Autosave Status Indicator */}
           <Tooltip.Provider delayDuration={200}>
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className={styles.saveButton}
-                  onClick={onSave}
-                  disabled={isSaving || !theme}
-                >
-                  <FloppyDisk aria-hidden="true" size={16} weight="regular" />
-                  {isSaving ? 'Saving...' : 'Save'}
-                </button>
+                <div className={styles.autoSaveStatus} data-status={autoSaveStatus}>
+                  {autoSaveStatus === 'saving' && (
+                    <>
+                      <Spinner aria-hidden="true" size={14} weight="regular" className={styles.spinner} />
+                      <span>Saving...</span>
+                    </>
+                  )}
+                  {autoSaveStatus === 'saved' && (
+                    <>
+                      <CheckCircle aria-hidden="true" size={14} weight="regular" />
+                      <span>Saved</span>
+                    </>
+                  )}
+                  {autoSaveStatus === 'error' && (
+                    <>
+                      <XCircle aria-hidden="true" size={14} weight="regular" />
+                      <span>Error</span>
+                    </>
+                  )}
+                  {autoSaveStatus === 'idle' && (
+                    <>
+                      <Circle aria-hidden="true" size={14} weight="regular" />
+                      <span>All changes saved</span>
+                    </>
+                  )}
+                </div>
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Content
@@ -396,7 +456,10 @@ export function ThemeEditorView({
                   align="end"
                   className={styles.tooltip}
                 >
-                  Save your theme changes
+                  {autoSaveStatus === 'saving' && 'Saving your changes...'}
+                  {autoSaveStatus === 'saved' && 'Changes saved successfully'}
+                  {autoSaveStatus === 'error' && 'Failed to save. Please try again.'}
+                  {autoSaveStatus === 'idle' && 'All changes are saved'}
                   <Tooltip.Arrow className={styles.tooltipArrow} />
                 </Tooltip.Content>
               </Tooltip.Portal>
@@ -411,10 +474,13 @@ export function ThemeEditorView({
           cssVars={previewCSSVars} 
           onHotspotClick={handleHotspotClick}
           onEditContent={handleEditContent}
-          onEditStyle={handleEditStyle}
+          onEditStyle={(sectionId, widgetId) => handleEditStyle(sectionId, widgetId)}
           onToggleVisibility={handleToggleVisibility}
           onDeleteWidget={handleDeleteWidget}
+          onToggleFeatured={handleToggleFeatured}
+          onToggleLock={handleToggleLock}
           hotspotsVisible={hotspotsVisible}
+          activeColor={activeColor}
         />
       </div>
 
@@ -422,6 +488,7 @@ export function ThemeEditorView({
       <ThemePropertyDrawer
         isOpen={openModalSection !== null}
         sectionId={openModalSection}
+        widgetId={openModalWidgetId}
         onClose={handleCloseStyleModal}
         theme={theme}
         uiState={uiState}

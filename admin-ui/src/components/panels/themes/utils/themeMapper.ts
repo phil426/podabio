@@ -192,6 +192,18 @@ export function databaseToUI(
 
     // Parse value based on field type - extract numeric values from strings with units
     let parsedValue: unknown = value;
+    
+    // Debug: Log page-spacing loading (after parsedValue is initialized)
+    if (field.id === 'page-spacing') {
+      console.log('Loading page-spacing:', { 
+        fieldId: field.id, 
+        tokenPath: field.tokenPath, 
+        rawValue: value, 
+        parsedValue, 
+        defaultValue: field.defaultValue,
+        themeSpacingTokens: theme?.spacing_tokens 
+      });
+    }
     if (value !== undefined && (field.type === 'number' || field.type === 'border-width' || field.type === 'size' || field.type === 'spacing' || field.type === 'shadow' || field.type === 'glow')) {
       // If value is a string with units (e.g., "34px", "0.1rem"), extract the number
       if (typeof value === 'string') {

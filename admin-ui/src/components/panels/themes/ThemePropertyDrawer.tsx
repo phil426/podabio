@@ -24,6 +24,7 @@ import styles from './theme-property-drawer.module.css';
 interface ThemePropertyDrawerProps {
   isOpen: boolean;
   sectionId: string | null;
+  widgetId?: string | null;
   onClose: () => void;
   theme: ThemeRecord | null;
   uiState: Record<string, unknown>;
@@ -34,6 +35,7 @@ interface ThemePropertyDrawerProps {
 export function ThemePropertyDrawer({
   isOpen,
   sectionId,
+  widgetId,
   onClose,
   theme,
   uiState,
@@ -176,6 +178,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                widgetId={widgetId}
               />
             )}
             {sectionId === 'widget-buttons' && (

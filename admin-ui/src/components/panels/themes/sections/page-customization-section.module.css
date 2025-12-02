@@ -35,6 +35,13 @@
   color: var(--admin-text-primary, #0f172a);
 }
 
+.description {
+  font-size: 12px;
+  color: var(--admin-text-secondary, #64748b);
+  margin: 0;
+  line-height: 1.4;
+}
+
 .toggleGroup {
   display: flex;
   gap: 8px;
