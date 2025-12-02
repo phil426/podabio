@@ -194,6 +194,12 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             pointer-events: none !important;
             position: relative;
         }
+        /* Enable pointer events on specific hotspot elements that should be fully clickable */
+        body.preview-mode .profile-image-container[data-hotspot],
+        body.preview-mode .page-description[data-hotspot] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
         /* Visual indicator for hotspots - pulsing glowing orb - ONLY THIS IS CLICKABLE */
         body.preview-mode [data-hotspot]::after,
         body.preview-mode [data-hotspot-text]::after {
@@ -1993,22 +1999,34 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 return; // Not in iframe
             }
             
-            // Listen for clicks on hotspot indicator dots only
+            // Listen for clicks on hotspot elements - allow clicks anywhere on the element
             document.addEventListener('click', function(e) {
-                // Check if click is on a hotspot indicator dot (::after pseudo-element)
-                // Since we can't directly target ::after, we check if click is within the dot area
                 const allHotspots = document.querySelectorAll('[data-hotspot], [data-hotspot-text]');
                 
+                // Check if click is on or within any hotspot element
+                let clickedHotspot = null;
                 for (const hotspot of allHotspots) {
-                    const rect = hotspot.getBoundingClientRect();
-                    const sectionId = hotspot.getAttribute('data-hotspot') || hotspot.getAttribute('data-hotspot-text');
-                    if (!sectionId) continue;
+                    // Check if the click target is the hotspot or a child of the hotspot
+                    if (hotspot.contains(e.target) || hotspot === e.target) {
+                        const sectionId = hotspot.getAttribute('data-hotspot') || hotspot.getAttribute('data-hotspot-text');
+                        if (sectionId) {
+                            clickedHotspot = { element: hotspot, sectionId: sectionId };
+                            break;
+                        }
+                    }
+                }
+                
+                if (clickedHotspot) {
+                    const { element: hotspot, sectionId } = clickedHotspot;
+                    e.preventDefault();
+                    e.stopPropagation();
                     
-                    // Calculate dot position based on element type
+                    const rect = hotspot.getBoundingClientRect();
+                    
+                    // Calculate dot position based on element type for context menu positioning
                     let dotX, dotY, dotSize = 32; // 32px clickable area
                     
                     if (hotspot.classList.contains('page-background-hotspot')) {
-                        // Page background: top: 0, left: 0
                         dotX = rect.left;
                         dotY = rect.top;
                     } else if (hotspot.classList.contains('profile-image-container')) {
@@ -2020,50 +2038,37 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         dotX = rect.right - 24 - dotSize;
                         dotY = rect.top;
                     } else if (hotspot.classList.contains('widget-wrapper')) {
-                        // Widget: top: 8px, right: 8px
                         dotX = rect.right - 8 - dotSize;
                         dotY = rect.top + 8;
                     } else if (hotspot.classList.contains('podcast-top-banner') || hotspot.classList.contains('social-icons')) {
-                        // Podcast banner/social icons: top: 8px, right: 8px
                         dotX = rect.right - 8 - dotSize;
                         dotY = rect.top + 8;
                     } else if (hotspot.hasAttribute('data-hotspot-text')) {
-                        // Text hotspot: top: 8px, left: 8px
                         dotX = rect.left + 8;
                         dotY = rect.top + 8;
                     } else {
-                        // Default: top: 8px, right: 8px
                         dotX = rect.right - 8 - dotSize;
                         dotY = rect.top + 8;
                     }
                     
-                    // Check if click is within the dot area
-                    const clickX = e.clientX;
-                    const clickY = e.clientY;
-                    if (clickX >= dotX && clickX <= dotX + dotSize && 
-                        clickY >= dotY && clickY <= dotY + dotSize) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Find widget ID if applicable
-                        const widgetId = hotspot.getAttribute('data-widget-id') || 
-                                        hotspot.closest('[data-widget-id]')?.getAttribute('data-widget-id') || 
-                                        null;
-                        
-                        // Calculate center of dot for positioning context menu
-                        const indicatorCenterX = dotX + (dotSize / 2);
-                        const indicatorCenterY = dotY + (dotSize / 2);
-                        
-                        // Send message to parent window
-                        window.parent.postMessage({
-                            type: 'hotspot-click',
-                            sectionId: sectionId,
-                            widgetId: widgetId,
-                            x: indicatorCenterX,
-                            y: indicatorCenterY
-                        }, '*');
-                        return;
-                    }
+                    // Find widget ID if applicable
+                    const widgetId = hotspot.getAttribute('data-widget-id') || 
+                                    hotspot.closest('[data-widget-id]')?.getAttribute('data-widget-id') || 
+                                    null;
+                    
+                    // Calculate center of dot for positioning context menu
+                    const indicatorCenterX = dotX + (dotSize / 2);
+                    const indicatorCenterY = dotY + (dotSize / 2);
+                    
+                    // Send message to parent window
+                    window.parent.postMessage({
+                        type: 'hotspot-click',
+                        sectionId: sectionId,
+                        widgetId: widgetId,
+                        x: indicatorCenterX,
+                        y: indicatorCenterY
+                    }, '*');
+                    return;
                 }
             }, true); // Use capture phase to catch clicks before they're blocked
             

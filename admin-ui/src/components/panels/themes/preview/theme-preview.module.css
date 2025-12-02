@@ -349,9 +349,11 @@
 
 /* Hotspot styling - clickable elements in preview */
 .hotspot {
-  cursor: pointer;
+  cursor: pointer !important;
   position: relative;
   transition: all 0.2s ease;
+  z-index: 100;
+  pointer-events: auto !important;
 }
 
 /* Pulsing glowing orb indicator - matching profile hotspot style */
@@ -425,6 +427,8 @@
 /* Profile Image Hotspot - Custom styling */
 .profileImageContainer.hotspot {
   position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
 }
 
 .profileImageContainer.hotspot:hover {
@@ -441,6 +445,11 @@
   right: -8px;
 }
 
+/* Ensure image inside hotspot container doesn't block clicks */
+.profileImageContainer.hotspot img {
+  pointer-events: auto !important;
+}
+
 /* Social icons container - orb centered above */
 .socialIcons.hotspot::after {
   top: -12px;
@@ -454,6 +463,14 @@
 .pageBio.hotspot::after {
   top: -8px;
   right: 8px;
+}
+
+/* Ensure bio hotspot is clickable */
+.pageBio.hotspot {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 /* Widget hotspot - orb in top-right corner */

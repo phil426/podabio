@@ -133,9 +133,15 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   background: var(--admin-bg-rail, #1e293b);
-  color: var(--admin-text-inverse, #ffffff);
+  color: var(--admin-text-inverse, #ffffff) !important;
   font-size: var(--admin-font-size-base, 1rem);
   transition: border-color 150ms ease;
+}
+
+.control .inputWrapper .input::placeholder,
+.inputWrapper .input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
 }
 
 .control .inputWrapper .input:focus,
@@ -465,10 +471,15 @@
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
   background: var(--admin-bg-rail, #1e293b);
-  color: var(--admin-text-inverse, #ffffff);
+  color: var(--admin-text-inverse, #ffffff) !important;
   font-size: var(--admin-font-size-base, 1rem);
   transition: border-color 150ms ease;
   font-family: inherit;
+}
+
+.control .input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
 }
 
 .control .input:focus {

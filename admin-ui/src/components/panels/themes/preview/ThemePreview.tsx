@@ -523,7 +523,7 @@ body {
               className={styles.previewIframe}
               title="Live page preview"
               onLoad={handleIframeLoad}
-              sandbox="allow-same-origin allow-scripts allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
               style={{
                 opacity: iframeLoading ? 0 : 1,
                 transition: 'opacity 0.3s ease-in-out',
@@ -532,8 +532,9 @@ body {
                 transform: `scale(${PREVIEW_SCALE})`,
                 transformOrigin: 'top left',
                 border: 'none',
-                // CRITICAL: In theme generator, disable all interactions except scrolling
-                pointerEvents: hotspotsVisible ? 'auto' : 'none'
+                // CRITICAL: Always allow pointer events when hotspots are visible
+                pointerEvents: hotspotsVisible ? 'auto' : 'none',
+                touchAction: hotspotsVisible ? 'auto' : 'none'
               }}
             />
           )}
@@ -605,13 +606,45 @@ body {
                 <div
                   className={`${styles.profileImageContainer} ${hotspotsVisible ? styles.hotspot : ''}`}
                   data-hotspot="profile-image"
-                  onClick={() => hotspotsVisible && onHotspotClick?.('profile-image')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (hotspotsVisible && onHotspotClick) {
+                      onHotspotClick('profile-image');
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    if (hotspotsVisible) {
+                      e.preventDefault();
+                    }
+                  }}
                   title={hotspotsVisible ? "Profile Image - Edit profile image settings" : undefined}
+                  style={{
+                    pointerEvents: hotspotsVisible ? 'auto' : 'auto'
+                  }}
                 >
                   <img 
                     src={normalizeImageUrl(page.profile_image)} 
                     alt="Profile" 
                     className={styles.profileImage}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (hotspotsVisible && onHotspotClick) {
+                        onHotspotClick('profile-image');
+                      }
+                    }}
+                    onDragStart={(e) => {
+                      // Prevent image dragging when hotspot is active
+                      if (hotspotsVisible) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onMouseDown={(e) => {
+                      if (hotspotsVisible) {
+                        e.preventDefault();
+                      }
+                    }}
                     style={{
                       width: cssVars['--profile-image-size'] || '120px',
                       height: cssVars['--profile-image-size'] || '120px',
@@ -630,7 +663,11 @@ body {
                       boxShadow: cssVars['--profile-image-box-shadow'] || 'none',
                       objectFit: 'cover',
                       display: 'block',
-                      margin: '0 auto'
+                      margin: '0 auto',
+                      userSelect: 'none',
+                      WebkitUserDrag: 'none',
+                      pointerEvents: hotspotsVisible ? 'auto' : 'auto',
+                      cursor: hotspotsVisible ? 'pointer' : 'default'
                     }}
                     onError={(e) => {
                       // Hide image if it fails to load
@@ -700,9 +737,25 @@ body {
               <p 
                   className={`${styles.pageBio} ${hotspotsVisible ? styles.hotspot : ''}`}
                 data-hotspot="page-bio"
-                  onClick={() => hotspotsVisible && onHotspotClick?.('page-description')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (hotspotsVisible && onHotspotClick) {
+                      onHotspotClick('page-description');
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    if (hotspotsVisible) {
+                      e.preventDefault();
+                    }
+                  }}
                   title={hotspotsVisible ? "Page Description - Edit page description settings" : undefined}
-                  style={bioStyle}
+                  style={{
+                    ...bioStyle,
+                    userSelect: hotspotsVisible ? 'none' : 'auto',
+                    pointerEvents: hotspotsVisible ? 'auto' : 'auto',
+                    cursor: hotspotsVisible ? 'pointer' : 'text'
+                  }}
               >
                 {decodeHtmlEntities(page.podcast_description)}
               </p>

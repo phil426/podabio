@@ -39,15 +39,6 @@ export function WidgetSettingsSection({
   const updateWidgetMutation = useUpdateWidgetMutation();
   const queryClient = useQueryClient();
   
-  // Debug logging
-  console.log('WidgetSettingsSection Debug:', {
-    widgetId,
-    widgetFound: !!widget,
-    widget: widget ? { id: widget.id, is_featured: widget.is_featured, featured_effect: widget.featured_effect } : null,
-    isFeatured,
-    totalWidgets: widgets.length,
-    allWidgetIds: widgets.map(w => ({ id: w.id, idType: typeof w.id, is_featured: w.is_featured }))
-  });
   // Widget background/border/shadow/glow values
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';

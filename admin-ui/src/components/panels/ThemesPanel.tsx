@@ -43,6 +43,10 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to store latest uiState to avoid circular dependency in handleSave
+  const uiStateRef = useRef<Record<string, unknown>>(uiState);
+  // Ref to store latest selectedTheme to avoid stale closure in autosave timeout
+  const selectedThemeRef = useRef<ThemeRecord | null>(selectedTheme);
 
   // Derive active theme from theme library (user themes retired - only system themes)
   const activeTheme = useMemo(() => {
@@ -60,16 +64,26 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       const page = snapshot?.page ?? null;
       const initialState = databaseToUI(activeTheme, page);
       setUIState(initialState);
+      uiStateRef.current = initialState; // Update ref
       setSelectedTheme(activeTheme);
+      selectedThemeRef.current = activeTheme; // Update ref
       // Ensure editor view is shown when theme is available
       setViewMode('editor');
     } else {
-      setUIState(getDefaultUIState());
+      const defaultState = getDefaultUIState();
+      setUIState(defaultState);
+      uiStateRef.current = defaultState; // Update ref
       setSelectedTheme(null);
+      selectedThemeRef.current = null; // Update ref
       // Show library if no theme is available
       setViewMode('library');
     }
   }, [activeTheme?.id, snapshot?.page]);
+
+  // Keep selectedThemeRef in sync with selectedTheme (safety net)
+  useEffect(() => {
+    selectedThemeRef.current = selectedTheme;
+  }, [selectedTheme]);
 
   // Auto-dismiss status messages
   useEffect(() => {
@@ -80,7 +94,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
   // Save theme (autosave if isAutoSave is true)
   const handleSave = useCallback(async (isAutoSave = false) => {
-    if (!selectedTheme || isSaving) {
+    // Use refs to get latest values to avoid stale closure issues
+    const currentSelectedTheme = selectedThemeRef.current;
+    const currentUIState = uiStateRef.current;
+    
+    if (!currentSelectedTheme || isSaving) {
       return;
     }
 
@@ -89,56 +107,56 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       setStatus(null); // Clear any existing status
 
       // Convert UI state to database format
-      const dbState = uiToDatabase(uiState);
+      const dbState = uiToDatabase(currentUIState);
       
       // Debug: Log what we're trying to save
       console.log('Saving theme:', {
-        themeId: selectedTheme.id,
-        themeName: selectedTheme.name,
-        userId: selectedTheme.user_id,
-        isUserTheme: selectedTheme.user_id !== null && selectedTheme.user_id !== undefined,
+        themeId: currentSelectedTheme.id,
+        themeName: currentSelectedTheme.name,
+        userId: currentSelectedTheme.user_id,
+        isUserTheme: currentSelectedTheme.user_id !== null && currentSelectedTheme.user_id !== undefined,
         dbStateKeys: Object.keys(dbState),
         spacingTokens: dbState.spacing_tokens,
-        uiStatePageSpacing: uiState['page-spacing'],
+        uiStatePageSpacing: currentUIState['page-spacing'],
         pageSpacingValue: dbState.spacing_tokens?.page_spacing,
         fullDbState: JSON.stringify(dbState, null, 2)
       });
 
       // Merge with existing theme data to preserve fields not in UI state
-      const existingThemeData = selectedTheme ? {
-        color_tokens: typeof selectedTheme.color_tokens === 'string' 
-          ? JSON.parse(selectedTheme.color_tokens) 
-          : selectedTheme.color_tokens,
-        typography_tokens: typeof selectedTheme.typography_tokens === 'string'
-          ? JSON.parse(selectedTheme.typography_tokens)
-          : selectedTheme.typography_tokens,
-        spacing_tokens: typeof selectedTheme.spacing_tokens === 'string'
-          ? JSON.parse(selectedTheme.spacing_tokens)
-          : selectedTheme.spacing_tokens,
-        shape_tokens: typeof selectedTheme.shape_tokens === 'string'
-          ? JSON.parse(selectedTheme.shape_tokens)
-          : selectedTheme.shape_tokens,
-        motion_tokens: typeof selectedTheme.motion_tokens === 'string'
-          ? JSON.parse(selectedTheme.motion_tokens)
-          : selectedTheme.motion_tokens,
-        iconography_tokens: typeof selectedTheme.iconography_tokens === 'string'
-          ? JSON.parse(selectedTheme.iconography_tokens)
-          : selectedTheme.iconography_tokens,
-        widget_styles: typeof selectedTheme.widget_styles === 'string'
-          ? JSON.parse(selectedTheme.widget_styles)
-          : selectedTheme.widget_styles,
-        page_background: selectedTheme.page_background,
-        widget_background: selectedTheme.widget_background,
-        widget_border_color: selectedTheme.widget_border_color,
-        page_primary_font: selectedTheme.page_primary_font,
-        page_secondary_font: selectedTheme.page_secondary_font,
-        widget_primary_font: selectedTheme.widget_primary_font,
-        widget_secondary_font: selectedTheme.widget_secondary_font,
+      const existingThemeData = currentSelectedTheme ? {
+        color_tokens: typeof currentSelectedTheme.color_tokens === 'string' 
+          ? JSON.parse(currentSelectedTheme.color_tokens) 
+          : currentSelectedTheme.color_tokens,
+        typography_tokens: typeof currentSelectedTheme.typography_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.typography_tokens)
+          : currentSelectedTheme.typography_tokens,
+        spacing_tokens: typeof currentSelectedTheme.spacing_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.spacing_tokens)
+          : currentSelectedTheme.spacing_tokens,
+        shape_tokens: typeof currentSelectedTheme.shape_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.shape_tokens)
+          : currentSelectedTheme.shape_tokens,
+        motion_tokens: typeof currentSelectedTheme.motion_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.motion_tokens)
+          : currentSelectedTheme.motion_tokens,
+        iconography_tokens: typeof currentSelectedTheme.iconography_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.iconography_tokens)
+          : currentSelectedTheme.iconography_tokens,
+        widget_styles: typeof currentSelectedTheme.widget_styles === 'string'
+          ? JSON.parse(currentSelectedTheme.widget_styles)
+          : currentSelectedTheme.widget_styles,
+        page_background: currentSelectedTheme.page_background,
+        widget_background: currentSelectedTheme.widget_background,
+        widget_border_color: currentSelectedTheme.widget_border_color,
+        page_primary_font: currentSelectedTheme.page_primary_font,
+        page_secondary_font: currentSelectedTheme.page_secondary_font,
+        widget_primary_font: currentSelectedTheme.widget_primary_font,
+        widget_secondary_font: currentSelectedTheme.widget_secondary_font,
       } : {};
 
       // Deep merge: UI state overrides existing theme data
       const themeData: any = {
-        name: selectedTheme.name,
+        name: currentSelectedTheme.name,
         color_tokens: { ...(existingThemeData.color_tokens || {}), ...(dbState.color_tokens || {}) },
         typography_tokens: { ...(existingThemeData.typography_tokens || {}), ...(dbState.typography_tokens || {}) },
         spacing_tokens: { ...(existingThemeData.spacing_tokens || {}), ...(dbState.spacing_tokens || {}) },
@@ -156,9 +174,9 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       };
 
       // Check if it's a system theme (user_id is null)
-      if (selectedTheme.user_id === null || selectedTheme.user_id === undefined) {
+      if (currentSelectedTheme.user_id === null || currentSelectedTheme.user_id === undefined) {
         // System theme - check if custom version exists
-        const customName = `Custom - ${selectedTheme.name}`;
+        const customName = `Custom - ${currentSelectedTheme.name}`;
         const existingCustom = themeLibrary?.user?.find(t => t.name === customName);
 
         if (existingCustom) {
@@ -176,6 +194,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
                               refreshedLibrary?.system?.find(t => t.id === existingCustom.id);
           if (updatedTheme) {
             setSelectedTheme(updatedTheme);
+            selectedThemeRef.current = updatedTheme; // Update ref
           }
         } else {
           // User themes retired - only system themes can be customized
@@ -183,9 +202,9 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         }
       } else {
         // User theme - update directly
-        console.log('Updating user theme:', selectedTheme.id, selectedTheme.name);
+        console.log('Updating user theme:', currentSelectedTheme.id, currentSelectedTheme.name);
         const updateResult = await updateMutation.mutateAsync({
-          themeId: selectedTheme.id,
+          themeId: currentSelectedTheme.id,
           data: themeData
         });
         console.log('Update result:', updateResult);
@@ -193,10 +212,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         // Refresh the selected theme data
         await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
         const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-        const updatedTheme = refreshedLibrary?.user?.find(t => t.id === selectedTheme.id) ||
-                            refreshedLibrary?.system?.find(t => t.id === selectedTheme.id);
+        const updatedTheme = refreshedLibrary?.user?.find(t => t.id === currentSelectedTheme.id) ||
+                            refreshedLibrary?.system?.find(t => t.id === currentSelectedTheme.id);
         if (updatedTheme) {
           setSelectedTheme(updatedTheme);
+          selectedThemeRef.current = updatedTheme; // Update ref
         }
       }
 
@@ -219,7 +239,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       ];
 
       profileImageFields.forEach(fieldId => {
-        const value = uiState[fieldId];
+        const value = currentUIState[fieldId];
         if (value !== undefined && value !== null) {
           const dbFieldName = fieldId.replace('profile-image-', 'profile_image_').replace(/-/g, '_');
           pageFields[dbFieldName] = typeof value === 'number' ? value : String(value);
@@ -228,13 +248,13 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       // Page title effect (page-level field)
       // Note: This field can be null (for 'none' or empty), which is valid in the database
-      const pageTitleEffect = uiState['page-title-effect'];
+      const pageTitleEffect = currentUIState['page-title-effect'];
       if (pageTitleEffect !== undefined) {
         pageFields['page_name_effect'] = pageTitleEffect === 'none' || pageTitleEffect === '' ? null : String(pageTitleEffect);
       }
 
       // Page background animation (page-level field)
-      const pageBackgroundAnimate = uiState['page-background-animate'];
+      const pageBackgroundAnimate = currentUIState['page-background-animate'];
       if (pageBackgroundAnimate !== undefined) {
         pageFields['page_background_animate'] = Boolean(pageBackgroundAnimate);
       }
@@ -274,17 +294,23 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     } finally {
       setIsSaving(false);
     }
-  }, [selectedTheme, uiState, isSaving, updateMutation, updatePageMutation, queryClient, themeLibrary]);
+  }, [isSaving, updateMutation, updatePageMutation, queryClient, themeLibrary]);
 
   // Handle field change
   const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
-    setUIState(prev => ({
-      ...prev,
-      [fieldId]: value
-    }));
+    setUIState(prev => {
+      const newState = {
+        ...prev,
+        [fieldId]: value
+      };
+      // Update ref immediately with new state
+      uiStateRef.current = newState;
+      return newState;
+    });
     
     // Trigger autosave after a delay (debounce)
-    if (selectedTheme) {
+    // Use ref to check current theme (handles theme changes during debounce)
+    if (selectedThemeRef.current) {
       // Clear existing timeout
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
@@ -298,7 +324,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         handleSave(true); // Pass true to indicate it's an autosave
       }, 1000);
     }
-  }, [selectedTheme, handleSave]);
+  }, [handleSave]);
   
   // Cleanup autosave timeout on unmount
   useEffect(() => {
@@ -312,9 +338,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   // Handle theme selection (opens editor)
   const handleSelectTheme = useCallback((theme: ThemeRecord) => {
     setSelectedTheme(theme);
+    selectedThemeRef.current = theme; // Update ref
     const page = snapshot?.page ?? null;
     const initialState = databaseToUI(theme, page);
     setUIState(initialState);
+    uiStateRef.current = initialState; // Update ref
     setViewMode('editor');
   }, [snapshot?.page]);
 

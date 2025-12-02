@@ -96,10 +96,6 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
         formattedValue = !isNaN(numValue) ? numValue : value;
       }
       setNestedValue(dbState.widget_styles, path, formattedValue);
-      // Debug: Log widget_styles saves
-      if (field.id === 'widget-border-width' || field.id === 'widget-shadow-depth' || field.id === 'widget-shadow-color' || field.id === 'widget-shadow-intensity') {
-        console.log('Saving widget field:', { fieldId: field.id, value, formattedValue, path, widget_styles: dbState.widget_styles });
-      }
     } else if (field.tokenPath.startsWith('iconography_tokens.')) {
       const path = field.tokenPath.replace('iconography_tokens.', '');
       if (!dbState.iconography_tokens) dbState.iconography_tokens = {};
@@ -185,25 +181,8 @@ export function databaseToUI(
       value = getNestedValue(theme, field.tokenPath);
     }
 
-    // Debug: Log widget-border-width and shadow fields loading
-    if (field.id === 'widget-border-width' || field.id === 'widget-shadow-depth' || field.id === 'widget-shadow-color' || field.id === 'widget-shadow-intensity') {
-      console.log('Loading widget field:', { fieldId: field.id, tokenPath: field.tokenPath, rawValue: value, fieldType: field.type });
-    }
-
     // Parse value based on field type - extract numeric values from strings with units
     let parsedValue: unknown = value;
-    
-    // Debug: Log page-spacing loading (after parsedValue is initialized)
-    if (field.id === 'page-spacing') {
-      console.log('Loading page-spacing:', { 
-        fieldId: field.id, 
-        tokenPath: field.tokenPath, 
-        rawValue: value, 
-        parsedValue, 
-        defaultValue: field.defaultValue,
-        themeSpacingTokens: theme?.spacing_tokens 
-      });
-    }
     if (value !== undefined && (field.type === 'number' || field.type === 'border-width' || field.type === 'size' || field.type === 'spacing' || field.type === 'shadow' || field.type === 'glow')) {
       // If value is a string with units (e.g., "34px", "0.1rem"), extract the number
       if (typeof value === 'string') {
