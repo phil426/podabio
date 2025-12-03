@@ -53,12 +53,16 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo ""
     
     echo "📦 Step 1: Pulling latest code from GitHub..."
-    git pull origin main
+    # Fetch latest changes
+    git fetch origin main
+    
+    # Reset to match remote exactly (handles divergent branches)
+    git reset --hard origin/main
     
     if [ $? -eq 0 ]; then
         echo "✅ Code updated successfully"
     else
-        echo "❌ Failed to pull code"
+        echo "❌ Failed to update code"
         exit 1
     fi
     
