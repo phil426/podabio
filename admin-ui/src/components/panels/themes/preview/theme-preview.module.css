@@ -201,7 +201,7 @@
   line-height: var(--page-title-spacing, 1.2);
   text-align: center;
   color: var(--page-title-color, #0f172a);
-  font-family: var(--page-title-font, 'Inter, sans-serif');
+  font-family: var(--page-title-font, 'Zalando Sans Expanded', sans-serif);
   text-shadow: var(--page-title-text-shadow, none);
 }
 
@@ -215,7 +215,7 @@
   line-height: 1.5;
   text-align: center;
   /* Color is set via inline styles to support gradients */
-  font-family: var(--page-description-font, 'Inter, sans-serif');
+  font-family: var(--page-description-font, 'Space Mono', monospace);
   width: 80%;
   max-width: 100%;
   margin-left: auto;
@@ -281,7 +281,7 @@
   font-style: var(--widget-heading-style, normal);
   line-height: var(--widget-heading-spacing, 1.3);
   color: var(--widget-heading-color, #0f172a);
-  font-family: var(--widget-heading-font, 'Inter, sans-serif');
+  font-family: var(--widget-heading-font, 'Zalando Sans Expanded', sans-serif);
 }
 
 .widgetBody {
@@ -293,7 +293,7 @@
   font-style: var(--widget-body-style, normal);
   line-height: var(--widget-body-spacing, 1.5);
   color: var(--widget-body-color, #4b5563);
-  font-family: var(--widget-body-font, 'Inter, sans-serif');
+  font-family: var(--widget-body-font, 'Space Mono', monospace);
 }
 
 .spacer {

@@ -136,13 +136,45 @@ export function useCreatePageMutation() {
   });
 }
 
+export async function updateAccountProfile(data: { name?: string; email?: string }) {
+  return requestJson<ApiResponse<AccountProfile>>('/api/account/profile.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+}
+
+export function useUpdateProfileMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateAccountProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+    }
+  });
+}
+
 export interface IntegrationsStatus {
-  instagram: {
-    connected: boolean;
-    expired: boolean;
-    link_url: string;
-    configured?: boolean;
-  };
+  // Integration statuses can be added here in the future
+}
+
+export interface TwoFactorStatus {
+  enabled: boolean;
+  method: 'totp' | 'email' | 'both' | null;
+  email?: string;
+}
+
+export interface TwoFactorSetupData {
+  secret: string;
+  qr_code_url: string;
+}
+
+export interface TwoFactorEnableResponse {
+  backup_codes: string[];
+  method: 'totp' | 'email' | 'both';
 }
 
 export async function fetchIntegrationsStatus(): Promise<IntegrationsStatus> {
@@ -152,7 +184,215 @@ export async function fetchIntegrationsStatus(): Promise<IntegrationsStatus> {
     throw new Error(response.error ?? 'Unable to load integrations status');
   }
 
-  return response.data ?? { instagram: { connected: false, expired: false, link_url: '' } };
+  return response.data ?? {};
+}
+
+/**
+ * Fetch 2FA status
+ */
+export async function fetch2FAStatus(): Promise<TwoFactorStatus> {
+  const response = await requestJson<ApiResponse<TwoFactorStatus>>('/api/account/2fa.php?action=get_status');
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Unable to load 2FA status');
+  }
+
+  return response.data ?? { enabled: false, method: null };
+}
+
+export function use2FAStatus() {
+  return useQuery({
+    queryKey: ['2fa', 'status'],
+    queryFn: fetch2FAStatus,
+    staleTime: 2 * 60 * 1000
+  });
+}
+
+/**
+ * Generate TOTP setup (QR code)
+ */
+export async function generate2FASetup(): Promise<TwoFactorSetupData> {
+  const response = await requestJson<ApiResponse<TwoFactorSetupData>>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action: 'generate_setup' })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to generate 2FA setup');
+  }
+
+  return response.data!;
+}
+
+/**
+ * Verify and enable 2FA
+ */
+export async function enable2FA(code: string, method: 'totp' | 'email' | 'both'): Promise<TwoFactorEnableResponse> {
+  const response = await requestJson<ApiResponse<TwoFactorEnableResponse>>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      action: 'verify_enable',
+      code,
+      method
+    })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to enable 2FA');
+  }
+
+  return response.data!;
+}
+
+/**
+ * Send email code for email-only 2FA setup
+ */
+export async function sendSetupEmailCode(): Promise<void> {
+  const response = await requestJson<ApiResponse>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action: 'send_setup_email_code' })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to send email code');
+  }
+}
+
+/**
+ * Enable email-only 2FA
+ */
+export async function enableEmail2FA(code: string): Promise<TwoFactorEnableResponse> {
+  const response = await requestJson<ApiResponse<TwoFactorEnableResponse>>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      action: 'enable_email',
+      code
+    })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to enable email 2FA');
+  }
+
+  return response.data!;
+}
+
+/**
+ * Disable 2FA
+ */
+export async function disable2FA(password: string): Promise<void> {
+  const response = await requestJson<ApiResponse>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      action: 'disable',
+      password
+    })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to disable 2FA');
+  }
+}
+
+/**
+ * Regenerate backup codes
+ */
+export async function regenerateBackupCodes(): Promise<string[]> {
+  const response = await requestJson<ApiResponse<{ backup_codes: string[] }>>('/api/account/2fa.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action: 'regenerate_backup_codes' })
+  });
+
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to regenerate backup codes');
+  }
+
+  return response.data!.backup_codes;
+}
+
+/**
+ * React Query hooks for 2FA mutations
+ */
+export function useGenerate2FASetupMutation() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: generate2FASetup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['2fa'] });
+    }
+  });
+}
+
+export function useEnable2FAMutation() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ code, method }: { code: string; method: 'totp' | 'email' | 'both' }) => enable2FA(code, method),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['2fa'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+    }
+  });
+}
+
+export function useEnableEmail2FAMutation() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: enableEmail2FA,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['2fa'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+    }
+  });
+}
+
+export function useDisable2FAMutation() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: disable2FA,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['2fa'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+    }
+  });
+}
+
+export function useSendSetupEmailCodeMutation() {
+  return useMutation({
+    mutationFn: sendSetupEmailCode
+  });
+}
+
+export function useRegenerateBackupCodesMutation() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: regenerateBackupCodes,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['2fa'] });
+    }
+  });
 }
 
 export function useIntegrationsStatus() {
@@ -163,25 +403,4 @@ export function useIntegrationsStatus() {
   });
 }
 
-export async function disconnectInstagram() {
-  return requestJson<ApiResponse>('/api/account/integrations.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ action: 'disconnect_instagram' })
-  });
-}
-
-export function useDisconnectInstagramMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: disconnectInstagram,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integrations', 'status'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
-    }
-  });
-}
 

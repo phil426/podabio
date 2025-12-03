@@ -89,6 +89,13 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview: <?php echo h($page['podcast_name'] ?: $page['username']); ?></title>
     
+    <!-- Google Fonts Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Default Fonts (always loaded as fallback) -->
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    
     <!-- Google Fonts (load theme fonts) -->
     <?php 
     $googleFontsUrl = $themeClass->buildGoogleFontsUrl($fonts);

@@ -235,15 +235,15 @@ export function PodcastThemeGenerator({
         
         // Typography fonts - CRITICAL: Set fonts to clear previous theme
         '--page-title-font': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
-        '--page-description-font': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Inter', sans-serif",
-        '--widget-heading-font': themeData.widget_primary_font ? `'${themeData.widget_primary_font}', sans-serif` : "'Inter', sans-serif",
-        '--widget-body-font': themeData.widget_secondary_font ? `'${themeData.widget_secondary_font}', sans-serif` : "'Inter', sans-serif",
-        '--page-primary-font': themeData.page_primary_font || 'Inter',
-        '--page-secondary-font': themeData.page_secondary_font || 'Inter',
-        '--widget-primary-font': themeData.widget_primary_font || 'Inter',
-        '--widget-secondary-font': themeData.widget_secondary_font || 'Inter',
-        '--font-family-heading': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
-        '--font-family-body': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Inter', sans-serif",
+        '--page-description-font': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', monospace` : "'Space Mono', monospace",
+        '--widget-heading-font': themeData.widget_primary_font ? `'${themeData.widget_primary_font}', sans-serif` : "'Zalando Sans Expanded', sans-serif",
+        '--widget-body-font': themeData.widget_secondary_font ? `'${themeData.widget_secondary_font}', monospace` : "'Space Mono', monospace",
+        '--page-primary-font': themeData.page_primary_font || 'Zalando Sans Expanded',
+        '--page-secondary-font': themeData.page_secondary_font || 'Space Mono',
+        '--widget-primary-font': themeData.widget_primary_font || 'Zalando Sans Expanded',
+        '--widget-secondary-font': themeData.widget_secondary_font || 'Space Mono',
+        '--font-family-heading': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Zalando Sans Expanded', sans-serif",
+        '--font-family-body': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Space Mono', monospace",
         
         // Typography sizes - Set defaults to clear previous theme
         '--page-title-size': '32px',

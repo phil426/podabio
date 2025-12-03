@@ -302,14 +302,15 @@ class Theme {
      * @return array
      */
     public function getDefaultFonts() {
-        $defaultFont = defined('THEME_DEFAULT_FONT') ? THEME_DEFAULT_FONT : 'Inter';
+        $defaultPrimaryFont = defined('THEME_DEFAULT_PRIMARY_FONT') ? THEME_DEFAULT_PRIMARY_FONT : 'Zalando Sans Expanded';
+        $defaultSecondaryFont = defined('THEME_DEFAULT_SECONDARY_FONT') ? THEME_DEFAULT_SECONDARY_FONT : 'Space Mono';
         return [
-            'heading' => $defaultFont, // Legacy support
-            'body' => $defaultFont, // Legacy support
-            'page_primary_font' => $defaultFont,
-            'page_secondary_font' => $defaultFont,
-            'widget_primary_font' => $defaultFont,
-            'widget_secondary_font' => $defaultFont
+            'heading' => $defaultPrimaryFont, // Legacy support
+            'body' => $defaultSecondaryFont, // Legacy support
+            'page_primary_font' => $defaultPrimaryFont,
+            'page_secondary_font' => $defaultSecondaryFont,
+            'widget_primary_font' => $defaultPrimaryFont,
+            'widget_secondary_font' => $defaultSecondaryFont
         ];
     }
     
@@ -417,13 +418,14 @@ class Theme {
      * @return array
      */
     private function getDefaultTypographyTokens() {
-        $defaultFont = defined('THEME_DEFAULT_FONT') ? THEME_DEFAULT_FONT : 'Inter';
+        $defaultPrimaryFont = defined('THEME_DEFAULT_PRIMARY_FONT') ? THEME_DEFAULT_PRIMARY_FONT : 'Zalando Sans Expanded';
+        $defaultSecondaryFont = defined('THEME_DEFAULT_SECONDARY_FONT') ? THEME_DEFAULT_SECONDARY_FONT : 'Space Mono';
         
         return [
             'font' => [
-                'heading' => $defaultFont,
-                'body' => $defaultFont,
-                'metatext' => $defaultFont
+                'heading' => $defaultPrimaryFont,
+                'body' => $defaultSecondaryFont,
+                'metatext' => $defaultSecondaryFont
             ],
             'scale' => [
                 'xl' => 2.488,
@@ -928,11 +930,29 @@ class Theme {
         // Get unique fonts
         $uniqueFonts = array_unique([$pagePrimary, $pageSecondary, $widgetPrimary, $widgetSecondary]);
         
+        // Ensure default fonts are always included as fallbacks
+        $defaultsList = [$defaults['page_primary_font'], $defaults['page_secondary_font']];
+        foreach ($defaultsList as $defaultFont) {
+            if (!in_array($defaultFont, $uniqueFonts)) {
+                $uniqueFonts[] = $defaultFont;
+            }
+        }
+        
         // Build Google Fonts URL
         $fontParams = [];
         foreach ($uniqueFonts as $font) {
-            $fontUrl = str_replace(' ', '+', $font);
-            $fontParams[] = "family={$fontUrl}:wght@400;600;700";
+            if (!empty($font)) {
+                $fontUrl = str_replace(' ', '+', $font);
+                $fontParams[] = "family={$fontUrl}:wght@400;600;700";
+            }
+        }
+        
+        if (empty($fontParams)) {
+            // Fallback: always include default fonts
+            $defaultPrimary = $defaults['page_primary_font'];
+            $defaultSecondary = $defaults['page_secondary_font'];
+            $fontParams[] = "family=" . str_replace(' ', '+', $defaultPrimary) . ":wght@400;600;700";
+            $fontParams[] = "family=" . str_replace(' ', '+', $defaultSecondary) . ":wght@400;600;700";
         }
         
         return "https://fonts.googleapis.com/css2?" . implode('&', $fontParams) . "&display=swap";

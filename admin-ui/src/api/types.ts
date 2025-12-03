@@ -118,7 +118,11 @@ export interface BillingInfo {
   plan_type: string;
   expires_at?: string | null;
   payment_method?: string | null;
-  status: 'active' | 'expired' | 'canceled';
+  status: 'active' | 'expired' | 'canceled' | 'trial';
+  trial_ends_at?: string | null;
+  is_trial?: boolean;
+  billing_interval?: 'month' | 'year';
+  is_root_admin?: boolean;
   invoices?: BillingInvoice[];
 }
 

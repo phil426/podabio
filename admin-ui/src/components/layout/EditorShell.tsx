@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
-import { AccountSummaryPanel } from '../account/AccountSummaryPanel';
-import { AccountWorkspace } from '../account/AccountWorkspace';
 import { LeftRailNav } from './LeftRailNav';
 import { LeftyContentPanel } from './LeftyContentPanel';
 import { CanvasViewport, type DevicePreset } from './CanvasViewport';
@@ -20,9 +18,19 @@ import './editor-shell.css';
 
 export function EditorShell(): JSX.Element {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Detect if we're on an account route and switch to account tab
   const isAccountRoute = location.pathname.startsWith('/account');
   
-  const [activeTab, setActiveTab] = useState<LeftyTabValue>('layers');
+  const [activeTab, setActiveTab] = useState<LeftyTabValue>(() => {
+    // If on account route, default to account tab
+    if (isAccountRoute) {
+      return 'account';
+    }
+    return 'layers';
+  });
+  
   const [selectedDevice] = useState(() => {
     // Top 5 most popular non-folding phones (2024)
     const DEVICE_PRESETS = [
@@ -34,6 +42,26 @@ export function EditorShell(): JSX.Element {
     ];
     return DEVICE_PRESETS[0];
   });
+
+  // Redirect account routes to account tab
+  useEffect(() => {
+    if (isAccountRoute) {
+      setActiveTab('account');
+      // Extract sub-tab from path (e.g., /account/profile -> #profile)
+      const pathSegments = location.pathname.split('/').filter(Boolean);
+      if (pathSegments.length > 1 && pathSegments[0] === 'account') {
+        const subTab = pathSegments[1];
+        if (['profile', 'security', 'billing'].includes(subTab)) {
+          navigate({ pathname: '/', hash: `#${subTab}` }, { replace: true });
+        } else {
+          navigate({ pathname: '/', hash: '#profile' }, { replace: true });
+        }
+      } else {
+        // Just /account, redirect to / with profile hash
+        navigate({ pathname: '/', hash: '#profile' }, { replace: true });
+      }
+    }
+  }, [isAccountRoute, location.pathname, navigate]);
 
   // Clear selections when switching tabs to prevent stale inspectors
   const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
@@ -59,15 +87,11 @@ export function EditorShell(): JSX.Element {
 
   return (
     <div className="editor-shell">
-      {isAccountRoute ? (
-        <AccountPanels />
-      ) : (
-        <EditorPanels
-          activeTab={activeTab as LeftyTabValue}
-          onTabChange={handleTabChange as (tab: LeftyTabValue) => void}
-          selectedDevice={selectedDevice}
-        />
-      )}
+      <EditorPanels
+        activeTab={activeTab as LeftyTabValue}
+        onTabChange={handleTabChange as (tab: LeftyTabValue) => void}
+        selectedDevice={selectedDevice}
+      />
     </div>
   );
 }
@@ -97,7 +121,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
         right: 0 // Right panel hidden
       };
     }
-    // Other tabs (including themes): left panel fills all space
+    // Other tabs (including themes and account): left panel fills all space
     return {
       left: 100, // Left panel with rail + content panels (fills all space)
       center: 0, // Center panel hidden for now
@@ -282,17 +306,4 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
   );
 }
 
-function AccountPanels(): JSX.Element {
-  return (
-    <PanelGroup direction="horizontal" className="editor-shell__panels">
-      <Panel defaultSize={60} minSize={50} className="editor-shell__panel editor-shell__panel--account-main">
-        <AccountWorkspace />
-      </Panel>
-      <PanelResizeHandle className="editor-shell__resizer" />
-      <Panel defaultSize={40} minSize={30} className="editor-shell__panel editor-shell__panel--account-aside">
-        <AccountSummaryPanel />
-      </Panel>
-    </PanelGroup>
-  );
-}
 

@@ -182,5 +182,25 @@
     
     // Expose controller to window for debugging (optional)
     window.PodcastDrawerController = PodcastDrawerController;
+    
+    // Handle close player buttons (in secondary controls)
+    const closePlayerBtn = document.getElementById('close-player-btn');
+    const closePlayerBtnDesktop = document.getElementById('close-player-btn-desktop');
+    
+    if (closePlayerBtn) {
+        closePlayerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            PodcastDrawerController.closeDrawer();
+        });
+    }
+    
+    if (closePlayerBtnDesktop) {
+        closePlayerBtnDesktop.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            PodcastDrawerController.closeDrawer();
+        });
+    }
 })();
 

@@ -1,10 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useAccountProfile, useSubscriptionStatus, useAuthMethods } from '../../api/account';
 import styles from './account-summary-panel.module.css';
 
 export function AccountSummaryPanel(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: profile } = useAccountProfile();
   const { data: subscription } = useSubscriptionStatus();
   const { data: methods } = useAuthMethods();
@@ -27,7 +28,7 @@ export function AccountSummaryPanel(): JSX.Element {
           <span className={styles.statValue}>{subscription?.payment_method ?? 'Not set'}</span>
         </div>
         <footer>
-          <button type="button" className={styles.primaryButton} onClick={() => window.open('/payment/checkout.php', '_blank')}>
+          <button type="button" className={styles.primaryButton} onClick={() => navigate({ hash: '#billing' })}>
             Manage plan
           </button>
         </footer>
@@ -50,7 +51,7 @@ export function AccountSummaryPanel(): JSX.Element {
           </span>
         </div>
         <footer>
-          <button type="button" className={styles.secondaryButton} onClick={() => navigate('/account/security')}>
+          <button type="button" className={styles.secondaryButton} onClick={() => navigate({ hash: '#security' })}>
             Update security
           </button>
         </footer>
@@ -70,7 +71,7 @@ export function AccountSummaryPanel(): JSX.Element {
           <span className={styles.summaryValue}>{profile?.email ?? '—'}</span>
         </div>
         <footer>
-          <button type="button" className={styles.secondaryButton} onClick={() => navigate('/account/profile')}>
+          <button type="button" className={styles.secondaryButton} onClick={() => navigate({ hash: '#profile' })}>
             Edit contact info
           </button>
         </footer>
@@ -82,8 +83,6 @@ export function AccountSummaryPanel(): JSX.Element {
 function formatPlan(plan: string): string {
   const value = plan?.toLowerCase?.() ?? 'free';
   switch (value) {
-    case 'premium':
-      return 'Premium';
     case 'pro':
       return 'Pro';
     case 'team':

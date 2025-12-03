@@ -603,8 +603,66 @@ class PodcastPlayerApp {
             retryButton.addEventListener('click', () => this.loadFeed());
         }
         
+        // Setup modal close handlers
+        this.setupModalHandlers();
+        
         // Listen to player events for UI updates
         this.setupPlayerEventListeners();
+    }
+
+    /**
+     * Setup modal close handlers (backdrop click, escape key)
+     */
+    setupModalHandlers() {
+        // Speed modal backdrop click
+        const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        if (speedModal) {
+            const speedModalContainer = speedModal.querySelector('.podcast-modal-container');
+            speedModal.addEventListener('click', (e) => {
+                // Close if clicking on backdrop (not on modal content)
+                if (e.target === speedModal) {
+                    this.closeSpeedModal();
+                }
+            });
+            // Prevent clicks inside modal from closing
+            if (speedModalContainer) {
+                speedModalContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+        }
+
+        // Timer modal backdrop click
+        const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        if (timerModal) {
+            const timerModalContainer = timerModal.querySelector('.podcast-modal-container');
+            timerModal.addEventListener('click', (e) => {
+                // Close if clicking on backdrop (not on modal content)
+                if (e.target === timerModal) {
+                    this.closeTimerModal();
+                }
+            });
+            // Prevent clicks inside modal from closing
+            if (timerModalContainer) {
+                timerModalContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+        }
+
+        // Escape key to close modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
+                const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
+                
+                if (speedModal && speedModal.style.display !== 'none') {
+                    this.closeSpeedModal();
+                } else if (timerModal && timerModal.style.display !== 'none') {
+                    this.closeTimerModal();
+                }
+            }
+        });
     }
 
     /**
@@ -680,12 +738,13 @@ class PodcastPlayerApp {
      */
     initSpeedSelector() {
         const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-        const speedOptions = this.drawerContainer.querySelector('#speed-options-inline');
+        const speedOptions = this.drawerContainer.querySelector('#speed-options-modal');
         
         if (speedOptions) {
+            speedOptions.classList.add('speed-options');
             speeds.forEach(speed => {
                 const option = createElement('button', {
-                    className: `speed-option-inline ${speed === this.player.playbackSpeed ? 'active' : ''}`,
+                    className: `podcast-modal-option ${speed === this.player.playbackSpeed ? 'active' : ''}`,
                     dataset: { speed: speed }
                 }, `${speed}x`);
                 
@@ -693,7 +752,7 @@ class PodcastPlayerApp {
                     e.stopPropagation();
                     this.player.setPlaybackSpeed(speed);
                     this.updateSpeedDisplay();
-                    this.toggleSpeedSelector();
+                    this.closeSpeedModal();
                 });
                 
                 speedOptions.appendChild(option);
@@ -708,24 +767,46 @@ class PodcastPlayerApp {
         }
     }
 
-    toggleSpeedSelector() {
-        const selector = this.drawerContainer.querySelector('#inline-speed-selector');
-        const timerSelector = this.drawerContainer.querySelector('#inline-timer-selector');
+    showSpeedModal() {
+        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
         
-        // Close timer selector if open
-        if (timerSelector && timerSelector.style.display !== 'none') {
-            timerSelector.style.display = 'none';
+        // Close timer modal if open
+        if (timerModal) {
+            this.closeTimerModal();
         }
         
-        if (selector) {
-            const isVisible = selector.style.display !== 'none';
-            selector.style.display = isVisible ? 'none' : 'block';
-            
-            if (!isVisible) {
-                // Update active option
-                this.drawerContainer.querySelectorAll('.speed-option-inline').forEach(opt => {
-                    opt.classList.toggle('active', parseFloat(opt.dataset.speed) === this.player.playbackSpeed);
-                });
+        if (modal) {
+            modal.style.display = 'flex';
+            // Update active option
+            modal.querySelectorAll('.podcast-modal-option').forEach(opt => {
+                opt.classList.toggle('active', parseFloat(opt.dataset.speed) === this.player.playbackSpeed);
+            });
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeSpeedModal() {
+        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        if (modal) {
+            modal.style.display = 'none';
+            // Restore body scroll if no other modal is open
+            const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
+            if (!timerModal || timerModal.style.display === 'none') {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
+    toggleSpeedSelector() {
+        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        if (modal) {
+            const isVisible = modal.style.display !== 'none';
+            if (isVisible) {
+                this.closeSpeedModal();
+            } else {
+                this.showSpeedModal();
             }
         }
     }
@@ -734,7 +815,7 @@ class PodcastPlayerApp {
      * Initialize timer selector
      */
     initTimerSelector() {
-        const timerOptions = this.drawerContainer.querySelector('#timer-options-inline');
+        const timerOptions = this.drawerContainer.querySelector('#timer-options-modal');
         const times = [
             { label: '15 minutes', value: 15 },
             { label: '30 minutes', value: 30 },
@@ -744,9 +825,10 @@ class PodcastPlayerApp {
         ];
         
         if (timerOptions) {
+            timerOptions.classList.add('timer-options');
             times.forEach(time => {
                 const option = createElement('button', {
-                    className: 'timer-option-inline',
+                    className: 'podcast-modal-option timer-option',
                     dataset: { minutes: time.value }
                 }, time.label);
                 
@@ -754,7 +836,7 @@ class PodcastPlayerApp {
                     e.stopPropagation();
                     this.player.setSleepTimer(time.value);
                     this.updateTimerDisplay();
-                    this.toggleTimerSelector();
+                    this.closeTimerModal();
                 });
                 
                 timerOptions.appendChild(option);
@@ -774,18 +856,43 @@ class PodcastPlayerApp {
         }
     }
 
-    toggleTimerSelector() {
-        const selector = this.drawerContainer.querySelector('#inline-timer-selector');
-        const speedSelector = this.drawerContainer.querySelector('#inline-speed-selector');
+    showTimerModal() {
+        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
         
-        // Close speed selector if open
-        if (speedSelector && speedSelector.style.display !== 'none') {
-            speedSelector.style.display = 'none';
+        // Close speed modal if open
+        if (speedModal) {
+            this.closeSpeedModal();
         }
         
-        if (selector) {
-            const isVisible = selector.style.display !== 'none';
-            selector.style.display = isVisible ? 'none' : 'block';
+        if (modal) {
+            modal.style.display = 'flex';
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeTimerModal() {
+        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        if (modal) {
+            modal.style.display = 'none';
+            // Restore body scroll if no other modal is open
+            const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
+            if (!speedModal || speedModal.style.display === 'none') {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
+    toggleTimerSelector() {
+        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        if (modal) {
+            const isVisible = modal.style.display !== 'none';
+            if (isVisible) {
+                this.closeTimerModal();
+            } else {
+                this.showTimerModal();
+            }
         }
     }
 

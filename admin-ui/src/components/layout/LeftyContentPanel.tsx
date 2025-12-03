@@ -6,6 +6,7 @@ import { IntegrationsPanel } from '../panels/IntegrationsPanel';
 import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
 import { SettingsPanel } from '../panels/SettingsPanel';
 import { ThemesPanel } from '../panels/ThemesPanel';
+import { AccountPanel } from '../panels/AccountPanel';
 import { LeftyInspectorDrawer } from '../panels/lefty/LeftyInspectorDrawer';
 import styles from './lefty-content-panel.module.css';
 
@@ -81,6 +82,19 @@ export function LeftyContentPanel({ activeTab, activeColor, onTabChange }: Lefty
             className={styles.panel}
           >
             <ThemesPanel activeColor={activeColor} />
+          </motion.div>
+        )}
+
+        {activeTab === 'account' && (
+          <motion.div
+            key="account"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.25 }}
+            className={styles.panel}
+          >
+            <AccountPanel activeColor={activeColor} />
           </motion.div>
         )}
       </AnimatePresence>

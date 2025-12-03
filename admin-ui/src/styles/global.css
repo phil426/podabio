@@ -33,7 +33,7 @@
   --admin-brand-text-tech-grey: #8E8E93;
   
   /* Typography */
-  --admin-font-heading: 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --admin-font-heading: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
   --admin-font-body: 'Space Mono', 'Courier New', monospace;
   
   /* Typography - Font Sizes (ADMIN UI ONLY - never used by marketing pages) */
@@ -134,12 +134,26 @@ a {
   flex-direction: column;
 }
 
-/* Apply marketing fonts to headings */
+/* Apply heading font to all headings */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--admin-font-heading, 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif);
-  font-weight: 800;
-  font-variation-settings: 'wdth' 100;
-  letter-spacing: -0.02em;
+  font-family: var(--admin-font-heading, 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-weight: 500;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+/* Apply heading font to common title/heading classes used throughout admin UI */
+.title,
+.sectionTitle,
+.stepTitle,
+.cardTitle,
+.helpTitle,
+.pageTitle,
+.brandName,
+.header h1,
+.header h2,
+.header h3 {
+  font-family: var(--admin-font-heading, 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif) !important;
 }
 
 .sr-only {

@@ -1,0 +1,31 @@
+<?php
+/**
+ * Local Configuration Override
+ * PodaBio - Machine-specific configuration
+ * 
+ * Copy this file to config/local.php and add your local settings.
+ * This file is gitignored and will not be committed to version control.
+ */
+
+// Stripe Configuration
+// Get these from: https://dashboard.stripe.com/apikeys
+define('STRIPE_SECRET_KEY', ''); // Your Stripe secret key (sk_test_... or sk_live_...)
+define('STRIPE_PUBLISHABLE_KEY', ''); // Your Stripe publishable key (pk_test_... or pk_live_...)
+define('STRIPE_WEBHOOK_SECRET', ''); // Webhook signing secret (whsec_...) - get after webhook setup
+define('STRIPE_MODE', 'test'); // 'test' or 'live'
+
+// Stripe Price IDs
+// Create products in Stripe Dashboard, then copy the Price IDs here
+// Get from: https://dashboard.stripe.com/products
+define('STRIPE_PRO_MONTHLY_PRICE_ID', ''); // Price ID for $4.99/month product
+define('STRIPE_PRO_ANNUAL_PRICE_ID', ''); // Price ID for $53.89/year product
+
+// Database Configuration (if different from default)
+// define('DB_HOST', '127.0.0.1');
+// define('DB_NAME', 'podabio_dev');
+// define('DB_USER', 'root');
+// define('DB_PASS', '');
+
+// Application URL (for local development)
+// define('APP_URL', 'http://localhost:8080');
+

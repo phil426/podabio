@@ -21,23 +21,21 @@ if (!$user) {
 
 // Get plan from query string
 $planType = sanitizeInput($_GET['plan'] ?? '');
-if (!in_array($planType, ['premium', 'pro'])) {
-    $planType = 'premium'; // Default
+if (!in_array($planType, ['pro'])) {
+    $planType = 'pro'; // Default - only pro plan exists now
 }
 
-// Get plan details
+// Get plan details - Stripe integration uses monthly/annual pricing
 $planPrices = [
-    'premium' => PLAN_PREMIUM_PRICE,
-    'pro' => PLAN_PRO_PRICE
+    'pro' => PLAN_PRO_MONTHLY_PRICE // Use monthly price for checkout
 ];
 
 $planNames = [
-    'premium' => 'Premium',
     'pro' => 'Pro'
 ];
 
-$price = $planPrices[$planType];
-$planName = $planNames[$planType];
+$price = $planPrices[$planType] ?? PLAN_PRO_MONTHLY_PRICE;
+$planName = $planNames[$planType] ?? 'Pro';
 
 // Check if payment is enabled
 if (!PAYMENT_ENABLED) {
@@ -51,6 +49,10 @@ if (!PAYMENT_ENABLED) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - <?php echo h(APP_NAME); ?></title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;

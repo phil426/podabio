@@ -271,8 +271,6 @@ export function TopBar(): JSX.Element {
 function formatPlan(plan: string): string {
   const normalized = plan?.toString().toLowerCase() ?? 'free';
   switch (normalized) {
-    case 'premium':
-      return 'Premium plan';
     case 'pro':
       return 'Pro plan';
     case 'team':

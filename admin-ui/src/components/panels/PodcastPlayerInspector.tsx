@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Rss, ApplePodcastsLogo, CircleNotch, Check, X, Copy, CheckCircle, Heart, Newspaper } from '@phosphor-icons/react';
+import { Rss, ApplePodcastsLogo, CircleNotch, Check, X, Copy, CheckCircle, Heart, Newspaper, ArrowSquareOut, MagnifyingGlass } from '@phosphor-icons/react';
 import { FaPodcast, FaSpotify, FaYoutube, FaAmazon, FaInstagram, FaTwitter, FaTiktok, FaFacebook, FaLinkedin, FaReddit, FaDiscord, FaTwitch, FaGithub, FaDribbble, FaMedium, FaSnapchat, FaPinterest } from 'react-icons/fa';
 
-import { usePageSnapshot, usePageSettingsMutation, generatePodlinks } from '../../api/page';
+import { usePageSnapshot, usePageSettingsMutation, generatePodlinks, searchPodcasts } from '../../api/page';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -47,6 +47,19 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
     return null;
   });
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{
+    id: string;
+    name: string;
+    artist: string;
+    url: string;
+    feed_url: string | null;
+    artwork_url: string | null;
+  }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [hasUnsavedRssUrl, setHasUnsavedRssUrl] = useState(false);
 
   // Platform icon mapping (same as SettingsPanel)
   const getPlatformIcon = useMemo(() => {
@@ -143,21 +156,30 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
   }, [snapshot?.social_icons, page?.podcast_name]);
 
   useEffect(() => {
-    const wasEnabled = enabled;
     const isNowEnabled = Boolean(page?.podcast_player_enabled);
-    setEnabled(isNowEnabled);
-    setRssFeedUrl(page?.rss_feed_url ?? '');
-
-    // If player was just disabled, clear podlinks results
-    if (wasEnabled && !isNowEnabled) {
-      setPodlinksResults(null);
-      try {
-        localStorage.removeItem('podlinksResults');
-      } catch (e) {
-        // Ignore storage errors
+    const newRssFeedUrl = page?.rss_feed_url ?? '';
+    
+    // Only update if values actually changed to avoid infinite loops
+    if (isNowEnabled !== enabled) {
+      const wasEnabled = enabled;
+      setEnabled(isNowEnabled);
+      
+      // If player was just disabled, clear podlinks results
+      if (wasEnabled && !isNowEnabled) {
+        setPodlinksResults(null);
+        try {
+          localStorage.removeItem('podlinksResults');
+        } catch (e) {
+          // Ignore storage errors
+        }
       }
     }
-  }, [page?.podcast_player_enabled, page?.rss_feed_url, enabled]);
+    
+    if (newRssFeedUrl !== rssFeedUrl) {
+      setRssFeedUrl(newRssFeedUrl);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page?.podcast_player_enabled, page?.rss_feed_url]);
 
   // Auto-load RSS feed if we have a feed URL but no cover image
   useEffect(() => {
@@ -193,11 +215,37 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
     }
   }, [podlinksResults, enabled]);
 
+  // Handle escape key to close search modal
+  useEffect(() => {
+    if (!showSearchModal) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowSearchModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [showSearchModal]);
+
   useEffect(() => {
     if (!status) return;
     const timer = window.setTimeout(() => setStatus(null), 3500);
     return () => window.clearTimeout(timer);
   }, [status]);
+
+  // Track if RSS feed URL has unsaved changes
+  useEffect(() => {
+    const currentSavedUrl = page?.rss_feed_url ?? '';
+    const hasChanges = rssFeedUrl.trim() !== currentSavedUrl.trim();
+    setHasUnsavedRssUrl(hasChanges && rssFeedUrl.trim() !== '');
+  }, [rssFeedUrl, page?.rss_feed_url]);
 
   // Debounce RSS feed URL updates
   useEffect(() => {
@@ -207,6 +255,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
 
     // Don't save on initial load
     if (rssFeedUrl === (page?.rss_feed_url ?? '')) {
+      setHasUnsavedRssUrl(false);
       return;
     }
 
@@ -220,6 +269,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
         await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
         
+        setHasUnsavedRssUrl(false);
         setStatusTone('success');
         setStatus('RSS feed URL updated.');
       } catch (error) {
@@ -304,8 +354,11 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       setStatus(null);
 
       try {
+        // Force RSS feed processing by sending the URL again
+        // This ensures the backend always processes the feed and saves the cover image
         await pageSettingsMutation.mutateAsync({
-          rss_feed_url: currentRssUrl
+          rss_feed_url: currentRssUrl,
+          force_rss_processing: '1' // Flag to ensure RSS processing happens
         });
         
         // Wait a bit for the backend to process
@@ -313,16 +366,24 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         
         // Explicitly refetch to get updated cover image
         await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-        const newSnapshot = await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+        await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
         
-        // Check if cover image was loaded
-        const updatedPage = newSnapshot[0]?.data?.page;
-        if (updatedPage?.cover_image_url) {
+        // Check if cover image was loaded using fetchQuery for a safe access
+        try {
+          const freshSnapshot = await queryClient.fetchQuery({ queryKey: queryKeys.pageSnapshot() });
+          const updatedPage = freshSnapshot?.page;
+          
+          if (updatedPage?.cover_image_url) {
+            setStatusTone('success');
+            setStatus('RSS feed loaded successfully. Cover image found.');
+          } else {
+            setStatusTone('success');
+            setStatus('RSS feed loaded, but no cover image found in feed.');
+          }
+        } catch (fetchError) {
+          // If fetch fails, just show generic success message
           setStatusTone('success');
-          setStatus('RSS feed loaded successfully. Cover image found.');
-        } else {
-          setStatusTone('success');
-          setStatus('RSS feed loaded, but no cover image found in feed.');
+          setStatus('RSS feed loaded successfully.');
         }
       } catch (error) {
         setStatusTone('error');
@@ -358,6 +419,50 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         // Ignore errors
       }
       document.body.removeChild(textArea);
+    }
+  };
+
+  const handleSearchPodcasts = async () => {
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchResults([]);
+    setShowSearchResults(false);
+
+    try {
+      const response = await searchPodcasts(searchQuery.trim());
+      
+      if (response.success && response.data?.results) {
+        setSearchResults(response.data.results);
+        setShowSearchResults(true);
+      } else {
+        setStatusTone('error');
+        setStatus(response.error || 'Failed to search podcasts.');
+      }
+    } catch (error) {
+      setStatusTone('error');
+      setStatus(error instanceof Error ? error.message : 'Failed to search podcasts.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectPodcast = (podcast: {
+    feed_url: string | null;
+    name: string;
+  }) => {
+    if (podcast.feed_url) {
+      setRssFeedUrl(podcast.feed_url);
+      setShowSearchResults(false);
+      setSearchQuery('');
+      setShowSearchModal(false);
+      setStatusTone('success');
+      setStatus(`Selected "${podcast.name}"`);
+    } else {
+      setStatusTone('error');
+      setStatus('This podcast does not have an RSS feed URL available.');
     }
   };
 
@@ -447,6 +552,123 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
       </div>
 
       <div className={styles.fieldset}>
+        <div className={styles.control}>
+          <button
+            type="button"
+            className={styles.searchPodcastButton}
+            onClick={() => setShowSearchModal(true)}
+          >
+            <MagnifyingGlass aria-hidden="true" size={16} weight="regular" />
+            Search for Podcast
+          </button>
+        </div>
+        <p className={styles.helpText}>
+          Search for your podcast and select it to automatically populate the RSS feed URL
+        </p>
+      </div>
+
+      {/* Search Modal */}
+      {showSearchModal && (
+        <div 
+          className={styles.searchModalOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSearchModal(false);
+            }
+          }}
+        >
+          <div 
+            className={styles.searchModalContainer}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.searchModalContent}>
+              <div className={styles.searchModalHeader}>
+                <h3 className={styles.searchModalTitle}>Search for Podcast</h3>
+                <button
+                  type="button"
+                  className={styles.searchModalClose}
+                  onClick={() => setShowSearchModal(false)}
+                  aria-label="Close search modal"
+                >
+                  <X aria-hidden="true" size={20} weight="regular" />
+                </button>
+              </div>
+              <div className={styles.searchContainer}>
+                <div className={styles.inputWrapper}>
+                  <MagnifyingGlass className={styles.inputIcon} aria-hidden="true" size={16} weight="regular" />
+                  <input
+                    id="podcast-search"
+                    type="text"
+                    className={styles.input}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSearchResults(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearchPodcasts();
+                      }
+                    }}
+                    placeholder="Search for a podcast..."
+                    disabled={isSearching}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  type="button"
+                  className={styles.searchButton}
+                  onClick={handleSearchPodcasts}
+                  disabled={isSearching || !searchQuery.trim()}
+                >
+                  {isSearching ? (
+                    <>
+                      <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
+                      Searching...
+                    </>
+                  ) : (
+                    'Search'
+                  )}
+                </button>
+              </div>
+              {showSearchResults && searchResults.length > 0 && (
+                <div className={styles.searchResults}>
+                  {searchResults.map((podcast) => (
+                    <button
+                      key={podcast.id}
+                      type="button"
+                      className={styles.searchResultItem}
+                      onClick={() => handleSelectPodcast(podcast)}
+                      disabled={!podcast.feed_url}
+                    >
+                      {podcast.artwork_url && (
+                        <img
+                          src={podcast.artwork_url}
+                          alt={podcast.name}
+                          className={styles.searchResultArtwork}
+                        />
+                      )}
+                      <div className={styles.searchResultContent}>
+                        <div className={styles.searchResultName}>{podcast.name}</div>
+                        <div className={styles.searchResultArtist}>{podcast.artist}</div>
+                        {!podcast.feed_url && (
+                          <div className={styles.searchResultWarning}>No RSS feed available</div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {showSearchResults && searchResults.length === 0 && !isSearching && (
+                <p className={styles.searchModalEmpty}>No podcasts found. Try a different search term.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={styles.fieldset}>
         <label className={styles.control} htmlFor="rss-feed-url">
           <span>RSS Feed URL</span>
           <div className={styles.rssFeedContainer}>
@@ -464,8 +686,34 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
             </div>
             <button
               type="button"
-              className={styles.loadFeedButton}
-              onClick={() => handleLoadFeed.current()}
+              className={`${styles.loadFeedButton} ${hasUnsavedRssUrl ? styles.saveButton : ''}`}
+              onClick={() => {
+                if (hasUnsavedRssUrl) {
+                  // Clear the timeout and save immediately
+                  if (rssFeedTimeoutRef.current) {
+                    window.clearTimeout(rssFeedTimeoutRef.current);
+                  }
+                  // Trigger the debounced save immediately
+                  const currentRssUrl = rssFeedUrl;
+                  pageSettingsMutation.mutate({
+                    rss_feed_url: currentRssUrl || undefined
+                  }, {
+                    onSuccess: async () => {
+                      setHasUnsavedRssUrl(false);
+                      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+                      await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+                      setStatusTone('success');
+                      setStatus('RSS feed URL saved.');
+                    },
+                    onError: (error) => {
+                      setStatusTone('error');
+                      setStatus(error instanceof Error ? error.message : 'Failed to save RSS feed URL.');
+                    }
+                  });
+                } else {
+                  handleLoadFeed.current();
+                }
+              }}
               disabled={pageSettingsMutation.isPending || isLoadingFeed || !rssFeedUrl}
             >
               {isLoadingFeed ? (
@@ -473,6 +721,8 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
                   <CircleNotch className={styles.buttonSpinner} aria-hidden="true" size={16} weight="regular" />
                   Loading...
                 </>
+              ) : hasUnsavedRssUrl ? (
+                'Save'
               ) : (
                 feedParsed ? 'Refresh' : 'Load'
               )}
@@ -574,6 +824,15 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
                         ) : (
                           <Copy className={styles.podlinksCopyIcon} aria-hidden="true" size={16} weight="regular" />
                         )}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.podlinksCopyButton}
+                        onClick={() => window.open(platformData.url!, '_blank', 'noopener,noreferrer')}
+                        aria-label="Open URL in new tab"
+                        title="Open URL in new tab"
+                      >
+                        <ArrowSquareOut className={styles.podlinksCopyIcon} aria-hidden="true" size={16} weight="regular" />
                       </button>
                     </div>
                   )}

@@ -89,9 +89,9 @@
 .title {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-text-primary, #0f172a);
-  font-family: var(--admin-font-heading, 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--admin-font-heading, 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif);
 }
 
 .description {

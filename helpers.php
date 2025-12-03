@@ -192,7 +192,7 @@ function hasSubscription($plan = PLAN_FREE) {
         return $plan === PLAN_FREE;
     }
     
-    $planHierarchy = [PLAN_FREE => 0, PLAN_PREMIUM => 1, PLAN_PRO => 2];
+    $planHierarchy = [PLAN_FREE => 0, PLAN_PRO => 1];
     $userPlan = $planHierarchy[$subscription['plan_type']] ?? 0;
     $requiredPlan = $planHierarchy[$plan] ?? 0;
     

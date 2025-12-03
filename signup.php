@@ -65,14 +65,7 @@ $googleAuthUrl = getGoogleAuthUrl();
     <title>Sign Up - <?php echo h(APP_NAME); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
-    <style>
-        @font-face {
-            font-family: 'Nunito Sans Expanded';
-            src: url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@100,800&display=swap');
-            font-stretch: expanded;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/auth.css?v=<?php echo filemtime(__DIR__ . '/css/auth.css'); ?>">
 </head>
@@ -106,7 +99,7 @@ $googleAuthUrl = getGoogleAuthUrl();
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="password" name="password" required placeholder="Create a password">
+                        <input type="password" id="password" name="password" required placeholder="Create a password" autocomplete="new-password">
                         <button type="button" class="password-toggle" data-target="password" aria-pressed="false">
                             <span class="sr-only">Show password</span>
                             <i class="fas fa-eye"></i>
@@ -118,7 +111,7 @@ $googleAuthUrl = getGoogleAuthUrl();
                 <div class="form-group">
                     <label for="confirm_password">Confirm Password</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password" autocomplete="new-password">
                         <button type="button" class="password-toggle" data-target="confirm_password" aria-pressed="false">
                             <span class="sr-only">Show password</span>
                             <i class="fas fa-eye"></i>

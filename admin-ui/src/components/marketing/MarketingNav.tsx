@@ -137,7 +137,7 @@ export function MarketingNav(): JSX.Element {
   return (
     <motion.header
       ref={navRef}
-      className={styles.header}
+      className={`${styles.header} ${isScrolled ? styles.scrolled : ''}`}
       initial={false}
       animate={{}}
       transition={{ duration: 0.3, ease: 'easeOut' }}

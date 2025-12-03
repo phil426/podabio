@@ -14,6 +14,7 @@ import { usePageSnapshot } from '../../api/page';
 import { ApiError } from '../../api/http';
 import type { AccountProfile } from '../../api/types';
 import { MigrationEducationBanner } from './MigrationEducationBanner';
+import { BillingPanel } from './BillingPanel';
 import { trackTelemetry } from '../../services/telemetry';
 import { CreatePageDrawer } from '../overlays/CreatePageDrawer';
 import { SecurityActionDrawer, type SecurityAction } from '../overlays/SecurityActionDrawer';
@@ -152,7 +153,7 @@ export function AccountWorkspace(): JSX.Element {
         </Tabs.Content>
 
         <Tabs.Content className={styles.tabContent} value="billing">
-          <BillingTab />
+          <BillingPanel />
         </Tabs.Content>
       </Tabs.Root>
 
@@ -457,158 +458,6 @@ function SecurityTab(): JSX.Element {
   );
 }
 
-function BillingTab(): JSX.Element {
-  const { data: subscription, isLoading } = useSubscriptionStatus();
-
-  if (isLoading) {
-    return <p className={styles.emptyState}>Retrieving billing status…</p>;
-  }
-
-  if (!subscription) {
-    return <p className={styles.emptyState}>We couldn’t load your billing information right now.</p>;
-  }
-
-  return (
-    <div className={styles.sectionStack}>
-      <section className={styles.card} data-account-section="billing">
-        <header>
-          <h2>Current plan</h2>
-          <p>Upgrade to unlock more customization and analytics.</p>
-        </header>
-        <div className={styles.fieldGrid}>
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>Plan</span>
-            <span className={styles.fieldValue}>{formatPlan(subscription.plan_type)}</span>
-          </div>
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>Status</span>
-            <span className={styles.fieldValue}>{formatStatus(subscription.status)}</span>
-          </div>
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>Renewal</span>
-            <span className={styles.fieldValue}>
-              {subscription.expires_at ? formatDate(subscription.expires_at) : 'Renews automatically'}
-            </span>
-          </div>
-          {subscription.payment_method && (
-            <div className={styles.fieldRow}>
-              <span className={styles.fieldLabel}>Payment method</span>
-              <span className={styles.fieldValue}>{subscription.payment_method}</span>
-            </div>
-          )}
-        </div>
-        <footer className={styles.cardFooter}>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => window.open('/payment/checkout.php?plan=premium', '_blank')}
-            title="Open the upgrade checkout to change your plan"
-          >
-            Upgrade plan
-          </button>
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={() => window.open('/payment/support.php', '_blank')}
-            title="Get help with billing and subscription questions"
-          >
-            Contact support
-          </button>
-        </footer>
-      </section>
-
-      <section className={styles.card}>
-        <header>
-          <h2>Recent invoices</h2>
-          <p>Download invoices for your records.</p>
-        </header>
-        {subscription.invoices && subscription.invoices.length > 0 ? (
-          <ul className={styles.invoiceList}>
-            {subscription.invoices.map((invoice) => (
-              <li key={invoice.id} className={styles.invoiceRow}>
-                <div>
-                  <p className={styles.invoiceAmount}>{formatCurrency(invoice.amount, invoice.currency)}</p>
-                  <p className={styles.invoiceMeta}>
-                    {formatDate(invoice.issued_at)} · {formatStatus(invoice.status)}
-                  </p>
-                </div>
-                {invoice.hosted_invoice_url ? (
-                  <a
-                    className={styles.secondaryButton}
-                    href={invoice.hosted_invoice_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open this invoice in a new tab"
-                  >
-                    View
-                  </a>
-                ) : (
-                  <span className={styles.invoicePlaceholder}>—</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={styles.emptyState}>No invoices yet. Upgrade to generate your first invoice.</p>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function formatPlan(plan: string): string {
-  const value = plan?.toLowerCase?.() ?? 'free';
-  switch (value) {
-    case 'premium':
-      return 'Premium';
-    case 'pro':
-      return 'Pro';
-    case 'team':
-      return 'Team';
-    case 'free':
-    default:
-      return 'Free';
-  }
-}
-
-function formatStatus(status: string): string {
-  const value = status?.toLowerCase?.() ?? 'active';
-  switch (value) {
-    case 'pending':
-      return 'Payment pending';
-    case 'failed':
-      return 'Payment failed';
-    case 'canceled':
-      return 'Canceled';
-    case 'active':
-    default:
-      return 'Active';
-  }
-}
-
-function formatDate(iso: string): string {
-  try {
-    const date = new Date(iso);
-    return new Intl.DateTimeFormat(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
-  } catch {
-    return iso;
-  }
-}
-
-function formatCurrency(amount: number, currency?: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: (currency ?? 'usd').toUpperCase()
-    }).format(amount / 100);
-  } catch {
-    return `${amount / 100} ${currency ?? 'USD'}`;
-  }
-}
 
 function copyToClipboard(value: string) {
   if (!value) return;

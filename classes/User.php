@@ -99,28 +99,51 @@ class User {
      * Login with email and password
      * @param string $email
      * @param string $password
-     * @return array ['success' => bool, 'user' => array|null, 'error' => string|null]
+     * @return array ['success' => bool, 'user' => array|null, 'error' => string|null, 'requires_2fa' => bool]
      */
     public function login($email, $password) {
         $user = fetchOne("SELECT * FROM users WHERE email = ?", [$email]);
         
         if (!$user) {
-            return ['success' => false, 'user' => null, 'error' => 'Invalid email or password'];
+            return ['success' => false, 'user' => null, 'error' => 'Invalid email or password', 'requires_2fa' => false];
         }
         
         // Check password
         if (!verifyPassword($password, $user['password_hash'])) {
-            return ['success' => false, 'user' => null, 'error' => 'Invalid email or password'];
+            return ['success' => false, 'user' => null, 'error' => 'Invalid email or password', 'requires_2fa' => false];
         }
         
         // Check if email is verified
         if (!$user['email_verified']) {
-            return ['success' => false, 'user' => null, 'error' => 'Email not verified. Please check your email.'];
+            return ['success' => false, 'user' => null, 'error' => 'Email not verified. Please check your email.', 'requires_2fa' => false];
         }
         
-        // Set session
+        // Check if 2FA is enabled
+        if (!empty($user['two_factor_enabled']) && $user['two_factor_enabled']) {
+            // Store temporary session for 2FA verification
+            $_SESSION['2fa_pending_user_id'] = $user['id'];
+            $_SESSION['2fa_pending_email'] = $user['email'];
+            regenerateSession();
+            
+            // Remove password hash from returned user
+            unset($user['password_hash']);
+            unset($user['verification_token']);
+            unset($user['reset_token']);
+            
+            return [
+                'success' => true, 
+                'user' => $user, 
+                'error' => null, 
+                'requires_2fa' => true,
+                'two_factor_method' => $user['two_factor_method'] ?? 'totp'
+            ];
+        }
+        
+        // No 2FA required - complete login
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
+        unset($_SESSION['2fa_pending_user_id']);
+        unset($_SESSION['2fa_pending_email']);
         regenerateSession();
         
         // Remove password hash from returned user
@@ -128,7 +151,7 @@ class User {
         unset($user['verification_token']);
         unset($user['reset_token']);
         
-        return ['success' => true, 'user' => $user, 'error' => null];
+        return ['success' => true, 'user' => $user, 'error' => null, 'requires_2fa' => false];
     }
     
     /**
@@ -278,14 +301,14 @@ class User {
      * @return bool
      */
     public function update($userId, $data) {
-        $allowedFields = ['email'];
+        $allowedFields = ['email', 'first_name', 'last_name'];
         $updates = [];
         $params = [];
         
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {
                 $updates[] = "$field = ?";
-                $params[] = $data[$field];
+                $params[] = $data[$field] ?: null; // Allow empty strings to be stored as null
             }
         }
         

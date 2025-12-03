@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Success Page
- * PodaBio - Payment confirmation
+ * PodaBio - Stripe checkout confirmation
  */
 
 require_once __DIR__ . '/../config/constants.php';
@@ -9,7 +9,7 @@ require_once __DIR__ . '/../config/payments.php';
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
-require_once __DIR__ . '/../classes/PaymentProcessor.php';
+require_once __DIR__ . '/../classes/StripeProcessor.php';
 require_once __DIR__ . '/../classes/Subscription.php';
 
 $user = getCurrentUser();
@@ -17,38 +17,65 @@ if (!$user) {
     redirect('/login.php');
 }
 
-// Get payment details from query string
-$orderId = sanitizeInput($_GET['token'] ?? '');
-$planType = sanitizeInput($_GET['plan'] ?? '');
+// Get Stripe checkout session ID from query string
+$sessionId = sanitizeInput($_GET['session_id'] ?? '');
 
 $message = '';
 $success = false;
+$isTrial = false;
+$trialDaysRemaining = null;
 
-if ($orderId) {
-    // Capture PayPal payment
-    $processor = new PaymentProcessor();
-    $result = $processor->capturePayPalPayment($orderId);
+if ($sessionId) {
+    // Verify checkout session with Stripe
+    $processor = new StripeProcessor();
+    $session = $processor->getCheckoutSession($sessionId);
     
-    if ($result['success']) {
-        // Update subscription with transaction ID
-        $subscription = new Subscription();
-        $sub = $subscription->getByPaymentId($orderId);
+    if ($session && $session->payment_status === 'paid') {
+        // Checkout was successful
+        $subscriptionClass = new Subscription();
         
-        if ($sub) {
-            executeQuery(
-                "UPDATE subscriptions SET payment_id = ?, status = 'active', updated_at = NOW() WHERE id = ?",
-                [$result['transaction_id'], $sub['id']]
-            );
-            $success = true;
-            $message = 'Your subscription has been activated successfully!';
+        // Get subscription from Stripe
+        if (isset($session->subscription)) {
+            $stripeSubscriptionId = $session->subscription;
+            $subscription = $subscriptionClass->getByStripeSubscriptionId($stripeSubscriptionId);
+            
+            // Wait a moment for webhook to process (if it hasn't already)
+            if (!$subscription) {
+                sleep(2);
+                $subscription = $subscriptionClass->getByStripeSubscriptionId($stripeSubscriptionId);
+            }
+            
+            if ($subscription) {
+                $success = true;
+                
+                // Check if it's a trial
+                if ($subscription['is_trial'] && $subscription['trial_ends_at']) {
+                    $isTrial = true;
+                    $trialEnd = new DateTime($subscription['trial_ends_at']);
+                    $now = new DateTime();
+                    $diff = $now->diff($trialEnd);
+                    $trialDaysRemaining = $diff->days;
+                    
+                    $message = "Your 14-day free trial has started! ";
+                    $message .= "You have {$trialDaysRemaining} day" . ($trialDaysRemaining !== 1 ? 's' : '') . " remaining. ";
+                    $message .= "After the trial ends, you'll be automatically charged for the Pro plan.";
+                } else {
+                    $message = 'Your Pro subscription has been activated successfully!';
+                }
+            } else {
+                // Subscription not found yet (webhook might still be processing)
+                $success = true;
+                $message = 'Payment processed successfully! Your subscription is being activated. This may take a few moments.';
+            }
         } else {
-            $message = 'Subscription activated, but we could not find your subscription record. Please contact support.';
+            $success = true;
+            $message = 'Payment processed successfully! Your subscription is being activated.';
         }
     } else {
-        $message = 'Payment processing encountered an issue. If your payment was successful, please contact support.';
+        $message = 'Payment session not found or not completed. Please contact support if you were charged.';
     }
 } else {
-    $message = 'Payment information not found.';
+    $message = 'Payment session information not found.';
 }
 
 ?>
@@ -58,6 +85,10 @@ if ($orderId) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment <?php echo $success ? 'Success' : 'Status'; ?> - <?php echo h(APP_NAME); ?></title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -136,15 +167,19 @@ if ($orderId) {
     <div class="result-container">
         <?php if ($success): ?>
             <div class="success-icon">✓</div>
-            <h1>Payment Successful!</h1>
+            <h1><?php echo $isTrial ? 'Trial Started!' : 'Payment Successful!'; ?></h1>
             <p><?php echo h($message); ?></p>
+            <?php if ($isTrial && $trialDaysRemaining !== null): ?>
+                <p style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                    <strong>Trial Days Remaining: <?php echo $trialDaysRemaining; ?></strong>
+                </p>
+            <?php endif; ?>
             <a href="/admin/userdashboard.php" class="btn">Open Studio</a>
         <?php else: ?>
             <div class="error-icon">✗</div>
             <h1>Payment Status</h1>
             <p><?php echo h($message); ?></p>
             <a href="/admin/userdashboard.php" class="btn">Open Studio</a>
-            <a href="/payment/checkout.php?plan=<?php echo h($planType); ?>" style="margin-left: 1rem; color: #667eea;">Try Again</a>
         <?php endif; ?>
     </div>
 </body>

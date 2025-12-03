@@ -16,6 +16,7 @@ require_once __DIR__ . '/../classes/RSSParser.php';
 require_once __DIR__ . '/../classes/Theme.php';
 require_once __DIR__ . '/../classes/APIResponse.php';
 require_once __DIR__ . '/../classes/WidgetStyleManager.php';
+require_once __DIR__ . '/../classes/MediaLibrary.php';
 
 // Require authentication
 requireAuth();
@@ -386,6 +387,7 @@ switch ($action) {
         // Handle RSS feed URL
         if (isset($_POST['rss_feed_url'])) {
             $rssFeedUrl = trim(sanitizeInput($_POST['rss_feed_url']));
+            $forceProcessing = isset($_POST['force_rss_processing']) && $_POST['force_rss_processing'] === '1';
             
             if (empty($rssFeedUrl)) {
                 // Allow removing RSS feed URL
@@ -400,35 +402,62 @@ switch ($action) {
                 $updateData['rss_feed_url'] = $rssFeedUrl;
                 
                 // Automatically parse RSS feed and extract podcast metadata
-                try {
-                    $parser = new RSSParser();
-                    $feedResult = $parser->parseFeed($rssFeedUrl);
-                    
-                    if ($feedResult['success'] && !empty($feedResult['data'])) {
-                        $feedData = $feedResult['data'];
+                // Always process if force_rss_processing is set, or if URL has changed
+                $currentRssUrl = $userPage['rss_feed_url'] ?? '';
+                $shouldProcess = $forceProcessing || ($rssFeedUrl !== $currentRssUrl);
+                
+                if ($shouldProcess) {
+                    try {
+                        $parser = new RSSParser();
+                        $feedResult = $parser->parseFeed($rssFeedUrl);
                         
-                        // Save cover image URL from RSS feed
-                        if (!empty($feedData['cover_image'])) {
-                            $updateData['cover_image_url'] = $feedData['cover_image'];
+                        if ($feedResult['success'] && !empty($feedResult['data'])) {
+                            $feedData = $feedResult['data'];
+                            
+                            // Save cover image URL from RSS feed
+                            if (!empty($feedData['cover_image'])) {
+                                $updateData['cover_image_url'] = $feedData['cover_image'];
+                                
+                                // Download and save cover image to user's media library
+                                // This should ALWAYS happen when a cover image is found in the RSS feed
+                                try {
+                                    $mediaLibrary = new MediaLibrary();
+                                    $downloadResult = $mediaLibrary->downloadAndSaveImage($feedData['cover_image'], $userId, 'podcast-cover-' . time() . '.jpg');
+                                    
+                                    if ($downloadResult['success']) {
+                                        // Log success with more details
+                                        error_log("[PODCAST COVER IMAGE SAVED] User ID: {$userId}, Media ID: " . ($downloadResult['media_id'] ?? 'N/A') . ", Path: " . ($downloadResult['path'] ?? 'unknown') . ", URL: " . ($downloadResult['url'] ?? 'unknown'));
+                                    } else {
+                                        // Log error with more details but don't fail the RSS feed processing
+                                        error_log("[PODCAST COVER IMAGE FAILED] User ID: {$userId}, Image URL: {$feedData['cover_image']}, Error: " . ($downloadResult['error'] ?? 'Unknown error'));
+                                    }
+                                } catch (Exception $e) {
+                                    // Log error with full exception details but don't fail the RSS feed processing
+                                    error_log("[PODCAST COVER IMAGE EXCEPTION] User ID: {$userId}, Image URL: {$feedData['cover_image']}, Exception: " . $e->getMessage() . ", File: " . $e->getFile() . ", Line: " . $e->getLine());
+                                }
+                            } else {
+                                // Log when cover image is not found in RSS feed
+                                error_log("[PODCAST RSS FEED] User ID: {$userId}, No cover image found in RSS feed: {$rssFeedUrl}");
+                            }
+                            
+                            // Save podcast name and description for podcast player display
+                            if (!empty($feedData['title'])) {
+                                $podcastName = sanitizeInput($feedData['title']);
+                                $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
+                            }
+                            if (!empty($feedData['description'])) {
+                                $podcastDescription = sanitizeInput($feedData['description']);
+                                $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
+                            }
+                        } else {
+                            // Log error but don't fail the update
+                            error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
                         }
-                        
-                        // Save podcast name and description for podcast player display
-                        if (!empty($feedData['title'])) {
-                            $podcastName = sanitizeInput($feedData['title']);
-                            $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
-                        }
-                        if (!empty($feedData['description'])) {
-                            $podcastDescription = sanitizeInput($feedData['description']);
-                            $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
-                        }
-                    } else {
-                        // Log error but don't fail the update
-                        error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
+                    } catch (Exception $e) {
+                        // Log error but don't fail the update - RSS URL will still be saved
+                        error_log("Exception while parsing RSS feed: " . $e->getMessage());
                     }
-                } catch (Exception $e) {
-                    // Log error but don't fail the update - RSS URL will still be saved
-                    error_log("Exception while parsing RSS feed: " . $e->getMessage());
-                }
+                } // End of shouldProcess check
             }
         }
         

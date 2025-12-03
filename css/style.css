@@ -39,6 +39,7 @@ body {
     font-weight: 700;
     color: #667eea;
     margin: 0;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .dashboard-header nav a {
@@ -68,6 +69,7 @@ body {
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
     color: #1f2937;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .dashboard-section {
@@ -84,12 +86,14 @@ body {
     color: #1f2937;
     border-bottom: 2px solid #f0f4ff;
     padding-bottom: 0.75rem;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .dashboard-section h4 {
     font-size: 1rem;
     margin-bottom: 1rem;
     color: #374151;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .dashboard-section p {

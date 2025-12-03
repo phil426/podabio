@@ -15,7 +15,7 @@
     --poda-border-strong: rgba(255, 255, 255, 0.2);
     
     /* Typography */
-    --poda-font-heading: 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --poda-font-heading: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
     --poda-font-body: 'Space Mono', 'Courier New', monospace;
 }
 

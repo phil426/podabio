@@ -18,7 +18,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta name="description" content="One beautiful page. All your links, episodes, and resources. Automatically synced from your RSS feed. Built specifically for podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
     <?php
     // Load React marketing navigation component
@@ -278,10 +278,11 @@ require_once __DIR__ . '/includes/helpers.php';
         
         .hero-headline {
             font-size: 4rem;
-            font-weight: 800;
+            font-weight: 500;
             margin-bottom: 1.5rem;
             line-height: 1.2;
             color: var(--poda-text-primary);
+            font-family: var(--poda-font-heading);
         }
         
         .hero-subheadline {
@@ -1595,7 +1596,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         <div class="pricing-card featured scroll-animate" data-animate="scale" data-delay="200" style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative;">
                             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-accent-signal-green); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">POPULAR</div>
                             <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">Pro</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$<?php echo number_format(PLAN_PRO_PRICE, 2); ?><span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
+                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$<?php echo number_format(PLAN_PRO_MONTHLY_PRICE, 2); ?><span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
                             <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For professional podcasters</p>
                             <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
                                 <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Everything in Free</li>
@@ -2070,11 +2071,22 @@ require_once __DIR__ . '/includes/helpers.php';
                 return;
             }
             
+            // Helper function to check if element is in viewport
+            function isInViewport(element) {
+                const rect = element.getBoundingClientRect();
+                return (
+                    rect.top >= 0 &&
+                    rect.left >= 0 &&
+                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                );
+            }
+            
             // Create observer with options
             const observerOptions = {
                 root: null,
-                rootMargin: '0px 0px -100px 0px', // Trigger when element is 100px from bottom of viewport
-                threshold: 0.1 // Trigger when 10% of element is visible
+                rootMargin: '50px 0px -50px 0px', // Trigger 50px before entering viewport
+                threshold: 0.01 // Trigger when any part of element is visible
             };
             
             const observer = new IntersectionObserver((entries) => {
@@ -2089,7 +2101,17 @@ require_once __DIR__ . '/includes/helpers.php';
             
             // Observe all elements with scroll-animate class
             document.querySelectorAll('.scroll-animate').forEach(el => {
-                observer.observe(el);
+                // Check if element is already in viewport (with some margin)
+                const rect = el.getBoundingClientRect();
+                const isVisible = rect.top < (window.innerHeight + 50) && rect.bottom > -50;
+                
+                if (isVisible) {
+                    // If already visible, animate immediately
+                    el.classList.add('animate');
+                } else {
+                    // Otherwise, observe for when it scrolls into view
+                    observer.observe(el);
+                }
             });
         })();
         

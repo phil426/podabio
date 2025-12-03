@@ -2,62 +2,51 @@
 
 ## Overview
 
-Payment integration is implemented for PayPal and Venmo subscriptions. The system supports:
+Payment integration is implemented using Stripe for subscription payments. The system supports:
 - **Free Plan**: Basic features (default)
-- **Premium Plan**: $4.99/month
-- **Pro Plan**: $9.99/month
+- **Pro Plan**: $4.99/month or $53.89/year (10% discount)
 
-## Configuration Required
+## Features
 
-### 1. PayPal Setup
+- Stripe Checkout for secure payment processing
+- 14-day free trial (payment method collected upfront, no charge during trial)
+- Monthly and annual billing options
+- Automatic subscription management via webhooks
+- Root admin bypass (phil624@gmail.com has Pro features without subscription)
 
-1. Create a PayPal Business Account at https://www.paypal.com/business
-2. Go to PayPal Developer Dashboard: https://developer.paypal.com/
-3. Create a new app (Sandbox for testing, Production for live)
-4. Copy the Client ID and Client Secret
-5. Update `config/payments.php`:
+## Quick Start
 
-```php
-define('PAYPAL_CLIENT_ID', 'your-client-id-here');
-define('PAYPAL_CLIENT_SECRET', 'your-client-secret-here');
-define('PAYPAL_MODE', 'sandbox'); // Change to 'live' for production
-```
+1. **Follow the comprehensive setup guide**: See `docs/STRIPE_SETUP.md` for detailed instructions
+2. **Install Stripe SDK**: `composer require stripe/stripe-php`
+3. **Configure API keys**: Add Stripe keys to `config/local.php` or `config/payments.php`
+4. **Create products/prices** in Stripe Dashboard
+5. **Set up webhook** endpoint: `https://yourdomain.com/api/stripe/webhook`
+6. **Run database migrations**: See Step 6 in `docs/STRIPE_SETUP.md`
 
-### 2. PayPal Webhook Setup
+## Configuration
 
-1. In PayPal Developer Dashboard, go to your app settings
-2. Add webhook URL: `https://your-domain.com/api/payment/webhook.php`
-3. Copy the Webhook ID
-4. Update `config/payments.php`:
+### Required Constants
 
-```php
-define('PAYPAL_WEBHOOK_ID', 'your-webhook-id-here');
-```
-
-**Note**: For local development, use a tool like ngrok to expose your local server for webhook testing.
-
-### 3. Venmo Setup
-
-Venmo payments are processed manually through PayPal Business Account:
-1. Set up your PayPal Business Account to receive Venmo payments
-2. Update `config/payments.php`:
+Add to `config/local.php` (recommended) or `config/payments.php`:
 
 ```php
-define('VENMO_BUSINESS_USERNAME', 'your-venmo-username');
-define('VENMO_BUSINESS_EMAIL', 'your-paypal-business-email@example.com');
+// Stripe API Keys
+define('STRIPE_SECRET_KEY', 'sk_test_...'); // Get from Stripe Dashboard
+define('STRIPE_PUBLISHABLE_KEY', 'pk_test_...'); // Get from Stripe Dashboard
+define('STRIPE_WEBHOOK_SECRET', 'whsec_...'); // Get after webhook setup
+define('STRIPE_MODE', 'test'); // 'test' or 'live'
+
+// Stripe Price IDs (get from Stripe Dashboard after creating products)
+define('STRIPE_PRO_MONTHLY_PRICE_ID', 'price_...');
+define('STRIPE_PRO_ANNUAL_PRICE_ID', 'price_...');
 ```
 
-**Note**: Venmo payments require manual verification. Users send payment, and you activate their subscription manually (or via admin panel in future).
+### Pricing Constants
 
-## Features Implemented
-
-✅ PayPal payment processing (API v2)
-✅ Venmo payment workflow (manual verification)
-✅ Subscription upgrade/downgrade
-✅ Payment webhook handling
-✅ Subscription status tracking
-✅ Feature access control based on plans
-✅ Dashboard subscription management
+Already defined in `config/payments.php`:
+- `PLAN_PRO_MONTHLY_PRICE` = 4.99
+- `PLAN_PRO_ANNUAL_PRICE` = 53.89 (10% discount)
+- `TRIAL_PERIOD_DAYS` = 14
 
 ## Plan Features
 
@@ -65,43 +54,97 @@ define('VENMO_BUSINESS_EMAIL', 'your-paypal-business-email@example.com');
 - Basic links
 - Basic themes
 
-### Premium Plan ($4.99/month)
-- Basic links
-- Basic themes
+### Pro Plan ($4.99/month or $53.89/year)
+- Everything in Free
 - Custom colors & fonts
 - Basic analytics
 - Email subscription integration
-
-### Pro Plan ($9.99/month)
-- Everything in Premium
 - Custom domain support
 - Affiliate link management
 - Advanced analytics
 - 24/7 Priority Support
 
+*Note: Premium plan features have been consolidated into Pro plan.*
+
+## Trial Program
+
+Users can start a 14-day free trial for the Pro plan:
+- Payment method is collected upfront (required by Stripe)
+- No charge during the trial period
+- Automatically converts to paid subscription after 14 days
+- Users can cancel anytime during the trial
+
+## Root Admin
+
+The account `phil624@gmail.com` is configured as root admin and automatically has Pro features without needing a subscription. This is set via the `is_root_admin` flag in the database.
+
 ## Testing
 
-### PayPal Sandbox Testing
-1. Set `PAYPAL_MODE` to `'sandbox'`
-2. Use PayPal sandbox test accounts
-3. Test checkout flow at `/payment/checkout.php?plan=premium`
+### Test Mode
 
-### Production Checklist
-- [ ] Change `PAYPAL_MODE` to `'live'`
-- [ ] Update PayPal Client ID/Secret to production values
-- [ ] Configure production webhook URL
-- [ ] Test payment flow with small amount
-- [ ] Verify webhook receives events
-- [ ] Set up email notifications for payments
-- [ ] Configure Venmo business account details
+1. Set `STRIPE_MODE = 'test'` in config
+2. Use test API keys from Stripe Dashboard
+3. Use Stripe test card: `4242 4242 4242 4242`
+4. Any future expiry date and any CVC
 
-## Next Steps (Future Enhancements)
+### Test Scenarios
 
-- Automatic subscription renewals
-- Email notifications for payment events
-- Admin panel for manual Venmo verification
-- Subscription cancellation flow
-- Refund processing
-- Invoice generation
-- Payment history view
+- Start free trial → Verify trial activation
+- Purchase Pro subscription → Verify subscription activation
+- Check webhook events → Verify events are processed
 
+## Production Checklist
+
+- [ ] Switch to live mode: `STRIPE_MODE = 'live'`
+- [ ] Update API keys with live keys
+- [ ] Create webhook endpoint for production URL
+- [ ] Update webhook secret with production value
+- [ ] Test checkout flow with small amount
+- [ ] Verify webhook receives and processes events
+- [ ] Test trial activation
+- [ ] Test subscription cancellation
+
+## Documentation
+
+For detailed setup instructions, see:
+- **`docs/STRIPE_SETUP.md`** - Complete Stripe integration guide
+  - API key configuration
+  - Product/price creation
+  - Webhook setup
+  - Testing procedures
+  - Troubleshooting
+
+## API Endpoints
+
+- `/api/payment/process.php` - Create Stripe checkout session
+- `/api/payment/start-trial.php` - Start 14-day free trial
+- `/api/stripe/webhook.php` - Handle Stripe webhook events
+- `/payment/success.php` - Payment/trial confirmation page
+- `/payment/cancel.php` - Cancelled checkout page
+
+## Database
+
+Required database fields (added via migrations):
+- `subscriptions` table: `stripe_customer_id`, `stripe_subscription_id`, `stripe_price_id`, `billing_interval`, `trial_ends_at`, `is_trial`
+- `users` table: `is_root_admin`
+- `stripe_webhook_events` table: For webhook idempotency
+
+Run migrations:
+```bash
+php database/migrate_update_subscriptions_for_stripe.php
+php database/migrate_add_root_admin_flag.php
+php database/migrate_simplify_plans.php
+```
+
+## Security
+
+- Webhook signature verification (prevents unauthorized events)
+- CSRF protection on payment endpoints
+- Idempotent webhook processing (prevents duplicate events)
+- Sensitive keys stored in gitignored config files
+
+## Support
+
+- **Stripe Documentation**: https://stripe.com/docs
+- **Stripe Support**: https://support.stripe.com
+- **Setup Guide**: See `docs/STRIPE_SETUP.md`

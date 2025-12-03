@@ -17,7 +17,7 @@
     --poda-border-strong: rgba(255, 255, 255, 0.2);
     
     /* Typography */
-    --poda-font-heading: 'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --poda-font-heading: "Zalando Sans Expanded", -apple-system, BlinkMacSystemFont, sans-serif;
     --poda-font-body: 'Space Mono', 'Courier New', monospace;
 }
 
@@ -55,9 +55,9 @@ h1, h2, h3, h4, h5, h6,
 .pricing-teaser h2,
 .final-cta h2 {
     font-family: var(--poda-font-heading);
-    font-weight: 800; /* Extrabold */
-    font-variation-settings: 'wdth' 100; /* Expanded width (100 = fully expanded) */
-    letter-spacing: -0.02em;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
 }
 
 /* Body text uses Space Mono */
@@ -110,12 +110,12 @@ p, li, span, a,
 .logo {
     font-family: var(--poda-font-heading);
     font-size: 1.5rem;
-    font-weight: 800; /* Extrabold */
-    font-variation-settings: 'wdth' 100; /* Expanded width (100 = fully expanded) */
+    font-weight: 500;
+    font-optical-sizing: auto;
+    font-style: normal;
     color: var(--poda-accent-signal-green);
     text-decoration: none;
     transition: all 0.3s;
-    letter-spacing: -0.02em;
     white-space: nowrap;
 }
 

@@ -140,6 +140,13 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo h($page['podcast_name'] ?: $page['username']); ?></title>
     
+    <!-- Google Fonts Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Default Fonts (always loaded as fallback) -->
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    
     <!-- Google Fonts (load theme fonts) -->
     <?php 
     $googleFontsUrl = $themeClass->buildGoogleFontsUrl($fonts);
@@ -149,8 +156,6 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <?php endif; ?>
     
     <!-- Inter Font for Podcast Buttons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
@@ -748,17 +753,17 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                         <i class="fas fa-music"></i>
                                     </div>
                                 <?php endif; ?>
-                            </div>
-
-                            <!-- Progress Section -->
-                            <div class="progress-section-large" id="progress-section-now-playing">
-                                <div class="time-display">
-                                    <span id="current-time-display">0:00</span>
-                                    <span id="remaining-time-display">-0:00</span>
-                                </div>
-                                <div class="progress-bar-now-playing" id="progress-bar-now-playing">
-                                    <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
-                                    <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                                
+                                <!-- Progress Section Overlay -->
+                                <div class="progress-section-large" id="progress-section-now-playing">
+                                    <div class="time-display">
+                                        <span id="current-time-display">0:00</span>
+                                        <span id="remaining-time-display">-0:00</span>
+                                    </div>
+                                    <div class="progress-bar-now-playing" id="progress-bar-now-playing">
+                                        <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
+                                        <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -789,19 +794,29 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                     <button class="secondary-control-btn share-control-btn" id="share-control-btn" aria-label="Share">
                                         <i class="fas fa-share-alt"></i>
                                     </button>
-                                    <button class="secondary-control-btn more-control-btn" id="more-control-btn" aria-label="More Options">
-                                        <i class="fas fa-ellipsis-h"></i>
+                                    <button class="secondary-control-btn close-player-btn" id="close-player-btn" aria-label="Close Player">
+                                        <i class="fas fa-times"></i>
                                     </button>
                                 </div>
 
-                                <div class="inline-speed-selector" id="inline-speed-selector" style="display: none;">
-                                    <h3 class="inline-selector-title">Playback Speed</h3>
-                                    <div class="speed-options-inline" id="speed-options-inline"></div>
+                                <!-- Speed Modal -->
+                                <div class="podcast-modal-overlay" id="speed-modal-overlay" style="display: none;">
+                                    <div class="podcast-modal-container">
+                                        <div class="podcast-modal-content">
+                                            <h3 class="podcast-modal-title">Playback Speed</h3>
+                                            <div class="podcast-modal-options" id="speed-options-modal"></div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="inline-timer-selector" id="inline-timer-selector" style="display: none;">
-                                    <h3 class="inline-selector-title">Sleep Timer</h3>
-                                    <div class="timer-options-inline" id="timer-options-inline"></div>
+                                <!-- Timer Modal -->
+                                <div class="podcast-modal-overlay" id="timer-modal-overlay" style="display: none;">
+                                    <div class="podcast-modal-container">
+                                        <div class="podcast-modal-content">
+                                            <h3 class="podcast-modal-title">Sleep Timer</h3>
+                                            <div class="podcast-modal-options" id="timer-options-modal"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1357,17 +1372,17 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                                 <i class="fas fa-music"></i>
                                             </div>
                                         <?php endif; ?>
-                                    </div>
-
-                                    <!-- Progress Section -->
-                                    <div class="progress-section-large" id="progress-section-now-playing-desktop">
-                                        <div class="time-display">
-                                            <span id="current-time-display-desktop">0:00</span>
-                                            <span id="remaining-time-display-desktop">-0:00</span>
-                                        </div>
-                                        <div class="progress-bar-now-playing" id="progress-bar-now-playing-desktop">
-                                            <div class="progress-fill-now-playing" id="progress-fill-now-playing-desktop"></div>
-                                            <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing-desktop"></div>
+                                        
+                                        <!-- Progress Section Overlay -->
+                                        <div class="progress-section-large" id="progress-section-now-playing-desktop">
+                                            <div class="time-display">
+                                                <span id="current-time-display-desktop">0:00</span>
+                                                <span id="remaining-time-display-desktop">-0:00</span>
+                                            </div>
+                                            <div class="progress-bar-now-playing" id="progress-bar-now-playing-desktop">
+                                                <div class="progress-fill-now-playing" id="progress-fill-now-playing-desktop"></div>
+                                                <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing-desktop"></div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1398,19 +1413,29 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                                             <button class="secondary-control-btn share-control-btn" id="share-control-btn-desktop" aria-label="Share">
                                                 <i class="fas fa-share-alt"></i>
                                             </button>
-                                            <button class="secondary-control-btn more-control-btn" id="more-control-btn-desktop" aria-label="More Options">
-                                                <i class="fas fa-ellipsis-h"></i>
+                                            <button class="secondary-control-btn close-player-btn" id="close-player-btn-desktop" aria-label="Close Player">
+                                                <i class="fas fa-times"></i>
                                             </button>
                                         </div>
 
-                                        <div class="inline-speed-selector" id="inline-speed-selector-desktop" style="display: none;">
-                                            <h3 class="inline-selector-title">Playback Speed</h3>
-                                            <div class="speed-options-inline" id="speed-options-inline-desktop"></div>
+                                        <!-- Speed Modal -->
+                                        <div class="podcast-modal-overlay" id="speed-modal-overlay-desktop" style="display: none;">
+                                            <div class="podcast-modal-container">
+                                                <div class="podcast-modal-content">
+                                                    <h3 class="podcast-modal-title">Playback Speed</h3>
+                                                    <div class="podcast-modal-options" id="speed-options-modal-desktop"></div>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div class="inline-timer-selector" id="inline-timer-selector-desktop" style="display: none;">
-                                            <h3 class="inline-selector-title">Sleep Timer</h3>
-                                            <div class="timer-options-inline" id="timer-options-inline-desktop"></div>
+                                        <!-- Timer Modal -->
+                                        <div class="podcast-modal-overlay" id="timer-modal-overlay-desktop" style="display: none;">
+                                            <div class="podcast-modal-container">
+                                                <div class="podcast-modal-content">
+                                                    <h3 class="podcast-modal-title">Sleep Timer</h3>
+                                                    <div class="podcast-modal-options" id="timer-options-modal-desktop"></div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1741,13 +1766,13 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         'speed-control-btn-desktop': 'speed-control-btn',
                         'timer-control-btn-desktop': 'timer-control-btn',
                         'share-control-btn-desktop': 'share-control-btn',
-                        'more-control-btn-desktop': 'more-control-btn',
+                        'close-player-btn-desktop': 'close-player-btn',
                         'speed-display-desktop': 'speed-display',
                         'timer-display-desktop': 'timer-display',
-                        'inline-speed-selector-desktop': 'inline-speed-selector',
-                        'inline-timer-selector-desktop': 'inline-timer-selector',
-                        'speed-options-inline-desktop': 'speed-options-inline',
-                        'timer-options-inline-desktop': 'timer-options-inline'
+                        'speed-modal-overlay-desktop': 'speed-modal-overlay',
+                        'timer-modal-overlay-desktop': 'timer-modal-overlay',
+                        'speed-options-modal-desktop': 'speed-options-modal',
+                        'timer-options-modal-desktop': 'timer-options-modal'
                     };
                     
                     // Update IDs to standard names

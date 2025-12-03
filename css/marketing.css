@@ -36,6 +36,7 @@ body {
     font-weight: 700;
     color: #667eea;
     text-decoration: none;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .nav-links {
@@ -101,6 +102,7 @@ body {
 .page-header h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .page-header p {
@@ -128,6 +130,7 @@ body {
 .footer-section h4 {
     margin-bottom: 1rem;
     color: #667eea;
+    font-family: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .footer-section ul {

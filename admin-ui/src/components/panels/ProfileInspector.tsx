@@ -32,6 +32,11 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const [imageBorder, setImageBorder] = useState<'none' | 'thin' | 'thick'>(page?.profile_image_border ?? 'none');
   const [bioAlignment, setBioAlignment] = useState<'left' | 'center' | 'right'>(page?.bio_alignment ?? 'center');
   const [bioTextSize, setBioTextSize] = useState<'small' | 'medium' | 'large'>(page?.bio_text_size ?? 'medium');
+  const [footerText, setFooterText] = useState(page?.footer_text ?? '');
+  const [footerCopyright, setFooterCopyright] = useState(page?.footer_copyright ?? '');
+  const [footerPrivacyLink, setFooterPrivacyLink] = useState(page?.footer_privacy_link ?? '');
+  const [footerTermsLink, setFooterTermsLink] = useState(page?.footer_terms_link ?? '');
+  const [footerVisible, setFooterVisible] = useState(page?.footer_visible !== false);
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<'success' | 'error'>('success');
   const [isSavingProfile, setSavingProfile] = useState(false);
@@ -44,8 +49,10 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const profileImage = page?.profile_image ?? null;
   const nameTextLength = useMemo(() => name.replace(/<[^>]*>/g, '').length, [name]);
   const bioTextLength = useMemo(() => bio.replace(/<[^>]*>/g, '').length, [bio]);
+  const footerTextLength = useMemo(() => footerText.replace(/<[^>]*>/g, '').length, [footerText]);
   const maxBioLength = 150;
   const maxNameLength = 30;
+  const maxFooterLength = 200;
 
   const previewName = name.trim() || page?.podcast_name || 'Your show name';
   const previewBio = bio.trim() || page?.podcast_description || 'Give listeners a one-line reason to follow your show.';
@@ -77,7 +84,12 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     setImageBorder(page?.profile_image_border ?? 'none');
     setBioAlignment(page?.bio_alignment ?? 'center');
     setBioTextSize(page?.bio_text_size ?? 'medium');
-  }, [page?.podcast_name, page?.name_alignment, page?.name_text_size, page?.podcast_description, page?.profile_image_shape, page?.profile_image_shadow, page?.profile_image_size, page?.profile_image_border, page?.bio_alignment, page?.bio_text_size]);
+    setFooterText(page?.footer_text ?? '');
+    setFooterCopyright(page?.footer_copyright ?? '');
+    setFooterPrivacyLink(page?.footer_privacy_link ?? '');
+    setFooterTermsLink(page?.footer_terms_link ?? '');
+    setFooterVisible(page?.footer_visible !== false);
+  }, [page?.podcast_name, page?.name_alignment, page?.name_text_size, page?.podcast_description, page?.profile_image_shape, page?.profile_image_shadow, page?.profile_image_size, page?.profile_image_border, page?.bio_alignment, page?.bio_text_size, page?.footer_text, page?.footer_copyright, page?.footer_privacy_link, page?.footer_terms_link, page?.footer_visible]);
 
   useEffect(() => {
     if (!status) return;
@@ -221,6 +233,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     // Check character limits for profile
     const nameTextOnly = name.replace(/<[^>]*>/g, '');
     const bioTextOnly = bio.replace(/<[^>]*>/g, '');
+    const footerTextOnly = footerText.replace(/<[^>]*>/g, '');
     if (nameTextOnly.length > maxNameLength) {
       setStatusTone('error');
       setStatus(`Name cannot exceed ${maxNameLength} characters.`);
@@ -229,6 +242,24 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     if (bioTextOnly.length > maxBioLength) {
       setStatusTone('error');
       setStatus(`Bio cannot exceed ${maxBioLength} characters.`);
+      return;
+    }
+    if (footerTextOnly.length > maxFooterLength) {
+      setStatusTone('error');
+      setStatus(`Footer text cannot exceed ${maxFooterLength} characters.`);
+      return;
+    }
+
+    // Validate URLs if provided
+    if (footerPrivacyLink && !footerPrivacyLink.match(/^https?:\/\//)) {
+      setStatusTone('error');
+      setStatus('Privacy Policy link must be a valid URL (starting with http:// or https://)');
+      return;
+    }
+
+    if (footerTermsLink && !footerTermsLink.match(/^https?:\/\//)) {
+      setStatusTone('error');
+      setStatus('Terms of Service link must be a valid URL (starting with http:// or https://)');
       return;
     }
 
@@ -244,7 +275,12 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
         profile_image_size: imageSize,
         profile_image_border: imageBorder,
         bio_alignment: bioAlignment,
-        bio_text_size: bioTextSize
+        bio_text_size: bioTextSize,
+        footer_text: footerText,
+        footer_copyright: footerCopyright,
+        footer_privacy_link: footerPrivacyLink,
+        footer_terms_link: footerTermsLink,
+        footer_visible: footerVisible ? '1' : '0'
       });
       
       // Check if the response was successful
@@ -412,6 +448,82 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
               placeholder="Tell listeners what to expect from your show."
               maxLength={maxBioLength + 100} // Allow HTML tags
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Section */}
+      <div className={styles.fieldset}>
+        <div className={styles.footerSection}>
+          <div className={styles.footerHeader}>
+            <label htmlFor="footer-text">Footer Text</label>
+            <span className={styles.charCounter} data-warning={footerTextLength > maxFooterLength * 0.9}>
+              {footerTextLength} / {maxFooterLength}
+            </span>
+          </div>
+          <div className={styles.footerEditor}>
+            <textarea
+              id="footer-text"
+              value={footerText}
+              onChange={(event) => {
+                const textOnly = event.target.value.replace(/<[^>]*>/g, '');
+                if (textOnly.length <= maxFooterLength) {
+                  setFooterText(event.target.value);
+                }
+              }}
+              rows={3}
+              placeholder="Enter footer text (e.g., copyright notice, disclaimer, etc.)"
+              maxLength={maxFooterLength + 100}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.fieldset}>
+        <div className={styles.footerFields}>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="footer-copyright">Copyright Text</label>
+            <input
+              type="text"
+              id="footer-copyright"
+              value={footerCopyright}
+              onChange={(event) => setFooterCopyright(event.target.value)}
+              placeholder="e.g., © 2024 Your Name"
+              maxLength={100}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="footer-privacy-link">Privacy Policy Link</label>
+            <input
+              type="url"
+              id="footer-privacy-link"
+              value={footerPrivacyLink}
+              onChange={(event) => setFooterPrivacyLink(event.target.value)}
+              placeholder="https://example.com/privacy"
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="footer-terms-link">Terms of Service Link</label>
+            <input
+              type="url"
+              id="footer-terms-link"
+              value={footerTermsLink}
+              onChange={(event) => setFooterTermsLink(event.target.value)}
+              placeholder="https://example.com/terms"
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={footerVisible}
+                onChange={(event) => setFooterVisible(event.target.checked)}
+              />
+              <span>Show footer on page</span>
+            </label>
           </div>
         </div>
       </div>

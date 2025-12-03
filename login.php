@@ -8,6 +8,7 @@ require_once __DIR__ . '/config/constants.php';
 require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/classes/User.php';
+require_once __DIR__ . '/classes/TwoFactorAuth.php';
 require_once __DIR__ . '/config/oauth.php';
 
 // Redirect if already logged in
@@ -19,9 +20,76 @@ if (isLoggedIn()) {
 
 $error = '';
 $message = $_GET['message'] ?? '';
+$requires2FA = false;
+$twoFactorMethod = null;
+$show2FAInput = isset($_SESSION['2fa_pending_user_id']);
+
+// Handle 2FA verification
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['2fa_code'])) {
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid request. Please try again.';
+    } else {
+        $code = sanitizeInput($_POST['2fa_code'] ?? '');
+        $method = sanitizeInput($_POST['2fa_method'] ?? 'totp');
+        
+        if (empty($code) || strlen($code) !== 6) {
+            $error = 'Please enter a valid 6-digit code';
+        } elseif (!isset($_SESSION['2fa_pending_user_id'])) {
+            $error = '2FA session expired. Please log in again.';
+        } else {
+            $userId = $_SESSION['2fa_pending_user_id'];
+            $user = fetchOne("
+                SELECT two_factor_method, two_factor_secret, two_factor_email_code, 
+                       two_factor_email_code_expires, two_factor_backup_codes
+                FROM users WHERE id = ?
+            ", [$userId]);
+            
+            if (!$user) {
+                $error = 'User not found';
+            } else {
+                $codeValid = false;
+                
+                if ($method === 'totp') {
+                    if (empty($user['two_factor_secret'])) {
+                        $error = 'TOTP not configured';
+                    } else {
+                        $codeValid = TwoFactorAuth::verifyTOTPCode($user['two_factor_secret'], $code);
+                    }
+                } elseif ($method === 'email') {
+                    if (empty($user['two_factor_email_code']) || 
+                        empty($user['two_factor_email_code_expires']) ||
+                        strtotime($user['two_factor_email_code_expires']) < time()) {
+                        $error = 'Email code expired. Please request a new code.';
+                    } else {
+                        $codeValid = ($user['two_factor_email_code'] === $code);
+                        if ($codeValid) {
+                            // Clear email code
+                            executeQuery("UPDATE users SET two_factor_email_code = NULL, two_factor_email_code_expires = NULL WHERE id = ?", [$userId]);
+                        }
+                    }
+                } elseif ($method === 'backup') {
+                    $codeValid = TwoFactorAuth::verifyBackupCode($userId, $code);
+                }
+                
+                if ($codeValid) {
+                    // Complete login
+                    $_SESSION['user_id'] = $userId;
+                    $_SESSION['user_email'] = $_SESSION['2fa_pending_email'];
+                    unset($_SESSION['2fa_pending_user_id']);
+                    unset($_SESSION['2fa_pending_email']);
+                    regenerateSession();
+                    $_SESSION['admin_panel'] = 'lefty';
+                    redirect('/admin/userdashboard.php');
+                } else {
+                    $error = 'Invalid verification code';
+                }
+            }
+        }
+    }
+}
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['2fa_code'])) {
     // Verify CSRF token
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request. Please try again.';
@@ -36,11 +104,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $user->login($email, $password);
             
             if ($result['success']) {
-                $_SESSION['admin_panel'] = 'lefty';
-                redirect('/admin/userdashboard.php');
+                if ($result['requires_2fa']) {
+                    $requires2FA = true;
+                    $twoFactorMethod = $result['two_factor_method'] ?? 'totp';
+                    $show2FAInput = true;
+                    
+                    // If email method, send code
+                    if ($twoFactorMethod === 'email' || $twoFactorMethod === 'both') {
+                        $userData = fetchOne("SELECT email FROM users WHERE id = ?", [$_SESSION['2fa_pending_user_id']]);
+                        if ($userData) {
+                            $emailCode = TwoFactorAuth::generateEmailCode();
+                            $expiresAt = date('Y-m-d H:i:s', time() + 600);
+                            executeQuery("
+                                UPDATE users SET 
+                                    two_factor_email_code = ?,
+                                    two_factor_email_code_expires = ?
+                                WHERE id = ?
+                            ", [$emailCode, $expiresAt, $_SESSION['2fa_pending_user_id']]);
+                            TwoFactorAuth::sendEmailCode($userData['email'], $emailCode);
+                        }
+                    }
+                } else {
+                    $_SESSION['admin_panel'] = 'lefty';
+                    redirect('/admin/userdashboard.php');
+                }
             } else {
                 $error = $result['error'];
             }
+        }
+    }
+}
+
+// Check if we're in 2FA mode from session
+if ($show2FAInput && isset($_SESSION['2fa_pending_user_id'])) {
+    $user = fetchOne("SELECT two_factor_method, email FROM users WHERE id = ?", [$_SESSION['2fa_pending_user_id']]);
+    if ($user) {
+        $twoFactorMethod = $user['two_factor_method'] ?? 'totp';
+        $requires2FA = true;
+        
+        // Handle resend email code
+        if (isset($_GET['resend_email']) && ($twoFactorMethod === 'email' || $twoFactorMethod === 'both')) {
+            $emailCode = TwoFactorAuth::generateEmailCode();
+            $expiresAt = date('Y-m-d H:i:s', time() + 600);
+            executeQuery("
+                UPDATE users SET 
+                    two_factor_email_code = ?,
+                    two_factor_email_code_expires = ?
+                WHERE id = ?
+            ", [$emailCode, $expiresAt, $_SESSION['2fa_pending_user_id']]);
+            TwoFactorAuth::sendEmailCode($user['email'], $emailCode);
+            $message = 'Verification code sent to your email.';
         }
     }
 }
@@ -57,14 +170,7 @@ $googleAuthUrl = getGoogleAuthUrl();
     <title>Log In - <?php echo h(APP_NAME); ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
-    <style>
-        @font-face {
-            font-family: 'Nunito Sans Expanded';
-            src: url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@100,800&display=swap');
-            font-stretch: expanded;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/auth.css?v=<?php echo filemtime(__DIR__ . '/css/auth.css'); ?>">
 </head>
@@ -89,33 +195,115 @@ $googleAuthUrl = getGoogleAuthUrl();
                 <div class="alert alert-error"><?php echo h($error); ?></div>
             <?php endif; ?>
             
-            <form method="POST" action="">
-                <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
-                
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="you@example.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="password-input-wrapper">
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
-                        <button type="button" class="password-toggle" data-target="password" aria-pressed="false">
-                            <span class="sr-only">Show password</span>
-                            <i class="fas fa-eye"></i>
-                        </button>
+            <?php if ($show2FAInput && $requires2FA): ?>
+                <form method="POST" action="" id="2fa-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
+                    <input type="hidden" name="2fa_method" value="<?php echo h($twoFactorMethod === 'both' ? 'totp' : $twoFactorMethod); ?>" id="2fa-method-input">
+                    
+                    <div class="form-group">
+                        <h2 style="margin: 0 0 0.5rem; font-size: 1.25rem;">Two-Factor Authentication</h2>
+                        <p style="margin: 0 0 1.5rem; color: #64748b; font-size: 0.875rem;">
+                            <?php if ($twoFactorMethod === 'email'): ?>
+                                Enter the 6-digit code sent to your email.
+                            <?php elseif ($twoFactorMethod === 'both'): ?>
+                                Choose your verification method:
+                            <?php else: ?>
+                                Enter the 6-digit code from your authenticator app.
+                            <?php endif; ?>
+                        </p>
+                        
+                        <?php if ($twoFactorMethod === 'both'): ?>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="method-select">Verification Method</label>
+                                <select id="method-select" name="2fa_method" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem;">
+                                    <option value="totp">Use Authenticator App</option>
+                                    <option value="email">Use Email Code</option>
+                                    <option value="backup">Use Backup Code</option>
+                                </select>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="form-group">
+                            <label for="2fa_code">Verification Code</label>
+                            <input 
+                                type="text" 
+                                id="2fa_code" 
+                                name="2fa_code" 
+                                required 
+                                maxlength="6" 
+                                pattern="[0-9]*"
+                                inputmode="numeric"
+                                placeholder="000000"
+                                autocomplete="one-time-code"
+                                style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-family: monospace; font-weight: 600;"
+                                autofocus
+                            >
+                        </div>
+                        
+                        <?php if ($twoFactorMethod === 'email' || $twoFactorMethod === 'both'): ?>
+                            <div class="form-group-link" style="text-align: center; margin-top: 1rem;">
+                                <a href="?resend_email=1" class="forgot-password">Resend email code</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <span>Verify</span>
+                    </button>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="/login.php" style="color: #64748b; font-size: 0.875rem; text-decoration: none;">Back to login</a>
+                    </div>
+                </form>
                 
-                <div class="form-group-link">
-                    <a href="/forgot-password.php" class="forgot-password">Forgot password?</a>
-                </div>
                 
-                <button type="submit" class="btn btn-primary">
-                    <span>Log In</span>
-                </button>
-            </form>
+                <script>
+                    (function() {
+                        const methodSelect = document.getElementById('method-select');
+                        const methodInput = document.getElementById('2fa-method-input');
+                        if (methodSelect && methodInput) {
+                            methodSelect.addEventListener('change', function() {
+                                methodInput.value = this.value;
+                            });
+                        }
+                        
+                        const codeInput = document.getElementById('2fa_code');
+                        if (codeInput) {
+                            codeInput.addEventListener('input', function(e) {
+                                this.value = this.value.replace(/\D/g, '').slice(0, 6);
+                            });
+                        }
+                    })();
+                </script>
+            <?php else: ?>
+                <form method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="you@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="password-toggle" data-target="password" aria-pressed="false">
+                                <span class="sr-only">Show password</span>
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-link">
+                        <a href="/forgot-password.php" class="forgot-password">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <span>Log In</span>
+                    </button>
+                </form>
+            <?php endif; ?>
             
             <div class="auth-divider">
                 <span>OR</span>

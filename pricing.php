@@ -18,7 +18,7 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta name="description" content="Choose the perfect plan for your podcast. Free, Pro, and Enterprise plans available.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wdth,wght@75..100,800&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
     <style>
         /* Page-specific styles for pricing page - Dark Theme */
@@ -229,7 +229,7 @@ require_once __DIR__ . '/includes/helpers.php';
             <!-- Pro Plan -->
             <div class="pricing-card featured">
                 <div class="plan-name">Pro</div>
-                <div class="plan-price">$<?php echo number_format(PLAN_PRO_PRICE, 2); ?><span class="period">/month</span></div>
+                <div class="plan-price">$<?php echo number_format(PLAN_PRO_MONTHLY_PRICE, 2); ?><span class="period">/month</span></div>
                 <p class="plan-description">For professional podcasters</p>
                 <ul class="plan-features">
                     <li>Everything in Free</li>

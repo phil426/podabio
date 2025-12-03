@@ -22,6 +22,9 @@ $userId = getUserId();
 $subscriptionClass = new Subscription();
 $activeSubscription = $subscriptionClass->getActive($userId);
 
+// Check if user is root admin
+$isRootAdmin = $subscriptionClass->isRootAdmin($userId);
+
 if (!$activeSubscription) {
     echo json_encode([
         'success' => true,
@@ -30,6 +33,10 @@ if (!$activeSubscription) {
             'status' => 'active',
             'payment_method' => null,
             'expires_at' => null,
+            'is_trial' => false,
+            'trial_ends_at' => null,
+            'billing_interval' => null,
+            'is_root_admin' => $isRootAdmin,
             'invoices' => []
         ]
     ]);
@@ -54,13 +61,25 @@ try {
     // If invoices table is missing, ignore silently for now
 }
 
+// Determine status
+$status = 'active';
+if (!empty($activeSubscription['is_trial'])) {
+    $status = 'trial';
+} elseif (!empty($activeSubscription['status'])) {
+    $status = $activeSubscription['status'];
+}
+
 echo json_encode([
     'success' => true,
     'data' => [
         'plan_type' => $activeSubscription['plan_type'] ?? 'free',
-        'status' => $activeSubscription['plan_type'] === 'free' ? 'active' : 'active',
+        'status' => $status,
         'payment_method' => $activeSubscription['payment_method'] ?? null,
         'expires_at' => $activeSubscription['expires_at'] ?? null,
+        'is_trial' => !empty($activeSubscription['is_trial']),
+        'trial_ends_at' => $activeSubscription['trial_ends_at'] ?? null,
+        'billing_interval' => $activeSubscription['billing_interval'] ?? null,
+        'is_root_admin' => $isRootAdmin,
         'invoices' => $invoices
     ]
 ]);

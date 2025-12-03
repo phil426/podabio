@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { Info, Question, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut, Palette } from '@phosphor-icons/react';
+import { Info, Question, TextT, Sparkle, ApplePodcastsLogo, Plug, TrendUp, ArrowSquareOut, Palette, User } from '@phosphor-icons/react';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import type { LeftyTabValue } from '../../layout/tab-colors';
 import styles from './lefty-information-panel.module.css';
@@ -198,6 +198,37 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
               title: 'Tracking Setup',
               url: '/docs/analytics',
               description: 'How to set up and configure analytics tracking'
+            }
+          ]
+        };
+      case 'account':
+        return {
+          title: 'Account',
+          icon: <User size={20} weight="regular" />,
+          sections: [
+            {
+              title: 'Profile Management',
+              content: 'Update your display name, email, and public username. These details appear across your PodaBio page and Studio.'
+            },
+            {
+              title: 'Security Settings',
+              content: 'Manage your login methods including password and Google sign-in. Keep at least one login method active to ensure you can always access your account.'
+            },
+            {
+              title: 'Billing & Subscription',
+              content: 'View your current plan, billing details, and subscription status. Upgrade to Pro to unlock all features.'
+            }
+          ],
+          documentation: [
+            {
+              title: 'Account Settings Guide',
+              url: '/studio-docs.php#account',
+              description: 'Complete guide to managing your account settings'
+            },
+            {
+              title: 'Billing & Plans',
+              url: '/docs/billing',
+              description: 'Learn about PodaBio plans and billing'
             }
           ]
         };

@@ -8,7 +8,8 @@ import {
   ApplePodcastsLogo,
   Plug,
   TrendUp,
-  Question
+  Question,
+  User
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { type LeftyTabValue, tabColors, type TabColorTheme } from './tab-colors';
@@ -37,6 +38,7 @@ const TABS: TabDefinition[] = [
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },
+  { value: 'account', label: 'Account', Icon: User },
 ];
 
 const COLLAPSED_WIDTH = 64;

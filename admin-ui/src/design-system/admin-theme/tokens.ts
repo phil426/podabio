@@ -18,7 +18,7 @@ export interface AdminThemeTokens {
   
   // Typography
   typography: {
-    fontHeading: string; // Nunito Sans Expanded Extrabold
+    fontHeading: string; // Zalando Sans Expanded
     fontBody: string; // Space Mono Regular
   };
   
@@ -83,7 +83,7 @@ export const adminThemeTokens: Record<AdminThemeMode, AdminThemeTokens> = {
       textTechGrey: '#8E8E93',
     },
     typography: {
-      fontHeading: "'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontHeading: "'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif",
       fontBody: "'Space Mono', 'Courier New', monospace",
     },
     background: {
@@ -134,7 +134,7 @@ export const adminThemeTokens: Record<AdminThemeMode, AdminThemeTokens> = {
       textTechGrey: '#8E8E93',
     },
     typography: {
-      fontHeading: "'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontHeading: "'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif",
       fontBody: "'Space Mono', 'Courier New', monospace",
     },
     background: {

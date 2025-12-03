@@ -242,6 +242,33 @@ function getCurrentUser() {
 }
 
 /**
+ * Check if user is root admin
+ * @param int|null $userId Optional user ID (defaults to current user)
+ * @return bool
+ */
+function isRootAdmin($userId = null) {
+    if ($userId === null) {
+        $user = getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+        $userId = $user['id'];
+    }
+    
+    $user = fetchOne(
+        "SELECT email, is_root_admin FROM users WHERE id = ?",
+        [$userId]
+    );
+    
+    if (!$user) {
+        return false;
+    }
+    
+    // Check is_root_admin flag or email match
+    return ($user['is_root_admin'] ?? false) || ($user['email'] === 'phil624@gmail.com');
+}
+
+/**
  * Check if user has active subscription
  * @param string $plan Minimum plan required
  * @return bool
@@ -250,6 +277,11 @@ function hasSubscription($plan = PLAN_FREE) {
     $user = getCurrentUser();
     if (!$user) {
         return false;
+    }
+    
+    // Root admin always has Pro features
+    if (isRootAdmin($user['id'])) {
+        return $plan === PLAN_FREE || $plan === PLAN_PRO;
     }
     
     $subscription = fetchOne(
@@ -261,7 +293,7 @@ function hasSubscription($plan = PLAN_FREE) {
         return $plan === PLAN_FREE;
     }
     
-    $planHierarchy = [PLAN_FREE => 0, PLAN_PREMIUM => 1, PLAN_PRO => 2];
+    $planHierarchy = [PLAN_FREE => 0, PLAN_PRO => 1];
     $userPlan = $planHierarchy[$subscription['plan_type']] ?? 0;
     $requiredPlan = $planHierarchy[$plan] ?? 0;
     

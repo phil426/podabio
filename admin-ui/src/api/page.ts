@@ -238,6 +238,30 @@ export interface PodlinksResponse extends ApiResponse {
   };
 }
 
+export interface PodcastSearchResult {
+  id: string;
+  name: string;
+  artist: string;
+  url: string;
+  feed_url: string | null;
+  artwork_url: string | null;
+}
+
+export interface PodcastSearchResponse extends ApiResponse {
+  data?: {
+    results: PodcastSearchResult[];
+  };
+}
+
+export async function searchPodcasts(query: string) {
+  return requestJson<PodcastSearchResponse>(
+    `/api/podcast-search.php?action=search_podcasts&query=${encodeURIComponent(query)}`,
+    {
+      method: 'GET'
+    }
+  );
+}
+
 export async function generatePodlinks() {
   return requestJson<PodlinksResponse>(
     '/api/podlinks.php',

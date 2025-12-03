@@ -1,7 +1,7 @@
 <?php
 /**
  * Payment Processing API
- * PodaBio - Handles payment initiation
+ * PodaBio - Handles Stripe checkout for subscription payments
  */
 
 require_once __DIR__ . '/../../config/constants.php';
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 require_once __DIR__ . '/../../includes/security.php';
-require_once __DIR__ . '/../../classes/PaymentProcessor.php';
+require_once __DIR__ . '/../../classes/StripeProcessor.php';
 require_once __DIR__ . '/../../classes/Subscription.php';
 
 header('Content-Type: application/json');
@@ -40,52 +40,47 @@ if (!verifyCSRFToken($csrfToken)) {
 }
 
 $planType = sanitizeInput($_POST['plan'] ?? '');
-$paymentMethod = sanitizeInput($_POST['payment_method'] ?? '');
+$billingInterval = sanitizeInput($_POST['billing_interval'] ?? 'month');
+$trialDays = isset($_POST['trial_days']) ? (int)$_POST['trial_days'] : null;
 
-if (!in_array($planType, ['premium', 'pro'])) {
-    echo json_encode(['success' => false, 'error' => 'Invalid plan']);
+// Only allow 'pro' plan (premium removed)
+if ($planType !== 'pro') {
+    echo json_encode(['success' => false, 'error' => 'Invalid plan. Only Pro plan is available.']);
     exit;
 }
 
-if (!in_array($paymentMethod, ['paypal', 'venmo'])) {
-    echo json_encode(['success' => false, 'error' => 'Invalid payment method']);
+// Validate billing interval
+if (!in_array($billingInterval, ['month', 'year'])) {
+    $billingInterval = 'month';
+}
+
+// Check if user is root admin
+$subscriptionClass = new Subscription();
+if ($subscriptionClass->isRootAdmin($user['id'])) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Root admin already has Pro features. No subscription needed.'
+    ]);
     exit;
 }
 
-$processor = new PaymentProcessor();
+// Create Stripe checkout session
+$processor = new StripeProcessor();
+$result = $processor->createCheckoutSession($user['id'], $planType, $billingInterval, $trialDays);
 
-if ($paymentMethod === 'paypal') {
-    // Get plan price
-    $price = $planType === 'premium' ? PLAN_PREMIUM_PRICE : PLAN_PRO_PRICE;
-    
-    // Create PayPal payment
-    $result = $processor->createPayPalPayment($user['id'], $planType, $price);
-    
-    if ($result['success']) {
-        echo json_encode([
-            'success' => true,
-            'redirect_url' => $result['payment_url']
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'error' => $result['error'] ?? 'Payment processing failed'
-        ]);
-    }
-} else if ($paymentMethod === 'venmo') {
-    // Process Venmo payment (creates pending subscription)
-    $result = $processor->processVenmoPayment($user['id'], $planType);
-    
-    if ($result['success']) {
-        echo json_encode([
-            'success' => true,
-            'redirect_url' => '/payment/pending.php?plan=' . $planType
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'error' => $result['error'] ?? 'Payment processing failed'
-        ]);
-    }
+if ($result['success']) {
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'checkout_url' => $result['session_url'],
+            'session_id' => $result['session_id']
+        ]
+    ]);
+} else {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $result['error'] ?? 'Payment processing failed'
+    ]);
 }
 

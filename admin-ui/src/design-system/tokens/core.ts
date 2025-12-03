@@ -30,7 +30,7 @@ export const coreTokens: CoreTokenGroup = {
   },
   typography: {
     font: {
-      heading: "'Nunito Sans Expanded', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      heading: "'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, sans-serif",
       body: "'Space Mono', 'Courier New', monospace",
       metatext: "'Space Mono', 'Courier New', monospace"
     },

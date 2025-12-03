@@ -26,7 +26,7 @@ class PodcastLinkBuilder {
             'youtube_music' => 'https://music.youtube.com/channel/' . $id, // Note: This may not work for all podcasts
             'pocket_casts' => 'https://pca.st/itunes/' . $id,
             'castro' => 'https://castro.fm/itunes/' . $id,
-            'overcast' => 'https://overcast.fm/itunes/' . $id
+            'overcast' => 'https://overcast.fm/itunes' . $id
         ];
     }
     

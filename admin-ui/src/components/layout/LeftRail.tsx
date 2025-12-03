@@ -81,9 +81,6 @@ const widgetIconMap: Record<string, IconType> = {
   heading_block: LuHeading2,
   text_note: LuItalic,
   divider_rule: LuMinus,
-  instagram_post: LuImage,
-  instagram_feed: LuLayoutGrid,
-  instagram_gallery: LuLayoutGrid
 };
 
 const fallbackWidgetIcon: IconType = LuLayoutGrid;

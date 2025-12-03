@@ -2,22 +2,28 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 1.5rem 2rem;
-  gap: 1.5rem;
-  background: var(--pod-semantic-surface-panel, #f8fafc);
+  padding: 20px;
+  gap: 20px;
+  background: var(--admin-bg-panel, #ffffff);
   overflow-y: auto;
+}
+
+.header {
+  margin-bottom: 8px;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .header p {
-  margin: 0.35rem 0 0;
-  font-size: 0.9rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+  line-height: 1.5;
 }
 
 .tabsRoot {
@@ -29,90 +35,150 @@
 .tabList {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem;
-  background: rgba(15, 23, 42, 0.04);
-  border-radius: var(--pod-core-shape-radius-lg, 18px);
+  gap: 4px;
+  padding: 4px;
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   width: fit-content;
 }
 
 .tabList button {
-  padding: 0.5rem 1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
+  padding: 8px 16px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  font-weight: 600;
-  color: var(--pod-semantic-text-secondary, #475569);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.tabList button:hover {
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .tabList button[data-state='active'] {
-  background: var(--pod-semantic-surface-panelElevated, #ffffff);
-  box-shadow: var(--pod-core-elevation-shadow-level1, 0 10px 25px rgba(15, 23, 42, 0.08));
-  color: var(--pod-semantic-text-primary, #111827);
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-accent-primary, #00FF7F);
+  font-weight: 600;
+  box-shadow: var(--admin-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .tabContent {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 20px;
 }
 
 .sectionStack {
   display: grid;
-  gap: 1.5rem;
+  gap: 20px;
 }
 
 .card {
-  background: var(--pod-semantic-surface-panelElevated, #ffffff);
-  border-radius: var(--pod-core-shape-radius-xl, 20px);
-  padding: 1.5rem;
-  box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.35);
+  background: var(--admin-bg-panel, #ffffff);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  box-shadow: var(--admin-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.1));
   display: grid;
-  gap: 1.25rem;
+  gap: 16px;
+}
+
+.card header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
 }
 
 .card header h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .card header p {
-  margin: 0.35rem 0 0;
-  font-size: 0.85rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+  line-height: 1.5;
 }
 
 .cardFooter {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+}
+
+.invoiceList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.invoiceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-surface-canvas, #f8fafc);
+}
+
+.invoiceAmount {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.invoiceMeta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.invoicePlaceholder {
+  color: var(--admin-text-muted, rgba(15, 23, 42, 0.5));
+  font-size: 12px;
 }
 
 .fieldGrid {
   display: grid;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .fieldRow {
   display: grid;
   grid-template-columns: 160px 1fr auto;
-  gap: 0.75rem;
+  gap: 12px;
   align-items: center;
+  padding: 8px 0;
 }
 
 .fieldLabel {
-  font-size: 0.85rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
-}
-
-.fieldValue {
-  font-size: 0.95rem;
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
   font-weight: 500;
 }
 
+.fieldValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-text-primary, #0f172a);
+}
+
 .usernameLink {
-  color: var(--pod-semantic-accent-primary, #2563eb);
+  color: var(--admin-accent-primary, #00FF7F);
   text-decoration: none;
   cursor: pointer;
   transition: opacity 0.2s ease, text-decoration 0.2s ease;
@@ -124,131 +190,145 @@
 }
 
 .fieldAction {
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--pod-core-shape-radius-sm, 8px);
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--pod-semantic-accent-primary, #2563eb);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
+  color: var(--admin-text-primary, #0f172a);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.fieldAction:hover {
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .authList {
   display: grid;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .authRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
-  border-radius: var(--pod-core-shape-radius-lg, 18px);
-  background: rgba(15, 23, 42, 0.04);
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-surface-canvas, #f8fafc);
 }
 
 .authTitle {
   margin: 0;
   font-weight: 600;
+  font-size: 13px;
+  color: var(--admin-text-primary, #0f172a);
 }
 
 .authMeta {
-  margin: 0.2rem 0 0;
-  font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--admin-text-secondary, #64748b);
 }
 
 .authActions {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.invoiceList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.invoiceRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 0.5rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.04);
-}
-
-.invoiceAmount {
-  margin: 0;
-  font-weight: 600;
-}
-
-.invoiceMeta {
-  margin: 0.2rem 0 0;
-  font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
-}
-
-.invoicePlaceholder {
-  color: var(--pod-semantic-text-secondary, #94a3b8);
-}
-
-.emptyState {
-  font-size: 0.9rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
-}
-
 .primaryButton {
-  padding: 0.55rem 1.1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
+  padding: 8px 16px;
+  border-radius: 6px;
   border: none;
-  background: var(--pod-component-button-primary-background, #2563eb);
-  color: var(--pod-component-button-primary-color, #ffffff);
+  background: var(--admin-accent-primary, #00FF7F);
+  color: #ffffff;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--admin-accent-primary-hover, #00e070);
+  transform: translateY(-1px);
+  box-shadow: var(--admin-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .secondaryButton {
-  padding: 0.5rem 1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
   background: transparent;
-  color: var(--pod-semantic-text-primary, #111827);
-  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
 .destructiveButton {
-  padding: 0.5rem 1rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(220, 38, 38, 0.35);
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
   background: rgba(220, 38, 38, 0.08);
-  color: #b91c1c;
-  font-weight: 600;
+  color: #dc2626;
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.destructiveButton:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.5);
 }
 
 .statusBanner {
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
-  font-size: 0.85rem;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #16a34a;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .helperNote {
   margin: 0;
-  font-size: 0.8rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  font-size: 12px;
+  color: var(--admin-text-secondary, #64748b);
+  line-height: 1.5;
+}
+
+.emptyState {
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+  padding: 20px;
+  text-align: center;
 }
 
 .primaryButton:disabled,
 .secondaryButton:disabled,
 .destructiveButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.primaryButton:disabled:hover,
+.secondaryButton:disabled:hover,
+.destructiveButton:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 

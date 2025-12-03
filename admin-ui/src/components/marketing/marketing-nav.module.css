@@ -7,26 +7,39 @@
   max-width: 1200px;
   z-index: 1000;
   transition: all 0.3s ease-out;
-  padding: 0.75rem 0;
+  padding: 0.75rem 1.5rem;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1.5rem;
   min-height: 90px;
+  /* Glassmorphism effect */
+  background: rgba(26, 26, 26, 0.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.header.scrolled {
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   text-decoration: none;
   transition: all 0.3s;
   position: relative;
   z-index: 1;
   grid-column: 1;
   height: 100%;
-  transform: translateX(8rem); /* Shift logo to the right to bring it closer to centered nav */
-  transform-origin: center center;
 }
 
 .logoImage {

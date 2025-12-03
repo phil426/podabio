@@ -300,8 +300,8 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
     setUIState(prev => {
       const newState = {
-        ...prev,
-        [fieldId]: value
+      ...prev,
+      [fieldId]: value
       };
       // Update ref immediately with new state
       uiStateRef.current = newState;

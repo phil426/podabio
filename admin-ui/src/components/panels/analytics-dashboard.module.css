@@ -30,9 +30,8 @@
 .title {
   margin: 0 0 0.25rem 0;
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-text-primary, #0f172a);
-  letter-spacing: -0.02em;
 }
 
 .subtitle {
@@ -271,10 +270,9 @@
 
 .summaryValue {
   font-size: 2.25rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--admin-text-primary, #0f172a);
   line-height: 1.2;
-  letter-spacing: -0.02em;
 }
 
 .summaryDescription {

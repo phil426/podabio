@@ -109,7 +109,7 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
             className={`${styles.pageTitlePreview} ${effectClass}`}
             style={{
               color: cssVars['--page-title-color'] || '#0f172a',
-              fontFamily: cssVars['--page-title-font'] || "'Inter', sans-serif",
+              fontFamily: cssVars['--page-title-font'] || "'Zalando Sans Expanded', sans-serif",
               fontSize: cssVars['--page-title-size'] || '24px',
               fontWeight: cssVars['--page-title-weight'] || '600',
               fontStyle: cssVars['--page-title-style'] || 'normal',
@@ -131,7 +131,7 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
       );
       
       const bioStyle: CSSProperties = {
-        fontFamily: cssVars['--page-description-font'] || "'Inter', sans-serif",
+        fontFamily: cssVars['--page-description-font'] || "'Space Mono', monospace",
         fontSize: cssVars['--page-description-size'] || '16px',
         fontWeight: cssVars['--page-bio-weight'] || '400',
         fontStyle: cssVars['--page-bio-style'] || 'normal',
@@ -344,7 +344,7 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
                 <h3 
                   style={{
                     color: cssVars['--widget-heading-color'] || '#0f172a',
-                    fontFamily: cssVars['--widget-heading-font'] || "'Inter', sans-serif",
+                    fontFamily: cssVars['--widget-heading-font'] || "'Zalando Sans Expanded', sans-serif",
                     fontSize: cssVars['--widget-heading-size'] || '20px',
                     fontWeight: cssVars['--widget-heading-weight'] || '600',
                     margin: '0 0 8px 0'
@@ -355,7 +355,7 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
                 <p 
                   style={{
                     color: cssVars['--widget-body-color'] || '#4b5563',
-                    fontFamily: cssVars['--widget-body-font'] || "'Inter', sans-serif",
+                    fontFamily: cssVars['--widget-body-font'] || "'Space Mono', monospace",
                     fontSize: cssVars['--widget-body-size'] || '14px',
                     fontWeight: cssVars['--widget-body-weight'] || '400',
                     margin: 0
