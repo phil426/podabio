@@ -1987,57 +1987,87 @@ require_once __DIR__ . '/includes/helpers.php';
         
         // Scroll Animations using Intersection Observer
         (function() {
-            // Check if Intersection Observer is supported
-            if (!('IntersectionObserver' in window)) {
-                // Fallback: show all elements immediately
-                document.querySelectorAll('.scroll-animate').forEach(el => {
-                    el.classList.add('animate');
-                });
-                return;
-            }
-            
-            // Helper function to check if element is in viewport
-            function isInViewport(element) {
-                const rect = element.getBoundingClientRect();
-                return (
-                    rect.top >= 0 &&
-                    rect.left >= 0 &&
-                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-                );
-            }
-            
-            // Create observer with options
-            const observerOptions = {
-                root: null,
-                rootMargin: '50px 0px -50px 0px', // Trigger 50px before entering viewport
-                threshold: 0.01 // Trigger when any part of element is visible
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('animate');
-                        // Optionally unobserve after animation to improve performance
-                        observer.unobserve(entry.target);
+            function initScrollAnimations() {
+                // Check if Intersection Observer is supported
+                if (!('IntersectionObserver' in window)) {
+                    // Fallback: show all elements immediately
+                    document.querySelectorAll('.scroll-animate').forEach(el => {
+                        el.classList.add('animate');
+                    });
+                    return;
+                }
+                
+                // Helper function to check if element is in viewport
+                function isInViewport(element) {
+                    const rect = element.getBoundingClientRect();
+                    return (
+                        rect.top >= 0 &&
+                        rect.left >= 0 &&
+                        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                    );
+                }
+                
+                // Create observer with options
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '50px 0px -50px 0px', // Trigger 50px before entering viewport
+                    threshold: 0.01 // Trigger when any part of element is visible
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate');
+                            // Optionally unobserve after animation to improve performance
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+                
+                // Get all elements with scroll-animate class
+                const animateElements = document.querySelectorAll('.scroll-animate');
+                
+                // Immediately show hero section elements (always visible on load)
+                const heroSection = document.querySelector('.homepage-hero');
+                if (heroSection) {
+                    heroSection.querySelectorAll('.scroll-animate').forEach(el => {
+                        el.classList.add('animate');
+                    });
+                }
+                
+                // Process all other elements
+                animateElements.forEach(el => {
+                    // Skip if already animated (hero section)
+                    if (el.classList.contains('animate')) {
+                        return;
+                    }
+                    
+                    // Check if element is already in viewport (with some margin)
+                    const rect = el.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                    const isVisible = rect.top < (viewportHeight + 50) && rect.bottom > -50;
+                    
+                    if (isVisible) {
+                        // If already visible, animate immediately
+                        el.classList.add('animate');
+                    } else {
+                        // Otherwise, observe for when it scrolls into view
+                        observer.observe(el);
                     }
                 });
-            }, observerOptions);
+            }
             
-            // Observe all elements with scroll-animate class
-            document.querySelectorAll('.scroll-animate').forEach(el => {
-                // Check if element is already in viewport (with some margin)
-                const rect = el.getBoundingClientRect();
-                const isVisible = rect.top < (window.innerHeight + 50) && rect.bottom > -50;
-                
-                if (isVisible) {
-                    // If already visible, animate immediately
-                    el.classList.add('animate');
-                } else {
-                    // Otherwise, observe for when it scrolls into view
-                    observer.observe(el);
-                }
-            });
+            // Wait for DOM and React components to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Small delay to ensure React components have mounted
+                    setTimeout(initScrollAnimations, 100);
+                });
+            } else {
+                // DOM is already ready, but wait a bit for React components
+                setTimeout(initScrollAnimations, 100);
+            }
         })();
         
     </script>
