@@ -6,7 +6,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { usePageSnapshot, usePageAppearanceMutation, updatePageThemeId } from '../../api/page';
-import { useThemeLibraryQuery, useUpdateThemeMutation } from '../../api/themes';
+import { useThemeLibraryQuery, useUpdateThemeMutation, type ThemeLibraryResult } from '../../api/themes';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../api/utils';
 import type { ThemeRecord } from '../../api/types';
@@ -61,7 +61,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   // Initialize UI state when theme changes
   useEffect(() => {
     if (activeTheme) {
-      const page = snapshot?.page ?? null;
+      const page = snapshot?.page ? (snapshot.page as unknown as Record<string, unknown>) : null;
       const initialState = databaseToUI(activeTheme, page);
       setUIState(initialState);
       uiStateRef.current = initialState; // Update ref
@@ -189,9 +189,9 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           
           // Refresh the selected theme data
           await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
-          const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-          const updatedTheme = refreshedLibrary?.user?.find(t => t.id === existingCustom.id) ||
-                              refreshedLibrary?.system?.find(t => t.id === existingCustom.id);
+          const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
+          const updatedTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.id === existingCustom.id) ||
+                              refreshedLibrary?.system?.find((t: ThemeRecord) => t.id === existingCustom.id);
           if (updatedTheme) {
             setSelectedTheme(updatedTheme);
             selectedThemeRef.current = updatedTheme; // Update ref
@@ -211,9 +211,9 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         
         // Refresh the selected theme data
         await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
-        const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-        const updatedTheme = refreshedLibrary?.user?.find(t => t.id === currentSelectedTheme.id) ||
-                            refreshedLibrary?.system?.find(t => t.id === currentSelectedTheme.id);
+          const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
+        const updatedTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.id === currentSelectedTheme.id) ||
+                            refreshedLibrary?.system?.find((t: ThemeRecord) => t.id === currentSelectedTheme.id);
         if (updatedTheme) {
           setSelectedTheme(updatedTheme);
           selectedThemeRef.current = updatedTheme; // Update ref
@@ -260,7 +260,16 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       }
 
       if (Object.keys(pageFields).length > 0) {
-        await updatePageMutation.mutateAsync(pageFields);
+        // Convert pageFields to Payload format (Record<string, FormDataEntryValue | undefined>)
+        const payload: Record<string, FormDataEntryValue | undefined> = {};
+        for (const [key, value] of Object.entries(pageFields)) {
+          if (value === null) {
+            payload[key] = undefined;
+          } else {
+            payload[key] = String(value);
+          }
+        }
+        await updatePageMutation.mutateAsync(payload);
       }
 
       // Invalidate queries - this will trigger refetch and update UI state via useEffect
@@ -339,7 +348,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const handleSelectTheme = useCallback((theme: ThemeRecord) => {
     setSelectedTheme(theme);
     selectedThemeRef.current = theme; // Update ref
-    const page = snapshot?.page ?? null;
+    const page = snapshot?.page ? (snapshot.page as unknown as Record<string, unknown>) : null;
     const initialState = databaseToUI(theme, page);
     setUIState(initialState);
     uiStateRef.current = initialState; // Update ref

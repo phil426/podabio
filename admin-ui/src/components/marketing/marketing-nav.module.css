@@ -376,6 +376,7 @@
 
   .mobileMenuButton {
     display: block;
+    grid-column: 2;
   }
 
   .btnSecondary,

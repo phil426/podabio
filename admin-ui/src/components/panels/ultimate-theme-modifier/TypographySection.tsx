@@ -89,15 +89,15 @@ export function TypographySection({ tokens, onTokenChange, searchQuery = '', tok
   }, [tokens, tokenValues]);
 
   const lineHeightTight = useMemo(() => {
-    return (tokenValues.get('core.typography.line_height.tight') as number) ?? (typeof tokens.core?.typography?.line_height?.tight === 'number' ? tokens.core.typography.line_height.tight : 1.2);
+    return (tokenValues.get('core.typography.line_height.tight') as number) ?? (typeof (tokens.core?.typography as any)?.lineHeight?.tight === 'number' ? (tokens.core.typography as any).lineHeight.tight : 1.2);
   }, [tokens, tokenValues]);
 
   const lineHeightNormal = useMemo(() => {
-    return (tokenValues.get('core.typography.line_height.normal') as number) ?? (typeof tokens.core?.typography?.line_height?.normal === 'number' ? tokens.core.typography.line_height.normal : 1.55);
+    return (tokenValues.get('core.typography.line_height.normal') as number) ?? (typeof (tokens.core?.typography as any)?.lineHeight?.normal === 'number' ? (tokens.core.typography as any).lineHeight.normal : 1.55);
   }, [tokens, tokenValues]);
 
   const lineHeightRelaxed = useMemo(() => {
-    return (tokenValues.get('core.typography.line_height.relaxed') as number) ?? (typeof tokens.core?.typography?.line_height?.relaxed === 'number' ? tokens.core.typography.line_height.relaxed : 1.8);
+    return (tokenValues.get('core.typography.line_height.relaxed') as number) ?? (typeof (tokens.core?.typography as any)?.lineHeight?.relaxed === 'number' ? (tokens.core.typography as any).lineHeight.relaxed : 1.8);
   }, [tokens, tokenValues]);
 
   const weightNormal = useMemo(() => {

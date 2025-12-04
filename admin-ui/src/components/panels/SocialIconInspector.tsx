@@ -173,7 +173,7 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
           onClick={() => selectSocialIcon(null)}
           aria-label="Close inspector"
         >
-          <LuX aria-hidden="true" />
+          <X size={16} weight="regular" aria-hidden="true" />
         </button>
       </header>
 

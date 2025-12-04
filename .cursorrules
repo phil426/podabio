@@ -1,0 +1,56 @@
+# PodaBio Project Rules for Cursor AI
+
+## TypeScript Standards
+
+1. **Always use explicit types** - Never use `any` without justification
+2. **Prefer interfaces over types** - Use interfaces for object shapes
+3. **Use type guards** - When working with parsed JSON, use type guards for runtime validation
+4. **Centralized utilities** - Always use centralized utilities from `@/utils/json` for parsing
+5. **Type imports** - Use `import type` for type-only imports to improve tree-shaking
+
+## Project-Specific Patterns
+
+### JSON Parsing
+- Always use `safeParse<T>()` from `@/utils/json` with explicit type parameter
+- Never create local `safeParse` implementations
+- Use type guards for nested property access
+
+### API Responses
+- All API functions should have explicit return types
+- Use `Promise<ApiResponse<T>>` pattern for API calls
+- Validate responses at runtime when structure is uncertain
+
+### Component Props
+- Always define prop interfaces with `Props` suffix (e.g., `ThemePreviewCardProps`)
+- Use `interface` not `type` for component props
+- Export prop interfaces for reusability
+
+### Theme Tokens
+- Use interfaces from `@/types/tokens` for parsed token structures
+- Access tokens through helper functions when available
+- Never use `as any` - use proper type guards instead
+
+## Error Prevention
+
+1. **Before creating new code**: Check if similar patterns exist in codebase
+2. **When parsing JSON**: Always use typed `safeParse<T>()` with explicit interface
+3. **When accessing nested properties**: Use helper functions or type guards
+4. **When using React Query**: Always type query functions and results explicitly
+
+## Code Generation Preferences
+
+- Generate components with proper TypeScript types
+- Include JSDoc comments for complex functions
+- Use Phosphor Icons (@phosphor-icons/react) not Lucide
+- Follow existing CSS module patterns
+- Use rounded corners for buttons unless specified otherwise
+
+## Cursor AI Instructions
+
+When generating or refactoring code:
+1. Always maintain type safety - never introduce `any` types
+2. Check for existing utilities before creating new ones
+3. Follow the patterns established in the codebase
+4. Suggest type-safe alternatives when refactoring
+5. Include runtime validation when working with external data
+

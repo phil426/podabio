@@ -112,7 +112,7 @@ const getPlatformIcon = (platformName: string): JSX.Element => {
 };
 
 interface SortableIconCardProps {
-  icon: { id: number | string; platform_name: string; url: string | null; is_active: number };
+  icon: { id: number | string; platform_name: string; url: string | null; is_active?: number };
   isSelected: boolean;
   onSelect: (iconId: number | string) => void;
   onToggleVisibility: (e: React.MouseEvent, iconId: number | string, currentActive: boolean) => void;
@@ -128,7 +128,7 @@ function SortableIconCard({
   toggleVisibilityPending,
   getPlatformIcon
 }: SortableIconCardProps): JSX.Element {
-  const isActive = icon.is_active !== 0;
+  const isActive = (icon.is_active ?? 0) !== 0;
   
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(icon.id)
@@ -279,7 +279,7 @@ export function SettingsPanel(): JSX.Element {
     
     // Create the order array for the API
     const iconOrders = reordered.map((icon, index) => ({
-      icon_id: icon.id,
+      icon_id: typeof icon.id === 'string' ? parseInt(icon.id, 10) : icon.id,
       display_order: index + 1
     }));
     

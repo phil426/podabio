@@ -298,27 +298,30 @@ export function ThemeLibraryPanel(): JSX.Element {
     };
     
     // 1. Page Name color (heading font color)
+    const headingColorFallback = getSingleValue(['semantic.text.primary'], '#0f172a');
     const headingColor = getSingleValue(
       ['core.typography.color.heading', 'typography.color.heading'],
-      getSingleValue(['semantic.text.primary'], '#0f172a')
+      typeof headingColorFallback === 'string' ? headingColorFallback : '#0f172a'
     );
     if (headingColor && !valueExists(headingColor, values)) {
       values.push(headingColor);
     }
     
     // 2. Bio Text color (body font color)
+    const bodyColorFallback = getSingleValue(['semantic.text.primary'], '#0f172a');
     const bodyColor = getSingleValue(
       ['core.typography.color.body', 'typography.color.body'],
-      getSingleValue(['semantic.text.primary'], '#0f172a')
+      typeof bodyColorFallback === 'string' ? bodyColorFallback : '#0f172a'
     );
     if (bodyColor && !valueExists(bodyColor, values) && values.length < 4) {
       values.push(bodyColor);
     }
     
     // 3. Icon Color
+    const iconColorFallback = getSingleValue(['semantic.accent.primary'], '#6b7280');
     const iconColor = getSingleValue(
       ['iconography.color', 'core.iconography.color'],
-      getSingleValue(['semantic.accent.primary'], '#6b7280')
+      typeof iconColorFallback === 'string' ? iconColorFallback : '#6b7280'
     );
     if (iconColor && !valueExists(iconColor, values) && values.length < 4) {
       values.push(iconColor);

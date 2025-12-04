@@ -37,7 +37,12 @@ export async function startProTrial(billingInterval: 'month' | 'year' = 'month')
     throw new Error(response.error ?? 'Failed to start trial');
   }
 
-  return response.data ?? response;
+  if (response.data) {
+    return response.data;
+  }
+  
+  // Fallback: if response itself is PaymentResponse
+  return response as PaymentResponse;
 }
 
 /**
@@ -58,7 +63,12 @@ export async function subscribeToPro(billingInterval: 'month' | 'year' = 'month'
     throw new Error(response.error ?? 'Failed to create subscription');
   }
 
-  return response.data ?? response;
+  if (response.data) {
+    return response.data;
+  }
+  
+  // Fallback: if response itself is PaymentResponse
+  return response as PaymentResponse;
 }
 
 /**

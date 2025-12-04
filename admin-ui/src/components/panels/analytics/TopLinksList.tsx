@@ -19,7 +19,7 @@ interface TopLinksListProps {
 
 export function TopLinksList({ links, activeColor }: TopLinksListProps): JSX.Element {
   if (!links || links.length === 0) {
-    return null;
+    return <></>;
   }
 
   const maxClicks = links[0]?.clicks ?? 1;

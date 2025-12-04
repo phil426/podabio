@@ -43,6 +43,8 @@ interface ThemePreviewProps {
   onEditStyle?: (sectionId: string, widgetId?: string | null) => void;
   onToggleVisibility?: (widgetId: string) => void;
   onDeleteWidget?: (widgetId: string) => void;
+  onToggleFeatured?: (widgetId: string) => void;
+  onToggleLock?: (widgetId: string) => void;
   hotspotsVisible?: boolean;
   activeColor?: TabColorTheme;
 }
@@ -57,7 +59,7 @@ export function ThemePreview({
   onToggleFeatured,
   onToggleLock,
   hotspotsVisible = true,
-  activeColor = { primary: '#2563eb', text: '#ffffff', border: '#1e40af' }
+  activeColor = { primary: '#2563eb', light: 'rgba(37, 99, 235, 0.1)', text: '#ffffff', border: '#1e40af' }
 }: ThemePreviewProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const page = snapshot?.page;
@@ -624,7 +626,7 @@ body {
                   }}
                 >
                   <img 
-                    src={normalizeImageUrl(page.profile_image)} 
+                    src={normalizeImageUrl(page?.profile_image || null)} 
                     alt="Profile" 
                     className={styles.profileImage}
                     onClick={(e) => {
@@ -665,9 +667,9 @@ body {
                       display: 'block',
                       margin: '0 auto',
                       userSelect: 'none',
-                      WebkitUserDrag: 'none',
                       pointerEvents: hotspotsVisible ? 'auto' : 'auto',
-                      cursor: hotspotsVisible ? 'pointer' : 'default'
+                      cursor: hotspotsVisible ? 'pointer' : 'default',
+                      ...({ WebkitUserDrag: 'none' } as React.CSSProperties)
                     }}
                     onError={(e) => {
                       // Hide image if it fails to load
@@ -707,6 +709,9 @@ body {
 
             {/* Page Bio */}
             {page?.podcast_description && (() => {
+              const podcastDescription = page?.podcast_description;
+              if (!podcastDescription || typeof podcastDescription !== 'string') return null;
+              
               const bioColor = cssVars['--page-description-color'] || '#4b5563';
               const isGradient = typeof bioColor === 'string' && (
                 bioColor.includes('gradient') || 
@@ -757,7 +762,7 @@ body {
                     cursor: hotspotsVisible ? 'pointer' : 'text'
                   }}
               >
-                {decodeHtmlEntities(page.podcast_description)}
+                {decodeHtmlEntities(podcastDescription || '')}
               </p>
               );
             })()}

@@ -206,10 +206,18 @@ export function PodcastThemeGenerator({
       // We need to set ALL CSS variables that ThemePreview uses, not just a few
       
       // Extract color values first (can't use const inside object literal)
-      const headingColor = (themeData.typography_tokens?.color?.heading as string) || '#000000';
-      const bodyColor = (themeData.typography_tokens?.color?.body as string) || '#666666';
-      const widgetHeadingColor = (themeData.typography_tokens?.color?.widget_heading as string) || '#000000';
-      const widgetBodyColor = (themeData.typography_tokens?.color?.widget_body as string) || '#666666';
+      const typographyTokens = themeData.typography_tokens as any;
+      const typographyColor = typographyTokens?.color as Record<string, string> | undefined;
+      const headingColor = (typographyColor?.heading as string) || '#000000';
+      const bodyColor = (typographyColor?.body as string) || '#666666';
+      const widgetHeadingColor = (typographyColor?.widget_heading as string) || '#000000';
+      const widgetBodyColor = (typographyColor?.widget_body as string) || '#666666';
+      
+      // Extract accent color with type assertions
+      const colorTokens = themeData.color_tokens as any;
+      const semanticTokens = colorTokens?.semantic as Record<string, any> | undefined;
+      const accentTokens = semanticTokens?.accent as Record<string, string> | undefined;
+      const accentPrimary = (accentTokens?.primary as string) || '#2563eb';
       
       const cssVars: Record<string, string> = {
         // Backgrounds - CRITICAL: These must be set to clear previous theme
@@ -252,9 +260,9 @@ export function PodcastThemeGenerator({
         '--widget-body-size': '14px',
         
         // Accent colors - CRITICAL: Clear previous theme accents
-        '--icon-color': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
-        '--social-icon-color': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
-        '--color-accent-primary': (themeData.color_tokens?.semantic?.accent?.primary as string) || '#2563eb',
+        '--icon-color': accentPrimary,
+        '--social-icon-color': accentPrimary,
+        '--color-accent-primary': accentPrimary,
         
         // Profile image - CRITICAL: Clear previous theme settings
         '--profile-image-radius': themeData.profile_image_radius ? `${themeData.profile_image_radius}%` : '15%',
@@ -327,9 +335,18 @@ export function PodcastThemeGenerator({
         throw new Error('Theme creation failed - no theme ID returned');
       }
 
-      const themeId = typeof response.theme_id === 'string' 
-        ? parseInt(response.theme_id, 10) 
-        : response.theme_id;
+      // Ensure themeId is a number
+      let themeId: number;
+      if (typeof response.theme_id === 'string') {
+        themeId = parseInt(response.theme_id, 10);
+        if (isNaN(themeId)) {
+          throw new Error('Invalid theme ID returned from server');
+        }
+      } else if (typeof response.theme_id === 'number') {
+        themeId = response.theme_id;
+      } else {
+        throw new Error('Invalid theme ID type returned from server');
+      }
 
       // Apply theme to page
       await updatePageThemeId(themeId);
@@ -393,7 +410,12 @@ export function PodcastThemeGenerator({
       }
 
       if (Object.keys(pageUpdates).length > 0) {
-        await updatePageMutation.mutateAsync(pageUpdates);
+        // Convert pageUpdates to Payload format (Record<string, FormDataEntryValue | undefined>)
+        const payload: Record<string, FormDataEntryValue | undefined> = {};
+        for (const [key, value] of Object.entries(pageUpdates)) {
+          payload[key] = value !== null && value !== undefined ? String(value) : undefined;
+        }
+        await updatePageMutation.mutateAsync(payload);
       }
 
       // Invalidate queries

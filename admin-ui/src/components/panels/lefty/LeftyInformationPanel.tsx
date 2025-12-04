@@ -20,33 +20,6 @@ interface DocumentationLink {
 export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformationPanelProps): JSX.Element {
   const content = useMemo(() => {
     switch (activeTab) {
-      case 'adding-content':
-        return {
-          title: 'Adding Content',
-          icon: <Info size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Widget Gallery',
-              content: 'Browse and add widgets to your page. Click any widget to add it to your page instantly.'
-            },
-            {
-              title: 'Quick Tips',
-              content: 'Use the search to quickly find specific widgets. Popular widgets are shown at the top.'
-            }
-          ],
-          documentation: [
-            {
-              title: 'Widget Guide',
-              url: '/docs/widgets',
-              description: 'Learn about all available widgets and how to use them'
-            },
-            {
-              title: 'Adding Blocks',
-              url: '/studio-docs.php#adding-content',
-              description: 'Step-by-step guide to adding content blocks'
-            }
-          ]
-        };
       case 'layers':
         return {
           title: 'Layers',
@@ -71,29 +44,6 @@ export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformati
               title: 'Profile Setup',
               url: '/docs/profile',
               description: 'How to set up and customize your profile'
-            }
-          ]
-        };
-      case 'special-effects':
-        return {
-          title: 'Special Effects',
-          icon: <Sparkle size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Featured Blocks',
-              content: 'Select a block from the Layers tab to add featured effects that highlight important content.'
-            }
-          ],
-          documentation: [
-            {
-              title: 'Featured Effects',
-              url: '/studio-docs.php#special-effects',
-              description: 'How to use featured effects to highlight important blocks'
-            },
-            {
-              title: 'Animations',
-              url: '/docs/animations',
-              description: 'Guide to adding animations and special effects'
             }
           ]
         };

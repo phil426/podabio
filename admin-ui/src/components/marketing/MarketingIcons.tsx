@@ -25,20 +25,20 @@ interface IconReplacement {
 }
 
 const iconReplacements: IconReplacement[] = [
-  { selector: '.icon-play', Icon: Play, size: 20, weight: 'fill' },
-  { selector: '.icon-headphones', Icon: Headphones, size: 32, weight: 'regular' },
-  { selector: '.icon-sparkle', Icon: Sparkle, size: 32, weight: 'regular' },
-  { selector: '.icon-broadcast', Icon: Broadcast, size: 32, weight: 'regular' },
-  { selector: '.icon-rss', Icon: Rss, size: 24, weight: 'regular' },
-  { selector: '.icon-music', Icon: MusicNote, size: 24, weight: 'regular' },
-  { selector: '.icon-palette', Icon: Palette, size: 24, weight: 'regular' },
-  { selector: '.icon-chart', Icon: ChartBar, size: 24, weight: 'regular' },
-  { selector: '.icon-envelope', Icon: Envelope, size: 24, weight: 'regular' },
-  { selector: '.icon-check', Icon: Check, size: 16, weight: 'bold' },
-  { selector: '.icon-plus', Icon: Plus, size: 20, weight: 'regular' },
-  { selector: '.icon-minus', Icon: Minus, size: 20, weight: 'regular' },
-  { selector: '.icon-close', Icon: X, size: 24, weight: 'regular' },
-  { selector: '.icon-folder', Icon: Folder, size: 16, weight: 'regular' },
+  { selector: '.icon-play', Icon: Play as any, size: 20, weight: 'fill' },
+  { selector: '.icon-headphones', Icon: Headphones as any, size: 32, weight: 'regular' },
+  { selector: '.icon-sparkle', Icon: Sparkle as any, size: 32, weight: 'regular' },
+  { selector: '.icon-broadcast', Icon: Broadcast as any, size: 32, weight: 'regular' },
+  { selector: '.icon-rss', Icon: Rss as any, size: 24, weight: 'regular' },
+  { selector: '.icon-music', Icon: MusicNote as any, size: 24, weight: 'regular' },
+  { selector: '.icon-palette', Icon: Palette as any, size: 24, weight: 'regular' },
+  { selector: '.icon-chart', Icon: ChartBar as any, size: 24, weight: 'regular' },
+  { selector: '.icon-envelope', Icon: Envelope as any, size: 24, weight: 'regular' },
+  { selector: '.icon-check', Icon: Check as any, size: 16, weight: 'bold' },
+  { selector: '.icon-plus', Icon: Plus as any, size: 20, weight: 'regular' },
+  { selector: '.icon-minus', Icon: Minus as any, size: 20, weight: 'regular' },
+  { selector: '.icon-close', Icon: X as any, size: 24, weight: 'regular' },
+  { selector: '.icon-folder', Icon: Folder as any, size: 16, weight: 'regular' },
 ];
 
 function renderIcon(
@@ -101,7 +101,7 @@ export function MarketingIcons(): null {
         }
         // Re-render with correct icon
         const isMinus = element.classList.contains('icon-minus');
-        const Icon = isMinus ? Minus : Plus;
+        const Icon = (isMinus ? Minus : Plus) as any;
         renderIcon(element, Icon, 20, 'regular');
       }
     };
@@ -121,7 +121,7 @@ export function MarketingIcons(): null {
             }
             // Re-render
             const isMinus = target.classList.contains('icon-minus');
-            const Icon = isMinus ? Minus : Plus;
+            const Icon = (isMinus ? Minus : Plus) as any;
             renderIcon(target, Icon, 20, 'regular');
           }
         }

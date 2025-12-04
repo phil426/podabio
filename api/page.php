@@ -407,16 +407,16 @@ switch ($action) {
                 $shouldProcess = $forceProcessing || ($rssFeedUrl !== $currentRssUrl);
                 
                 if ($shouldProcess) {
-                    try {
-                        $parser = new RSSParser();
-                        $feedResult = $parser->parseFeed($rssFeedUrl);
+                try {
+                    $parser = new RSSParser();
+                    $feedResult = $parser->parseFeed($rssFeedUrl);
+                    
+                    if ($feedResult['success'] && !empty($feedResult['data'])) {
+                        $feedData = $feedResult['data'];
                         
-                        if ($feedResult['success'] && !empty($feedResult['data'])) {
-                            $feedData = $feedResult['data'];
-                            
-                            // Save cover image URL from RSS feed
-                            if (!empty($feedData['cover_image'])) {
-                                $updateData['cover_image_url'] = $feedData['cover_image'];
+                        // Save cover image URL from RSS feed
+                        if (!empty($feedData['cover_image'])) {
+                            $updateData['cover_image_url'] = $feedData['cover_image'];
                                 
                                 // Download and save cover image to user's media library
                                 // This should ALWAYS happen when a cover image is found in the RSS feed
@@ -438,25 +438,25 @@ switch ($action) {
                             } else {
                                 // Log when cover image is not found in RSS feed
                                 error_log("[PODCAST RSS FEED] User ID: {$userId}, No cover image found in RSS feed: {$rssFeedUrl}");
-                            }
-                            
-                            // Save podcast name and description for podcast player display
-                            if (!empty($feedData['title'])) {
-                                $podcastName = sanitizeInput($feedData['title']);
-                                $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
-                            }
-                            if (!empty($feedData['description'])) {
-                                $podcastDescription = sanitizeInput($feedData['description']);
-                                $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
-                            }
-                        } else {
-                            // Log error but don't fail the update
-                            error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
                         }
-                    } catch (Exception $e) {
-                        // Log error but don't fail the update - RSS URL will still be saved
-                        error_log("Exception while parsing RSS feed: " . $e->getMessage());
+                        
+                        // Save podcast name and description for podcast player display
+                        if (!empty($feedData['title'])) {
+                            $podcastName = sanitizeInput($feedData['title']);
+                            $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
+                        }
+                        if (!empty($feedData['description'])) {
+                            $podcastDescription = sanitizeInput($feedData['description']);
+                            $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
+                        }
+                    } else {
+                        // Log error but don't fail the update
+                        error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
                     }
+                } catch (Exception $e) {
+                    // Log error but don't fail the update - RSS URL will still be saved
+                    error_log("Exception while parsing RSS feed: " . $e->getMessage());
+                }
                 } // End of shouldProcess check
             }
         }

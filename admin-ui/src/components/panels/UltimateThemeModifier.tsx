@@ -69,6 +69,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   // Track all token values (including those not in TokenBundle like spacing_tokens, shape_tokens, etc.)
   const [tokenValues, setTokenValues] = useState<Map<string, unknown>>(new Map());
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handleSaveRef = useRef<(() => Promise<void>) | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const lastInitializedThemeId = useRef<number | null>(null);
 
@@ -81,11 +82,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         return;
       }
       lastInitializedThemeId.current = theme.id;
-      const colorTokens = safeParse(theme.color_tokens);
-      const typographyTokens = safeParse(theme.typography_tokens);
-      const spacingTokens = safeParse(theme.spacing_tokens);
-      const shapeTokens = safeParse(theme.shape_tokens);
-      const motionTokens = safeParse(theme.motion_tokens);
+      const colorTokens = safeParse(theme.color_tokens) as any;
+      const typographyTokens = safeParse(theme.typography_tokens) as any;
+      const spacingTokens = safeParse(theme.spacing_tokens) as any;
+      const shapeTokens = safeParse(theme.shape_tokens) as any;
+      const motionTokens = safeParse(theme.motion_tokens) as any;
 
       const initialValues = new Map<string, unknown>();
 
@@ -226,31 +227,29 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       
       // CRITICAL: Also initialize tokens from theme (fonts and sizes need to be in TokenBundle)
       // Initialize fonts and sizes from theme in a single update
-      if (typographyTokens?.font || typographyTokens?.size) {
-        setTokens(prevTokens => {
-          let updatedTokens = prevTokens;
-          
-          // Initialize fonts from theme
-          if (typographyTokens?.font) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typographyTokens.font.heading || 'Inter');
-            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.body', typographyTokens.font.body || 'Inter');
-            if (typographyTokens.font.metatext) {
-              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.metatext', typographyTokens.font.metatext);
-            }
+      if ((typographyTokens?.font || typographyTokens?.size) && tokens) {
+        let updatedTokens = tokens;
+        
+        // Initialize fonts from theme
+        if (typographyTokens?.font) {
+          updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typographyTokens.font.heading || 'Inter');
+          updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.body', typographyTokens.font.body || 'Inter');
+          if (typographyTokens.font.metatext) {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.metatext', typographyTokens.font.metatext);
           }
-          
-          // Initialize typography size values in TokenBundle if they exist
-          if (typographyTokens?.size) {
-            if (typographyTokens.size.heading !== undefined) {
-              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.heading', typographyTokens.size.heading);
-            }
-            if (typographyTokens.size.body !== undefined) {
-              updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.body', typographyTokens.size.body);
-            }
+        }
+        
+        // Initialize typography size values in TokenBundle if they exist
+        if (typographyTokens?.size) {
+          if (typographyTokens.size.heading !== undefined) {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.heading', typographyTokens.size.heading);
           }
-          
-          return updatedTokens;
-        });
+          if (typographyTokens.size.body !== undefined) {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.body', typographyTokens.size.body);
+          }
+        }
+        
+        setTokens(updatedTokens);
       }
     } else {
       setTokenValues(new Map());
@@ -290,9 +289,9 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       clearTimeout(saveTimeoutRef.current);
     }
     saveTimeoutRef.current = setTimeout(() => {
-      handleSave();
+      handleSaveRef.current?.();
     }, 1000);
-  }, [tokens, setTokens, trackChange, handleSave]);
+  }, [tokens, setTokens, trackChange]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -367,11 +366,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
 
     try {
       // Load existing tokens to preserve values not edited in UI
-      const existingColorTokens = safeParse(theme.color_tokens);
-      const existingTypographyTokens = safeParse(theme.typography_tokens);
-      const existingSpacingTokens = safeParse(theme.spacing_tokens);
-      const existingShapeTokens = safeParse(theme.shape_tokens);
-      const existingMotionTokens = safeParse(theme.motion_tokens);
+      const existingColorTokens = safeParse(theme.color_tokens) as any;
+      const existingTypographyTokens = safeParse(theme.typography_tokens) as any;
+      const existingSpacingTokens = safeParse(theme.spacing_tokens) as any;
+      const existingShapeTokens = safeParse(theme.shape_tokens) as any;
+      const existingMotionTokens = safeParse(theme.motion_tokens) as any;
       
       // Extract current color values from tokens
       const accentPrimary = extractColorValue(tokens, 'semantic.accent.primary');
@@ -637,6 +636,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       setIsSaving(false);
     }
   }, [theme, tokens, tokenValues, updateMutation, createMutation, queryClient, onSave, isSaving]);
+
+  // Update ref when handleSave changes
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  }, [handleSave]);
 
   // Undo handler
   const handleUndo = useCallback(() => {

@@ -1,5 +1,5 @@
 import * as Tabs from '@radix-ui/react-tabs';
-import { Type, TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight } from '@phosphor-icons/react';
+import { TextAa, TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
 import profileStyles from '../profile-inspector.module.css';
 import styles from '../theme-editor-panel.module.css';

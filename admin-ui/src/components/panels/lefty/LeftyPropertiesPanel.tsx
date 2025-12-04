@@ -102,8 +102,11 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'layers' }: Left
   } else if (activeTab === 'analytics') {
     // Analytics/Preview tab: No inspector (right panel is collapsed)
     inspector = null;
-  } else if (activeTab === 'typography' || activeTab === 'podcast') {
-    // These tabs don't need inspectors in the center panel
+  } else if (activeTab === 'podcast') {
+    // Podcast tab doesn't need inspector in the center panel
+    inspector = null;
+  } else if (activeTab === 'themes' || activeTab === 'account') {
+    // Themes and account tabs don't need inspectors in the center panel
     inspector = null;
   }
 

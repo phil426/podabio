@@ -6,7 +6,7 @@
 
 import { fieldRegistry } from './fieldRegistry';
 import { sectionRegistry } from './sectionRegistry';
-import type { ThemeRecord } from '../../../api/types';
+import type { ThemeRecord } from '../../../../api/types';
 
 export interface ThemeUIState {
   [fieldId: string]: unknown;
@@ -178,7 +178,7 @@ export function databaseToUI(
       }
     } else {
       // Theme-level fields
-      value = getNestedValue(theme, field.tokenPath);
+      value = getNestedValue(theme as Record<string, unknown> | null, field.tokenPath);
     }
 
     // Parse value based on field type - extract numeric values from strings with units

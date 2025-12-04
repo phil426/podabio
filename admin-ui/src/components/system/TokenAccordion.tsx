@@ -14,7 +14,7 @@ export interface TokenAccordionItem {
 interface TokenAccordionProps {
   items: TokenAccordionItem[];
   type?: 'single' | 'multiple';
-  defaultValue?: string;
+  defaultValue?: string | string[];
 }
 
 export function TokenAccordion({
@@ -26,11 +26,11 @@ export function TokenAccordion({
     type === 'multiple'
       ? ({
           type: 'multiple' as const,
-          defaultValue: defaultValue ? [defaultValue] : undefined
+          defaultValue: Array.isArray(defaultValue) ? defaultValue : (defaultValue ? [defaultValue] : undefined)
         } satisfies Accordion.AccordionMultipleProps)
       : ({
           type: 'single' as const,
-          defaultValue
+          defaultValue: Array.isArray(defaultValue) ? defaultValue[0] : defaultValue
         } satisfies Accordion.AccordionSingleProps);
 
   return (

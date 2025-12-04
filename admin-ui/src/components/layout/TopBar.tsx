@@ -17,7 +17,6 @@ import { usePageSnapshot } from '../../api/page';
 import { useAccountProfile } from '../../api/account';
 import { useFeatureFlag } from '../../store/featureFlags';
 import { trackTelemetry } from '../../services/telemetry';
-import { normalizeImageUrl } from '../../api/utils';
 import styles from './top-bar.module.css';
 
 export function TopBar(): JSX.Element {

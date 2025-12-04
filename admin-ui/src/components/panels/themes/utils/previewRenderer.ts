@@ -6,7 +6,7 @@
 
 import { extractTokenValues } from './themeMapper';
 import { fieldRegistry } from './fieldRegistry';
-import type { ThemeRecord } from '../../../api/types';
+import type { ThemeRecord } from '../../../../api/types';
 
 export interface PreviewElement {
   id: string;
@@ -86,8 +86,7 @@ class PreviewRenderer {
     
     // Handle page background animation
     const pageBackgroundAnimate = uiState?.['page-background-animate'] ?? 
-                                   (page?.page_background_animate ? true : false) ?? 
-                                   false;
+                                   (page?.page_background_animate ? true : false);
     const isGradient = pageBackground && typeof pageBackground === 'string' && 
                        (pageBackground.includes('gradient') || pageBackground.includes('linear-gradient') || pageBackground.includes('radial-gradient'));
     if (pageBackgroundAnimate && isGradient) {
@@ -353,14 +352,14 @@ class PreviewRenderer {
         let shadowColorRgba = String(shadowColor);
         if (typeof shadowColor === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i.test(shadowColor)) {
           // Hex color - convert to rgba with intensity as opacity
-          shadowColorRgba = hexToRgba(shadowColor, shadowIntensity);
+          shadowColorRgba = hexToRgba(shadowColor, Number(shadowIntensity) || 0.5);
         } else if (typeof shadowColor === 'string' && shadowColor.startsWith('rgba')) {
           // Already rgba - adjust opacity by intensity
           const rgbaMatch = shadowColor.match(/rgba\(([^)]+)\)/);
           if (rgbaMatch) {
             const parts = rgbaMatch[1].split(',').map(p => p.trim());
             if (parts.length === 4) {
-              const opacity = parseFloat(parts[3]) * shadowIntensity;
+              const opacity = parseFloat(parts[3]) * (Number(shadowIntensity) || 0.5);
               shadowColorRgba = `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${opacity})`;
             }
           }

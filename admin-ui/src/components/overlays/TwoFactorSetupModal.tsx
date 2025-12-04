@@ -182,12 +182,15 @@ export function TwoFactorSetupModal({ open, onClose, onSuccess, userEmail }: Two
           <ScrollArea.Root className={styles.scrollArea}>
             <ScrollArea.Viewport className={styles.viewport}>
               <div className={styles.content}>
-                {getError() && (
-                  <div className={styles.errorBanner}>
-                    <X size={16} weight="regular" aria-hidden="true" />
-                    <span>{getError() instanceof Error ? getError().message : 'An error occurred'}</span>
-                  </div>
-                )}
+                {(() => {
+                  const error = getError();
+                  return error && (
+                    <div className={styles.errorBanner}>
+                      <X size={16} weight="regular" aria-hidden="true" />
+                      <span>{error instanceof Error ? error.message : 'An error occurred'}</span>
+                    </div>
+                  );
+                })()}
 
                 {/* Step 1: Method Selection */}
                 {step === 'method' && (

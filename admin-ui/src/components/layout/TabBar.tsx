@@ -71,6 +71,32 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     label: 'Settings',
     icon: <LuSettings className={styles.tabIcon} aria-hidden="true" />
   },
+  // New Lefty tabs
+  themes: {
+    value: 'themes',
+    label: 'Themes',
+    icon: <LuSparkles className={styles.tabIcon} aria-hidden="true" />
+  },
+  account: {
+    value: 'account',
+    label: 'Account',
+    icon: <LuBookOpen className={styles.tabIcon} aria-hidden="true" />
+  },
+  layers: {
+    value: 'layers',
+    label: 'Layers',
+    icon: <LuLayers className={styles.tabIcon} aria-hidden="true" />
+  },
+  podcast: {
+    value: 'podcast',
+    label: 'Podcast',
+    icon: <LuBookOpen className={styles.tabIcon} aria-hidden="true" />
+  },
+  integration: {
+    value: 'integration',
+    label: 'Integration',
+    icon: <LuPlug className={styles.tabIcon} aria-hidden="true" />
+  },
 };
 
 const STORAGE_KEY = 'tabBarOrder';

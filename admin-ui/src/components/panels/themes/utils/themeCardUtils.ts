@@ -5,8 +5,12 @@
 
 import type { ThemeRecord } from '../../../../api/types';
 
-export function safeParse(input: string | null | undefined): Record<string, unknown> | null {
+export function safeParse(input: string | null | undefined | Record<string, unknown>): Record<string, unknown> | null {
   if (!input) return null;
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    return input as Record<string, unknown>;
+  }
+  if (typeof input !== 'string') return null;
   try {
     return JSON.parse(input);
   } catch {

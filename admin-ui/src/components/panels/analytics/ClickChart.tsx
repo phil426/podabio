@@ -9,7 +9,7 @@ interface ClickChartProps {
 
 export function ClickChart({ chartData, activeColor }: ClickChartProps): JSX.Element {
   if (chartData.points.length === 0) {
-    return null;
+    return <></>;
   }
 
   const averageClicks = chartData.points.length > 0 

@@ -96,13 +96,10 @@ function extractNumericValue(tokens: TokenBundle, path: string, defaultValue: nu
 }
 
 // Helper to determine background type from value
-function getBackgroundType(value: string): 'solid' | 'gradient' | 'image' {
+function getBackgroundType(value: string): 'solid' | 'gradient' {
   if (!value || typeof value !== 'string') return 'solid';
   if (value.includes('gradient') || value.includes('linear-gradient') || value.includes('radial-gradient')) {
     return 'gradient';
-  }
-  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/') || value.startsWith('data:')) {
-    return 'image';
   }
   return 'solid';
 }
@@ -185,7 +182,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     // Priority 4: Check theme's color_tokens.background.surface
     if (activeTheme?.color_tokens) {
       try {
-        const colorTokens = safeParse(activeTheme.color_tokens);
+        const colorTokens = safeParse(activeTheme.color_tokens) as any;
         const surfaceBg = colorTokens?.background?.surface;
         if (surfaceBg && typeof surfaceBg === 'string' && surfaceBg.trim() !== '') {
           return surfaceBg;
@@ -335,23 +332,11 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   }, [tokenValues]);
 
   const backgroundType = useMemo(() => {
-    const bg = widgetBackground;
-    if (!bg || typeof bg !== 'string') {
-      return 'solid';
-    }
-    if (bg.includes('gradient') || bg.includes('linear-gradient') || bg.includes('radial-gradient')) {
-      return 'gradient';
-    }
-    if (bg.startsWith('http://') || bg.startsWith('https://') || bg.startsWith('/') || bg.startsWith('data:')) {
-      return 'image';
-    }
-    return 'solid';
+    return getBackgroundType(widgetBackground);
   }, [widgetBackground]);
 
   const backgroundImage = useMemo(() => {
-    if (backgroundType === 'image' && widgetBackground) {
-      return widgetBackground;
-    }
+    // backgroundType can only be 'solid' | 'gradient', so no image support
     return null;
   }, [backgroundType, widgetBackground]);
 
@@ -414,9 +399,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     return getBackgroundType(widgetBorder);
   }, [widgetBorder]);
   const borderBackgroundImage = useMemo(() => {
-    if (borderBackgroundType === 'image' && widgetBorder) {
-      return widgetBorder;
-    }
+    // borderBackgroundType can only be 'solid' | 'gradient', so no image check needed
     return null;
   }, [borderBackgroundType, widgetBorder]);
 
@@ -430,7 +413,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
             <BackgroundColorSwatch
               value={widgetBackground}
               backgroundType={backgroundType}
-              backgroundImage={backgroundImage}
               onChange={(value) => handleColorChange('semantic.surface.base', value)}
               onTypeChange={(type) => {
                 if (type === 'solid') {
@@ -439,11 +421,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
                   if (!widgetBackground.includes('gradient')) {
                     handleColorChange('semantic.surface.base', 'linear-gradient(135deg, rgba(122,255,216,0.18) 0%, rgba(91,156,255,0.14) 50%, rgba(168,117,255,0.24) 100%)');
                   }
-                }
-              }}
-              onImageChange={(url) => {
-                if (url) {
-                  handleColorChange('semantic.surface.base', url);
                 }
               }}
               label="Widget background color"
@@ -456,7 +433,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
             <BackgroundColorSwatch
               value={widgetBorder}
               backgroundType={borderBackgroundType}
-              backgroundImage={borderBackgroundImage}
               onChange={(value) => handleColorChange('semantic.divider.subtle', value)}
               onTypeChange={(type) => {
                 if (type === 'solid') {
@@ -465,11 +441,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
                   if (!widgetBorder.includes('gradient')) {
                     handleColorChange('semantic.divider.subtle', 'linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%)');
                   }
-                }
-              }}
-              onImageChange={(url) => {
-                if (url) {
-                  handleColorChange('semantic.divider.subtle', url);
                 }
               }}
               label="Widget border"
@@ -531,11 +502,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
                     }
                   }
                 }}
-                onImageChange={(url) => {
-                  if (url) {
-                    handleColorChange('core.typography.color.widget_heading', url);
-                  }
-                }}
                 label="Widget heading color"
               />
             </div>
@@ -583,11 +549,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
                     }
                   }
                 }}
-                onImageChange={(url) => {
-                  if (url) {
-                    handleColorChange('core.typography.color.widget_body', url);
-                  }
-                }}
                 label="Widget body color"
               />
             </div>
@@ -633,11 +594,6 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
                     if (!socialIconColor.includes('gradient')) {
                       handleIconographyChange('color', 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)');
                     }
-                  }
-                }}
-                onImageChange={(url) => {
-                  if (url) {
-                    handleIconographyChange('color', url);
                   }
                 }}
                 label="Social icons color"

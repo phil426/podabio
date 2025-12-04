@@ -16,7 +16,7 @@ import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './widget-inspector.module.css';
 
-type ConfigValue = string | number | boolean | null | undefined;
+type ConfigValue = string | number | boolean | string[] | null | undefined;
 
 interface WidgetFormState {
   title: string;

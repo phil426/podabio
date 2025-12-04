@@ -18,7 +18,8 @@ export type FieldType =
   | 'glow'
   | 'number'
   | 'select'
-  | 'toggle';
+  | 'toggle'
+  | 'boolean';
 
 export interface FieldDefinition {
   id: string;

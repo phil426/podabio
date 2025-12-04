@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Tabs from '@radix-ui/react-tabs';
-import { X, Check, XCircle, Palette, Type, GridFour, Shapes, FloppyDisk, Copy, Image, Swatches, Square, Sparkle, TextB, TextItalic, TextUnderline, AlignLeft, AlignCenter, AlignRight, Share } from '@phosphor-icons/react';
+import { X, Check, XCircle, Palette, TextAa, GridFour, Shapes, FloppyDisk, Copy, Image, Swatches, Square, Sparkle, TextB, TextItalic, TextUnderline, AlignLeft, TextAlignCenter, AlignRight, Share } from '@phosphor-icons/react';
 import profileStyles from './profile-inspector.module.css';
 
 import { usePageSnapshot, updatePageThemeId } from '../../api/page';
-import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation } from '../../api/themes';
+import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation, type ThemeLibraryResult } from '../../api/themes';
 import { useTokens } from '../../design-system/theme/TokenProvider';
 import { useThemeInspector } from '../../state/themeInspector';
 import { queryKeys } from '../../api/utils';
@@ -19,7 +19,7 @@ import { TypographySection } from './theme-editor/TypographySection';
 import { SpacingSection } from './theme-editor/SpacingSection';
 import { ShapeSection } from './theme-editor/ShapeSection';
 import type { TabColorTheme } from '../layout/tab-colors';
-import type { ThemeRecord } from '../../api/types';
+import type { ThemeRecord, PageSnapshotResponse } from '../../api/types';
 import type { TokenBundle } from '../../design-system/tokens';
 
 import styles from './theme-editor-panel.module.css';
@@ -242,14 +242,16 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
   
   // Typography colors
   const headingColor = useMemo(() => {
-    const color = tokens.core?.typography?.color?.heading;
+    const typography = tokens.core?.typography as any;
+    const color = typography?.color?.heading;
     if (typeof color === 'string') return color;
     // Fallback to semantic text primary if no override
     return extractColorValue(tokens, 'semantic.text.primary');
   }, [tokens]);
   
   const bodyColor = useMemo(() => {
-    const color = tokens.core?.typography?.color?.body;
+    const typography = tokens.core?.typography as any;
+    const color = typography?.color?.body;
     if (typeof color === 'string') return color;
     // Fallback to semantic text primary if no override
     return extractColorValue(tokens, 'semantic.text.primary');
@@ -279,14 +281,16 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
   
   // Widget typography colors (separate from page typography)
   const widgetHeadingColor = useMemo(() => {
-    const color = tokens.core?.typography?.color?.widget_heading;
+    const typography = tokens.core?.typography as any;
+    const color = typography?.color?.widget_heading;
     if (typeof color === 'string') return color;
     // Fallback to page heading color if not set
     return headingColor;
   }, [tokens, headingColor]);
   
   const widgetBodyColor = useMemo(() => {
-    const color = tokens.core?.typography?.color?.widget_body;
+    const typography = tokens.core?.typography as any;
+    const color = typography?.color?.widget_body;
     if (typeof color === 'string') return color;
     // Fallback to page body color if not set
     return bodyColor;
@@ -345,7 +349,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const typographyTokens = safeParse(theme.typography_tokens);
       const spacingTokens = safeParse(theme.spacing_tokens);
       const shapeTokens = safeParse(theme.shape_tokens);
-      const iconographyTokens = safeParse(theme.iconography_tokens);
+      const iconographyTokens = safeParse((theme as any).iconography_tokens);
       
       // Initialize iconography state
       if (iconographyTokens) {
@@ -359,12 +363,12 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             setIconSize('large');
           }
         }
-        if (iconographyTokens.color) {
+        if (iconographyTokens.color && typeof iconographyTokens.color === 'string') {
           setIconColor(iconographyTokens.color);
         }
         if (iconographyTokens.spacing) {
           // Extract numeric value from spacing (e.g., "0.75rem" -> 0.75)
-          const spacingValue = parseFloat(iconographyTokens.spacing);
+          const spacingValue = parseFloat(String(iconographyTokens.spacing));
           if (!isNaN(spacingValue)) {
             setIconSpacing(spacingValue);
           }
@@ -373,35 +377,36 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       
       // Apply color tokens - map backend structure to semantic tokens
       if (colorTokens) {
+        const tokens = colorTokens as any;
         // Map background tokens
-        if (colorTokens.background) {
-          if (colorTokens.background.base) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.canvas', colorTokens.background.base);
+        if (tokens.background) {
+          if (tokens.background.base && typeof tokens.background.base === 'string') {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.canvas', tokens.background.base);
           }
           // CRITICAL: Only set semantic.surface.base from colorTokens if theme.widget_background doesn't exist
           // theme.widget_background is the source of truth and will be set later
-          if (colorTokens.background.surface && !theme.widget_background) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.base', colorTokens.background.surface);
+          if (tokens.background.surface && typeof tokens.background.surface === 'string' && !theme.widget_background) {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.base', tokens.background.surface);
           }
         }
         
         // Map text tokens
-        if (colorTokens.text) {
-          if (colorTokens.text.primary) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.text.primary', colorTokens.text.primary);
+        if (tokens.text) {
+          if (tokens.text.primary && typeof tokens.text.primary === 'string') {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.text.primary', tokens.text.primary);
           }
-          if (colorTokens.text.secondary) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.text.secondary', colorTokens.text.secondary);
+          if (tokens.text.secondary && typeof tokens.text.secondary === 'string') {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.text.secondary', tokens.text.secondary);
           }
         }
         
         // Map accent tokens
-        if (colorTokens.accent) {
-          if (colorTokens.accent.primary) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.accent.primary', colorTokens.accent.primary);
+        if (tokens.accent) {
+          if (tokens.accent.primary && typeof tokens.accent.primary === 'string') {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.accent.primary', tokens.accent.primary);
           }
-          if (colorTokens.accent.secondary) {
-            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.accent.secondary', colorTokens.accent.secondary);
+          if (tokens.accent.secondary && typeof tokens.accent.secondary === 'string') {
+            updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.accent.secondary', tokens.accent.secondary);
           }
         }
       }
@@ -493,10 +498,10 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       
       // Also check token_overrides from snapshot for typography
       if (snapshot?.token_overrides) {
-        const overrides = snapshot.token_overrides;
+        const overrides = snapshot.token_overrides as any;
         // Check for typography overrides in core.typography structure
         if (overrides.core?.typography) {
-          const typoOverrides = (overrides.core as any).typography;
+          const typoOverrides = overrides.core.typography;
           if (typoOverrides.font?.heading) {
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typoOverrides.font.heading);
           }
@@ -511,7 +516,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
         // Also check for backend structure (typography_tokens)
-        if (overrides.typography) {
+        if ((overrides as any).typography) {
           const typoOverrides = (overrides as any).typography;
           if (typoOverrides.font?.heading) {
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typoOverrides.font.heading);
@@ -641,10 +646,13 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       let pageBgValue: string | null = null;
       if (theme.page_background && typeof theme.page_background === 'string') {
         pageBgValue = theme.page_background;
-      } else if (colorTokens?.background?.base && typeof colorTokens.background.base === 'string') {
-        pageBgValue = colorTokens.background.base;
-      } else if (colorTokens?.gradient?.page && typeof colorTokens.gradient.page === 'string') {
-        pageBgValue = colorTokens.gradient.page;
+      } else if (colorTokens) {
+        const tokens = colorTokens as any;
+        if (tokens.background?.base && typeof tokens.background.base === 'string') {
+          pageBgValue = tokens.background.base;
+        } else if (tokens.gradient?.page && typeof tokens.gradient.page === 'string') {
+          pageBgValue = tokens.gradient.page;
+        }
       }
       
       if (pageBgValue) {
@@ -669,10 +677,13 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         blockBgValue = theme.widget_background;
         // CRITICAL: Update tokens so blockBackground (from semantic.surface.base) matches the saved value
         updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.base', blockBgValue);
-      } else if (colorTokens?.background?.surface && typeof colorTokens.background.surface === 'string') {
-        blockBgValue = colorTokens.background.surface;
-      } else if (colorTokens?.gradient?.widget && typeof colorTokens.gradient.widget === 'string') {
-        blockBgValue = colorTokens.gradient.widget;
+      } else if (colorTokens) {
+        const tokens = colorTokens as any;
+        if (tokens.background?.surface && typeof tokens.background.surface === 'string') {
+          blockBgValue = tokens.background.surface;
+        } else if (tokens.gradient?.widget && typeof tokens.gradient.widget === 'string') {
+          blockBgValue = tokens.gradient.widget;
+        }
       } else {
         const resolvedBlockBg = resolveToken(updatedTokens, 'semantic.surface.base');
         if (typeof resolvedBlockBg === 'string') {
@@ -855,67 +866,68 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const isPageImage = isImageUrl(finalPageBackground);
       
       // Derive additional color values
-      const accentMuted = existingColorTokens?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
-      const textInverse = existingColorTokens?.text?.inverse || '#ffffff';
-      const borderDefault = existingColorTokens?.border?.default || (textPrimary && /^#/.test(textPrimary) ? darkenColor(textPrimary, 0.2) : '#d1d5db');
-      const borderFocus = existingColorTokens?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
-      const backgroundSurfaceRaised = existingColorTokens?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
-      const backgroundOverlay = existingColorTokens?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
+      const existingColors = existingColorTokens as any;
+      const accentMuted = existingColors?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
+      const textInverse = existingColors?.text?.inverse || '#ffffff';
+      const borderDefault = existingColors?.border?.default || (textPrimary && /^#/.test(textPrimary) ? darkenColor(textPrimary, 0.2) : '#d1d5db');
+      const borderFocus = existingColors?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
+      const backgroundSurfaceRaised = existingColors?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
+      const backgroundOverlay = existingColors?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
       
       // Build complete color tokens, preserving existing values
       const colorTokens: Record<string, any> = {
         ...(existingColorTokens || {}),
         accent: {
-          ...(existingColorTokens?.accent || {}),
+          ...(existingColors?.accent || {}),
           primary: accentPrimary,
           secondary: accentSecondary,
           muted: accentMuted
         },
         text: {
-          ...(existingColorTokens?.text || {}),
+          ...(existingColors?.text || {}),
           primary: textPrimary,
           secondary: textSecondary,
           inverse: textInverse
         },
         background: {
-          ...(existingColorTokens?.background || {}),
+          ...(existingColors?.background || {}),
           base: backgroundBase,
           surface: finalBackgroundSurface, // CRITICAL: Use finalWidgetBackground to keep in sync with widget_background
           surface_raised: backgroundSurfaceRaised,
           overlay: backgroundOverlay
         },
         border: {
-          ...(existingColorTokens?.border || {}),
+          ...(existingColors?.border || {}),
           default: borderDefault,
           focus: borderFocus
         },
         state: {
-          ...(existingColorTokens?.state || {}),
-          success: existingColorTokens?.state?.success || '#12b76a',
-          warning: existingColorTokens?.state?.warning || '#f59e0b',
-          danger: existingColorTokens?.state?.danger || '#ef4444'
+          ...(existingColors?.state || {}),
+          success: existingColors?.state?.success || '#12b76a',
+          warning: existingColors?.state?.warning || '#f59e0b',
+          danger: existingColors?.state?.danger || '#ef4444'
         },
         text_state: {
-          ...(existingColorTokens?.text_state || {}),
-          success: existingColorTokens?.text_state?.success || '#0f5132',
-          warning: existingColorTokens?.text_state?.warning || '#7c2d12',
-          danger: existingColorTokens?.text_state?.danger || '#7f1d1d'
+          ...(existingColors?.text_state || {}),
+          success: existingColors?.text_state?.success || '#0f5132',
+          warning: existingColors?.text_state?.warning || '#7c2d12',
+          danger: existingColors?.text_state?.danger || '#7f1d1d'
         },
         shadow: {
-          ...(existingColorTokens?.shadow || {}),
-          ambient: existingColorTokens?.shadow?.ambient || 'rgba(15, 23, 42, 0.12)',
-          focus: existingColorTokens?.shadow?.focus || 'rgba(37, 99, 235, 0.35)'
+          ...(existingColors?.shadow || {}),
+          ambient: existingColors?.shadow?.ambient || 'rgba(15, 23, 42, 0.12)',
+          focus: existingColors?.shadow?.focus || 'rgba(37, 99, 235, 0.35)'
         },
         gradient: {
-          ...(existingColorTokens?.gradient || {}),
-          page: isPageGradient ? finalPageBackground : (existingColorTokens?.gradient?.page || null),
-          accent: existingColorTokens?.gradient?.accent || null,
-          widget: isBlockGradient ? finalWidgetBackground : (existingColorTokens?.gradient?.widget || null),
-          podcast: existingColorTokens?.gradient?.podcast || null
+          ...(existingColors?.gradient || {}),
+          page: isPageGradient ? finalPageBackground : (existingColors?.gradient?.page || null),
+          accent: existingColors?.gradient?.accent || null,
+          widget: isBlockGradient ? finalWidgetBackground : (existingColors?.gradient?.widget || null),
+          podcast: existingColors?.gradient?.podcast || null
         },
         glow: {
-          ...(existingColorTokens?.glow || {}),
-          primary: existingColorTokens?.glow?.primary || null
+          ...(existingColors?.glow || {}),
+          primary: existingColors?.glow?.primary || null
         }
       };
       
@@ -937,16 +949,17 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       });
       
       // Build typography tokens, preserving existing values
+      const existingTypography = existingTypographyTokens as any;
       const typographyTokens: Record<string, any> = {
         ...(existingTypographyTokens || {}),
         font: {
-          ...(existingTypographyTokens?.font || {}),
+          ...(existingTypography?.font || {}),
           heading: headingFont,
           body: bodyFont,
-          metatext: existingTypographyTokens?.font?.metatext || bodyFont
+          metatext: existingTypography?.font?.metatext || bodyFont
         },
         color: {
-          ...(existingTypographyTokens?.color || {}),
+          ...(existingTypography?.color || {}),
           heading: headingColor !== extractColorValue(tokens, 'semantic.text.primary') ? headingColor : undefined,
           body: bodyColor !== extractColorValue(tokens, 'semantic.text.primary') ? bodyColor : undefined,
           // Widget typography colors (separate from page typography)
@@ -954,7 +967,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           widget_body: widgetBodyColor !== bodyColor ? widgetBodyColor : undefined
         },
         scale: {
-          ...(existingTypographyTokens?.scale || {}),
+          ...(existingTypography?.scale || {}),
           // Map heading preset to xl (page title), lg, and md scale values
           xl: headingFontSizePreset === 'small' ? 1.5 :
               headingFontSizePreset === 'medium' ? 2.0 :
@@ -969,19 +982,19 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           sm: bodyFontSizePreset === 'small' ? 0.9 :
               bodyFontSizePreset === 'medium' ? 1.111 :
               bodyFontSizePreset === 'large' ? 1.25 : 1.5,
-          xs: existingTypographyTokens?.scale?.xs || 0.889
+          xs: existingTypography?.scale?.xs || 0.889
         },
         line_height: {
-          ...(existingTypographyTokens?.line_height || {}),
-          tight: existingTypographyTokens?.line_height?.tight || 1.2,
-          normal: existingTypographyTokens?.line_height?.normal || 1.5,
-          relaxed: existingTypographyTokens?.line_height?.relaxed || 1.7
+          ...(existingTypography?.line_height || {}),
+          tight: existingTypography?.line_height?.tight || 1.2,
+          normal: existingTypography?.line_height?.normal || 1.5,
+          relaxed: existingTypography?.line_height?.relaxed || 1.7
         },
         weight: {
-          ...(existingTypographyTokens?.weight || {}),
-          normal: existingTypographyTokens?.weight?.normal || 400,
-          medium: existingTypographyTokens?.weight?.medium || 500,
-          bold: existingTypographyTokens?.weight?.bold || 600
+          ...(existingTypography?.weight || {}),
+          normal: existingTypography?.weight?.normal || 400,
+          medium: existingTypography?.weight?.medium || 500,
+          bold: existingTypography?.weight?.bold || 600
         }
       };
       
@@ -1075,38 +1088,40 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       };
       
       // Add shadow if border effect is shadow and intensity is not none
+      const existingShape = existingShapeTokens as any;
       if (borderEffect2 === 'shadow' && shadowMap[shadowIntensity2]) {
         shapeTokens.shadow = {
-          ...(existingShapeTokens?.shadow || {}),
+          ...(existingShape?.shadow || {}),
           [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
             ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
             : '0 16px 48px rgba(15, 23, 42, 0.5)',
-          focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
+          focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       } else {
         shapeTokens.shadow = {
-          ...(existingShapeTokens?.shadow || {}),
-          focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
+          ...(existingShape?.shadow || {}),
+          focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       }
       
       // Build motion tokens with defaults
+      const existingMotion = existingMotionTokens as any;
       const motionTokens: Record<string, any> = {
         ...(existingMotionTokens || {}),
         duration: {
-          ...(existingMotionTokens?.duration || {}),
-          fast: existingMotionTokens?.duration?.fast || '150ms',
-          standard: existingMotionTokens?.duration?.standard || '250ms'
+          ...(existingMotion?.duration || {}),
+          fast: existingMotion?.duration?.fast || '150ms',
+          standard: existingMotion?.duration?.standard || '250ms'
         },
         easing: {
-          ...(existingMotionTokens?.easing || {}),
-          standard: existingMotionTokens?.easing?.standard || 'cubic-bezier(0.4, 0, 0.2, 1)',
-          decelerate: existingMotionTokens?.easing?.decelerate || 'cubic-bezier(0.0, 0, 0.2, 1)'
+          ...(existingMotion?.easing || {}),
+          standard: existingMotion?.easing?.standard || 'cubic-bezier(0.4, 0, 0.2, 1)',
+          decelerate: existingMotion?.easing?.decelerate || 'cubic-bezier(0.0, 0, 0.2, 1)'
         },
         focus: {
-          ...(existingMotionTokens?.focus || {}),
-          ring_width: existingMotionTokens?.focus?.ring_width || '3px',
-          ring_offset: existingMotionTokens?.focus?.ring_offset || '2px'
+          ...(existingMotion?.focus || {}),
+          ring_width: existingMotion?.focus?.ring_width || '3px',
+          ring_offset: existingMotion?.focus?.ring_offset || '2px'
         }
       };
       
@@ -1233,7 +1248,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       
       // Update page's theme_id if it doesn't match the saved theme
       // Refresh snapshot to get latest theme_id
-      const freshSnapshot = await queryClient.fetchQuery({ queryKey: queryKeys.pageSnapshot() });
+      const freshSnapshot = await queryClient.fetchQuery<PageSnapshotResponse>({ queryKey: queryKeys.pageSnapshot() });
       const currentPageThemeId = freshSnapshot?.page?.theme_id;
       
       // If we updated an existing theme, use that ID
@@ -1241,8 +1256,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       let targetThemeId = savedThemeId;
       if (!targetThemeId) {
         // Find the newly created theme by name
-        const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-        const newTheme = refreshedLibrary?.user?.find(t => t.name === themeData.name);
+        const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
+        const newTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.name === themeData.name);
         targetThemeId = newTheme?.id ?? null;
       }
       
@@ -1310,81 +1325,83 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const finalBackgroundSurface = finalWidgetBackground;
       
       // Derive additional color values
-      const accentMuted = existingColorTokens?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
-      const textInverse = existingColorTokens?.text?.inverse || '#ffffff';
-      const borderDefault = existingColorTokens?.border?.default || (textPrimary && /^#/.test(textPrimary) ? darkenColor(textPrimary, 0.2) : '#d1d5db');
-      const borderFocus = existingColorTokens?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
-      const backgroundSurfaceRaised = existingColorTokens?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
-      const backgroundOverlay = existingColorTokens?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
+      const existingColors = existingColorTokens as any;
+      const accentMuted = existingColors?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
+      const textInverse = existingColors?.text?.inverse || '#ffffff';
+      const borderDefault = existingColors?.border?.default || (textPrimary && /^#/.test(textPrimary) ? darkenColor(textPrimary, 0.2) : '#d1d5db');
+      const borderFocus = existingColors?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
+      const backgroundSurfaceRaised = existingColors?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
+      const backgroundOverlay = existingColors?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
       
       // Build complete color tokens (same structure as handleSave)
       const colorTokens: Record<string, any> = {
         ...(existingColorTokens || {}),
         accent: {
-          ...(existingColorTokens?.accent || {}),
+          ...(existingColors?.accent || {}),
           primary: accentPrimary,
           secondary: accentSecondary,
           muted: accentMuted
         },
         text: {
-          ...(existingColorTokens?.text || {}),
+          ...(existingColors?.text || {}),
           primary: textPrimary,
           secondary: textSecondary,
           inverse: textInverse
         },
         background: {
-          ...(existingColorTokens?.background || {}),
+          ...(existingColors?.background || {}),
           base: backgroundBase,
           surface: finalBackgroundSurface, // CRITICAL: Use finalWidgetBackground to keep in sync with widget_background
           surface_raised: backgroundSurfaceRaised,
           overlay: backgroundOverlay
         },
         border: {
-          ...(existingColorTokens?.border || {}),
+          ...(existingColors?.border || {}),
           default: borderDefault,
           focus: borderFocus
         },
         state: {
-          ...(existingColorTokens?.state || {}),
-          success: existingColorTokens?.state?.success || '#12b76a',
-          warning: existingColorTokens?.state?.warning || '#f59e0b',
-          danger: existingColorTokens?.state?.danger || '#ef4444'
+          ...(existingColors?.state || {}),
+          success: existingColors?.state?.success || '#12b76a',
+          warning: existingColors?.state?.warning || '#f59e0b',
+          danger: existingColors?.state?.danger || '#ef4444'
         },
         text_state: {
-          ...(existingColorTokens?.text_state || {}),
-          success: existingColorTokens?.text_state?.success || '#0f5132',
-          warning: existingColorTokens?.text_state?.warning || '#7c2d12',
-          danger: existingColorTokens?.text_state?.danger || '#7f1d1d'
+          ...(existingColors?.text_state || {}),
+          success: existingColors?.text_state?.success || '#0f5132',
+          warning: existingColors?.text_state?.warning || '#7c2d12',
+          danger: existingColors?.text_state?.danger || '#7f1d1d'
         },
         shadow: {
-          ...(existingColorTokens?.shadow || {}),
-          ambient: existingColorTokens?.shadow?.ambient || 'rgba(15, 23, 42, 0.12)',
-          focus: existingColorTokens?.shadow?.focus || 'rgba(37, 99, 235, 0.35)'
+          ...(existingColors?.shadow || {}),
+          ambient: existingColors?.shadow?.ambient || 'rgba(15, 23, 42, 0.12)',
+          focus: existingColors?.shadow?.focus || 'rgba(37, 99, 235, 0.35)'
         },
         gradient: {
-          ...(existingColorTokens?.gradient || {}),
-          page: isPageGradient ? finalPageBackground : (existingColorTokens?.gradient?.page || null),
-          accent: existingColorTokens?.gradient?.accent || null,
-          widget: isBlockGradient ? finalWidgetBackground : (existingColorTokens?.gradient?.widget || null),
-          podcast: existingColorTokens?.gradient?.podcast || null
+          ...(existingColors?.gradient || {}),
+          page: isPageGradient ? finalPageBackground : (existingColors?.gradient?.page || null),
+          accent: existingColors?.gradient?.accent || null,
+          widget: isBlockGradient ? finalWidgetBackground : (existingColors?.gradient?.widget || null),
+          podcast: existingColors?.gradient?.podcast || null
         },
         glow: {
-          ...(existingColorTokens?.glow || {}),
-          primary: existingColorTokens?.glow?.primary || null
+          ...(existingColors?.glow || {}),
+          primary: existingColors?.glow?.primary || null
         }
       };
       
       // Build typography tokens (same as handleSave)
+      const existingTypography = existingTypographyTokens as any;
       const typographyTokens: Record<string, any> = {
         ...(existingTypographyTokens || {}),
         font: {
-          ...(existingTypographyTokens?.font || {}),
+          ...(existingTypography?.font || {}),
           heading: headingFont,
           body: bodyFont,
-          metatext: existingTypographyTokens?.font?.metatext || bodyFont
+          metatext: existingTypography?.font?.metatext || bodyFont
         },
         color: {
-          ...(existingTypographyTokens?.color || {}),
+          ...(existingTypography?.color || {}),
           heading: headingColor !== extractColorValue(tokens, 'semantic.text.primary') ? headingColor : undefined,
           body: bodyColor !== extractColorValue(tokens, 'semantic.text.primary') ? bodyColor : undefined,
           // Widget typography colors (separate from page typography)
@@ -1392,7 +1409,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           widget_body: widgetBodyColor !== bodyColor ? widgetBodyColor : undefined
         },
         scale: {
-          ...(existingTypographyTokens?.scale || {}),
+          ...(existingTypography?.scale || {}),
           // Map heading preset to xl (page title), lg, and md scale values
           xl: headingFontSizePreset === 'small' ? 1.5 :
               headingFontSizePreset === 'medium' ? 2.0 :
@@ -1407,27 +1424,28 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           sm: bodyFontSizePreset === 'small' ? 0.9 :
               bodyFontSizePreset === 'medium' ? 1.111 :
               bodyFontSizePreset === 'large' ? 1.25 : 1.5,
-          xs: existingTypographyTokens?.scale?.xs || 0.889
+          xs: existingTypography?.scale?.xs || 0.889
         },
         line_height: {
-          ...(existingTypographyTokens?.line_height || {}),
-          tight: existingTypographyTokens?.line_height?.tight || 1.2,
-          normal: existingTypographyTokens?.line_height?.normal || 1.5,
-          relaxed: existingTypographyTokens?.line_height?.relaxed || 1.7
+          ...(existingTypography?.line_height || {}),
+          tight: existingTypography?.line_height?.tight || 1.2,
+          normal: existingTypography?.line_height?.normal || 1.5,
+          relaxed: existingTypography?.line_height?.relaxed || 1.7
         },
         weight: {
-          ...(existingTypographyTokens?.weight || {}),
-          normal: existingTypographyTokens?.weight?.normal || 400,
-          medium: existingTypographyTokens?.weight?.medium || 500,
-          bold: existingTypographyTokens?.weight?.bold || 600
+          ...(existingTypography?.weight || {}),
+          normal: existingTypography?.weight?.normal || 400,
+          medium: existingTypography?.weight?.medium || 500,
+          bold: existingTypography?.weight?.bold || 600
         }
       };
       
       // Build spacing tokens (same as handleSave)
+      const existingSpacing = existingSpacingTokens as any;
       const spacingTokens: Record<string, any> = {
         ...(existingSpacingTokens || {}),
         density: spacingDensity, // Page spacing density (also used for widgets)
-        base_scale: existingSpacingTokens?.base_scale || {
+        base_scale: existingSpacing?.base_scale || {
           '2xs': 0.25,
           'xs': 0.5,
           'sm': 0.75,
@@ -1436,7 +1454,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           'xl': 2.0,
           '2xl': 3.0
         },
-        density_multipliers: existingSpacingTokens?.density_multipliers || {
+        density_multipliers: existingSpacing?.density_multipliers || {
           compact: {
             '2xs': 0.75,
             'xs': 0.85,
@@ -1456,7 +1474,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             '2xl': 1.4
           }
         },
-        modifiers: existingSpacingTokens?.modifiers || []
+        modifiers: existingSpacing?.modifiers || []
       };
       
       // Map buttonRadius to shape_tokens.corner.*
@@ -1493,38 +1511,40 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       };
       
       // Add shadow if border effect is shadow and intensity is not none
+      const existingShape = existingShapeTokens as any;
       if (borderEffect2 === 'shadow' && shadowMap[shadowIntensity2]) {
         shapeTokens.shadow = {
-          ...(existingShapeTokens?.shadow || {}),
+          ...(existingShape?.shadow || {}),
           [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
             ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
             : '0 16px 48px rgba(15, 23, 42, 0.5)',
-          focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
+          focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       } else {
         shapeTokens.shadow = {
-          ...(existingShapeTokens?.shadow || {}),
-          focus: existingShapeTokens?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
+          ...(existingShape?.shadow || {}),
+          focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       }
       
       // Build motion tokens (same as handleSave)
+      const existingMotion = existingMotionTokens as any;
       const motionTokens: Record<string, any> = {
         ...(existingMotionTokens || {}),
         duration: {
-          ...(existingMotionTokens?.duration || {}),
-          fast: existingMotionTokens?.duration?.fast || '150ms',
-          standard: existingMotionTokens?.duration?.standard || '250ms'
+          ...(existingMotion?.duration || {}),
+          fast: existingMotion?.duration?.fast || '150ms',
+          standard: existingMotion?.duration?.standard || '250ms'
         },
         easing: {
-          ...(existingMotionTokens?.easing || {}),
-          standard: existingMotionTokens?.easing?.standard || 'cubic-bezier(0.4, 0, 0.2, 1)',
-          decelerate: existingMotionTokens?.easing?.decelerate || 'cubic-bezier(0.0, 0, 0.2, 1)'
+          ...(existingMotion?.easing || {}),
+          standard: existingMotion?.easing?.standard || 'cubic-bezier(0.4, 0, 0.2, 1)',
+          decelerate: existingMotion?.easing?.decelerate || 'cubic-bezier(0.0, 0, 0.2, 1)'
         },
         focus: {
-          ...(existingMotionTokens?.focus || {}),
-          ring_width: existingMotionTokens?.focus?.ring_width || '3px',
-          ring_offset: existingMotionTokens?.focus?.ring_offset || '2px'
+          ...(existingMotion?.focus || {}),
+          ring_width: existingMotion?.focus?.ring_width || '3px',
+          ring_offset: existingMotion?.focus?.ring_offset || '2px'
         }
       };
       
@@ -1611,8 +1631,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       
       // Update page's theme_id to point to the newly created theme
       // Find the newly created theme by name
-      const refreshedLibrary = await queryClient.fetchQuery({ queryKey: queryKeys.themes() });
-      const newTheme = refreshedLibrary?.user?.find(t => t.name === themeData.name);
+      const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
+      const newTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.name === themeData.name);
       const newThemeId = newTheme?.id ?? null;
       
       if (newThemeId) {
@@ -1736,7 +1756,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'typography-page',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <Type className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
+          <TextAa className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Typography</span>
         </div>
       ),
@@ -2028,7 +2048,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       id: 'typography-block',
       trigger: (
         <div className={styles.accordionTrigger}>
-          <Type className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
+          <TextAa className={styles.accordionIcon} aria-hidden="true" size={16} weight="regular" />
           <span>Typography</span>
         </div>
       ),
@@ -2103,9 +2123,6 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             handleColorChange('core.typography.color.widget_body', value);
             setHasChanges(true);
           }}
-          colorMode={widgetColorMode}
-          headingColor={widgetHeadingColor}
-          bodyColor={widgetBodyColor}
           onColorModeChange={(mode) => {
             setWidgetColorMode(mode);
             setHasChanges(true);

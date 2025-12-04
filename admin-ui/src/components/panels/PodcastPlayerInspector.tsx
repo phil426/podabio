@@ -5,6 +5,7 @@ import { FaPodcast, FaSpotify, FaYoutube, FaAmazon, FaInstagram, FaTwitter, FaTi
 
 import { usePageSnapshot, usePageSettingsMutation, generatePodlinks, searchPodcasts } from '../../api/page';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
+import type { PageSnapshotResponse } from '../../api/types';
 import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './podcast-player-inspector.module.css';
@@ -190,7 +191,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
     if (hasRssFeed && !hasCoverImage && !isLoadingFeed && enabled) {
       // Small delay to avoid multiple rapid calls
       const timeoutId = setTimeout(() => {
-        handleLoadFeedRef.current();
+        handleLoadFeed.current();
       }, 500);
       
       return () => clearTimeout(timeoutId);
@@ -370,7 +371,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         
         // Check if cover image was loaded using fetchQuery for a safe access
         try {
-          const freshSnapshot = await queryClient.fetchQuery({ queryKey: queryKeys.pageSnapshot() });
+          const freshSnapshot = await queryClient.fetchQuery<PageSnapshotResponse>({ queryKey: queryKeys.pageSnapshot() });
           const updatedPage = freshSnapshot?.page;
           
           if (updatedPage?.cover_image_url) {

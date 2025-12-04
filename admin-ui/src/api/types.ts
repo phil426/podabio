@@ -58,6 +58,7 @@ export interface PageSnapshot {
   footer_visible?: boolean | null;
   podcast_player_enabled?: boolean | null;
   spatial_effect?: string | null;
+  page_name_effect?: string | null;
 }
 
 export interface WidgetConfig {
@@ -207,6 +208,7 @@ export interface ThemeRecord {
   spacing_tokens?: Record<string, unknown> | string | null;
   shape_tokens?: Record<string, unknown> | string | null;
   motion_tokens?: Record<string, unknown> | string | null;
+  iconography_tokens?: Record<string, unknown> | string | null;
   spatial_effect?: string | null;
   widget_styles?: Record<string, unknown> | string | null;
   categories?: string[] | null;

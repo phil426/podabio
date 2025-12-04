@@ -7,7 +7,7 @@ import { useMemo, useEffect, type CSSProperties } from 'react';
 import { previewRenderer } from '../utils/previewRenderer';
 import { usePageSnapshot } from '../../../../api/page';
 import { normalizeImageUrl } from '../../../../api/utils';
-import type { ThemeRecord } from '../../../api/types';
+import type { ThemeRecord } from '../../../../api/types';
 import styles from './modal-preview.module.css';
 
 interface ModalPreviewProps {

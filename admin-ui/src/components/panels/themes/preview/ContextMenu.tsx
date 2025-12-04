@@ -157,17 +157,17 @@ export function ContextMenu({ x, y, options, onClose, widgetTitle, previewContai
 
     // Use setTimeout to avoid immediate close on the click that opened the menu
     const timeout = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside as EventListener);
+      document.addEventListener('touchstart', handleClickOutside as EventListener);
     }, 0);
 
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleEscape as EventListener);
 
     return () => {
       clearTimeout(timeout);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside as EventListener);
+      document.removeEventListener('touchstart', handleClickOutside as EventListener);
+      document.removeEventListener('keydown', handleEscape as EventListener);
     };
   }, [onClose]);
 

@@ -391,11 +391,6 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
                           }
                         }
                       }}
-                      onImageChange={(url) => {
-                        if (url) {
-                          handleColorChange('semantic.text.primary', url);
-                        }
-                      }}
                       label="Page title color"
                     />
                   </div>
@@ -444,11 +439,6 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
                     if (!pageBodyText.includes('gradient')) {
                       handleColorChange('semantic.text.secondary', 'linear-gradient(135deg, #4b5563 0%, #6b7280 100%)');
                     }
-                  }
-                }}
-                onImageChange={(url) => {
-                  if (url) {
-                    handleColorChange('semantic.text.secondary', url);
                   }
                 }}
                 label="Page body color"
