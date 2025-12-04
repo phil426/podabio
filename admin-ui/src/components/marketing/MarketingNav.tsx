@@ -184,24 +184,22 @@ export function MarketingNav(): JSX.Element {
           </NavigationMenu.Indicator>
         </div>
       </NavigationMenu.Root>
-      <div className={styles.navActions}>
-        <motion.a
-          href="/login.php"
-          className={styles.btnSecondary}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Login
-        </motion.a>
-        <motion.a
-          href="/signup.php"
-          className={styles.btnPrimary}
-          whileHover={{ scale: 1.05, boxShadow: '0 0 24px rgba(0, 255, 127, 0.6)' }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Get Started<span className={styles.cursor}>_</span>
-        </motion.a>
-      </div>
+      <motion.a
+        href="/login.php"
+        className={styles.btnSecondary}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Login
+      </motion.a>
+      <motion.a
+        href="/signup.php"
+        className={styles.btnPrimary}
+        whileHover={{ scale: 1.05, boxShadow: '0 0 24px rgba(0, 255, 127, 0.6)' }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Get Started<span className={styles.cursor}>_</span>
+      </motion.a>
       <motion.button
         className={styles.mobileMenuButton}
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
