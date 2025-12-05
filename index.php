@@ -1137,77 +1137,29 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         /* Ensure footer and final CTA are ALWAYS visible - no scroll animations */
+        /* Only set opacity/visibility - let marketing-dark.css handle layout */
         footer.footer,
-        footer.footer *,
         .footer,
-        .footer *,
-        .final-cta,
-        .final-cta * {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: block !important;
-        }
-        
-        footer.footer,
-        .footer {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: block !important;
-            position: relative !important;
-            z-index: 999 !important;
-        }
-        
-        .footer-content {
+        .final-cta {
             opacity: 1 !important;
             visibility: visible !important;
         }
         
-        .footer-section {
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-        
-        .footer-section ul {
-            padding: 0 !important;
-            margin: 0 !important;
-            list-style: none !important;
-        }
-        
-        .footer-section ul li {
-            margin-bottom: 0.5rem !important;
-        }
-        
-        .footer-section a {
-            color: var(--poda-text-secondary, #9ca3af) !important;
-            text-decoration: none !important;
-            transition: color 0.3s !important;
-        }
-        
-        .footer-section a:hover {
-            color: var(--poda-accent-signal-green, #00ff7f) !important;
-        }
-        
-        .footer-bottom {
-            opacity: 1 !important;
-            visibility: visible !important;
-            text-align: center !important;
-            padding-top: 2rem !important;
-            border-top: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1)) !important;
-            color: var(--poda-text-secondary, #9ca3af) !important;
-        }
-        
-        /* Prevent animations from hiding footer/CTA even if animations-ready class exists */
+        /* Prevent animations from hiding footer/CTA */
         body.animations-ready footer.footer,
-        body.animations-ready footer.footer *,
         body.animations-ready .footer,
-        body.animations-ready .footer *,
-        body.animations-ready .final-cta,
-        body.animations-ready .final-cta * {
+        body.animations-ready .final-cta {
             opacity: 1 !important;
             visibility: visible !important;
             transform: none !important;
             clip-path: none !important;
-            display: block !important;
+        }
+        
+        body.animations-ready footer.footer *,
+        body.animations-ready .footer *,
+        body.animations-ready .final-cta * {
+            opacity: 1 !important;
+            visibility: visible !important;
         }
         
         .final-cta h2 {
@@ -2272,13 +2224,11 @@ require_once __DIR__ . '/includes/helpers.php';
                 document.body.style.height = 'auto';
                 document.body.style.maxHeight = 'none';
                 
-                // Check if footer exists
+                // Check if footer exists (no inline styles that break layout)
                 const footer = document.querySelector('footer.footer, .footer');
                 if (footer) {
-                    console.log('✅ Footer found in DOM');
-                    footer.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important; position: relative !important; z-index: 999 !important;';
-                } else {
-                    console.error('❌ FOOTER NOT FOUND IN DOM!');
+                    footer.style.opacity = '1';
+                    footer.style.visibility = 'visible';
                 }
             }
             
@@ -2387,44 +2337,19 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 });
                 
-                // CRITICAL: Force footer and final CTA to be visible immediately
+                // Ensure footer and final CTA are visible (without breaking layout)
                 const footer = document.querySelector('footer.footer, .footer');
                 const finalCta = document.querySelector('.final-cta');
                 
                 if (footer) {
-                    footer.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important; position: relative !important; z-index: 999 !important; background: var(--poda-bg-secondary, #1a1a1a) !important; padding: 3rem 2rem 2rem !important; margin-top: 4rem !important; width: 100% !important; min-height: 200px !important;';
-                    footer.querySelectorAll('*').forEach(child => {
-                        child.style.cssText = 'opacity: 1 !important; visibility: visible !important;';
-                    });
-                    console.log('✅ Footer forced visible:', footer);
-                } else {
-                    console.error('❌ Footer element not found in DOM!');
+                    footer.style.opacity = '1';
+                    footer.style.visibility = 'visible';
                 }
                 
                 if (finalCta) {
-                    finalCta.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important;';
-                    finalCta.querySelectorAll('*').forEach(child => {
-                        child.style.cssText = 'opacity: 1 !important; visibility: visible !important;';
-                    });
+                    finalCta.style.opacity = '1';
+                    finalCta.style.visibility = 'visible';
                 }
-                
-                // Verify page is scrollable
-                const bodyHeight = document.body.scrollHeight;
-                const windowHeight = window.innerHeight;
-                console.log('📏 Page height check:', { bodyHeight, windowHeight, scrollable: bodyHeight > windowHeight });
-                
-                // Force scroll to bottom to test
-                setTimeout(() => {
-                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                    setTimeout(() => {
-                        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
-                        console.log('📍 Scroll position after scroll to bottom:', scrollPos);
-                        if (footer) {
-                            const footerRect = footer.getBoundingClientRect();
-                            console.log('📍 Footer position:', footerRect);
-                        }
-                    }, 500);
-                }, 1000);
             }
             
             // Wait for everything to be fully loaded before starting animations
