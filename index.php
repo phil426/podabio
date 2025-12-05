@@ -982,18 +982,27 @@ require_once __DIR__ . '/includes/helpers.php';
             margin: 0 auto;
         }
         
-        /* Ensure footer and final CTA are always visible - no scroll animations */
+        /* Ensure footer and final CTA are ALWAYS visible - no scroll animations */
         .footer,
         .footer *,
         .final-cta,
         .final-cta * {
             opacity: 1 !important;
             visibility: visible !important;
-            display: block !important;
         }
         
         .footer {
             display: block !important;
+        }
+        
+        /* Prevent animations from hiding footer/CTA even if animations-ready class exists */
+        body.animations-ready .footer,
+        body.animations-ready .footer *,
+        body.animations-ready .final-cta,
+        body.animations-ready .final-cta * {
+            opacity: 1 !important;
+            transform: none !important;
+            clip-path: none !important;
         }
         
         .final-cta h2 {
@@ -1730,145 +1739,8 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
-        // Wait for DOM to be fully ready before initializing anything
-        function initAllInteractivity() {
-            
-            // Demo Toggle Functionality
-            const demoButtons = document.querySelectorAll('.demo-toggle button[data-demo-view]');
-            const demoPlaceholder = document.getElementById('demo-image-placeholder');
-            
-            if (demoButtons.length && demoPlaceholder) {
-                demoButtons.forEach(button => {
-                    // Only attach listener once - check for data attribute
-                    if (button.dataset.listenerAttached) return;
-                    button.dataset.listenerAttached = 'true';
-                    
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const view = this.getAttribute('data-demo-view');
-                        
-                        // Update active state
-                        demoButtons.forEach(btn => btn.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // Update placeholder content
-                        if (view === 'mobile') {
-                            demoPlaceholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
-                        } else {
-                            demoPlaceholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
-                        }
-                    });
-                });
-            }
-            
-            // Tab Navigation - MUST query elements inside the function after DOM is ready
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            // Global function to switch tabs (can be called from anywhere)
-            window.switchToTab = function(tabName, scrollToSection = true) {
-                const targetButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-                if (!targetButton) {
-                    console.warn('Tab button not found:', tabName);
-                    return false;
-                }
-                
-                // Re-query to get fresh NodeList
-                const allTabButtons = document.querySelectorAll('.tab-button');
-                const allTabContents = document.querySelectorAll('.tab-content');
-                
-                // Remove active class from all buttons and contents
-                allTabButtons.forEach(btn => btn.classList.remove('active'));
-                allTabContents.forEach(content => content.classList.remove('active'));
-                
-                // Add active class to target button and corresponding content
-                targetButton.classList.add('active');
-                const targetContent = document.getElementById('content-' + tabName);
-                if (targetContent) {
-                    targetContent.classList.add('active');
-                }
-                
-                // Scroll to section if requested
-                if (scrollToSection) {
-                    const tabsSection = document.getElementById('main-content');
-                    if (tabsSection) {
-                        const headerOffset = 100;
-                        const elementPosition = tabsSection.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
-                    }
-                }
-                
-                // Update URL hash without triggering scroll
-                if (window.location.hash !== '#' + tabName) {
-                    history.pushState(null, null, '#' + tabName);
-                }
-                
-                return true;
-            };
-            
-            // Handle tab button clicks - attach listeners NOW that elements exist
-            if (tabButtons.length) {
-                tabButtons.forEach(button => {
-                    // Only attach listener once
-                    if (button.dataset.listenerAttached) return;
-                    button.dataset.listenerAttached = 'true';
-                    
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const targetTab = this.getAttribute('data-tab');
-                        if (targetTab) {
-                            window.switchToTab(targetTab, false);
-                        }
-                    });
-                });
-            }
-            
-            // Handle initial hash on page load
-            if (window.location.hash) {
-                const hash = window.location.hash.substring(1);
-                if (['features', 'pricing', 'examples', 'about'].includes(hash)) {
-                    setTimeout(() => window.switchToTab(hash, true), 500);
-                }
-            }
-        }
-        
-        // Handle hash changes (from navigation links) - only add once
-        if (!window.hashChangeListenerAdded) {
-            window.addEventListener('hashchange', function() {
-                const hash = window.location.hash.substring(1);
-                if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash)) {
-                    window.switchToTab(hash, true);
-                }
-            });
-            window.hashChangeListenerAdded = true;
-        }
-        
-        // Handle clicks on anchor links (including React navigation) - only add once
-        if (!window.anchorClickListenerAdded) {
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href^="#"]');
-                if (!link) return;
-                
-                const href = link.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    const targetTab = href.substring(1);
-                    if (['features', 'pricing', 'examples', 'about'].includes(targetTab)) {
-                        e.preventDefault();
-                        window.switchToTab(targetTab, true);
-                    }
-                }
-            });
-            window.anchorClickListenerAdded = true;
-        }
-        
-        // Accordion Toggle - Make it globally accessible
+        // Define ALL functions immediately - make them globally accessible BEFORE DOM loads
+        // This ensures onclick handlers can find them
         window.toggleAccordion = function(button) {
             if (!button) {
                 console.warn('toggleAccordion: button is null');
@@ -1885,7 +1757,7 @@ require_once __DIR__ . '/includes/helpers.php';
             const iconElement = button.querySelector('.accordion-icon');
             
             // Close all accordions in the same group
-            const allAccordions = accordion.parentElement.querySelectorAll('.accordion');
+            const allAccordions = accordion.parentElement ? accordion.parentElement.querySelectorAll('.accordion') : [];
             allAccordions.forEach(acc => {
                 if (acc !== accordion) {
                     const header = acc.querySelector('.accordion-header');
@@ -1921,29 +1793,145 @@ require_once __DIR__ . '/includes/helpers.php';
             }
         };
         
-        // Initialize everything when DOM is ready - multiple strategies to catch all cases
-        function startInteractivity() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => {
-                    setTimeout(initAllInteractivity, 100);
-                });
-            } else {
-                // DOM already loaded
-                setTimeout(initAllInteractivity, 100);
+        window.openDrawer = function(drawerId) {
+            const drawer = document.getElementById('drawer-' + drawerId);
+            const overlay = document.getElementById('drawer-overlay');
+            if (drawer && overlay) {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+        
+        window.closeDrawer = function() {
+            const drawers = document.querySelectorAll('.drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            drawers.forEach(drawer => drawer.classList.remove('open'));
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            document.body.style.overflow = '';
+        };
+        
+        window.switchToTab = function(tabName, scrollToSection = true) {
+            const targetButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+            if (!targetButton) {
+                console.warn('Tab button not found:', tabName);
+                return false;
             }
             
-            // Also try after delays to catch React-rendered elements
-            setTimeout(initAllInteractivity, 500);
-            setTimeout(initAllInteractivity, 1500);
+            // Re-query to get fresh NodeList
+            const allTabButtons = document.querySelectorAll('.tab-button');
+            const allTabContents = document.querySelectorAll('.tab-content');
+            
+            // Remove active class from all buttons and contents
+            allTabButtons.forEach(btn => btn.classList.remove('active'));
+            allTabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to target button and corresponding content
+            targetButton.classList.add('active');
+            const targetContent = document.getElementById('content-' + tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // Scroll to section if requested
+            if (scrollToSection) {
+                const tabsSection = document.getElementById('main-content');
+                if (tabsSection) {
+                    const headerOffset = 100;
+                    const elementPosition = tabsSection.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            // Update URL hash without triggering scroll
+            if (window.location.hash !== '#' + tabName) {
+                history.pushState(null, null, '#' + tabName);
+            }
+            
+            return true;
+        };
+        
+        // Hash change and anchor link handling (only add once)
+        if (!window.hashChangeListenerAdded) {
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.substring(1);
+                if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash)) {
+                    window.switchToTab(hash, true);
+                }
+            });
+            
+            // Handle clicks on anchor links (including React navigation)
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link) return;
+                
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const targetTab = href.substring(1);
+                    if (['features', 'pricing', 'examples', 'about'].includes(targetTab)) {
+                        e.preventDefault();
+                        window.switchToTab(targetTab, true);
+                    }
+                }
+            });
+            
+            window.hashChangeListenerAdded = true;
         }
         
-        startInteractivity();
-        
-        // Also try on window load
-        window.addEventListener('load', () => {
-            setTimeout(initAllInteractivity, 200);
+        // Handle initial hash on page load
+        if (window.location.hash) {
+            const hash = window.location.hash.substring(1);
+            if (['features', 'pricing', 'examples', 'about'].includes(hash)) {
+                setTimeout(() => window.switchToTab(hash, true), 500);
+            }
+        }
+            
+        // Use event delegation - works even if elements don't exist yet
+        document.addEventListener('click', function(e) {
+            // Demo toggle buttons
+            const demoButton = e.target.closest('.demo-toggle button[data-demo-view]');
+            if (demoButton) {
+                e.preventDefault();
+                e.stopPropagation();
+                const view = demoButton.getAttribute('data-demo-view');
+                const placeholder = document.getElementById('demo-image-placeholder');
+                
+                if (placeholder) {
+                    // Update active state
+                    document.querySelectorAll('.demo-toggle button').forEach(btn => btn.classList.remove('active'));
+                    demoButton.classList.add('active');
+                    
+                    // Update placeholder content
+                    if (view === 'mobile') {
+                        placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                    } else {
+                        placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                    }
+                }
+                return;
+            }
+            
+            // Tab buttons
+            const tabButton = e.target.closest('.tab-button');
+            if (tabButton) {
+                e.preventDefault();
+                e.stopPropagation();
+                const targetTab = tabButton.getAttribute('data-tab');
+                if (targetTab) {
+                    window.switchToTab(targetTab, false);
+                }
+                return;
+            }
         });
         
+        // No need for complex initialization - event delegation handles everything
         // Username Claim Functionality
         const usernameInput = document.getElementById('hero-username-input');
         const claimBtn = document.getElementById('hero-claim-btn');
@@ -2066,43 +2054,34 @@ require_once __DIR__ . '/includes/helpers.php';
             });
         }
         
-        // Drawer Functions - Make globally accessible
-        window.openDrawer = function(drawerId) {
-            const drawer = document.getElementById('drawer-' + drawerId);
-            const overlay = document.getElementById('drawer-overlay');
-            if (drawer && overlay) {
-                drawer.classList.add('open');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        };
-        
-        window.closeDrawer = function() {
-            const drawers = document.querySelectorAll('.drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            drawers.forEach(drawer => drawer.classList.remove('open'));
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-            document.body.style.overflow = '';
-        };
-        
         // Initialize drawer handlers
         function initDrawerHandlers() {
             const overlay = document.getElementById('drawer-overlay');
-            if (overlay) {
+            if (overlay && !overlay.dataset.listenerAttached) {
                 overlay.addEventListener('click', window.closeDrawer);
+                overlay.dataset.listenerAttached = 'true';
             }
             
-            // Close drawer on escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    window.closeDrawer();
-                }
-            });
+            // Close drawer on escape key (only add once)
+            if (!window.escapeKeyListenerAdded) {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        window.closeDrawer();
+                    }
+                });
+                window.escapeKeyListenerAdded = true;
+            }
         }
         
-        initDrawerHandlers();
+        // Initialize drawer handlers immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDrawerHandlers);
+        } else {
+            initDrawerHandlers();
+        }
+        
+        // Also try after a delay
+        setTimeout(initDrawerHandlers, 500);
         
         // Smooth scroll for anchor links - initialize after DOM ready
         function initSmoothScroll() {
@@ -2211,21 +2190,19 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 });
                 
-                // NOW add animations-ready class - content is already being processed
-                // Use a small delay to ensure initial elements are handled first
+                // CRITICAL: Show ALL elements immediately - don't hide anything
+                // Give all elements the animate class right away to prevent hiding
+                animateElements.forEach(el => {
+                    if (!el.classList.contains('animate')) {
+                        el.classList.add('animate');
+                    }
+                });
+                
+                // Only add animations-ready AFTER all elements are visible
+                // Use a delay to ensure everything is processed first
                 setTimeout(() => {
                     document.body.classList.add('animations-ready');
-                }, 300);
-                
-                // CRITICAL: Fallback to show ALL remaining elements after 1 second
-                // This ensures nothing stays hidden even if Intersection Observer fails or is slow
-                setTimeout(() => {
-                    animateElements.forEach(el => {
-                        if (!el.classList.contains('animate')) {
-                            el.classList.add('animate');
-                        }
-                    });
-                }, 1000);
+                }, 2000); // Long delay to ensure everything is visible first
             }
             
             // Wait for everything to be fully loaded before starting animations
