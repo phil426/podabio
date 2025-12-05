@@ -6,9 +6,11 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/helpers.php';
-require_once __DIR__ . '/../vendor/autoload.php';
 
-use OTPHP\TOTP;
+// Load Composer autoloader if it exists (for OTPHP library)
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
 
 class TwoFactorAuth {
     
@@ -19,14 +21,28 @@ class TwoFactorAuth {
      * @return array ['secret' => string, 'qr_code_url' => string]
      */
     public static function generateTOTPSecret($email, $secret = null) {
+        // Check if OTPHP library is available
+        if (!class_exists('OTPHP\TOTP')) {
+            error_log('OTPHP library not available - Composer dependencies not installed');
+            // Return a basic secret without QR code if library unavailable
+            if (!$secret) {
+                $secret = bin2hex(random_bytes(16));
+            }
+            return [
+                'secret' => $secret,
+                'qr_code_url' => ''
+            ];
+        }
+        
         if ($secret) {
-            $totp = TOTP::create($secret);
+            $totp = \OTPHP\TOTP::create($secret);
         } else {
-            $totp = TOTP::create();
+            $totp = \OTPHP\TOTP::create();
         }
         
         $totp->setLabel($email);
-        $totp->setIssuer(APP_NAME);
+        $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
+        $totp->setIssuer($appName);
         
         $secret = $totp->getSecret();
         $qrCodeUrl = $totp->getProvisioningUri();
@@ -48,8 +64,14 @@ class TwoFactorAuth {
             return false;
         }
         
+        // Check if OTPHP library is available
+        if (!class_exists('OTPHP\TOTP')) {
+            error_log('OTPHP library not available - TOTP verification failed');
+            return false;
+        }
+        
         try {
-            $totp = TOTP::create($secret);
+            $totp = \OTPHP\TOTP::create($secret);
             // Allow 1 window before/after for clock drift (30 seconds each)
             return $totp->verify($code, null, 1);
         } catch (Exception $e) {
