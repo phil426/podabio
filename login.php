@@ -9,6 +9,28 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+// Custom error handler to catch fatal errors
+function handleFatalError() {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        error_log('Login page FATAL ERROR: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+        http_response_code(500);
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head><title>System Error</title></head>
+        <body style="font-family: Arial, sans-serif; padding: 2rem; background: #1a1a1a; color: #fff;">
+            <h1>System Error</h1>
+            <p>An error occurred while loading the login page. Please try again later.</p>
+            <p><a href="/" style="color: #00ff7f;">Return to Home</a></p>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+}
+register_shutdown_function('handleFatalError');
+
 // Load files one by one with error checking
 if (!@include_once __DIR__ . '/config/constants.php') {
     error_log('Login: Failed to load constants.php');
