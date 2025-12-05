@@ -212,13 +212,13 @@ require_once __DIR__ . '/includes/helpers.php';
         /* Progressive enhancement: visible by default, hidden only when JS runs */
         .scroll-animate {
             opacity: 1; /* Visible by default - content is always accessible */
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* DISABLED: Never hide content - animations are enhancement only */
-        /* body.animations-ready .scroll-animate:not(.animate) {
+        
+        body.animations-ready .scroll-animate:not(.animate) {
             opacity: 0;
-        } */
+        }
         
         .scroll-animate.animate {
             opacity: 1;
@@ -229,10 +229,10 @@ require_once __DIR__ . '/includes/helpers.php';
             opacity: 1; /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
             opacity: 0;
-        } */
+        }
         
         .scroll-animate[data-animate="fade"].animate {
             opacity: 1;
@@ -243,10 +243,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
             transform: translateY(60px);
-        } */
+        }
         
         .scroll-animate[data-animate="slide-up"].animate {
             transform: translateY(0);
@@ -257,11 +257,9 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content - all animations-ready rules disabled */
-        /*         /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
+        body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
             transform: translateY(-60px);
-        } */ */
+        }
         
         .scroll-animate[data-animate="slide-down"].animate {
             transform: translateY(0);
@@ -272,10 +270,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateX(0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
             transform: translateX(60px);
-        } */
+        }
         
         .scroll-animate[data-animate="slide-left"].animate {
             transform: translateX(0);
@@ -286,10 +284,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateX(0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
             transform: translateX(-60px);
-        } */
+        }
         
         .scroll-animate[data-animate="slide-right"].animate {
             transform: translateX(0);
@@ -300,10 +298,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: scale(1); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
             transform: scale(0.8);
-        } */
+        }
         
         .scroll-animate[data-animate="scale"].animate {
             transform: scale(1);
@@ -314,10 +312,10 @@ require_once __DIR__ . '/includes/helpers.php';
             clip-path: inset(0 0 0% 0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
             clip-path: inset(0 0 100% 0);
-        } */
+        }
         
         .scroll-animate[data-animate="reveal"].animate {
             clip-path: inset(0 0 0% 0);
@@ -328,11 +326,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
             opacity: 0;
             transform: translateY(40px);
-        } */
+        }
         
         .scroll-animate[data-animate="fade-slide-up"].animate {
             opacity: 1;
@@ -344,10 +342,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: rotate(0deg) scale(1); /* Visible by default */
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
             transform: rotate(-5deg) scale(0.9);
-        } */
+        }
         
         .scroll-animate[data-animate="rotate"].animate {
             transform: rotate(0deg) scale(1);
@@ -359,11 +357,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: scale(1) rotate(0deg);
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
             opacity: 0;
             transform: scale(0.8) rotate(10deg);
-        } */
+        }
         
         .scroll-animate[data-animate="scale-rotate"].animate {
             opacity: 1;
@@ -376,11 +374,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translate(0, 0);
         }
         
-        /* DISABLED: Never hide content */
-        /* body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
+        
+        body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
             opacity: 0;
             transform: translate(60px, 60px);
-        } */
+        }
         
         .scroll-animate[data-animate="slide-corner"].animate {
             opacity: 1;
@@ -2231,42 +2229,39 @@ require_once __DIR__ . '/includes/helpers.php';
                     });
                 }, observerOptions);
                 
+                // First, identify and immediately animate elements already in viewport (hero section)
                 const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-                const viewportBottom = viewportHeight + 1000; // EXTREMELY generous margin for "near viewport"
+                const elementsInViewport = [];
                 
-                // Process all elements - show anything in viewport or just below immediately
                 animateElements.forEach(el => {
-                    // Skip if already animated (hero section and final CTA have animate class in HTML)
+                    // Skip if already animated (hero section has animate class in HTML)
                     if (el.classList.contains('animate')) {
                         return;
                     }
                     
-                    // Check if element is in or near viewport (EXTREMELY generous margin)
+                    // Check if element is in viewport
                     const rect = el.getBoundingClientRect();
-                    const isInViewport = rect.top < viewportBottom && rect.bottom > -1000;
+                    const isInViewport = rect.top < viewportHeight + 300 && rect.bottom > -100;
                     
                     if (isInViewport) {
-                        // If visible or near viewport, animate immediately with small stagger
-                        const delay = parseInt(el.getAttribute('data-delay') || '0');
-                        setTimeout(() => {
-                            el.classList.add('animate');
-                        }, delay);
-                    } else {
-                        // Otherwise, observe for when it scrolls into view
-                        observer.observe(el);
+                        elementsInViewport.push(el);
+                        // Add animate class immediately to prevent hiding
+                        el.classList.add('animate');
                     }
                 });
                 
-                // CRITICAL: Show ALL elements immediately - NEVER hide anything
-                // Give all elements the animate class right away to prevent hiding
-                animateElements.forEach(el => {
-                    el.classList.add('animate');
+                // Add animations-ready class AFTER viewport elements are already animated
+                // This enables animations for elements below the fold
+                requestAnimationFrame(() => {
+                    document.body.classList.add('animations-ready');
                 });
                 
-                // NEVER add animations-ready class - it causes content to disappear
-                // Content is visible by default, animations are just visual enhancements
-                // If we add animations-ready, it will hide elements that don't have animate class
-                // Since we just added animate to all, we don't need animations-ready at all
+                // Observe all other elements for scroll animations
+                animateElements.forEach(el => {
+                    if (!el.classList.contains('animate') && !elementsInViewport.includes(el)) {
+                        observer.observe(el);
+                    }
+                });
             }
             
             // Wait for everything to be fully loaded before starting animations
