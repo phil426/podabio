@@ -1136,32 +1136,6 @@ require_once __DIR__ . '/includes/helpers.php';
             margin: 0 auto;
         }
         
-        /* Ensure footer and final CTA are ALWAYS visible - no scroll animations */
-        /* Only set opacity/visibility - let marketing-dark.css handle layout */
-        footer.footer,
-        .footer,
-        .final-cta {
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-        
-        /* Prevent animations from hiding footer/CTA */
-        body.animations-ready footer.footer,
-        body.animations-ready .footer,
-        body.animations-ready .final-cta {
-            opacity: 1 !important;
-            visibility: visible !important;
-            transform: none !important;
-            clip-path: none !important;
-        }
-        
-        body.animations-ready footer.footer *,
-        body.animations-ready .footer *,
-        body.animations-ready .final-cta * {
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-        
         .final-cta h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
@@ -2212,43 +2186,6 @@ require_once __DIR__ . '/includes/helpers.php';
             }
         })();
         
-        // CRITICAL: Force scrolling enabled on page load AND verify footer exists
-        (function() {
-            function ensureScrollingEnabled() {
-                document.body.style.overflow = '';
-                document.body.style.overflowY = 'auto';
-                document.body.style.overflowX = 'hidden';
-                document.documentElement.style.overflow = '';
-                document.documentElement.style.overflowY = 'auto';
-                document.documentElement.style.overflowX = 'hidden';
-                document.body.style.height = 'auto';
-                document.body.style.maxHeight = 'none';
-                
-                // Check if footer exists (no inline styles that break layout)
-                const footer = document.querySelector('footer.footer, .footer');
-                if (footer) {
-                    footer.style.opacity = '1';
-                    footer.style.visibility = 'visible';
-                }
-            }
-            
-            // Run immediately
-            ensureScrollingEnabled();
-            
-            // Run on DOM ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', ensureScrollingEnabled);
-            }
-            
-            // Run on window load
-            window.addEventListener('load', ensureScrollingEnabled);
-            
-            // Run periodically as a safety net
-            setTimeout(ensureScrollingEnabled, 100);
-            setTimeout(ensureScrollingEnabled, 500);
-            setTimeout(ensureScrollingEnabled, 1000);
-            setTimeout(ensureScrollingEnabled, 2000);
-        })();
         
         // Scroll Animations using Intersection Observer - separate block
         (function() {
@@ -2324,32 +2261,12 @@ require_once __DIR__ . '/includes/helpers.php';
                     document.body.classList.add('animations-ready');
                 });
                 
-                // Observe all other elements for scroll animations (EXCLUDE footer and final CTA)
+                // Observe all other elements for scroll animations
                 animateElements.forEach(el => {
-                    // Skip footer and final CTA - they should always be visible
-                    if (el.closest('footer.footer') || el.closest('.footer') || el.closest('.final-cta')) {
-                        el.classList.add('animate');
-                        return;
-                    }
-                    
                     if (!el.classList.contains('animate') && !elementsInViewport.includes(el)) {
                         observer.observe(el);
                     }
                 });
-                
-                // Ensure footer and final CTA are visible (without breaking layout)
-                const footer = document.querySelector('footer.footer, .footer');
-                const finalCta = document.querySelector('.final-cta');
-                
-                if (footer) {
-                    footer.style.opacity = '1';
-                    footer.style.visibility = 'visible';
-                }
-                
-                if (finalCta) {
-                    finalCta.style.opacity = '1';
-                    finalCta.style.visibility = 'visible';
-                }
             }
             
             // Wait for everything to be fully loaded before starting animations
