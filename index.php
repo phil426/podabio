@@ -20,6 +20,123 @@ require_once __DIR__ . '/includes/helpers.php';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
+    
+    <!-- CRITICAL: Define functions in HEAD so they're available immediately -->
+    <script>
+        (function() {
+            'use strict';
+            try {
+                // Accordion Toggle - MUST be available for onclick handlers
+                window.toggleAccordion = function(button) {
+                    try {
+                        if (!button) return;
+                        const accordion = button.closest('.accordion');
+                        if (!accordion) return;
+                        
+                        const content = accordion.querySelector('.accordion-content');
+                        const iconElement = button.querySelector('.accordion-icon');
+                        const parent = accordion.parentElement;
+                        
+                        // Close other accordions
+                        if (parent) {
+                            parent.querySelectorAll('.accordion').forEach(acc => {
+                                if (acc !== accordion) {
+                                    const h = acc.querySelector('.accordion-header');
+                                    const c = acc.querySelector('.accordion-content');
+                                    if (h) h.classList.remove('active');
+                                    if (c) c.classList.remove('active');
+                                    const icon = h ? h.querySelector('.accordion-icon') : null;
+                                    if (icon) {
+                                        icon.classList.remove('icon-minus');
+                                        icon.classList.add('icon-plus');
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // Toggle current
+                        button.classList.toggle('active');
+                        if (content) content.classList.toggle('active');
+                        
+                        if (iconElement) {
+                            if (button.classList.contains('active')) {
+                                iconElement.classList.remove('icon-plus');
+                                iconElement.classList.add('icon-minus');
+                            } else {
+                                iconElement.classList.remove('icon-minus');
+                                iconElement.classList.add('icon-plus');
+                            }
+                            document.dispatchEvent(new CustomEvent('icon-update', { detail: { element: iconElement } }));
+                        }
+                    } catch (err) {
+                        console.error('toggleAccordion error:', err);
+                    }
+                };
+                
+                // Drawer functions
+                window.openDrawer = function(drawerId) {
+                    try {
+                        const drawer = document.getElementById('drawer-' + drawerId);
+                        const overlay = document.getElementById('drawer-overlay');
+                        if (drawer && overlay) {
+                            drawer.classList.add('open');
+                            overlay.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        }
+                    } catch (err) {
+                        console.error('openDrawer error:', err);
+                    }
+                };
+                
+                window.closeDrawer = function() {
+                    try {
+                        document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+                        const overlay = document.getElementById('drawer-overlay');
+                        if (overlay) overlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    } catch (err) {
+                        console.error('closeDrawer error:', err);
+                    }
+                };
+                
+                // Tab switching
+                window.switchToTab = function(tabName, scrollToSection) {
+                    try {
+                        const btn = document.querySelector('.tab-button[data-tab="' + tabName + '"]');
+                        if (!btn) return false;
+                        
+                        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        btn.classList.add('active');
+                        const content = document.getElementById('content-' + tabName);
+                        if (content) content.classList.add('active');
+                        
+                        if (scrollToSection) {
+                            const section = document.getElementById('main-content');
+                            if (section) {
+                                const offset = section.getBoundingClientRect().top + window.pageYOffset - 100;
+                                window.scrollTo({ top: offset, behavior: 'smooth' });
+                            }
+                        }
+                        
+                        if (window.location.hash !== '#' + tabName) {
+                            history.pushState(null, null, '#' + tabName);
+                        }
+                        return true;
+                    } catch (err) {
+                        console.error('switchToTab error:', err);
+                        return false;
+                    }
+                };
+                
+                console.log('✅ Core functions defined');
+            } catch (err) {
+                console.error('❌ Failed to define core functions:', err);
+            }
+        })();
+    </script>
+    
     <?php
     // Load React marketing navigation component
     require_once __DIR__ . '/config/spa-config.php';
@@ -98,10 +215,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
         
-        /* Only hide when animations are initialized (JS adds this class) */
-        body.animations-ready .scroll-animate:not(.animate) {
+        /* DISABLED: Never hide content - animations are enhancement only */
+        /* body.animations-ready .scroll-animate:not(.animate) {
             opacity: 0;
-        }
+        } */
         
         .scroll-animate.animate {
             opacity: 1;
@@ -112,9 +229,10 @@ require_once __DIR__ . '/includes/helpers.php';
             opacity: 1; /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
             opacity: 0;
-        }
+        } */
         
         .scroll-animate[data-animate="fade"].animate {
             opacity: 1;
@@ -125,9 +243,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
             transform: translateY(60px);
-        }
+        } */
         
         .scroll-animate[data-animate="slide-up"].animate {
             transform: translateY(0);
@@ -138,9 +257,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
+        /* DISABLED: Never hide content - all animations-ready rules disabled */
+        /*         /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
             transform: translateY(-60px);
-        }
+        } */ */
         
         .scroll-animate[data-animate="slide-down"].animate {
             transform: translateY(0);
@@ -151,9 +272,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateX(0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
             transform: translateX(60px);
-        }
+        } */
         
         .scroll-animate[data-animate="slide-left"].animate {
             transform: translateX(0);
@@ -164,9 +286,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateX(0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
             transform: translateX(-60px);
-        }
+        } */
         
         .scroll-animate[data-animate="slide-right"].animate {
             transform: translateX(0);
@@ -177,9 +300,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: scale(1); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
             transform: scale(0.8);
-        }
+        } */
         
         .scroll-animate[data-animate="scale"].animate {
             transform: scale(1);
@@ -190,9 +314,10 @@ require_once __DIR__ . '/includes/helpers.php';
             clip-path: inset(0 0 0% 0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
             clip-path: inset(0 0 100% 0);
-        }
+        } */
         
         .scroll-animate[data-animate="reveal"].animate {
             clip-path: inset(0 0 0% 0);
@@ -203,10 +328,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translateY(0); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
             opacity: 0;
             transform: translateY(40px);
-        }
+        } */
         
         .scroll-animate[data-animate="fade-slide-up"].animate {
             opacity: 1;
@@ -218,9 +344,10 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: rotate(0deg) scale(1); /* Visible by default */
         }
         
-        body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
             transform: rotate(-5deg) scale(0.9);
-        }
+        } */
         
         .scroll-animate[data-animate="rotate"].animate {
             transform: rotate(0deg) scale(1);
@@ -232,10 +359,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: scale(1) rotate(0deg);
         }
         
-        body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
             opacity: 0;
             transform: scale(0.8) rotate(10deg);
-        }
+        } */
         
         .scroll-animate[data-animate="scale-rotate"].animate {
             opacity: 1;
@@ -248,10 +376,11 @@ require_once __DIR__ . '/includes/helpers.php';
             transform: translate(0, 0);
         }
         
-        body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
+        /* DISABLED: Never hide content */
+        /* body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
             opacity: 0;
             transform: translate(60px, 60px);
-        }
+        } */
         
         .scroll-animate[data-animate="slide-corner"].animate {
             opacity: 1;
@@ -1739,199 +1868,121 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
-        // Define ALL functions immediately - make them globally accessible BEFORE DOM loads
-        // This ensures onclick handlers can find them
-        window.toggleAccordion = function(button) {
-            if (!button) {
-                console.warn('toggleAccordion: button is null');
-                return;
-            }
-            
-            const accordion = button.closest('.accordion');
-            if (!accordion) {
-                console.warn('toggleAccordion: accordion not found');
-                return;
-            }
-            
-            const content = accordion.querySelector('.accordion-content');
-            const iconElement = button.querySelector('.accordion-icon');
-            
-            // Close all accordions in the same group
-            const allAccordions = accordion.parentElement ? accordion.parentElement.querySelectorAll('.accordion') : [];
-            allAccordions.forEach(acc => {
-                if (acc !== accordion) {
-                    const header = acc.querySelector('.accordion-header');
-                    const accContent = acc.querySelector('.accordion-content');
-                    if (header) header.classList.remove('active');
-                    if (accContent) accContent.classList.remove('active');
-                    const accIcon = header ? header.querySelector('.accordion-icon') : null;
-                    if (accIcon) {
-                        accIcon.classList.remove('icon-minus');
-                        accIcon.classList.add('icon-plus');
+        (function() {
+            'use strict';
+            try {
+                console.log('🚀 Initializing page interactivity...');
+                
+                // Event delegation for ALL click handlers - works even if elements don't exist yet
+                document.addEventListener('click', function(e) {
+                    try {
+                        // Demo toggle buttons
+                        const demoBtn = e.target.closest('.demo-toggle button[data-demo-view]');
+                        if (demoBtn) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const view = demoBtn.getAttribute('data-demo-view');
+                            const placeholder = document.getElementById('demo-image-placeholder');
+                            
+                            if (placeholder) {
+                                document.querySelectorAll('.demo-toggle button').forEach(b => b.classList.remove('active'));
+                                demoBtn.classList.add('active');
+                                
+                                if (view === 'mobile') {
+                                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                                } else {
+                                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                                }
+                            }
+                            return;
+                        }
+                        
+                        // Tab buttons
+                        const tabBtn = e.target.closest('.tab-button');
+                        if (tabBtn) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const tab = tabBtn.getAttribute('data-tab');
+                            if (tab && window.switchToTab) {
+                                window.switchToTab(tab, false);
+                            }
+                            return;
+                        }
+                        
+                        // Anchor links for tabs
+                        const link = e.target.closest('a[href^="#"]');
+                        if (link) {
+                            const href = link.getAttribute('href');
+                            if (href && href.startsWith('#')) {
+                                const tab = href.substring(1);
+                                if (['features', 'pricing', 'examples', 'about'].includes(tab) && window.switchToTab) {
+                                    e.preventDefault();
+                                    window.switchToTab(tab, true);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Click handler error:', err);
                     }
-                }
-            });
-            
-            // Toggle current accordion
-            button.classList.toggle('active');
-            if (content) {
-                content.classList.toggle('active');
-            }
-            
-            // Toggle icon
-            if (iconElement) {
-                if (button.classList.contains('active')) {
-                    iconElement.classList.remove('icon-plus');
-                    iconElement.classList.add('icon-minus');
-                } else {
-                    iconElement.classList.remove('icon-minus');
-                    iconElement.classList.add('icon-plus');
-                }
-                // Trigger icon re-render
-                const event = new CustomEvent('icon-update', { detail: { element: iconElement } });
-                document.dispatchEvent(event);
-            }
-        };
-        
-        window.openDrawer = function(drawerId) {
-            const drawer = document.getElementById('drawer-' + drawerId);
-            const overlay = document.getElementById('drawer-overlay');
-            if (drawer && overlay) {
-                drawer.classList.add('open');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        };
-        
-        window.closeDrawer = function() {
-            const drawers = document.querySelectorAll('.drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            drawers.forEach(drawer => drawer.classList.remove('open'));
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-            document.body.style.overflow = '';
-        };
-        
-        window.switchToTab = function(tabName, scrollToSection = true) {
-            const targetButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-            if (!targetButton) {
-                console.warn('Tab button not found:', tabName);
-                return false;
-            }
-            
-            // Re-query to get fresh NodeList
-            const allTabButtons = document.querySelectorAll('.tab-button');
-            const allTabContents = document.querySelectorAll('.tab-content');
-            
-            // Remove active class from all buttons and contents
-            allTabButtons.forEach(btn => btn.classList.remove('active'));
-            allTabContents.forEach(content => content.classList.remove('active'));
-            
-            // Add active class to target button and corresponding content
-            targetButton.classList.add('active');
-            const targetContent = document.getElementById('content-' + tabName);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-            
-            // Scroll to section if requested
-            if (scrollToSection) {
-                const tabsSection = document.getElementById('main-content');
-                if (tabsSection) {
-                    const headerOffset = 100;
-                    const elementPosition = tabsSection.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
+                });
+                
+                // Hash change handler
+                if (!window.hashChangeListenerAdded) {
+                    window.addEventListener('hashchange', function() {
+                        try {
+                            const hash = window.location.hash.substring(1);
+                            if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
+                                window.switchToTab(hash, true);
+                            }
+                        } catch (err) {
+                            console.error('Hash change error:', err);
+                        }
                     });
+                    window.hashChangeListenerAdded = true;
                 }
-            }
-            
-            // Update URL hash without triggering scroll
-            if (window.location.hash !== '#' + tabName) {
-                history.pushState(null, null, '#' + tabName);
-            }
-            
-            return true;
-        };
-        
-        // Hash change and anchor link handling (only add once)
-        if (!window.hashChangeListenerAdded) {
-            window.addEventListener('hashchange', function() {
-                const hash = window.location.hash.substring(1);
-                if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash)) {
-                    window.switchToTab(hash, true);
-                }
-            });
-            
-            // Handle clicks on anchor links (including React navigation)
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href^="#"]');
-                if (!link) return;
                 
-                const href = link.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    const targetTab = href.substring(1);
-                    if (['features', 'pricing', 'examples', 'about'].includes(targetTab)) {
-                        e.preventDefault();
-                        window.switchToTab(targetTab, true);
+                // Initial hash
+                if (window.location.hash) {
+                    const hash = window.location.hash.substring(1);
+                    if (['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
+                        setTimeout(() => window.switchToTab(hash, true), 500);
                     }
                 }
-            });
-            
-            window.hashChangeListenerAdded = true;
-        }
-        
-        // Handle initial hash on page load
-        if (window.location.hash) {
-            const hash = window.location.hash.substring(1);
-            if (['features', 'pricing', 'examples', 'about'].includes(hash)) {
-                setTimeout(() => window.switchToTab(hash, true), 500);
-            }
-        }
-            
-        // Use event delegation - works even if elements don't exist yet
-        document.addEventListener('click', function(e) {
-            // Demo toggle buttons
-            const demoButton = e.target.closest('.demo-toggle button[data-demo-view]');
-            if (demoButton) {
-                e.preventDefault();
-                e.stopPropagation();
-                const view = demoButton.getAttribute('data-demo-view');
-                const placeholder = document.getElementById('demo-image-placeholder');
                 
-                if (placeholder) {
-                    // Update active state
-                    document.querySelectorAll('.demo-toggle button').forEach(btn => btn.classList.remove('active'));
-                    demoButton.classList.add('active');
-                    
-                    // Update placeholder content
-                    if (view === 'mobile') {
-                        placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
-                    } else {
-                        placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                // Drawer handlers
+                function initDrawers() {
+                    try {
+                        const overlay = document.getElementById('drawer-overlay');
+                        if (overlay && !overlay.dataset.listenerAttached) {
+                            overlay.addEventListener('click', window.closeDrawer);
+                            overlay.dataset.listenerAttached = 'true';
+                        }
+                        
+                        if (!window.escapeKeyListenerAdded) {
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape' && window.closeDrawer) {
+                                    window.closeDrawer();
+                                }
+                            });
+                            window.escapeKeyListenerAdded = true;
+                        }
+                    } catch (err) {
+                        console.error('Drawer init error:', err);
                     }
                 }
-                return;
-            }
-            
-            // Tab buttons
-            const tabButton = e.target.closest('.tab-button');
-            if (tabButton) {
-                e.preventDefault();
-                e.stopPropagation();
-                const targetTab = tabButton.getAttribute('data-tab');
-                if (targetTab) {
-                    window.switchToTab(targetTab, false);
+                
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDrawers);
+                } else {
+                    initDrawers();
                 }
-                return;
+                setTimeout(initDrawers, 500);
+                
+                console.log('✅ Event handlers initialized');
+            } catch (err) {
+                console.error('❌ Initialization error:', err);
             }
-        });
-        
-        // No need for complex initialization - event delegation handles everything
+        })();
         // Username Claim Functionality
         const usernameInput = document.getElementById('hero-username-input');
         const claimBtn = document.getElementById('hero-claim-btn');
@@ -2190,19 +2241,16 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 });
                 
-                // CRITICAL: Show ALL elements immediately - don't hide anything
+                // CRITICAL: Show ALL elements immediately - NEVER hide anything
                 // Give all elements the animate class right away to prevent hiding
                 animateElements.forEach(el => {
-                    if (!el.classList.contains('animate')) {
-                        el.classList.add('animate');
-                    }
+                    el.classList.add('animate');
                 });
                 
-                // Only add animations-ready AFTER all elements are visible
-                // Use a delay to ensure everything is processed first
-                setTimeout(() => {
-                    document.body.classList.add('animations-ready');
-                }, 2000); // Long delay to ensure everything is visible first
+                // NEVER add animations-ready class - it causes content to disappear
+                // Content is visible by default, animations are just visual enhancements
+                // If we add animations-ready, it will hide elements that don't have animate class
+                // Since we just added animate to all, we don't need animations-ready at all
             }
             
             // Wait for everything to be fully loaded before starting animations
