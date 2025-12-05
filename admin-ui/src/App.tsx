@@ -7,6 +7,7 @@ import { PagePropertiesToolbarDemo } from './components/demo/PagePropertiesToolb
 import { PageSettingsDemo } from './components/demo/PageSettingsDemo';
 import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
+import { SupportCMS, BlogCMS } from './components/cms';
 import { TokenProvider } from './design-system/theme/TokenProvider';
 import { ThemeModeProvider } from './design-system/theme/ThemeModeProvider';
 import { AdminThemeProvider } from './design-system/admin-theme/AdminThemeProvider';
@@ -33,6 +34,9 @@ export default function App(): JSX.Element {
               <Route path="/demo/color-picker-drag-test.php/" element={<ColorPickerDragTest />} />
               <Route path="/studio-docs" element={<DocumentationViewer />} />
               <Route path="/studio-docs.php" element={<DocumentationViewer />} />
+              {/* CMS Admin Routes */}
+              <Route path="/admin/cms/support" element={<SupportCMS />} />
+              <Route path="/admin/cms/blog" element={<BlogCMS />} />
               <Route path="/*" element={<EditorShell />} />
             </Routes>
           </TokenSynchronizer>
