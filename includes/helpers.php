@@ -199,8 +199,8 @@ function normalizeImageUrl($url) {
     }
     
     // If it's a full URL with production domain, convert to current base URL
-    $productionUrl = APP_URL;
-    if (strpos($url, $productionUrl) === 0) {
+    $productionUrl = defined('APP_URL') ? APP_URL : '';
+    if ($productionUrl && strpos($url, $productionUrl) === 0) {
         $path = substr($url, strlen($productionUrl));
         return getCurrentBaseUrl() . $path;
     }

@@ -4,26 +4,45 @@
  * PodaBio
  */
 
-// Error handling wrapper to prevent 500 errors
+// Error handling - set before any includes
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Don't show errors to users, log them instead
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-try {
-    require_once __DIR__ . '/config/constants.php';
-    require_once __DIR__ . '/includes/session.php';
-    require_once __DIR__ . '/includes/helpers.php';
-    require_once __DIR__ . '/classes/User.php';
-    require_once __DIR__ . '/classes/TwoFactorAuth.php';
-    
-    // OAuth config might fail, make it optional
-    if (file_exists(__DIR__ . '/config/oauth.php')) {
-        require_once __DIR__ . '/config/oauth.php';
-    }
-} catch (Throwable $e) {
-    error_log('Login page fatal error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+// Load files one by one with error checking
+if (!@include_once __DIR__ . '/config/constants.php') {
+    error_log('Login: Failed to load constants.php');
     http_response_code(500);
-    die('An error occurred. Please try again later.');
+    die('Configuration error. Please contact support.');
+}
+
+if (!@include_once __DIR__ . '/includes/session.php') {
+    error_log('Login: Failed to load session.php');
+    http_response_code(500);
+    die('Session error. Please contact support.');
+}
+
+if (!@include_once __DIR__ . '/includes/helpers.php') {
+    error_log('Login: Failed to load helpers.php');
+    http_response_code(500);
+    die('System error. Please contact support.');
+}
+
+if (!@include_once __DIR__ . '/classes/User.php') {
+    error_log('Login: Failed to load User.php');
+    http_response_code(500);
+    die('System error. Please contact support.');
+}
+
+if (!@include_once __DIR__ . '/classes/TwoFactorAuth.php') {
+    error_log('Login: Failed to load TwoFactorAuth.php');
+    http_response_code(500);
+    die('System error. Please contact support.');
+}
+
+// OAuth config is optional
+if (file_exists(__DIR__ . '/config/oauth.php')) {
+    @include_once __DIR__ . '/config/oauth.php';
 }
 
 // Redirect if already logged in
