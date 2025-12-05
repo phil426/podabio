@@ -7,6 +7,7 @@ import { LeftyContentPanel } from './LeftyContentPanel';
 import { CanvasViewport, type DevicePreset } from './CanvasViewport';
 import { PropertiesPanel } from './PropertiesPanel';
 import { LeftyInformationPanel } from '../panels/lefty/LeftyInformationPanel';
+import { WelcomeOnboardingModal } from '../overlays/WelcomeOnboardingModal';
 import { tabColors, type LeftyTabValue } from './tab-colors';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { useIntegrationSelection } from '../../state/integrationSelection';
@@ -302,6 +303,9 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
           </div>
         </Panel>
       </PanelGroup>
+      
+      {/* Onboarding modal for new users */}
+      <WelcomeOnboardingModal />
     </div>
   );
 }

@@ -9,6 +9,9 @@ define('APP_NAME', 'PodaBio');
 define('APP_VERSION', '2.1.0');
 define('APP_URL', 'https://poda.bio'); // Production URL - override in config/local.php for local development
 
+// Debug mode - set to true in config/local.php for development
+define('DEBUG_MODE', false);
+
 // Server configuration
 define('SERVER_IP', '156.67.73.201'); // Hostinger server IP
 

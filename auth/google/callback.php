@@ -118,22 +118,15 @@ if ($existingEmail) {
     exit;
 }
 
-// No existing account, create new user with Google
-$result = $user->loginWithGoogle(
-    $googleId,
-    $email,
-    [
-        'name' => $userInfo['name'] ?? '',
-        'picture' => $userInfo['picture'] ?? ''
-    ]
-);
+// No existing account - store Google data and redirect to username selection
+$_SESSION['pending_google_signup'] = [
+    'google_id' => $googleId,
+    'email' => $email,
+    'name' => $userInfo['name'] ?? '',
+    'picture' => $userInfo['picture'] ?? ''
+];
 
-if ($result['success']) {
-    // Redirect directly to Lefty
-    $_SESSION['admin_panel'] = 'lefty';
-    redirect('/admin/userdashboard.php');
-} else {
-    redirect('/login.php?error=' . urlencode($result['error']));
-}
+// Redirect to username selection page
+redirect('/choose-username.php');
 
 

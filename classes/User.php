@@ -19,23 +19,38 @@ class User {
      * Create new user with email
      * @param string $email
      * @param string $password
-     * @return array ['success' => bool, 'user_id' => int|null, 'error' => string|null]
+     * @param string|null $username Optional username to create page immediately
+     * @return array ['success' => bool, 'user_id' => int|null, 'page_id' => int|null, 'verification_token' => string|null, 'error' => string|null]
      */
-    public function create($email, $password) {
+    public function create($email, $password, $username = null) {
         // Validate email
         if (!isValidEmail($email)) {
-            return ['success' => false, 'user_id' => null, 'error' => 'Invalid email address'];
+            return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Invalid email address'];
         }
         
         // Check if email exists
         $existing = fetchOne("SELECT id FROM users WHERE email = ?", [$email]);
         if ($existing) {
-            return ['success' => false, 'user_id' => null, 'error' => 'Email already registered'];
+            return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Email already registered'];
         }
         
         // Validate password
         if (strlen($password) < 8) {
-            return ['success' => false, 'user_id' => null, 'error' => 'Password must be at least 8 characters'];
+            return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Password must be at least 8 characters'];
+        }
+        
+        // Validate username if provided
+        if (!empty($username)) {
+            if (!preg_match('/^[a-zA-Z0-9_-]{3,30}$/', $username)) {
+                return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Invalid username format'];
+            }
+            
+            // Check if username is available
+            require_once __DIR__ . '/Page.php';
+            $page = new Page();
+            if (!$page->isUsernameAvailable($username)) {
+                return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Username is already taken'];
+            }
         }
         
         // Hash password
@@ -46,6 +61,8 @@ class User {
         $tokenExpires = date('Y-m-d H:i:s', time() + VERIFICATION_TOKEN_EXPIRY);
         
         try {
+            $this->pdo->beginTransaction();
+            
             $stmt = $this->pdo->prepare("
                 INSERT INTO users (email, password_hash, verification_token, verification_token_expires)
                 VALUES (?, ?, ?, ?)
@@ -53,37 +70,55 @@ class User {
             $stmt->execute([$email, $passwordHash, $verificationToken, $tokenExpires]);
             
             $userId = $this->pdo->lastInsertId();
+            $pageId = null;
+            
+            // Create page if username provided
+            if (!empty($username)) {
+                $pageResult = $page->create($userId, $username);
+                if (!$pageResult['success']) {
+                    $this->pdo->rollBack();
+                    error_log("Page creation failed during user creation: " . ($pageResult['error'] ?? 'Unknown error'));
+                    return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Account created but page creation failed: ' . ($pageResult['error'] ?? 'Unknown error')];
+                }
+                $pageId = $pageResult['page_id'];
+            }
+            
+            $this->pdo->commit();
             
             return [
                 'success' => true,
                 'user_id' => $userId,
+                'page_id' => $pageId,
                 'verification_token' => $verificationToken,
                 'error' => null
             ];
         } catch (PDOException $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             error_log("User creation failed: " . $e->getMessage());
-            return ['success' => false, 'user_id' => null, 'error' => 'Failed to create account'];
+            return ['success' => false, 'user_id' => null, 'page_id' => null, 'verification_token' => null, 'error' => 'Failed to create account'];
         }
     }
     
     /**
      * Verify email with token
      * @param string $token
-     * @return array ['success' => bool, 'error' => string|null]
+     * @return array ['success' => bool, 'user_id' => int|null, 'email' => string|null, 'error' => string|null]
      */
     public function verifyEmail($token) {
         $user = fetchOne(
-            "SELECT id, verification_token_expires FROM users WHERE verification_token = ? AND email_verified = 0",
+            "SELECT id, email, verification_token_expires FROM users WHERE verification_token = ? AND email_verified = 0",
             [$token]
         );
         
         if (!$user) {
-            return ['success' => false, 'error' => 'Invalid verification token'];
+            return ['success' => false, 'user_id' => null, 'email' => null, 'error' => 'Invalid verification token'];
         }
         
         // Check token expiry
         if (strtotime($user['verification_token_expires']) < time()) {
-            return ['success' => false, 'error' => 'Verification token has expired'];
+            return ['success' => false, 'user_id' => null, 'email' => null, 'error' => 'Verification token has expired'];
         }
         
         // Verify email
@@ -92,7 +127,12 @@ class User {
             [$user['id']]
         );
         
-        return ['success' => true, 'error' => null];
+        return [
+            'success' => true,
+            'user_id' => (int)$user['id'],
+            'email' => $user['email'],
+            'error' => null
+        ];
     }
     
     /**

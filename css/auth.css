@@ -186,6 +186,84 @@ body::before {
     padding-right: 3rem;
 }
 
+.username-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--poda-border-subtle);
+    border-radius: 8px;
+    background: var(--poda-bg-primary);
+    transition: all 0.2s;
+}
+
+.username-input-wrapper:focus-within {
+    border-color: var(--poda-accent-signal-green);
+    box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
+}
+
+.username-prefix {
+    color: var(--poda-text-secondary);
+    font-size: 0.875rem;
+    padding: 0.875rem 0 0.875rem 1rem;
+    white-space: nowrap;
+    font-family: var(--poda-font-body);
+}
+
+.username-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.875rem 1rem;
+    padding-right: 3rem;
+    color: var(--poda-text-primary);
+    font-size: 1rem;
+    font-family: var(--poda-font-body);
+    outline: none;
+}
+
+.username-input-wrapper input::placeholder {
+    color: var(--poda-text-muted);
+}
+
+.username-status {
+    position: absolute;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+}
+
+.username-status .icon-check {
+    color: var(--poda-accent-signal-green);
+    font-size: 1rem;
+}
+
+.username-status .icon-close {
+    color: #ff4444;
+    font-size: 1rem;
+}
+
+.username-input-wrapper.available {
+    border-color: var(--poda-accent-signal-green);
+}
+
+.username-input-wrapper.unavailable {
+    border-color: #ff4444;
+}
+
+.username-input-wrapper.checking {
+    border-color: var(--poda-text-secondary);
+}
+
+.optional {
+    color: var(--poda-text-muted);
+    font-weight: 400;
+    font-size: 0.875rem;
+}
+
 .password-toggle {
     position: absolute;
     right: 0.75rem;
@@ -389,6 +467,30 @@ body::before {
     margin-bottom: 1.5rem;
     font-size: 0.875rem;
     font-family: var(--poda-font-body);
+}
+
+.redirect-note {
+    color: var(--poda-text-secondary);
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.redirect-note::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--poda-accent-signal-green);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {

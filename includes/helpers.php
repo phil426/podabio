@@ -58,6 +58,17 @@ function verifyCSRFToken($token) {
 }
 
 /**
+ * Debug logging - only logs when DEBUG_MODE is enabled
+ * @param string $message The debug message
+ * @param string $category Optional category prefix (e.g., 'THEME', 'API')
+ */
+function debug_log($message, $category = 'DEBUG') {
+    if (defined('DEBUG_MODE') && DEBUG_MODE === true) {
+        error_log($category . ': ' . $message);
+    }
+}
+
+/**
  * Generate random token
  * @param int $length
  * @return string
@@ -421,6 +432,65 @@ function sendVerificationEmail($email, $token) {
             </div>
             <div class="footer">
                 <p>&copy; ' . date('Y') . ' ' . h($appName) . '. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>';
+    
+    return sendEmail($email, $subject, $message);
+}
+
+/**
+ * Send password reset email
+ * @param string $email
+ * @param string $token
+ * @return bool
+ */
+function sendPasswordResetEmail($email, $token) {
+    $appUrl = defined('APP_URL') ? APP_URL : 'https://poda.bio';
+    $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
+    $resetUrl = $appUrl . '/reset-password.php?token=' . urlencode($token);
+    
+    $subject = 'Reset Your ' . $appName . ' Password';
+    
+    $message = '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #121212; color: #00FF7F; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .header h1 { margin: 0; font-size: 28px; }
+            .content { background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #00FF7F; color: #121212; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+            .button:hover { background: #00E670; }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+            .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin: 16px 0; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>' . h($appName) . '</h1>
+            </div>
+            <div class="content">
+                <h2>Reset Your Password</h2>
+                <p>We received a request to reset your password. Click the button below to set a new password:</p>
+                <p style="text-align: center;">
+                    <a href="' . h($resetUrl) . '" class="button">Reset Password</a>
+                </p>
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #00FF7F;">' . h($resetUrl) . '</p>
+                <div class="warning">
+                    <strong>⏰ This link expires in 1 hour.</strong>
+                </div>
+                <p>If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+            </div>
+            <div class="footer">
+                <p>&copy; ' . date('Y') . ' ' . h($appName) . '. All rights reserved.</p>
+                <p>This is an automated message. Please do not reply.</p>
             </div>
         </div>
     </body>

@@ -1,15 +1,15 @@
 <?php
 /**
- * Blog API
- * PodaBio - API for managing blog posts
+ * Support Articles API
+ * PodaBio - API for managing support/help documentation
  */
 
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/helpers.php';
-require_once __DIR__ . '/../classes/BlogPost.php';
-require_once __DIR__ . '/../classes/BlogCategory.php';
+require_once __DIR__ . '/../classes/SupportArticle.php';
+require_once __DIR__ . '/../classes/SupportCategory.php';
 
 header('Content-Type: application/json');
 
@@ -30,8 +30,6 @@ function requireAdmin() {
         echo json_encode(['success' => false, 'error' => 'Admin access required']);
         exit;
     }
-    
-    return $userId;
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -40,34 +38,34 @@ switch ($action) {
     // ==================== PUBLIC ENDPOINTS ====================
     
     case 'get_categories':
-        // Get all categories with post counts (public)
-        $categories = BlogCategory::getWithPosts();
+        // Get all categories with article counts (public)
+        $categories = SupportCategory::getWithArticles();
         echo json_encode([
             'success' => true,
             'categories' => $categories
         ]);
         break;
         
-    case 'get_posts':
-        // Get published posts (public)
+    case 'get_articles':
+        // Get published articles (public)
         $categoryId = isset($_GET['category_id']) ? (int)$_GET['category_id'] : null;
-        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 50) : 20;
+        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 50;
         $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
         
-        $posts = BlogPost::getPublished($categoryId, $limit, $offset);
-        $total = BlogPost::count(true);
+        $articles = SupportArticle::getPublished($categoryId, $limit, $offset);
+        $total = SupportArticle::count(true);
         
         echo json_encode([
             'success' => true,
-            'posts' => $posts,
+            'articles' => $articles,
             'total' => $total,
             'limit' => $limit,
             'offset' => $offset
         ]);
         break;
         
-    case 'get_post':
-        // Get single post by slug (public)
+    case 'get_article':
+        // Get single article by slug (public)
         $slug = sanitizeInput($_GET['slug'] ?? '');
         
         if (empty($slug)) {
@@ -75,29 +73,25 @@ switch ($action) {
             exit;
         }
         
-        $post = BlogPost::getBySlug($slug, true);
+        $article = SupportArticle::getBySlug($slug, true);
         
-        if (!$post) {
+        if (!$article) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Post not found']);
+            echo json_encode(['success' => false, 'error' => 'Article not found']);
             exit;
         }
         
         // Increment view count
-        BlogPost::incrementViewCount($post['id']);
-        
-        // Get related posts
-        $relatedPosts = BlogPost::getRelated($post['id'], 3);
+        SupportArticle::incrementViewCount($article['id']);
         
         echo json_encode([
             'success' => true,
-            'post' => $post,
-            'related_posts' => $relatedPosts
+            'article' => $article
         ]);
         break;
         
     case 'search':
-        // Search posts (public)
+        // Search articles (public)
         $query = sanitizeInput($_GET['q'] ?? '');
         
         if (empty($query) || strlen($query) < 2) {
@@ -105,96 +99,93 @@ switch ($action) {
             exit;
         }
         
-        $posts = BlogPost::search($query, true);
+        $articles = SupportArticle::search($query, true);
         
         echo json_encode([
             'success' => true,
-            'posts' => $posts,
+            'articles' => $articles,
             'query' => $query
         ]);
         break;
         
     case 'get_popular':
-        // Get popular posts (public)
-        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 10) : 5;
-        $posts = BlogPost::getPopular($limit);
+        // Get popular articles (public)
+        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 20) : 10;
+        $articles = SupportArticle::getPopular($limit);
         
         echo json_encode([
             'success' => true,
-            'posts' => $posts
+            'articles' => $articles
         ]);
         break;
         
     case 'get_recent':
-        // Get recent posts (public)
-        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 10) : 5;
-        $posts = BlogPost::getRecent($limit);
+        // Get recent articles (public)
+        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 20) : 10;
+        $articles = SupportArticle::getRecent($limit);
         
         echo json_encode([
             'success' => true,
-            'posts' => $posts
+            'articles' => $articles
         ]);
         break;
         
     // ==================== ADMIN ENDPOINTS ====================
     
     case 'admin_get_all':
-        // Get all posts including unpublished (admin)
-        $userId = requireAdmin();
+        // Get all articles including unpublished (admin)
+        requireAdmin();
         
         $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 200) : 100;
         $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
         
-        $posts = BlogPost::getAll($limit, $offset);
-        $categories = BlogCategory::getAll();
-        $total = BlogPost::count(false);
+        $articles = SupportArticle::getAll($limit, $offset);
+        $categories = SupportCategory::getAll();
+        $total = SupportArticle::count(false);
         
         echo json_encode([
             'success' => true,
-            'posts' => $posts,
+            'articles' => $articles,
             'categories' => $categories,
             'total' => $total
         ]);
         break;
         
-    case 'admin_get_post':
-        // Get post by ID including unpublished (admin)
+    case 'admin_get_article':
+        // Get article by ID including unpublished (admin)
         requireAdmin();
         
         $id = (int)($_GET['id'] ?? 0);
         
         if (empty($id)) {
-            echo json_encode(['success' => false, 'error' => 'Post ID is required']);
+            echo json_encode(['success' => false, 'error' => 'Article ID is required']);
             exit;
         }
         
-        $post = BlogPost::getById($id);
+        $article = SupportArticle::getById($id);
         
-        if (!$post) {
+        if (!$article) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Post not found']);
+            echo json_encode(['success' => false, 'error' => 'Article not found']);
             exit;
         }
         
         echo json_encode([
             'success' => true,
-            'post' => $post
+            'article' => $article
         ]);
         break;
         
-    case 'create_post':
-        // Create new post (admin)
-        $userId = requireAdmin();
+    case 'create_article':
+        // Create new article (admin)
+        requireAdmin();
         
         $data = [
             'title' => sanitizeInput($_POST['title'] ?? ''),
             'content' => $_POST['content'] ?? '', // Don't sanitize HTML content
-            'excerpt' => sanitizeInput($_POST['excerpt'] ?? ''),
             'slug' => sanitizeInput($_POST['slug'] ?? ''),
-            'author_id' => $userId,
             'category_id' => $_POST['category_id'] ?? null,
             'tags' => sanitizeInput($_POST['tags'] ?? ''),
-            'featured_image' => sanitizeInput($_POST['featured_image'] ?? ''),
             'published' => isset($_POST['published']) ? (int)$_POST['published'] : 0
         ];
         
@@ -203,28 +194,28 @@ switch ($action) {
             exit;
         }
         
-        $postId = BlogPost::create($data);
+        $articleId = SupportArticle::create($data);
         
-        if ($postId) {
-            $post = BlogPost::getById($postId);
+        if ($articleId) {
+            $article = SupportArticle::getById($articleId);
             echo json_encode([
                 'success' => true,
-                'post' => $post,
-                'message' => 'Post created successfully'
+                'article' => $article,
+                'message' => 'Article created successfully'
             ]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Failed to create post']);
+            echo json_encode(['success' => false, 'error' => 'Failed to create article']);
         }
         break;
         
-    case 'update_post':
-        // Update post (admin)
+    case 'update_article':
+        // Update article (admin)
         requireAdmin();
         
         $id = (int)($_POST['id'] ?? 0);
         
         if (empty($id)) {
-            echo json_encode(['success' => false, 'error' => 'Post ID is required']);
+            echo json_encode(['success' => false, 'error' => 'Article ID is required']);
             exit;
         }
         
@@ -236,9 +227,6 @@ switch ($action) {
         if (isset($_POST['content'])) {
             $data['content'] = $_POST['content']; // Don't sanitize HTML content
         }
-        if (isset($_POST['excerpt'])) {
-            $data['excerpt'] = sanitizeInput($_POST['excerpt']);
-        }
         if (isset($_POST['slug'])) {
             $data['slug'] = sanitizeInput($_POST['slug']);
         }
@@ -248,47 +236,44 @@ switch ($action) {
         if (isset($_POST['tags'])) {
             $data['tags'] = sanitizeInput($_POST['tags']);
         }
-        if (array_key_exists('featured_image', $_POST)) {
-            $data['featured_image'] = sanitizeInput($_POST['featured_image']);
-        }
         if (isset($_POST['published'])) {
             $data['published'] = (int)$_POST['published'];
         }
         
-        $result = BlogPost::update($id, $data);
+        $result = SupportArticle::update($id, $data);
         
         if ($result) {
-            $post = BlogPost::getById($id);
+            $article = SupportArticle::getById($id);
             echo json_encode([
                 'success' => true,
-                'post' => $post,
-                'message' => 'Post updated successfully'
+                'article' => $article,
+                'message' => 'Article updated successfully'
             ]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Failed to update post']);
+            echo json_encode(['success' => false, 'error' => 'Failed to update article']);
         }
         break;
         
-    case 'delete_post':
-        // Delete post (admin)
+    case 'delete_article':
+        // Delete article (admin)
         requireAdmin();
         
         $id = (int)($_POST['id'] ?? 0);
         
         if (empty($id)) {
-            echo json_encode(['success' => false, 'error' => 'Post ID is required']);
+            echo json_encode(['success' => false, 'error' => 'Article ID is required']);
             exit;
         }
         
-        $result = BlogPost::delete($id);
+        $result = SupportArticle::delete($id);
         
         if ($result) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Post deleted successfully'
+                'message' => 'Article deleted successfully'
             ]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Failed to delete post']);
+            echo json_encode(['success' => false, 'error' => 'Failed to delete article']);
         }
         break;
         
@@ -308,10 +293,10 @@ switch ($action) {
             exit;
         }
         
-        $categoryId = BlogCategory::create($data);
+        $categoryId = SupportCategory::create($data);
         
         if ($categoryId) {
-            $category = BlogCategory::getById($categoryId);
+            $category = SupportCategory::getById($categoryId);
             echo json_encode([
                 'success' => true,
                 'category' => $category,
@@ -348,10 +333,10 @@ switch ($action) {
             $data['display_order'] = (int)$_POST['display_order'];
         }
         
-        $result = BlogCategory::update($id, $data);
+        $result = SupportCategory::update($id, $data);
         
         if ($result) {
-            $category = BlogCategory::getById($id);
+            $category = SupportCategory::getById($id);
             echo json_encode([
                 'success' => true,
                 'category' => $category,
@@ -373,7 +358,7 @@ switch ($action) {
             exit;
         }
         
-        $result = BlogCategory::delete($id);
+        $result = SupportCategory::delete($id);
         
         if ($result) {
             echo json_encode([
@@ -389,7 +374,7 @@ switch ($action) {
         // Get all categories for admin
         requireAdmin();
         
-        $categories = BlogCategory::getAll();
+        $categories = SupportCategory::getAll();
         
         echo json_encode([
             'success' => true,
@@ -401,3 +386,5 @@ switch ($action) {
         echo json_encode(['success' => false, 'error' => 'Invalid action']);
         break;
 }
+
+

@@ -271,3 +271,48 @@ export async function generatePodlinks() {
   );
 }
 
+// Custom Domain APIs
+export interface DomainVerificationResult {
+  success: boolean;
+  verified: boolean;
+  message: string;
+  records: Array<{ type: string; value: string }>;
+}
+
+export async function verifyCustomDomain(domain: string): Promise<DomainVerificationResult> {
+  return requestJson<DomainVerificationResult>(
+    PAGE_ENDPOINT,
+    formPostInit({
+      action: 'verify_domain',
+      domain
+    })
+  );
+}
+
+export async function updateCustomDomain(customDomain: string | null): Promise<ApiResponse> {
+  return requestJson<ApiResponse>(
+    PAGE_ENDPOINT,
+    formPostInit({
+      action: 'update_settings',
+      custom_domain: customDomain ?? ''
+    })
+  );
+}
+
+export function useVerifyDomainMutation() {
+  return useMutation({
+    mutationFn: (domain: string) => verifyCustomDomain(domain)
+  });
+}
+
+export function useCustomDomainMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (customDomain: string | null) => updateCustomDomain(customDomain),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+    }
+  });
+}
+

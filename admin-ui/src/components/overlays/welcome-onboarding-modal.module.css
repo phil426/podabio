@@ -1,0 +1,518 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--admin-bg-overlay, rgba(10, 10, 10, 0.8));
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  animation: fadeIn 300ms ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, 95vw);
+  max-width: 95vw;
+  max-height: 90vh;
+  background: var(--admin-bg-panel, #1a1a1a);
+  border-radius: 20px;
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
+  box-shadow: 
+    0 0 0 1px rgba(0, 255, 127, 0.1),
+    0 24px 48px rgba(0, 0, 0, 0.5),
+    0 0 120px rgba(0, 255, 127, 0.05);
+  display: flex;
+  flex-direction: column;
+  z-index: 10001;
+  overflow: hidden;
+  animation: scaleIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.progressBar {
+  height: 3px;
+  background: var(--admin-border-subtle, rgba(255, 255, 255, 0.05));
+  width: 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00FF7F, #00E5FF);
+  border-radius: 0 2px 2px 0;
+  transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step,
+.activeStep {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 300ms ease;
+}
+
+.step {
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.05));
+  color: var(--admin-text-secondary, #64748b);
+  border: 1px solid var(--admin-border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+.activeStep {
+  background: linear-gradient(135deg, #00FF7F, #00CC66);
+  color: #0a0a0a;
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 255, 127, 0.3);
+}
+
+.stepDivider {
+  width: 24px;
+  height: 2px;
+  background: var(--admin-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 1px;
+}
+
+.closeButton {
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  padding: 0.5rem;
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.05));
+  color: var(--admin-text-secondary, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 150ms ease;
+}
+
+.closeButton:hover {
+  background: var(--admin-border-default, rgba(255, 255, 255, 0.1));
+  color: var(--admin-text-primary, #f8fafc);
+}
+
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+}
+
+.content {
+  padding: 1.5rem 2rem 2rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Welcome Step */
+.welcomeIcon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 255, 127, 0.15), rgba(0, 229, 255, 0.1));
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  color: #00FF7F;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 255, 127, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 127, 0.2);
+  }
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #f8fafc);
+  font-family: 'Zalando Sans Expanded', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.description {
+  margin: 0 0 2rem;
+  font-size: 1rem;
+  color: var(--admin-text-secondary, #94a3b8);
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.welcomeStats {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.stat svg {
+  color: #00FF7F;
+}
+
+.stat span {
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary, #94a3b8);
+  font-weight: 500;
+}
+
+/* Features Step */
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  text-align: left;
+}
+
+.featureCard {
+  padding: 1.25rem;
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.03));
+  border-radius: 14px;
+  border: 1px solid var(--admin-border-subtle, rgba(255, 255, 255, 0.06));
+  transition: all 200ms ease;
+}
+
+.featureCard:hover {
+  border-color: rgba(0, 255, 127, 0.2);
+  background: rgba(0, 255, 127, 0.03);
+  transform: translateY(-2px);
+}
+
+.featureIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 255, 127, 0.12), rgba(0, 229, 255, 0.08));
+  border-radius: 10px;
+  margin-bottom: 0.875rem;
+  color: #00FF7F;
+}
+
+.featureCard h3 {
+  margin: 0 0 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #f8fafc);
+}
+
+.featureCard p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+
+/* Checklist Step */
+.progressSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.progressCircle {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.progressRing {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.progressRingBg {
+  fill: none;
+  stroke: var(--admin-border-subtle, rgba(255, 255, 255, 0.08));
+  stroke-width: 3;
+}
+
+.progressRingFill {
+  fill: none;
+  stroke: #00FF7F;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 600ms ease;
+}
+
+.progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #f8fafc);
+}
+
+.progressSummary p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary, #94a3b8);
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+  text-align: left;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem;
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-subtle, rgba(255, 255, 255, 0.06));
+  transition: all 200ms ease;
+}
+
+.checklistItem.completed {
+  border-color: rgba(0, 255, 127, 0.2);
+  background: rgba(0, 255, 127, 0.05);
+}
+
+.checkIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checklistItem.completed .checkIcon {
+  background: #00FF7F;
+  color: #0a0a0a;
+}
+
+.emptyCheck {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--admin-border-default, rgba(255, 255, 255, 0.15));
+}
+
+.checkContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkContent h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text-primary, #f8fafc);
+}
+
+.checklistItem.completed .checkContent h4 {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.checkContent p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary, #94a3b8);
+  line-height: 1.4;
+}
+
+.helpNote {
+  margin: 1.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #64748b);
+  font-style: italic;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--admin-border-subtle, rgba(255, 255, 255, 0.06));
+  flex-shrink: 0;
+}
+
+.skipButton {
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.1));
+  background: transparent;
+  color: var(--admin-text-secondary, #94a3b8);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
+}
+
+.skipButton:hover {
+  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.05));
+  color: var(--admin-text-primary, #f8fafc);
+}
+
+.nextButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #00FF7F, #00CC66);
+  color: #0a0a0a;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(0, 255, 127, 0.25);
+}
+
+.nextButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 255, 127, 0.35);
+}
+
+.nextButton:active {
+  transform: translateY(0);
+}
+
+.scrollbar {
+  width: 8px;
+  padding: 2px;
+}
+
+.thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .content {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcomeStats {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .stat {
+    flex-direction: row;
+    width: 100%;
+  }
+  
+  .footer {
+    padding: 1rem 1.5rem;
+  }
+}
+

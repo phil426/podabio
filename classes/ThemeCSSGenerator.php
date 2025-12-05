@@ -401,19 +401,11 @@ class ThemeCSSGenerator {
         // Check typography_tokens first (this is what Edit Theme Panel saves to)
         $pageTitleColorFromTypography = null;
         $pageDescriptionColorFromTypography = null;
-        // CRITICAL DEBUG: Log what we're reading from typography_tokens
-        error_log("THEME CSS DEBUG: typographyTokens=" . json_encode($this->typographyTokens));
         if (!empty($this->typographyTokens['color']['heading'] ?? null)) {
             $pageTitleColorFromTypography = $this->typographyTokens['color']['heading'];
-            error_log("THEME CSS DEBUG: Found typography_tokens.color.heading=" . $pageTitleColorFromTypography);
-        } else {
-            error_log("THEME CSS DEBUG: typography_tokens.color.heading NOT FOUND");
         }
         if (!empty($this->typographyTokens['color']['body'] ?? null)) {
             $pageDescriptionColorFromTypography = $this->typographyTokens['color']['body'];
-            error_log("THEME CSS DEBUG: Found typography_tokens.color.body=" . $pageDescriptionColorFromTypography);
-        } else {
-            error_log("THEME CSS DEBUG: typography_tokens.color.body NOT FOUND");
         }
         
         // Check for page-title-color override in token_overrides (fallback)
@@ -429,7 +421,6 @@ class ThemeCSSGenerator {
         }
         
         // Use typography_tokens color if present, otherwise use override, otherwise calculate optimal color
-        // CRITICAL: Check for non-empty string, not just truthy (empty string "" is falsy but should be used)
         $pageTitleColor = (!empty($pageTitleColorFromTypography) && $pageTitleColorFromTypography !== '') 
             ? $pageTitleColorFromTypography 
             : ($pageTitleColorOverride ?: $this->getOptimalTextColor($pageBackgroundValue, $textPrimary));
@@ -437,9 +428,6 @@ class ThemeCSSGenerator {
             ? $pageDescriptionColorFromTypography 
             : $this->getOptimalTextColor($pageBackgroundValue, $textSecondary);
         
-        // CRITICAL DEBUG: Log final values being used
-        error_log("THEME CSS DEBUG: Final pageTitleColor=" . $pageTitleColor);
-        error_log("THEME CSS DEBUG: Final pageDescriptionColor=" . $pageDescriptionColor);
         $socialIconColor = $this->getOptimalTextColor($pageBackgroundValue, $accentPrimary);
         $onBackground = $this->getOptimalTextColor($pageBackgroundValue, $textPrimary);
         $onSurface = $this->getOptimalTextColor($backgroundSurface, $textPrimary);
@@ -535,19 +523,11 @@ class ThemeCSSGenerator {
         $bodyColor = null;
         
         // Check typography_tokens first (this is what Edit Theme Panel saves to)
-        // CRITICAL DEBUG: Log what we're reading for CSS variables
-        error_log("THEME CSS DEBUG: Reading typography_tokens for CSS variables, typographyTokens=" . json_encode($this->typographyTokens));
         if (!empty($this->typographyTokens['color']['heading'] ?? null)) {
             $headingColor = $this->typographyTokens['color']['heading'];
-            error_log("THEME CSS DEBUG: Using typography_tokens.color.heading=" . $headingColor . " for --heading-font-color");
-        } else {
-            error_log("THEME CSS DEBUG: typography_tokens.color.heading NOT FOUND, will use fallback");
         }
         if (!empty($this->typographyTokens['color']['body'] ?? null)) {
             $bodyColor = $this->typographyTokens['color']['body'];
-            error_log("THEME CSS DEBUG: Using typography_tokens.color.body=" . $bodyColor . " for --body-font-color");
-        } else {
-            error_log("THEME CSS DEBUG: typography_tokens.color.body NOT FOUND, will use fallback");
         }
         
         // Fallback to token_overrides if typography_tokens don't have colors

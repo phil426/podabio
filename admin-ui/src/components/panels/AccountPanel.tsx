@@ -16,6 +16,7 @@ import { ApiError } from '../../api/http';
 import type { AccountProfile } from '../../api/types';
 import { MigrationEducationBanner } from '../account/MigrationEducationBanner';
 import { BillingPanel } from '../account/BillingPanel';
+import { CustomDomainSettings } from '../account/CustomDomainSettings';
 import { MediaLibraryTab } from './MediaLibraryTab';
 import { trackTelemetry } from '../../services/telemetry';
 import { CreatePageDrawer } from '../overlays/CreatePageDrawer';
@@ -436,6 +437,11 @@ function ProfileTab({
           <p className={styles.helperNote}>Manage advanced page settings from the Structure tab in Studio.</p>
         )}
       </section>
+
+      {/* Custom Domain Settings - only show if user has a page */}
+      {!pageMissing && pageUsername && (
+        <CustomDomainSettings username={pageUsername} />
+      )}
     </div>
   );
 }

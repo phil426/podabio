@@ -269,14 +269,7 @@ if ($method === 'POST') {
 
             // DEBUG: Log theme update
             $hasTypographyTokens = isset($themeData['typography_tokens']);
-            $typographyScale = null;
-            if ($hasTypographyTokens && is_array($themeData['typography_tokens'])) {
-                $typographyScale = $themeData['typography_tokens']['scale'] ?? null;
-            }
-            error_log("THEME UPDATE DEBUG: theme_id={$updateId}, userId={$userId}, has_typography_tokens=" . ($hasTypographyTokens ? 'yes' : 'no') . ", scale_xl=" . ($typographyScale['xl'] ?? 'null') . ", scale_sm=" . ($typographyScale['sm'] ?? 'null'));
-
             // Allow updates without name change (name can be empty if only theme_data is being updated)
-            // Only require name if it's explicitly provided and not empty
             $nameToUse = $name !== '' ? $name : null;
 
             $success = $themeClass->updateUserTheme($updateId, $userId, $nameToUse, $themeData);
@@ -284,9 +277,6 @@ if ($method === 'POST') {
             // Clear theme cache after update to ensure fresh data on next load
             if ($success) {
                 Theme::clearCache($updateId);
-                error_log("THEME UPDATE DEBUG: Theme {$updateId} updated successfully, cache cleared");
-            } else {
-                error_log("THEME UPDATE DEBUG: Theme {$updateId} update failed");
             }
             // Clear any output buffer before sending JSON
             ob_clean();

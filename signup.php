@@ -27,20 +27,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = sanitizeInput($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
+        $username = sanitizeInput($_POST['username'] ?? '');
         
         // Validate inputs
         if (empty($email) || empty($password) || empty($confirmPassword)) {
-            $error = 'Please fill in all fields';
+            $error = 'Please fill in all required fields';
         } elseif ($password !== $confirmPassword) {
             $error = 'Passwords do not match';
         } else {
             $user = new User();
-            $result = $user->create($email, $password);
+            $result = $user->create($email, $password, $username);
             
             if ($result['success']) {
                 // Send verification email
                 if (sendVerificationEmail($email, $result['verification_token'])) {
-                    $success = 'Account created! Please check your email to verify your account.';
+                    if (!empty($username)) {
+                        $success = 'Account created! Your page is ready at poda.bio/' . h($username) . '. Please check your email to verify your account.';
+                    } else {
+                        $success = 'Account created! Please check your email to verify your account.';
+                    }
                 } else {
                     // Account created but email failed - still show success but note email issue
                     $success = 'Account created! However, there was an issue sending the verification email. Please contact support or try logging in.';
@@ -50,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = $result['error'];
             }
         }
-    }
 }
 
 $csrfToken = generateCSRFToken();
@@ -94,6 +98,26 @@ $googleAuthUrl = getGoogleAuthUrl();
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="you@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username <span class="optional">(Optional)</span></label>
+                    <div class="username-input-wrapper">
+                        <span class="username-prefix">poda.bio/</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            value="<?php echo h($_POST['username'] ?? $_GET['username'] ?? ''); ?>" 
+                            placeholder="yourname" 
+                            pattern="[a-zA-Z0-9_-]{3,30}"
+                            minlength="3"
+                            maxlength="30"
+                            autocomplete="username"
+                        >
+                        <span class="username-status" id="username-status"></span>
+                    </div>
+                    <small>Choose a unique username for your page URL. You can set this later if you skip it now.</small>
                 </div>
                 
                 <div class="form-group">
@@ -145,6 +169,7 @@ $googleAuthUrl = getGoogleAuthUrl();
     </div>
     <script>
         (function() {
+            // Password toggle functionality
             const toggles = document.querySelectorAll('.password-toggle');
             toggles.forEach((btn) => {
                 const targetId = btn.dataset.target;
@@ -168,6 +193,108 @@ $googleAuthUrl = getGoogleAuthUrl();
                     }
                 });
             });
+            
+            // Username availability checking
+            const usernameInput = document.getElementById('username');
+            const usernameWrapper = usernameInput?.closest('.username-input-wrapper');
+            const statusIndicator = document.getElementById('username-status');
+            
+            if (usernameInput && usernameWrapper && statusIndicator) {
+                let checkTimeout = null;
+                let isChecking = false;
+                let isAvailable = false;
+                
+                function sanitizeUsername(value) {
+                    return value.toLowerCase().replace(/[^a-z0-9_-]/g, '').substring(0, 30);
+                }
+                
+                async function checkUsernameAvailability(username) {
+                    if (isChecking) return;
+                    
+                    // Validate format first
+                    const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+                    if (!usernameRegex.test(username)) {
+                        if (username.length > 0) {
+                            usernameWrapper.classList.remove('available', 'unavailable', 'checking');
+                            usernameWrapper.classList.add('unavailable');
+                            statusIndicator.innerHTML = '<span class="icon-close">✕</span>';
+                            isAvailable = false;
+                        } else {
+                            usernameWrapper.classList.remove('available', 'unavailable', 'checking');
+                            statusIndicator.innerHTML = '';
+                            isAvailable = false;
+                        }
+                        return;
+                    }
+                    
+                    isChecking = true;
+                    usernameWrapper.classList.remove('available', 'unavailable');
+                    usernameWrapper.classList.add('checking');
+                    statusIndicator.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⟳</span>';
+                    
+                    try {
+                        const response = await fetch(`/api/check-username.php?username=${encodeURIComponent(username)}`);
+                        const data = await response.json();
+                        
+                        if (data.success && data.available) {
+                            usernameWrapper.classList.remove('checking', 'unavailable');
+                            usernameWrapper.classList.add('available');
+                            statusIndicator.innerHTML = '<span class="icon-check">✓</span>';
+                            isAvailable = true;
+                        } else {
+                            usernameWrapper.classList.remove('checking', 'available');
+                            usernameWrapper.classList.add('unavailable');
+                            statusIndicator.innerHTML = '<span class="icon-close">✕</span>';
+                            isAvailable = false;
+                        }
+                    } catch (error) {
+                        console.error('Error checking username:', error);
+                        usernameWrapper.classList.remove('checking');
+                        statusIndicator.innerHTML = '';
+                        isAvailable = false;
+                    } finally {
+                        isChecking = false;
+                    }
+                }
+                
+                // Auto-sanitize username input
+                usernameInput.addEventListener('input', (e) => {
+                    const sanitized = sanitizeUsername(e.target.value);
+                    if (sanitized !== e.target.value) {
+                        e.target.value = sanitized;
+                    }
+                    
+                    const username = sanitized.trim();
+                    
+                    // Clear previous timeout
+                    if (checkTimeout) {
+                        clearTimeout(checkTimeout);
+                    }
+                    
+                    // Clear status if empty
+                    if (!username) {
+                        usernameWrapper.classList.remove('available', 'unavailable', 'checking');
+                        statusIndicator.innerHTML = '';
+                        isAvailable = false;
+                        return;
+                    }
+                    
+                    // Check availability after 500ms delay
+                    checkTimeout = setTimeout(() => {
+                        checkUsernameAvailability(username);
+                    }, 500);
+                });
+            }
+            
+            // Add spin animation for loading indicator
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
         })();
     </script>
 </body>

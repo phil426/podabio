@@ -33,6 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = new User();
             $result = $user->generateResetToken($email);
             
+            // Send reset email if token was generated (user exists)
+            if ($result['success'] && !empty($result['token'])) {
+                sendPasswordResetEmail($email, $result['token']);
+            }
+            
             // Always show success message for security (don't reveal if email exists)
             $success = 'If an account exists with that email, a password reset link has been sent.';
         }
@@ -48,12 +53,20 @@ $csrfToken = generateCSRFToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - <?php echo h(APP_NAME); ?></title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css?v=<?php echo filemtime(__DIR__ . '/css/auth.css'); ?>">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h1>Forgot Password</h1>
+            <div class="auth-logo">
+                <a href="/" class="auth-logo-link" title="Back to Home">
+                    <img src="/assets/images/logo/marketing_logo.png" alt="<?php echo h(APP_NAME); ?>" class="auth-logo-image">
+                </a>
+                <h1>Reset Password</h1>
+            </div>
             
             <?php if ($error): ?>
                 <div class="alert alert-error"><?php echo h($error); ?></div>
@@ -61,19 +74,20 @@ $csrfToken = generateCSRFToken();
             
             <?php if ($success): ?>
                 <div class="alert alert-success"><?php echo h($success); ?></div>
-            <?php endif; ?>
+            <?php else: ?>
             
             <form method="POST" action="">
                 <input type="hidden" name="csrf_token" value="<?php echo h($csrfToken); ?>">
                 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" autofocus>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>" placeholder="you@example.com" autofocus autocomplete="email">
                     <small>Enter your email address and we'll send you a password reset link.</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Send Reset Link</button>
             </form>
+            <?php endif; ?>
             
             <p class="auth-footer">
                 <a href="/login.php">Back to login</a>

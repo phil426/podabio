@@ -132,38 +132,287 @@ class EmailSubscription {
             return ['success' => false, 'error' => 'API key not configured'];
         }
         
-        // Basic implementation - can be expanded with full API integrations
-        // For now, just return success (actual API calls would go here)
-        // This allows the system to work without requiring API setup during development
-        
         switch ($service) {
             case 'mailchimp':
-                // TODO: Implement Mailchimp API
-                return ['success' => true, 'error' => null];
-                
-            case 'constant_contact':
-                // TODO: Implement Constant Contact API
-                return ['success' => true, 'error' => null];
+                return $this->subscribeToMailchimp($apiKey, $listId, $email);
                 
             case 'convertkit':
-                // TODO: Implement ConvertKit API
-                return ['success' => true, 'error' => null];
-                
-            case 'aweber':
-                // TODO: Implement AWeber API
-                return ['success' => true, 'error' => null];
+                return $this->subscribeToConvertKit($apiKey, $listId, $email);
                 
             case 'mailerlite':
-                // TODO: Implement MailerLite API
-                return ['success' => true, 'error' => null];
+                return $this->subscribeToMailerLite($apiKey, $listId, $email);
+                
+            case 'constant_contact':
+                // Constant Contact requires OAuth2 - not implementing at this time
+                error_log("Constant Contact integration requires OAuth2 setup");
+                return ['success' => false, 'error' => 'Constant Contact requires OAuth2 - contact support for setup'];
+                
+            case 'aweber':
+                // AWeber requires OAuth - not implementing at this time
+                error_log("AWeber integration requires OAuth setup");
+                return ['success' => false, 'error' => 'AWeber requires OAuth - contact support for setup'];
                 
             case 'sendinblue':
-                // TODO: Implement SendinBlue/Brevo API
-                return ['success' => true, 'error' => null];
+            case 'brevo':
+                return $this->subscribeToBrevo($apiKey, $listId, $email);
                 
             default:
                 return ['success' => false, 'error' => 'Unknown email service'];
         }
+    }
+    
+    /**
+     * Subscribe to Mailchimp list
+     * @param string $apiKey Mailchimp API key (includes datacenter suffix like -us6)
+     * @param string $listId Mailchimp list/audience ID
+     * @param string $email Subscriber email
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    private function subscribeToMailchimp($apiKey, $listId, $email) {
+        // Extract datacenter from API key (e.g., "abc123-us6" -> "us6")
+        $keyParts = explode('-', $apiKey);
+        $dc = end($keyParts);
+        
+        if (empty($dc) || $dc === $apiKey) {
+            return ['success' => false, 'error' => 'Invalid Mailchimp API key format'];
+        }
+        
+        if (empty($listId)) {
+            return ['success' => false, 'error' => 'Mailchimp list ID not configured'];
+        }
+        
+        $url = "https://{$dc}.api.mailchimp.com/3.0/lists/{$listId}/members";
+        
+        $data = [
+            'email_address' => $email,
+            'status' => 'subscribed' // Use 'pending' for double opt-in
+        ];
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Basic ' . base64_encode('anystring:' . $apiKey)
+            ],
+            CURLOPT_TIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($curlError) {
+            error_log("Mailchimp cURL error: " . $curlError);
+            return ['success' => false, 'error' => 'Failed to connect to Mailchimp'];
+        }
+        
+        $result = json_decode($response, true);
+        
+        // Success: 200 (existing subscribed) or 201 (newly subscribed)
+        if ($httpCode === 200 || $httpCode === 201) {
+            return ['success' => true, 'error' => null];
+        }
+        
+        // Already subscribed (member exists)
+        if ($httpCode === 400 && isset($result['title']) && strpos($result['title'], 'Member Exists') !== false) {
+            // Update existing member status to subscribed
+            $subscriberHash = md5(strtolower($email));
+            $updateUrl = "https://{$dc}.api.mailchimp.com/3.0/lists/{$listId}/members/{$subscriberHash}";
+            
+            $ch2 = curl_init($updateUrl);
+            curl_setopt_array($ch2, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => 'PATCH',
+                CURLOPT_POSTFIELDS => json_encode(['status' => 'subscribed']),
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/json',
+                    'Authorization: Basic ' . base64_encode('anystring:' . $apiKey)
+                ],
+                CURLOPT_TIMEOUT => 10
+            ]);
+            
+            $updateResponse = curl_exec($ch2);
+            $updateHttpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+            curl_close($ch2);
+            
+            if ($updateHttpCode === 200) {
+                return ['success' => true, 'error' => null];
+            }
+            
+            return ['success' => true, 'error' => null]; // Already subscribed is still success
+        }
+        
+        // Error
+        $errorMsg = $result['detail'] ?? $result['title'] ?? 'Unknown Mailchimp error';
+        error_log("Mailchimp error: HTTP {$httpCode} - " . $errorMsg);
+        return ['success' => false, 'error' => 'Mailchimp: ' . $errorMsg];
+    }
+    
+    /**
+     * Subscribe to ConvertKit form
+     * @param string $apiKey ConvertKit API key
+     * @param string $formId ConvertKit form ID
+     * @param string $email Subscriber email
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    private function subscribeToConvertKit($apiKey, $formId, $email) {
+        if (empty($formId)) {
+            return ['success' => false, 'error' => 'ConvertKit form ID not configured'];
+        }
+        
+        $url = "https://api.convertkit.com/v3/forms/{$formId}/subscribe";
+        
+        $data = [
+            'api_key' => $apiKey,
+            'email' => $email
+        ];
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json; charset=utf-8'
+            ],
+            CURLOPT_TIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($curlError) {
+            error_log("ConvertKit cURL error: " . $curlError);
+            return ['success' => false, 'error' => 'Failed to connect to ConvertKit'];
+        }
+        
+        $result = json_decode($response, true);
+        
+        // Success: 200
+        if ($httpCode === 200 && isset($result['subscription'])) {
+            return ['success' => true, 'error' => null];
+        }
+        
+        // Error
+        $errorMsg = $result['error'] ?? $result['message'] ?? 'Unknown ConvertKit error';
+        error_log("ConvertKit error: HTTP {$httpCode} - " . $errorMsg);
+        return ['success' => false, 'error' => 'ConvertKit: ' . $errorMsg];
+    }
+    
+    /**
+     * Subscribe to MailerLite group
+     * @param string $apiKey MailerLite API key
+     * @param string $groupId MailerLite group ID
+     * @param string $email Subscriber email
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    private function subscribeToMailerLite($apiKey, $groupId, $email) {
+        // MailerLite API v2
+        $url = "https://connect.mailerlite.com/api/subscribers";
+        
+        $data = [
+            'email' => $email
+        ];
+        
+        // Add to group if specified
+        if (!empty($groupId)) {
+            $data['groups'] = [$groupId];
+        }
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $apiKey
+            ],
+            CURLOPT_TIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($curlError) {
+            error_log("MailerLite cURL error: " . $curlError);
+            return ['success' => false, 'error' => 'Failed to connect to MailerLite'];
+        }
+        
+        $result = json_decode($response, true);
+        
+        // Success: 200 (existing) or 201 (new)
+        if ($httpCode === 200 || $httpCode === 201) {
+            return ['success' => true, 'error' => null];
+        }
+        
+        // Error
+        $errorMsg = $result['message'] ?? 'Unknown MailerLite error';
+        error_log("MailerLite error: HTTP {$httpCode} - " . $errorMsg);
+        return ['success' => false, 'error' => 'MailerLite: ' . $errorMsg];
+    }
+    
+    /**
+     * Subscribe to Brevo (formerly SendinBlue) list
+     * @param string $apiKey Brevo API key
+     * @param string $listId Brevo list ID
+     * @param string $email Subscriber email
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    private function subscribeToBrevo($apiKey, $listId, $email) {
+        $url = "https://api.brevo.com/v3/contacts";
+        
+        $data = [
+            'email' => $email,
+            'updateEnabled' => true
+        ];
+        
+        // Add to list if specified
+        if (!empty($listId)) {
+            $data['listIds'] = [(int)$listId];
+        }
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'api-key: ' . $apiKey
+            ],
+            CURLOPT_TIMEOUT => 10
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($curlError) {
+            error_log("Brevo cURL error: " . $curlError);
+            return ['success' => false, 'error' => 'Failed to connect to Brevo'];
+        }
+        
+        $result = json_decode($response, true);
+        
+        // Success: 201 (created) or 204 (updated)
+        if ($httpCode === 201 || $httpCode === 204 || $httpCode === 200) {
+            return ['success' => true, 'error' => null];
+        }
+        
+        // Error
+        $errorMsg = $result['message'] ?? 'Unknown Brevo error';
+        error_log("Brevo error: HTTP {$httpCode} - " . $errorMsg);
+        return ['success' => false, 'error' => 'Brevo: ' . $errorMsg];
     }
     
     /**
