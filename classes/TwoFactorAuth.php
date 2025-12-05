@@ -95,7 +95,8 @@ class TwoFactorAuth {
      * @return bool True if email sent successfully
      */
     public static function sendEmailCode($email, $code) {
-        $subject = 'Your ' . APP_NAME . ' Login Code';
+        $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
+        $subject = 'Your ' . $appName . ' Login Code';
         $message = self::getEmailCodeTemplate($code);
         return sendEmail($email, $subject, $message);
     }
@@ -106,6 +107,7 @@ class TwoFactorAuth {
      * @return string HTML email content
      */
     private static function getEmailCodeTemplate($code) {
+        $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
         return '
         <!DOCTYPE html>
         <html>
@@ -125,7 +127,7 @@ class TwoFactorAuth {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>' . h(APP_NAME) . '</h1>
+                    <h1>' . h($appName) . '</h1>
                 </div>
                 <div class="content">
                     <h2>Your Login Code</h2>
@@ -140,7 +142,7 @@ class TwoFactorAuth {
                     <p>If you did not attempt to log in, please secure your account immediately.</p>
                 </div>
                 <div class="footer">
-                    <p>&copy; ' . date('Y') . ' ' . h(APP_NAME) . '. All rights reserved.</p>
+                    <p>&copy; ' . date('Y') . ' ' . h($appName) . '. All rights reserved.</p>
                 </div>
             </div>
         </body>
