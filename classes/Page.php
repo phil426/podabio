@@ -262,7 +262,8 @@ class Page {
      */
     public function isUsernameAvailable($username) {
         $existing = fetchOne("SELECT id FROM pages WHERE username = ?", [$username]);
-        return $existing === false;
+        // fetchOne returns null when no rows found (not false)
+        return $existing === null || $existing === false;
     }
     
     /**
