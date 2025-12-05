@@ -1730,59 +1730,57 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
-        // Demo Toggle Functionality
-        (function() {
-            function initDemoToggle() {
-                const buttons = document.querySelectorAll('.demo-toggle button[data-demo-view]');
-                const placeholder = document.getElementById('demo-image-placeholder');
-                
-                if (!buttons.length || !placeholder) {
-                    // Elements not ready yet, try again
-                    setTimeout(initDemoToggle, 100);
-                    return;
-                }
-                
-                buttons.forEach(button => {
-                    button.addEventListener('click', function() {
+        // Wait for DOM to be fully ready before initializing anything
+        function initAllInteractivity() {
+            
+            // Demo Toggle Functionality
+            const demoButtons = document.querySelectorAll('.demo-toggle button[data-demo-view]');
+            const demoPlaceholder = document.getElementById('demo-image-placeholder');
+            
+            if (demoButtons.length && demoPlaceholder) {
+                demoButtons.forEach(button => {
+                    // Only attach listener once - check for data attribute
+                    if (button.dataset.listenerAttached) return;
+                    button.dataset.listenerAttached = 'true';
+                    
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const view = this.getAttribute('data-demo-view');
                         
                         // Update active state
-                        buttons.forEach(btn => btn.classList.remove('active'));
+                        demoButtons.forEach(btn => btn.classList.remove('active'));
                         this.classList.add('active');
                         
                         // Update placeholder content
                         if (view === 'mobile') {
-                            placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                            demoPlaceholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
                         } else {
-                            placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                            demoPlaceholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
                         }
                     });
                 });
             }
             
-            // Initialize when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initDemoToggle);
-            } else {
-                initDemoToggle();
-            }
-        })();
-
-        // Navigation functionality is handled by marketing-nav.js
-        
-        // Tab Navigation
-        (function() {
+            // Tab Navigation - MUST query elements inside the function after DOM is ready
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
             
             // Global function to switch tabs (can be called from anywhere)
             window.switchToTab = function(tabName, scrollToSection = true) {
                 const targetButton = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-                if (!targetButton) return false;
+                if (!targetButton) {
+                    console.warn('Tab button not found:', tabName);
+                    return false;
+                }
+                
+                // Re-query to get fresh NodeList
+                const allTabButtons = document.querySelectorAll('.tab-button');
+                const allTabContents = document.querySelectorAll('.tab-content');
                 
                 // Remove active class from all buttons and contents
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+                allTabButtons.forEach(btn => btn.classList.remove('active'));
+                allTabContents.forEach(content => content.classList.remove('active'));
                 
                 // Add active class to target button and corresponding content
                 targetButton.classList.add('active');
@@ -1814,23 +1812,46 @@ require_once __DIR__ . '/includes/helpers.php';
                 return true;
             };
             
-            // Handle tab button clicks
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetTab = button.getAttribute('data-tab');
-                    window.switchToTab(targetTab, false); // Don't scroll when clicking tab buttons directly
+            // Handle tab button clicks - attach listeners NOW that elements exist
+            if (tabButtons.length) {
+                tabButtons.forEach(button => {
+                    // Only attach listener once
+                    if (button.dataset.listenerAttached) return;
+                    button.dataset.listenerAttached = 'true';
+                    
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const targetTab = this.getAttribute('data-tab');
+                        if (targetTab) {
+                            window.switchToTab(targetTab, false);
+                        }
+                    });
                 });
-            });
+            }
             
-            // Handle hash changes (from navigation links)
+            // Handle initial hash on page load
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                if (['features', 'pricing', 'examples', 'about'].includes(hash)) {
+                    setTimeout(() => window.switchToTab(hash, true), 500);
+                }
+            }
+        }
+        
+        // Handle hash changes (from navigation links) - only add once
+        if (!window.hashChangeListenerAdded) {
             window.addEventListener('hashchange', function() {
                 const hash = window.location.hash.substring(1);
                 if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash)) {
                     window.switchToTab(hash, true);
-            }
+                }
             });
-            
-            // Handle clicks on anchor links (including React navigation)
+            window.hashChangeListenerAdded = true;
+        }
+        
+        // Handle clicks on anchor links (including React navigation) - only add once
+        if (!window.anchorClickListenerAdded) {
             document.addEventListener('click', function(e) {
                 const link = e.target.closest('a[href^="#"]');
                 if (!link) return;
@@ -1844,32 +1865,34 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 }
             });
-
-            // Handle initial hash on page load
-            if (window.location.hash) {
-                const hash = window.location.hash.substring(1);
-                if (['features', 'pricing', 'examples', 'about'].includes(hash)) {
-                    setTimeout(() => window.switchToTab(hash, true), 100);
-                }
-            }
-        })();
+            window.anchorClickListenerAdded = true;
+        }
         
-        // Accordion Toggle
-        function toggleAccordion(button) {
+        // Accordion Toggle - Make it globally accessible
+        window.toggleAccordion = function(button) {
+            if (!button) {
+                console.warn('toggleAccordion: button is null');
+                return;
+            }
+            
             const accordion = button.closest('.accordion');
+            if (!accordion) {
+                console.warn('toggleAccordion: accordion not found');
+                return;
+            }
+            
             const content = accordion.querySelector('.accordion-content');
             const iconElement = button.querySelector('.accordion-icon');
-            const isActive = button.classList.contains('active');
             
-            // Close all accordions in the same group (optional - remove if you want multiple open)
+            // Close all accordions in the same group
             const allAccordions = accordion.parentElement.querySelectorAll('.accordion');
             allAccordions.forEach(acc => {
                 if (acc !== accordion) {
                     const header = acc.querySelector('.accordion-header');
                     const accContent = acc.querySelector('.accordion-content');
-                    const accIcon = header.querySelector('.accordion-icon');
-                    header.classList.remove('active');
-                    accContent.classList.remove('active');
+                    if (header) header.classList.remove('active');
+                    if (accContent) accContent.classList.remove('active');
+                    const accIcon = header ? header.querySelector('.accordion-icon') : null;
                     if (accIcon) {
                         accIcon.classList.remove('icon-minus');
                         accIcon.classList.add('icon-plus');
@@ -1879,7 +1902,9 @@ require_once __DIR__ . '/includes/helpers.php';
             
             // Toggle current accordion
             button.classList.toggle('active');
-            content.classList.toggle('active');
+            if (content) {
+                content.classList.toggle('active');
+            }
             
             // Toggle icon
             if (iconElement) {
@@ -1894,8 +1919,30 @@ require_once __DIR__ . '/includes/helpers.php';
                 const event = new CustomEvent('icon-update', { detail: { element: iconElement } });
                 document.dispatchEvent(event);
             }
+        };
+        
+        // Initialize everything when DOM is ready - multiple strategies to catch all cases
+        function startInteractivity() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(initAllInteractivity, 100);
+                });
+            } else {
+                // DOM already loaded
+                setTimeout(initAllInteractivity, 100);
+            }
             
+            // Also try after delays to catch React-rendered elements
+            setTimeout(initAllInteractivity, 500);
+            setTimeout(initAllInteractivity, 1500);
         }
+        
+        startInteractivity();
+        
+        // Also try on window load
+        window.addEventListener('load', () => {
+            setTimeout(initAllInteractivity, 200);
+        });
         
         // Username Claim Functionality
         const usernameInput = document.getElementById('hero-username-input');
@@ -2019,8 +2066,8 @@ require_once __DIR__ . '/includes/helpers.php';
             });
         }
         
-        // Drawer Functions
-        function openDrawer(drawerId) {
+        // Drawer Functions - Make globally accessible
+        window.openDrawer = function(drawerId) {
             const drawer = document.getElementById('drawer-' + drawerId);
             const overlay = document.getElementById('drawer-overlay');
             if (drawer && overlay) {
@@ -2028,53 +2075,68 @@ require_once __DIR__ . '/includes/helpers.php';
                 overlay.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
-        }
+        };
         
-        function closeDrawer() {
+        window.closeDrawer = function() {
             const drawers = document.querySelectorAll('.drawer');
             const overlay = document.getElementById('drawer-overlay');
             drawers.forEach(drawer => drawer.classList.remove('open'));
             if (overlay) {
                 overlay.classList.remove('active');
-                }
+            }
             document.body.style.overflow = '';
-        }
+        };
         
-        // Close drawer on overlay click
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize drawer handlers
+        function initDrawerHandlers() {
             const overlay = document.getElementById('drawer-overlay');
             if (overlay) {
-                overlay.addEventListener('click', closeDrawer);
+                overlay.addEventListener('click', window.closeDrawer);
             }
             
             // Close drawer on escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    closeDrawer();
+                    window.closeDrawer();
                 }
             });
-        });
+        }
         
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href && href !== '#' && !href.startsWith('#privacy') && !href.startsWith('#terms')) {
-                    const target = document.querySelector(href);
-                    if (target) {
-                        e.preventDefault();
-                        const headerOffset = 100;
-                        const elementPosition = target.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
+        initDrawerHandlers();
+        
+        // Smooth scroll for anchor links - initialize after DOM ready
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                if (anchor.dataset.smoothScrollAttached) return;
+                anchor.dataset.smoothScrollAttached = 'true';
+                
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('#privacy') && !href.startsWith('#terms')) {
+                        const target = document.querySelector(href);
+                        if (target) {
+                            e.preventDefault();
+                            const headerOffset = 100;
+                            const elementPosition = target.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                            
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                            });
+                        }
                     }
-                }
+                });
             });
-        });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSmoothScroll);
+        } else {
+            initSmoothScroll();
+        }
+        
+        setTimeout(initSmoothScroll, 500);
         
         // Scroll Animations using Intersection Observer
         (function() {
@@ -2207,4 +2269,5 @@ require_once __DIR__ . '/includes/helpers.php';
     <!--End of Tawk.to Script-->
 </body>
 </html>
+
 
