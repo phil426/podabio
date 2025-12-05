@@ -1648,9 +1648,9 @@ require_once __DIR__ . '/includes/helpers.php';
     <!-- Final CTA -->
     <section class="final-cta">
         <div class="final-cta-container">
-            <h2 class="scroll-animate" data-animate="fade-slide-up">Ready to Grow Your Podcast?</h2>
-            <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Create your free page in 2 minutes</p>
-            <a href="/signup.php" class="btn btn-primary scroll-animate" data-animate="scale" data-delay="200" style="font-size: 1.25rem; padding: 1.25rem 3rem;">Get Started Free</a>
+            <h2 class="scroll-animate animate" data-animate="fade-slide-up">Ready to Grow Your Podcast?</h2>
+            <p class="scroll-animate animate" data-animate="fade-slide-up" data-delay="100">Create your free page in 2 minutes</p>
+            <a href="/signup.php" class="btn btn-primary scroll-animate animate" data-animate="scale" data-delay="200" style="font-size: 1.25rem; padding: 1.25rem 3rem;">Get Started Free</a>
         </div>
     </section>
 
@@ -2047,9 +2047,11 @@ require_once __DIR__ . '/includes/helpers.php';
         
         // Scroll Animations using Intersection Observer
         (function() {
+            let animationInitialized = false;
+            
             function initScrollAnimations() {
-                // Mark body as animations ready - this enables hiding of non-animated elements
-                document.body.classList.add('animations-ready');
+                // Prevent multiple initializations
+                if (animationInitialized) return;
                 
                 // Get all elements with scroll-animate class
                 const animateElements = document.querySelectorAll('.scroll-animate');
@@ -2059,6 +2061,12 @@ require_once __DIR__ . '/includes/helpers.php';
                     setTimeout(initScrollAnimations, 100);
                     return;
                 }
+                
+                animationInitialized = true;
+                
+                // Mark body as animations ready - this enables hiding of non-animated elements
+                // BUT only after we've processed initial viewport elements
+                document.body.classList.add('animations-ready');
                 
                 // Check if Intersection Observer is supported
                 if (!('IntersectionObserver' in window)) {
@@ -2072,7 +2080,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 // Create observer with options - aggressive margins to catch elements earlier
                 const observerOptions = {
                     root: null,
-                    rootMargin: '300px 0px -50px 0px', // Trigger 300px before entering viewport
+                    rootMargin: '500px 0px -100px 0px', // Very generous margin - trigger 500px before viewport
                     threshold: [0, 0.01, 0.1, 0.5] // Multiple thresholds for better detection
                 };
                 
@@ -2086,18 +2094,18 @@ require_once __DIR__ . '/includes/helpers.php';
                 }, observerOptions);
                 
                 const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-                const viewportBottom = viewportHeight + 500; // Very generous margin for "near viewport"
+                const viewportBottom = viewportHeight + 1000; // EXTREMELY generous margin for "near viewport"
                 
                 // Process all elements - show anything in viewport or just below immediately
                 animateElements.forEach(el => {
-                    // Skip if already animated (hero section has animate class in HTML)
+                    // Skip if already animated (hero section and final CTA have animate class in HTML)
                     if (el.classList.contains('animate')) {
                         return;
                     }
                     
-                    // Check if element is in or near viewport (very generous margin)
+                    // Check if element is in or near viewport (EXTREMELY generous margin)
                     const rect = el.getBoundingClientRect();
-                    const isInViewport = rect.top < viewportBottom && rect.bottom > -500;
+                    const isInViewport = rect.top < viewportBottom && rect.bottom > -1000;
                     
                     if (isInViewport) {
                         // If visible or near viewport, animate immediately with small stagger
@@ -2110,16 +2118,36 @@ require_once __DIR__ . '/includes/helpers.php';
                         observer.observe(el);
                     }
                 });
+                
+                // CRITICAL: Fallback to show ALL remaining elements after 1.5 seconds
+                // This ensures nothing stays hidden even if Intersection Observer fails or is slow
+                setTimeout(() => {
+                    animateElements.forEach(el => {
+                        if (!el.classList.contains('animate')) {
+                            el.classList.add('animate');
+                        }
+                    });
+                }, 1500);
             }
             
-            // Run immediately - no delays!
+            // Wait for everything to be fully loaded before starting animations
             function startAnimations() {
-                // Small delay only to let React components mount, then run immediately
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+                // Wait for both DOM and all resources (images, scripts, etc.) to be loaded
+                if (document.readyState === 'complete') {
+                    // Everything is loaded, run immediately
+                    setTimeout(initScrollAnimations, 100);
                 } else {
-                    // Run immediately, but wait a tiny bit for React
-                    setTimeout(initScrollAnimations, 50);
+                    // Wait for window load event (fires after all resources are loaded)
+                    window.addEventListener('load', () => {
+                        setTimeout(initScrollAnimations, 100);
+                    });
+                    
+                    // Also try on DOMContentLoaded as a backup
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', () => {
+                            setTimeout(initScrollAnimations, 200);
+                        });
+                    }
                 }
             }
             
