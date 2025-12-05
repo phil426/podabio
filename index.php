@@ -216,16 +216,23 @@ require_once __DIR__ . '/includes/helpers.php';
             to { transform: rotate(360deg); }
         }
         
-        /* CRITICAL: Ensure page is always scrollable */
-        html, body {
+        /* CRITICAL: Ensure page is always scrollable - MUST override all other CSS */
+        html {
             overflow-x: hidden !important;
             overflow-y: auto !important;
             height: auto !important;
             max-height: none !important;
+            scroll-behavior: smooth !important;
         }
         
         body {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            height: auto !important;
+            max-height: none !important;
+            min-height: 100vh !important;
             position: relative !important;
+            padding-top: 100px !important;
         }
         
         /* Scroll Animation Styles */
@@ -1145,18 +1152,41 @@ require_once __DIR__ . '/includes/helpers.php';
         .footer {
             display: block !important;
             position: relative !important;
-            z-index: 1 !important;
-            background: var(--poda-bg-secondary) !important;
+            z-index: 999 !important;
+            background: var(--poda-bg-secondary, #1a1a1a) !important;
+            color: var(--poda-text-primary, #ffffff) !important;
             padding: 3rem 2rem 2rem !important;
             margin-top: 4rem !important;
-            border-top: 1px solid var(--poda-border-subtle) !important;
+            border-top: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1)) !important;
+            width: 100% !important;
+            min-height: 200px !important;
         }
         
-        .footer-content,
+        .footer-content {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: grid !important;
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+            gap: 2rem !important;
+            margin-bottom: 2rem !important;
+        }
+        
+        .footer-section {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+        
         .footer-bottom {
             opacity: 1 !important;
             visibility: visible !important;
             display: block !important;
+            text-align: center !important;
+            padding-top: 2rem !important;
+            border-top: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1)) !important;
+            color: var(--poda-text-secondary, #9ca3af) !important;
         }
         
         /* Prevent animations from hiding footer/CTA even if animations-ready class exists */
@@ -2223,7 +2253,7 @@ require_once __DIR__ . '/includes/helpers.php';
             }
         })();
         
-        // CRITICAL: Force scrolling enabled on page load
+        // CRITICAL: Force scrolling enabled on page load AND verify footer exists
         (function() {
             function ensureScrollingEnabled() {
                 document.body.style.overflow = '';
@@ -2234,6 +2264,15 @@ require_once __DIR__ . '/includes/helpers.php';
                 document.documentElement.style.overflowX = 'hidden';
                 document.body.style.height = 'auto';
                 document.body.style.maxHeight = 'none';
+                
+                // Check if footer exists
+                const footer = document.querySelector('footer.footer, .footer');
+                if (footer) {
+                    console.log('✅ Footer found in DOM');
+                    footer.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important; position: relative !important; z-index: 999 !important;';
+                } else {
+                    console.error('❌ FOOTER NOT FOUND IN DOM!');
+                }
             }
             
             // Run immediately
@@ -2251,6 +2290,7 @@ require_once __DIR__ . '/includes/helpers.php';
             setTimeout(ensureScrollingEnabled, 100);
             setTimeout(ensureScrollingEnabled, 500);
             setTimeout(ensureScrollingEnabled, 1000);
+            setTimeout(ensureScrollingEnabled, 2000);
         })();
         
         // Scroll Animations using Intersection Observer - separate block
@@ -2345,24 +2385,39 @@ require_once __DIR__ . '/includes/helpers.php';
                 const finalCta = document.querySelector('.final-cta');
                 
                 if (footer) {
-                    footer.style.opacity = '1';
-                    footer.style.visibility = 'visible';
-                    footer.style.display = 'block';
+                    footer.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important; position: relative !important; z-index: 999 !important; background: var(--poda-bg-secondary, #1a1a1a) !important; padding: 3rem 2rem 2rem !important; margin-top: 4rem !important; width: 100% !important; min-height: 200px !important;';
                     footer.querySelectorAll('*').forEach(child => {
-                        child.style.opacity = '1';
-                        child.style.visibility = 'visible';
+                        child.style.cssText = 'opacity: 1 !important; visibility: visible !important;';
                     });
+                    console.log('✅ Footer forced visible:', footer);
+                } else {
+                    console.error('❌ Footer element not found in DOM!');
                 }
                 
                 if (finalCta) {
-                    finalCta.style.opacity = '1';
-                    finalCta.style.visibility = 'visible';
-                    finalCta.style.display = 'block';
+                    finalCta.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important;';
                     finalCta.querySelectorAll('*').forEach(child => {
-                        child.style.opacity = '1';
-                        child.style.visibility = 'visible';
+                        child.style.cssText = 'opacity: 1 !important; visibility: visible !important;';
                     });
                 }
+                
+                // Verify page is scrollable
+                const bodyHeight = document.body.scrollHeight;
+                const windowHeight = window.innerHeight;
+                console.log('📏 Page height check:', { bodyHeight, windowHeight, scrollable: bodyHeight > windowHeight });
+                
+                // Force scroll to bottom to test
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    setTimeout(() => {
+                        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+                        console.log('📍 Scroll position after scroll to bottom:', scrollPos);
+                        if (footer) {
+                            const footerRect = footer.getBoundingClientRect();
+                            console.log('📍 Footer position:', footerRect);
+                        }
+                    }, 500);
+                }, 1000);
             }
             
             // Wait for everything to be fully loaded before starting animations
