@@ -358,8 +358,10 @@ function truncate($string, $length = 100, $suffix = '...') {
  * @return bool
  */
 function sendEmail($to, $subject, $message, $fromEmail = null, $fromName = null) {
-    $fromEmail = $fromEmail ?? 'noreply@' . parse_url(APP_URL, PHP_URL_HOST);
-    $fromName = $fromName ?? APP_NAME;
+    $appUrl = defined('APP_URL') ? APP_URL : 'https://poda.bio';
+    $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
+    $fromEmail = $fromEmail ?? 'noreply@' . parse_url($appUrl, PHP_URL_HOST);
+    $fromName = $fromName ?? $appName;
     
     // Headers
     $headers = [
@@ -381,9 +383,11 @@ function sendEmail($to, $subject, $message, $fromEmail = null, $fromName = null)
  * @return bool
  */
 function sendVerificationEmail($email, $token) {
-    $verificationUrl = APP_URL . '/verify-email.php?token=' . urlencode($token);
+    $appUrl = defined('APP_URL') ? APP_URL : 'https://poda.bio';
+    $appName = defined('APP_NAME') ? APP_NAME : 'PodaBio';
+    $verificationUrl = $appUrl . '/verify-email.php?token=' . urlencode($token);
     
-    $subject = 'Verify Your ' . APP_NAME . ' Account';
+    $subject = 'Verify Your ' . $appName . ' Account';
     
     $message = '
     <!DOCTYPE html>
@@ -402,7 +406,7 @@ function sendVerificationEmail($email, $token) {
     <body>
         <div class="container">
             <div class="header">
-                <h1>' . h(APP_NAME) . '</h1>
+                <h1>' . h($appName) . '</h1>
             </div>
             <div class="content">
                 <h2>Verify Your Email Address</h2>
@@ -416,7 +420,7 @@ function sendVerificationEmail($email, $token) {
                 <p>If you did not create an account, please ignore this email.</p>
             </div>
             <div class="footer">
-                <p>&copy; ' . date('Y') . ' ' . h(APP_NAME) . '. All rights reserved.</p>
+                <p>&copy; ' . date('Y') . ' ' . h($appName) . '. All rights reserved.</p>
             </div>
         </div>
     </body>
