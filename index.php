@@ -1150,39 +1150,46 @@ require_once __DIR__ . '/includes/helpers.php';
         
         footer.footer,
         .footer {
+            opacity: 1 !important;
+            visibility: visible !important;
             display: block !important;
             position: relative !important;
             z-index: 999 !important;
-            background: var(--poda-bg-secondary, #1a1a1a) !important;
-            color: var(--poda-text-primary, #ffffff) !important;
-            padding: 3rem 2rem 2rem !important;
-            margin-top: 4rem !important;
-            border-top: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1)) !important;
-            width: 100% !important;
-            min-height: 200px !important;
         }
         
         .footer-content {
             opacity: 1 !important;
             visibility: visible !important;
-            display: grid !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-            gap: 2rem !important;
-            margin-bottom: 2rem !important;
         }
         
         .footer-section {
             opacity: 1 !important;
             visibility: visible !important;
-            display: block !important;
+        }
+        
+        .footer-section ul {
+            padding: 0 !important;
+            margin: 0 !important;
+            list-style: none !important;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .footer-section a {
+            color: var(--poda-text-secondary, #9ca3af) !important;
+            text-decoration: none !important;
+            transition: color 0.3s !important;
+        }
+        
+        .footer-section a:hover {
+            color: var(--poda-accent-signal-green, #00ff7f) !important;
         }
         
         .footer-bottom {
             opacity: 1 !important;
             visibility: visible !important;
-            display: block !important;
             text-align: center !important;
             padding-top: 2rem !important;
             border-top: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1)) !important;
