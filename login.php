@@ -4,12 +4,27 @@
  * PodaBio
  */
 
-require_once __DIR__ . '/config/constants.php';
-require_once __DIR__ . '/includes/session.php';
-require_once __DIR__ . '/includes/helpers.php';
-require_once __DIR__ . '/classes/User.php';
-require_once __DIR__ . '/classes/TwoFactorAuth.php';
-require_once __DIR__ . '/config/oauth.php';
+// Error handling wrapper to prevent 500 errors
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't show errors to users, log them instead
+ini_set('log_errors', 1);
+
+try {
+    require_once __DIR__ . '/config/constants.php';
+    require_once __DIR__ . '/includes/session.php';
+    require_once __DIR__ . '/includes/helpers.php';
+    require_once __DIR__ . '/classes/User.php';
+    require_once __DIR__ . '/classes/TwoFactorAuth.php';
+    
+    // OAuth config might fail, make it optional
+    if (file_exists(__DIR__ . '/config/oauth.php')) {
+        require_once __DIR__ . '/config/oauth.php';
+    }
+} catch (Throwable $e) {
+    error_log('Login page fatal error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    http_response_code(500);
+    die('An error occurred. Please try again later.');
+}
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -159,11 +174,16 @@ if ($show2FAInput && isset($_SESSION['2fa_pending_user_id'])) {
 }
 
 $csrfToken = generateCSRFToken();
-try {
-    $googleAuthUrl = getGoogleAuthUrl();
-} catch (Exception $e) {
-    error_log('Failed to generate Google Auth URL: ' . $e->getMessage());
-    $googleAuthUrl = '#'; // Fallback to prevent 500 error
+
+// Generate Google Auth URL with error handling
+$googleAuthUrl = '#';
+if (function_exists('getGoogleAuthUrl')) {
+    try {
+        $googleAuthUrl = getGoogleAuthUrl();
+    } catch (Throwable $e) {
+        error_log('Failed to generate Google Auth URL: ' . $e->getMessage());
+        $googleAuthUrl = '#'; // Fallback to prevent 500 error
+    }
 }
 
 ?>
@@ -310,6 +330,7 @@ try {
                 </form>
             <?php endif; ?>
             
+            <?php if ($googleAuthUrl !== '#'): ?>
             <div class="auth-divider">
                 <span>OR</span>
             </div>
@@ -323,6 +344,7 @@ try {
                 </svg>
                 Sign in with Google
             </a>
+            <?php endif; ?>
             
             <p class="auth-footer">
                 Don't have an account? <a href="/signup.php">Sign up</a>
