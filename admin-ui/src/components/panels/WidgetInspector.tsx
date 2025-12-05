@@ -9,6 +9,7 @@ import { uploadWidgetThumbnail } from '../../api/uploads';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { normalizeImageUrl } from '../../api/utils';
 import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
+import { ImageCropModal } from '../overlays/ImageCropModal';
 import type { MediaItem } from '../../api/media';
 import { useUploadToMediaLibraryMutation, useMediaLibraryQuery } from '../../api/media';
 
@@ -69,6 +70,8 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isUploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
   const widgetType =
     selectedWidget?.widget_type ?? (typeof widgetDefinition?.widget_id === 'string' ? widgetDefinition?.widget_id : '');
@@ -222,10 +225,50 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   ) => {
     const file = event.target.files?.[0];
     if (!file || !selectedWidget) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setThumbnailError('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
+      if (thumbnailInputRef.current) {
+        thumbnailInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setThumbnailError('File size exceeds the maximum allowed size of 5MB.');
+      if (thumbnailInputRef.current) {
+        thumbnailInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Create preview URL and show crop modal
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageSrc = e.target?.result as string;
+      setImageToCrop(imageSrc);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (thumbnailInputRef.current) {
+      thumbnailInputRef.current.value = '';
+    }
+  };
+
+  const handleThumbnailCropComplete = async (croppedImageBlob: Blob) => {
+    if (!selectedWidget) return;
+
     setThumbnailError(null);
     setUploadingThumbnail(true);
     try {
-      const result = await uploadWidgetThumbnail(file);
+      const croppedFile = new File([croppedImageBlob], 'thumbnail.jpg', { type: 'image/jpeg' });
+      const result = await uploadWidgetThumbnail(croppedFile);
       if (result.url) {
         handleInputChange('thumbnail_image', result.url);
         setSaveStatus('success');
@@ -242,14 +285,13 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
           });
         }
       }
+      setCropModalOpen(false);
+      setImageToCrop(null);
     } catch (error) {
       setThumbnailError(error instanceof Error ? error.message : 'Unable to upload thumbnail.');
       setSaveStatus('error');
     } finally {
       setUploadingThumbnail(false);
-      if (thumbnailInputRef.current) {
-        thumbnailInputRef.current.value = '';
-      }
     }
   };
 
@@ -480,6 +522,22 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
                   onClose={() => setMediaLibraryOpen(false)}
                   onSelect={handleSelectThumbnailFromLibrary}
                 />
+                {imageToCrop && (
+                  <ImageCropModal
+                    open={cropModalOpen}
+                    onClose={() => {
+                      setCropModalOpen(false);
+                      setImageToCrop(null);
+                    }}
+                    imageSrc={imageToCrop}
+                    onCropComplete={handleThumbnailCropComplete}
+                    aspectRatio={undefined} // Free crop for thumbnails
+                    cropShape="rect"
+                    minZoom={1}
+                    maxZoom={3}
+                    initialZoom={1}
+                  />
+                )}
                 {thumbnailError && <p className={styles.thumbnailError}>{thumbnailError}</p>}
                 {widgetType === 'people' && (
                   <input

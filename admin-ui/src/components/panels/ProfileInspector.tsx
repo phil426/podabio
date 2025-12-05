@@ -6,6 +6,7 @@ import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../a
 import { uploadProfileImage } from '../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
+import { ImageCropModal } from '../overlays/ImageCropModal';
 import type { MediaItem } from '../../api/media';
 
 import { type TabColorTheme } from '../layout/tab-colors';
@@ -42,6 +43,8 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const [isSavingProfile, setSavingProfile] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const nameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bioTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -105,9 +108,49 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setStatusTone('error');
+      setStatus('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setStatusTone('error');
+      setStatus(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Create preview URL and show crop modal
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageSrc = e.target?.result as string;
+      setImageToCrop(imageSrc);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropComplete = async (croppedImageBlob: Blob) => {
     try {
       setUploading(true);
-      await uploadProfileImage(file);
+      // Convert blob to File
+      const croppedFile = new File([croppedImageBlob], 'profile-image.jpg', { type: 'image/jpeg' });
+      await uploadProfileImage(croppedFile);
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setStatusTone('success');
       setStatus('Profile image updated.');
@@ -116,9 +159,8 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       setStatus(error instanceof Error ? error.message : 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setCropModalOpen(false);
+      setImageToCrop(null);
     }
   };
 
@@ -394,6 +436,22 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
           onClose={() => setMediaLibraryOpen(false)}
           onSelect={handleSelectFromLibrary}
         />
+        {imageToCrop && (
+          <ImageCropModal
+            open={cropModalOpen}
+            onClose={() => {
+              setCropModalOpen(false);
+              setImageToCrop(null);
+            }}
+            imageSrc={imageToCrop}
+            onCropComplete={handleCropComplete}
+            aspectRatio={1} // Square for profile images
+            cropShape="round" // Round crop for profile images
+            minZoom={1}
+            maxZoom={3}
+            initialZoom={1}
+          />
+        )}
       </div>
 
       <div className={styles.fieldset}>

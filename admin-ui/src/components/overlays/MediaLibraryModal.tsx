@@ -10,6 +10,7 @@ import {
   type MediaItem
 } from '../../api/media';
 import { normalizeImageUrl } from '../../api/utils';
+import { ImageCropModal } from './ImageCropModal';
 
 import styles from './media-library-modal.module.css';
 
@@ -37,6 +38,8 @@ function formatDate(dateString: string): string {
 export function MediaLibraryModal({ open, onClose, onSelect }: MediaLibraryModalProps): JSX.Element {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Reset state when modal opens
@@ -65,12 +68,47 @@ export function MediaLibraryModal({ open, onClose, onSelect }: MediaLibraryModal
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      await uploadMutation.mutateAsync(file);
-      // Reset file input
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      return;
+    }
+
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('File size exceeds the maximum allowed size of 5MB.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Create preview URL and show crop modal
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageSrc = e.target?.result as string;
+      setImageToCrop(imageSrc);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const handleCropComplete = useCallback(async (croppedImageBlob: Blob) => {
+    try {
+      const croppedFile = new File([croppedImageBlob], 'image.jpg', { type: 'image/jpeg' });
+      await uploadMutation.mutateAsync(croppedFile);
+      setCropModalOpen(false);
+      setImageToCrop(null);
     } catch (error) {
       console.error('Upload failed:', error);
       alert(error instanceof Error ? error.message : 'Failed to upload image');
@@ -269,6 +307,22 @@ export function MediaLibraryModal({ open, onClose, onSelect }: MediaLibraryModal
           </ScrollArea.Root>
         </Dialog.Content>
       </Dialog.Portal>
+      {imageToCrop && (
+        <ImageCropModal
+          open={cropModalOpen}
+          onClose={() => {
+            setCropModalOpen(false);
+            setImageToCrop(null);
+          }}
+          imageSrc={imageToCrop}
+          onCropComplete={handleCropComplete}
+          aspectRatio={undefined} // Free crop for media library
+          cropShape="rect"
+          minZoom={1}
+          maxZoom={3}
+          initialZoom={1}
+        />
+      )}
     </Dialog.Root>
   );
 }

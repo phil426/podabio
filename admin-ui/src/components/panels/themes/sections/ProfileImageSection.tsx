@@ -13,6 +13,7 @@ import { usePageSnapshot, removeProfileImage, updatePageSettings } from '../../.
 import { uploadProfileImage } from '../../../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../../../api/utils';
 import { MediaLibraryDrawer } from '../../../overlays/MediaLibraryDrawer';
+import { ImageCropModal } from '../../../overlays/ImageCropModal';
 import type { MediaItem } from '../../../../api/media';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './page-customization-section.module.css';
@@ -34,6 +35,8 @@ export function ProfileImageSection({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   
   const profileImage = page?.profile_image ?? null;
 
@@ -145,16 +148,6 @@ export function ProfileImageSection({
                 const file = e.target.files?.[0];
                 if (!file) return;
                 
-                // Client-side validation: Check file size (5MB limit)
-                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                if (file.size > maxSize) {
-                  alert(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                  return;
-                }
-                
                 // Validate file type
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 if (!allowedTypes.includes(file.type)) {
@@ -165,19 +158,28 @@ export function ProfileImageSection({
                   return;
                 }
                 
-                try {
-                  setIsUploading(true);
-                  await uploadProfileImage(file);
-                  await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-                } catch (error) {
-                  const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
-                  alert(errorMessage);
-                  console.error('Upload failed:', error);
-                } finally {
-                  setIsUploading(false);
+                // Check file size (5MB limit)
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                  alert(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
                   if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                   }
+                  return;
+                }
+                
+                // Create preview URL and show crop modal
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const imageSrc = event.target?.result as string;
+                  setImageToCrop(imageSrc);
+                  setCropModalOpen(true);
+                };
+                reader.readAsDataURL(file);
+
+                // Reset file input
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
                 }
               }}
             />
@@ -321,6 +323,37 @@ export function ProfileImageSection({
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={handleSelectFromLibrary}
       />
+      {imageToCrop && (
+        <ImageCropModal
+          open={cropModalOpen}
+          onClose={() => {
+            setCropModalOpen(false);
+            setImageToCrop(null);
+          }}
+          imageSrc={imageToCrop}
+          onCropComplete={async (croppedImageBlob: Blob) => {
+            try {
+              setIsUploading(true);
+              const croppedFile = new File([croppedImageBlob], 'profile-image.jpg', { type: 'image/jpeg' });
+              await uploadProfileImage(croppedFile);
+              await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+              setCropModalOpen(false);
+              setImageToCrop(null);
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
+              alert(errorMessage);
+              console.error('Upload failed:', error);
+            } finally {
+              setIsUploading(false);
+            }
+          }}
+          aspectRatio={1}
+          cropShape="round"
+          minZoom={1}
+          maxZoom={3}
+          initialZoom={1}
+        />
+      )}
     </div>
   );
 }
