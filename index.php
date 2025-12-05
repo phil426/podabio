@@ -1794,7 +1794,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         <div class="pricing-card featured scroll-animate" data-animate="scale" data-delay="200" style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative;">
                             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-accent-signal-green); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">POPULAR</div>
                             <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">Pro</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$<?php echo number_format(PLAN_PRO_MONTHLY_PRICE, 2); ?><span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
+                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$<?php echo number_format(defined('PLAN_PRO_MONTHLY_PRICE') ? PLAN_PRO_MONTHLY_PRICE : 4.99, 2); ?><span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
                             <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For professional podcasters</p>
                             <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
                                 <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Everything in Free</li>
