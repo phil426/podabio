@@ -92,9 +92,15 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         /* Scroll Animation Styles */
+        /* Progressive enhancement: visible by default, hidden only when JS runs */
         .scroll-animate {
-            opacity: 0;
+            opacity: 1; /* Visible by default - content is always accessible */
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        /* Only hide when animations are initialized (JS adds this class) */
+        body.animations-ready .scroll-animate:not(.animate) {
+            opacity: 0;
         }
         
         .scroll-animate.animate {
@@ -103,6 +109,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade In */
         .scroll-animate[data-animate="fade"] {
+            opacity: 1; /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
             opacity: 0;
         }
         
@@ -112,6 +122,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Up */
         .scroll-animate[data-animate="slide-up"] {
+            transform: translateY(0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
             transform: translateY(60px);
         }
         
@@ -121,6 +135,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Down */
         .scroll-animate[data-animate="slide-down"] {
+            transform: translateY(0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
             transform: translateY(-60px);
         }
         
@@ -130,6 +148,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Left */
         .scroll-animate[data-animate="slide-left"] {
+            transform: translateX(0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
             transform: translateX(60px);
         }
         
@@ -139,6 +161,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Right */
         .scroll-animate[data-animate="slide-right"] {
+            transform: translateX(0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
             transform: translateX(-60px);
         }
         
@@ -148,6 +174,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale */
         .scroll-animate[data-animate="scale"] {
+            transform: scale(1); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
             transform: scale(0.8);
         }
         
@@ -157,6 +187,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Reveal (clip-path) */
         .scroll-animate[data-animate="reveal"] {
+            clip-path: inset(0 0 0% 0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
             clip-path: inset(0 0 100% 0);
         }
         
@@ -166,6 +200,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade + Slide Up (most common) */
         .scroll-animate[data-animate="fade-slide-up"] {
+            transform: translateY(0); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
             opacity: 0;
             transform: translateY(40px);
         }
@@ -177,6 +215,10 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Rotate */
         .scroll-animate[data-animate="rotate"] {
+            transform: rotate(0deg) scale(1); /* Visible by default */
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
             transform: rotate(-5deg) scale(0.9);
         }
         
@@ -186,6 +228,11 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale + Rotate */
         .scroll-animate[data-animate="scale-rotate"] {
+            opacity: 1; /* Visible by default */
+            transform: scale(1) rotate(0deg);
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
             opacity: 0;
             transform: scale(0.8) rotate(10deg);
         }
@@ -197,6 +244,11 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide from corner */
         .scroll-animate[data-animate="slide-corner"] {
+            opacity: 1; /* Visible by default */
+            transform: translate(0, 0);
+        }
+        
+        body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
             opacity: 0;
             transform: translate(60px, 60px);
         }
@@ -1988,6 +2040,9 @@ require_once __DIR__ . '/includes/helpers.php';
         // Scroll Animations using Intersection Observer
         (function() {
             function initScrollAnimations() {
+                // Mark body as animations ready - this enables hiding of non-animated elements
+                document.body.classList.add('animations-ready');
+                
                 // Get all elements with scroll-animate class
                 const animateElements = document.querySelectorAll('.scroll-animate');
                 
