@@ -1868,132 +1868,133 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
+        // CRITICAL: Event delegation for interactive elements - runs immediately and independently
         (function() {
             'use strict';
-            try {
-                console.log('🚀 Initializing page interactivity...');
-                
-                // Event delegation for ALL click handlers - works even if elements don't exist yet
-                document.addEventListener('click', function(e) {
-                    try {
-                        // Demo toggle buttons
-                        const demoBtn = e.target.closest('.demo-toggle button[data-demo-view]');
-                        if (demoBtn) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const view = demoBtn.getAttribute('data-demo-view');
-                            const placeholder = document.getElementById('demo-image-placeholder');
+            console.log('🚀 Initializing page interactivity...');
+            
+            // Event delegation for ALL click handlers - works even if elements don't exist yet
+            document.addEventListener('click', function(e) {
+                try {
+                    // Demo toggle buttons
+                    const demoBtn = e.target.closest('.demo-toggle button[data-demo-view]');
+                    if (demoBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const view = demoBtn.getAttribute('data-demo-view');
+                        const placeholder = document.getElementById('demo-image-placeholder');
+                        
+                        if (placeholder) {
+                            document.querySelectorAll('.demo-toggle button').forEach(b => b.classList.remove('active'));
+                            demoBtn.classList.add('active');
                             
-                            if (placeholder) {
-                                document.querySelectorAll('.demo-toggle button').forEach(b => b.classList.remove('active'));
-                                demoBtn.classList.add('active');
-                                
-                                if (view === 'mobile') {
-                                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
-                                } else {
-                                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
-                                }
+                            if (view === 'mobile') {
+                                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                            } else {
+                                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
                             }
-                            return;
                         }
-                        
-                        // Tab buttons
-                        const tabBtn = e.target.closest('.tab-button');
-                        if (tabBtn) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const tab = tabBtn.getAttribute('data-tab');
-                            if (tab && window.switchToTab) {
-                                window.switchToTab(tab, false);
-                            }
-                            return;
+                        return;
+                    }
+                    
+                    // Tab buttons
+                    const tabBtn = e.target.closest('.tab-button');
+                    if (tabBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const tab = tabBtn.getAttribute('data-tab');
+                        if (tab && window.switchToTab) {
+                            window.switchToTab(tab, false);
                         }
-                        
-                        // Anchor links for tabs
-                        const link = e.target.closest('a[href^="#"]');
-                        if (link) {
-                            const href = link.getAttribute('href');
-                            if (href && href.startsWith('#')) {
-                                const tab = href.substring(1);
-                                if (['features', 'pricing', 'examples', 'about'].includes(tab) && window.switchToTab) {
-                                    e.preventDefault();
-                                    window.switchToTab(tab, true);
-                                }
+                        return;
+                    }
+                    
+                    // Anchor links for tabs
+                    const link = e.target.closest('a[href^="#"]');
+                    if (link) {
+                        const href = link.getAttribute('href');
+                        if (href && href.startsWith('#')) {
+                            const tab = href.substring(1);
+                            if (['features', 'pricing', 'examples', 'about'].includes(tab) && window.switchToTab) {
+                                e.preventDefault();
+                                window.switchToTab(tab, true);
                             }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Click handler error:', err);
+                }
+            });
+            
+            // Hash change handler
+            if (!window.hashChangeListenerAdded) {
+                window.addEventListener('hashchange', function() {
+                    try {
+                        const hash = window.location.hash.substring(1);
+                        if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
+                            window.switchToTab(hash, true);
                         }
                     } catch (err) {
-                        console.error('Click handler error:', err);
+                        console.error('Hash change error:', err);
                     }
                 });
-                
-                // Hash change handler
-                if (!window.hashChangeListenerAdded) {
-                    window.addEventListener('hashchange', function() {
-                        try {
-                            const hash = window.location.hash.substring(1);
-                            if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
-                                window.switchToTab(hash, true);
-                            }
-                        } catch (err) {
-                            console.error('Hash change error:', err);
-                        }
-                    });
-                    window.hashChangeListenerAdded = true;
-                }
-                
-                // Initial hash
-                if (window.location.hash) {
-                    const hash = window.location.hash.substring(1);
-                    if (['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
-                        setTimeout(() => window.switchToTab(hash, true), 500);
-                    }
-                }
-                
-                // Drawer handlers
-                function initDrawers() {
-                    try {
-                        const overlay = document.getElementById('drawer-overlay');
-                        if (overlay && !overlay.dataset.listenerAttached) {
-                            overlay.addEventListener('click', window.closeDrawer);
-                            overlay.dataset.listenerAttached = 'true';
-                        }
-                        
-                        if (!window.escapeKeyListenerAdded) {
-                            document.addEventListener('keydown', function(e) {
-                                if (e.key === 'Escape' && window.closeDrawer) {
-                                    window.closeDrawer();
-                                }
-                            });
-                            window.escapeKeyListenerAdded = true;
-                        }
-                    } catch (err) {
-                        console.error('Drawer init error:', err);
-                    }
-                }
-                
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initDrawers);
-                } else {
-                    initDrawers();
-                }
-                setTimeout(initDrawers, 500);
-                
-                console.log('✅ Event handlers initialized');
-            } catch (err) {
-                console.error('❌ Initialization error:', err);
+                window.hashChangeListenerAdded = true;
             }
+            
+            // Initial hash
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                if (['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
+                    setTimeout(() => window.switchToTab(hash, true), 500);
+                }
+            }
+            
+            // Drawer handlers
+            function initDrawers() {
+                try {
+                    const overlay = document.getElementById('drawer-overlay');
+                    if (overlay && !overlay.dataset.listenerAttached) {
+                        overlay.addEventListener('click', window.closeDrawer);
+                        overlay.dataset.listenerAttached = 'true';
+                    }
+                    
+                    if (!window.escapeKeyListenerAdded) {
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'Escape' && window.closeDrawer) {
+                                window.closeDrawer();
+                            }
+                        });
+                        window.escapeKeyListenerAdded = true;
+                    }
+                } catch (err) {
+                    console.error('Drawer init error:', err);
+                }
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initDrawers);
+            } else {
+                initDrawers();
+            }
+            setTimeout(initDrawers, 500);
+            
+            console.log('✅ Event handlers initialized');
         })();
-        // Username Claim Functionality
-        const usernameInput = document.getElementById('hero-username-input');
-        const claimBtn = document.getElementById('hero-claim-btn');
-        const statusIndicator = document.getElementById('username-status');
         
-        let checkTimeout = null;
-        let isChecking = false;
-        let isAvailable = false;
-        
-        if (usernameInput && claimBtn && statusIndicator) {
-            // Function to check username availability
+        // Username claim functionality - separate script block to prevent errors from breaking event delegation
+        (function() {
+            try {
+                const usernameInput = document.getElementById('hero-username-input');
+                const claimBtn = document.getElementById('hero-claim-btn');
+                const statusIndicator = document.getElementById('username-status');
+                
+                if (!usernameInput || !claimBtn || !statusIndicator) return;
+                
+                let checkTimeout = null;
+                let isChecking = false;
+                let isAvailable = false;
+                
+                // Function to check username availability
             async function checkUsernameAvailability(username) {
                 if (isChecking) return;
                 
@@ -2013,8 +2014,8 @@ require_once __DIR__ . '/includes/helpers.php';
                         isAvailable = false;
                     }
                     return;
-            }
-            
+                }
+                
                 isChecking = true;
                 usernameInput.classList.remove('available', 'unavailable');
                 usernameInput.classList.add('checking');
@@ -2103,72 +2104,87 @@ require_once __DIR__ . '/includes/helpers.php';
                     usernameInput.parentElement.parentElement.style.borderColor = 'rgba(255, 255, 255, 0.15)';
                 }
             });
-        }
-        
-        // Initialize drawer handlers
-        function initDrawerHandlers() {
-            const overlay = document.getElementById('drawer-overlay');
-            if (overlay && !overlay.dataset.listenerAttached) {
-                overlay.addEventListener('click', window.closeDrawer);
-                overlay.dataset.listenerAttached = 'true';
+            } catch (err) {
+                console.error('Username claim init error:', err);
             }
-            
-            // Close drawer on escape key (only add once)
-            if (!window.escapeKeyListenerAdded) {
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        window.closeDrawer();
+        })();
+        
+        // Initialize drawer handlers - separate block
+        (function() {
+            try {
+                function initDrawerHandlers() {
+                    const overlay = document.getElementById('drawer-overlay');
+                    if (overlay && !overlay.dataset.listenerAttached) {
+                        overlay.addEventListener('click', window.closeDrawer);
+                        overlay.dataset.listenerAttached = 'true';
                     }
-                });
-                window.escapeKeyListenerAdded = true;
-            }
-        }
-        
-        // Initialize drawer handlers immediately
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDrawerHandlers);
-        } else {
-            initDrawerHandlers();
-        }
-        
-        // Also try after a delay
-        setTimeout(initDrawerHandlers, 500);
-        
-        // Smooth scroll for anchor links - initialize after DOM ready
-        function initSmoothScroll() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                if (anchor.dataset.smoothScrollAttached) return;
-                anchor.dataset.smoothScrollAttached = 'true';
+                    
+                    // Close drawer on escape key (only add once)
+                    if (!window.escapeKeyListenerAdded) {
+                        document.addEventListener('keydown', (e) => {
+                            if (e.key === 'Escape') {
+                                window.closeDrawer();
+                            }
+                        });
+                        window.escapeKeyListenerAdded = true;
+                    }
+                }
                 
-                anchor.addEventListener('click', function (e) {
-                    const href = this.getAttribute('href');
-                    if (href && href !== '#' && !href.startsWith('#privacy') && !href.startsWith('#terms')) {
-                        const target = document.querySelector(href);
-                        if (target) {
-                            e.preventDefault();
-                            const headerOffset = 100;
-                            const elementPosition = target.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                            
-                            window.scrollTo({
-                                top: offsetPosition,
-                                behavior: 'smooth'
-                            });
-                        }
-                    }
-                });
-            });
-        }
+                // Initialize drawer handlers immediately
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDrawerHandlers);
+                } else {
+                    initDrawerHandlers();
+                }
+                
+                // Also try after a delay
+                setTimeout(initDrawerHandlers, 500);
+            } catch (err) {
+                console.error('Drawer handlers init error:', err);
+            }
+        })();
         
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSmoothScroll);
-        } else {
-            initSmoothScroll();
-        }
+        // Smooth scroll for anchor links - separate block
+        (function() {
+            try {
+                function initSmoothScroll() {
+                    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                        if (anchor.dataset.smoothScrollAttached) return;
+                        anchor.dataset.smoothScrollAttached = 'true';
+                        
+                        anchor.addEventListener('click', function (e) {
+                            const href = this.getAttribute('href');
+                            if (href && href !== '#' && !href.startsWith('#privacy') && !href.startsWith('#terms')) {
+                                const target = document.querySelector(href);
+                                if (target) {
+                                    e.preventDefault();
+                                    const headerOffset = 100;
+                                    const elementPosition = target.getBoundingClientRect().top;
+                                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                                    
+                                    window.scrollTo({
+                                        top: offsetPosition,
+                                        behavior: 'smooth'
+                                    });
+                                }
+                            }
+                        });
+                    });
+                }
+                
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initSmoothScroll);
+                } else {
+                    initSmoothScroll();
+                }
+                
+                setTimeout(initSmoothScroll, 500);
+            } catch (err) {
+                console.error('Smooth scroll init error:', err);
+            }
+        })();
         
-        setTimeout(initSmoothScroll, 500);
-        
-        // Scroll Animations using Intersection Observer
+        // Scroll Animations using Intersection Observer - separate block
         (function() {
             let animationInitialized = false;
             
