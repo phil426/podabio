@@ -1351,8 +1351,8 @@ require_once __DIR__ . '/includes/helpers.php';
             <h2 class="scroll-animate" data-animate="fade-slide-up">See It In Action</h2>
             <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Beautiful pages that represent your brand perfectly</p>
             <div class="demo-toggle scroll-animate" data-animate="fade-slide-up" data-delay="200">
-                <button class="active" onclick="switchDemo('mobile')">Mobile</button>
-                <button onclick="switchDemo('desktop')">Desktop</button>
+                <button class="active" onclick="switchDemo('mobile', event)">Mobile</button>
+                <button onclick="switchDemo('desktop', event)">Desktop</button>
             </div>
             <div class="demo-preview scroll-animate" data-animate="scale" data-delay="300">
                 <div id="demo-image-placeholder" style="padding: 3rem 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary);">
@@ -1716,18 +1716,26 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
-        function switchDemo(view) {
+        // Make switchDemo globally accessible for inline onclick handlers
+        window.switchDemo = function(view, event) {
             const buttons = document.querySelectorAll('.demo-toggle button');
             buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            // Get the button that was clicked
+            const clickedButton = event ? event.target : document.querySelector(`.demo-toggle button[onclick*="${view}"]`);
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
             
             const placeholder = document.getElementById('demo-image-placeholder');
-            if (view === 'mobile') {
-                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
-            } else {
-                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+            if (placeholder) {
+                if (view === 'mobile') {
+                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                } else {
+                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                }
             }
-        }
+        };
 
         // Navigation functionality is handled by marketing-nav.js
         
