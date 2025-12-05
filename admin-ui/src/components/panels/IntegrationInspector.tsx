@@ -5,6 +5,7 @@ import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useInte
 import { SecurityActionDrawer } from '../overlays/SecurityActionDrawer';
 import type { SecurityAction } from '../overlays/SecurityActionDrawer';
 import { useIntegrationSelection } from '../../state/integrationSelection';
+import { EmailSubscriptionSettings } from './EmailSubscriptionSettings';
 import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './integration-inspector.module.css';
@@ -204,6 +205,37 @@ export function IntegrationInspector({ activeColor }: IntegrationInspectorProps)
     );
   }
 
+
+  // Email Subscription Inspector
+  if (selectedIntegrationId === 'email-subscription') {
+    return (
+      <div 
+        className={styles.wrapper}
+        style={{ 
+          '--active-tab-color': activeColor.text,
+          '--active-tab-bg': activeColor.primary,
+          '--active-tab-light': activeColor.light,
+          '--active-tab-border': activeColor.border
+        } as React.CSSProperties}
+      >
+        <header className={styles.header}>
+          <div>
+            <h3>Email Subscription</h3>
+            <p>Configure your email marketing service</p>
+          </div>
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={() => selectIntegration(null)}
+            aria-label="Close"
+          >
+            <X aria-hidden="true" size={20} weight="regular" />
+          </button>
+        </header>
+        <EmailSubscriptionSettings />
+      </div>
+    );
+  }
 
   // Placeholder for other integrations
   return (

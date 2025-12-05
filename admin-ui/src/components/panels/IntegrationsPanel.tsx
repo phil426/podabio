@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, X, CircleNotch, ShoppingBag, TrendUp, Storefront, Ticket, Link } from '@phosphor-icons/react';
+import { Check, X, CircleNotch, ShoppingBag, TrendUp, Storefront, Ticket, Link, Envelope } from '@phosphor-icons/react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 
 import { useAuthMethods, useUnlinkGoogleMutation, useRefreshAccountData, useIntegrationsStatus } from '../../api/account';
@@ -10,6 +10,7 @@ import type { SecurityAction } from '../overlays/SecurityActionDrawer';
 import { useIntegrationSelection } from '../../state/integrationSelection';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { queryKeys } from '../../api/utils';
+import { EmailSubscriptionSettings } from './EmailSubscriptionSettings';
 
 import styles from './integrations-panel.module.css';
 
@@ -278,6 +279,52 @@ export function IntegrationsPanel(): JSX.Element {
             </header>
 
             <div className={styles.wrapper}>
+
+        <div className={styles.fieldset}>
+          <header className={styles.header}>
+            <h3 className={styles.title}>Email Subscription</h3>
+            <p className={styles.description}>
+              Configure your email marketing service to collect subscribers.
+            </p>
+          </header>
+
+          <div 
+            className={`${styles.integrationCard} ${selectedIntegrationId === 'email-subscription' ? styles.integrationCardSelected : ''}`}
+            onClick={() => selectIntegration('email-subscription')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectIntegration('email-subscription');
+              }
+            }}
+          >
+            <div className={styles.integrationHeader}>
+              <div className={styles.integrationInfo}>
+                <div className={styles.integrationIcon}>
+                  <Envelope aria-hidden="true" size={20} weight="regular" />
+                </div>
+                <div className={styles.integrationDetails}>
+                  <p className={styles.integrationName}>Email Subscription</p>
+                  <p className={styles.integrationStatus}>
+                    {snapshot?.page?.email_service_provider ? (
+                      <>
+                        <Check className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
+                        <span>Configured ({snapshot.page.email_service_provider})</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className={styles.statusIcon} aria-hidden="true" size={16} weight="regular" />
+                        <span>Not configured</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className={styles.fieldset}>
           <header className={styles.header}>
