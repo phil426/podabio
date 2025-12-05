@@ -81,7 +81,8 @@ require_once __DIR__ . '/includes/helpers.php';
                         if (drawer && overlay) {
                             drawer.classList.add('open');
                             overlay.classList.add('active');
-                            document.body.style.overflow = 'hidden';
+                            // Only hide body scroll when drawer is actually open
+                            document.body.style.overflowY = 'hidden';
                         }
                     } catch (err) {
                         console.error('openDrawer error:', err);
@@ -93,9 +94,16 @@ require_once __DIR__ . '/includes/helpers.php';
                         document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
                         const overlay = document.getElementById('drawer-overlay');
                         if (overlay) overlay.classList.remove('active');
+                        // CRITICAL: Always restore scrolling
                         document.body.style.overflow = '';
+                        document.body.style.overflowY = 'auto';
+                        document.documentElement.style.overflow = '';
+                        document.documentElement.style.overflowY = 'auto';
                     } catch (err) {
                         console.error('closeDrawer error:', err);
+                        // Force restore scrolling even on error
+                        document.body.style.overflow = '';
+                        document.body.style.overflowY = 'auto';
                     }
                 };
                 
@@ -206,6 +214,18 @@ require_once __DIR__ . '/includes/helpers.php';
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+        
+        /* CRITICAL: Ensure page is always scrollable */
+        html, body {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        
+        body {
+            position: relative !important;
         }
         
         /* Scroll Animation Styles */
@@ -1110,26 +1130,47 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         /* Ensure footer and final CTA are ALWAYS visible - no scroll animations */
+        footer.footer,
+        footer.footer *,
         .footer,
         .footer *,
         .final-cta,
         .final-cta * {
             opacity: 1 !important;
             visibility: visible !important;
+            display: block !important;
         }
         
+        footer.footer,
         .footer {
+            display: block !important;
+            position: relative !important;
+            z-index: 1 !important;
+            background: var(--poda-bg-secondary) !important;
+            padding: 3rem 2rem 2rem !important;
+            margin-top: 4rem !important;
+            border-top: 1px solid var(--poda-border-subtle) !important;
+        }
+        
+        .footer-content,
+        .footer-bottom {
+            opacity: 1 !important;
+            visibility: visible !important;
             display: block !important;
         }
         
         /* Prevent animations from hiding footer/CTA even if animations-ready class exists */
+        body.animations-ready footer.footer,
+        body.animations-ready footer.footer *,
         body.animations-ready .footer,
         body.animations-ready .footer *,
         body.animations-ready .final-cta,
         body.animations-ready .final-cta * {
             opacity: 1 !important;
+            visibility: visible !important;
             transform: none !important;
             clip-path: none !important;
+            display: block !important;
         }
         
         .final-cta h2 {
@@ -2182,6 +2223,36 @@ require_once __DIR__ . '/includes/helpers.php';
             }
         })();
         
+        // CRITICAL: Force scrolling enabled on page load
+        (function() {
+            function ensureScrollingEnabled() {
+                document.body.style.overflow = '';
+                document.body.style.overflowY = 'auto';
+                document.body.style.overflowX = 'hidden';
+                document.documentElement.style.overflow = '';
+                document.documentElement.style.overflowY = 'auto';
+                document.documentElement.style.overflowX = 'hidden';
+                document.body.style.height = 'auto';
+                document.body.style.maxHeight = 'none';
+            }
+            
+            // Run immediately
+            ensureScrollingEnabled();
+            
+            // Run on DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', ensureScrollingEnabled);
+            }
+            
+            // Run on window load
+            window.addEventListener('load', ensureScrollingEnabled);
+            
+            // Run periodically as a safety net
+            setTimeout(ensureScrollingEnabled, 100);
+            setTimeout(ensureScrollingEnabled, 500);
+            setTimeout(ensureScrollingEnabled, 1000);
+        })();
+        
         // Scroll Animations using Intersection Observer - separate block
         (function() {
             let animationInitialized = false;
@@ -2256,12 +2327,42 @@ require_once __DIR__ . '/includes/helpers.php';
                     document.body.classList.add('animations-ready');
                 });
                 
-                // Observe all other elements for scroll animations
+                // Observe all other elements for scroll animations (EXCLUDE footer and final CTA)
                 animateElements.forEach(el => {
+                    // Skip footer and final CTA - they should always be visible
+                    if (el.closest('footer.footer') || el.closest('.footer') || el.closest('.final-cta')) {
+                        el.classList.add('animate');
+                        return;
+                    }
+                    
                     if (!el.classList.contains('animate') && !elementsInViewport.includes(el)) {
                         observer.observe(el);
                     }
                 });
+                
+                // CRITICAL: Force footer and final CTA to be visible immediately
+                const footer = document.querySelector('footer.footer, .footer');
+                const finalCta = document.querySelector('.final-cta');
+                
+                if (footer) {
+                    footer.style.opacity = '1';
+                    footer.style.visibility = 'visible';
+                    footer.style.display = 'block';
+                    footer.querySelectorAll('*').forEach(child => {
+                        child.style.opacity = '1';
+                        child.style.visibility = 'visible';
+                    });
+                }
+                
+                if (finalCta) {
+                    finalCta.style.opacity = '1';
+                    finalCta.style.visibility = 'visible';
+                    finalCta.style.display = 'block';
+                    finalCta.querySelectorAll('*').forEach(child => {
+                        child.style.opacity = '1';
+                        child.style.visibility = 'visible';
+                    });
+                }
             }
             
             // Wait for everything to be fully loaded before starting animations
