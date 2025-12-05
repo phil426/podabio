@@ -982,6 +982,20 @@ require_once __DIR__ . '/includes/helpers.php';
             margin: 0 auto;
         }
         
+        /* Ensure footer and final CTA are always visible - no scroll animations */
+        .footer,
+        .footer *,
+        .final-cta,
+        .final-cta * {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+        
+        .footer {
+            display: block !important;
+        }
+        
         .final-cta h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
@@ -1351,8 +1365,8 @@ require_once __DIR__ . '/includes/helpers.php';
             <h2 class="scroll-animate" data-animate="fade-slide-up">See It In Action</h2>
             <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Beautiful pages that represent your brand perfectly</p>
             <div class="demo-toggle scroll-animate" data-animate="fade-slide-up" data-delay="200">
-                <button class="active" onclick="switchDemo('mobile', event)">Mobile</button>
-                <button onclick="switchDemo('desktop', event)">Desktop</button>
+                <button class="active" data-demo-view="mobile">Mobile</button>
+                <button data-demo-view="desktop">Desktop</button>
             </div>
             <div class="demo-preview scroll-animate" data-animate="scale" data-delay="300">
                 <div id="demo-image-placeholder" style="padding: 3rem 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary);">
@@ -1716,26 +1730,43 @@ require_once __DIR__ . '/includes/helpers.php';
     </div>
 
     <script>
-        // Make switchDemo globally accessible for inline onclick handlers
-        window.switchDemo = function(view, event) {
-            const buttons = document.querySelectorAll('.demo-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // Get the button that was clicked
-            const clickedButton = event ? event.target : document.querySelector(`.demo-toggle button[onclick*="${view}"]`);
-            if (clickedButton) {
-                clickedButton.classList.add('active');
-            }
-            
-            const placeholder = document.getElementById('demo-image-placeholder');
-            if (placeholder) {
-                if (view === 'mobile') {
-                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
-                } else {
-                    placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+        // Demo Toggle Functionality
+        (function() {
+            function initDemoToggle() {
+                const buttons = document.querySelectorAll('.demo-toggle button[data-demo-view]');
+                const placeholder = document.getElementById('demo-image-placeholder');
+                
+                if (!buttons.length || !placeholder) {
+                    // Elements not ready yet, try again
+                    setTimeout(initDemoToggle, 100);
+                    return;
                 }
+                
+                buttons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const view = this.getAttribute('data-demo-view');
+                        
+                        // Update active state
+                        buttons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Update placeholder content
+                        if (view === 'mobile') {
+                            placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                        } else {
+                            placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                        }
+                    });
+                });
             }
-        };
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initDemoToggle);
+            } else {
+                initDemoToggle();
+            }
+        })();
 
         // Navigation functionality is handled by marketing-nav.js
         
@@ -2064,9 +2095,8 @@ require_once __DIR__ . '/includes/helpers.php';
                 
                 animationInitialized = true;
                 
-                // Mark body as animations ready - this enables hiding of non-animated elements
-                // BUT only after we've processed initial viewport elements
-                document.body.classList.add('animations-ready');
+                // DON'T add animations-ready yet - wait until we've shown viewport elements
+                // This prevents content from being hidden before we can process it
                 
                 // Check if Intersection Observer is supported
                 if (!('IntersectionObserver' in window)) {
@@ -2119,7 +2149,13 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 });
                 
-                // CRITICAL: Fallback to show ALL remaining elements after 1.5 seconds
+                // NOW add animations-ready class - content is already being processed
+                // Use a small delay to ensure initial elements are handled first
+                setTimeout(() => {
+                    document.body.classList.add('animations-ready');
+                }, 300);
+                
+                // CRITICAL: Fallback to show ALL remaining elements after 1 second
                 // This ensures nothing stays hidden even if Intersection Observer fails or is slow
                 setTimeout(() => {
                     animateElements.forEach(el => {
@@ -2127,7 +2163,7 @@ require_once __DIR__ . '/includes/helpers.php';
                             el.classList.add('animate');
                         }
                     });
-                }, 1500);
+                }, 1000);
             }
             
             // Wait for everything to be fully loaded before starting animations
