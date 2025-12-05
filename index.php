@@ -1029,10 +1029,10 @@ require_once __DIR__ . '/includes/helpers.php';
     <!-- Hero Section -->
     <section class="homepage-hero">
         <div class="hero-content">
-            <p class="hero-tagline scroll-animate" data-animate="fade-slide-up">More signal, Less noise</p>
-            <h1 class="hero-headline scroll-animate" data-animate="fade-slide-up" data-delay="100">The link for listeners</h1>
-            <p class="hero-subheadline scroll-animate" data-animate="fade-slide-up" data-delay="200">A link-in-bio tool purpose built specifically for podcasters.</p>
-            <div class="username-claim-container scroll-animate" data-animate="fade-slide-up" data-delay="300">
+            <p class="hero-tagline scroll-animate animate" data-animate="fade-slide-up">More signal, Less noise</p>
+            <h1 class="hero-headline scroll-animate animate" data-animate="fade-slide-up" data-delay="100">The link for listeners</h1>
+            <p class="hero-subheadline scroll-animate animate" data-animate="fade-slide-up" data-delay="200">A link-in-bio tool purpose built specifically for podcasters.</p>
+            <div class="username-claim-container scroll-animate animate" data-animate="fade-slide-up" data-delay="300">
                 <div class="username-claim-box">
                     <div class="username-input-group">
                         <div class="username-prefix">
@@ -1052,7 +1052,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     </a>
             </div>
             </div>
-            <div class="hero-phone-mockup scroll-animate" data-animate="scale" data-delay="400">
+            <div class="hero-phone-mockup scroll-animate animate" data-animate="scale" data-delay="400">
                 <div style="padding: 3rem 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary);">
                     <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/hero/</p>
                     <p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p>
