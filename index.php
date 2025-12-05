@@ -92,15 +92,9 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         /* Scroll Animation Styles */
-        /* Default: Show all content immediately for better UX */
         .scroll-animate {
-            opacity: 1;
+            opacity: 0;
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        
-        /* Only hide if explicitly marked as not animated yet (for progressive enhancement) */
-        .scroll-animate:not(.animate):not(.no-animate) {
-            /* Content is visible by default - animations are enhancement only */
         }
         
         .scroll-animate.animate {
@@ -109,7 +103,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade In */
         .scroll-animate[data-animate="fade"] {
-            opacity: 1; /* Visible by default */
+            opacity: 0;
         }
         
         .scroll-animate[data-animate="fade"].animate {
@@ -118,7 +112,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Up */
         .scroll-animate[data-animate="slide-up"] {
-            transform: translateY(0); /* No initial transform */
+            transform: translateY(60px);
         }
         
         .scroll-animate[data-animate="slide-up"].animate {
@@ -127,7 +121,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Down */
         .scroll-animate[data-animate="slide-down"] {
-            transform: translateY(0); /* No initial transform */
+            transform: translateY(-60px);
         }
         
         .scroll-animate[data-animate="slide-down"].animate {
@@ -136,7 +130,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Left */
         .scroll-animate[data-animate="slide-left"] {
-            transform: translateX(0); /* No initial transform */
+            transform: translateX(60px);
         }
         
         .scroll-animate[data-animate="slide-left"].animate {
@@ -145,7 +139,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Right */
         .scroll-animate[data-animate="slide-right"] {
-            transform: translateX(0); /* No initial transform */
+            transform: translateX(-60px);
         }
         
         .scroll-animate[data-animate="slide-right"].animate {
@@ -154,7 +148,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale */
         .scroll-animate[data-animate="scale"] {
-            transform: scale(1); /* No initial scale */
+            transform: scale(0.8);
         }
         
         .scroll-animate[data-animate="scale"].animate {
@@ -163,7 +157,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Reveal (clip-path) */
         .scroll-animate[data-animate="reveal"] {
-            clip-path: inset(0 0 0% 0); /* Fully visible by default */
+            clip-path: inset(0 0 100% 0);
         }
         
         .scroll-animate[data-animate="reveal"].animate {
@@ -172,8 +166,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade + Slide Up (most common) */
         .scroll-animate[data-animate="fade-slide-up"] {
-            opacity: 1; /* Visible by default - animations are enhancement only */
-            transform: translateY(0); /* No initial transform - visible immediately */
+            opacity: 0;
+            transform: translateY(40px);
         }
         
         .scroll-animate[data-animate="fade-slide-up"].animate {
@@ -183,7 +177,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Rotate */
         .scroll-animate[data-animate="rotate"] {
-            transform: rotate(0deg) scale(1); /* No initial transform */
+            transform: rotate(-5deg) scale(0.9);
         }
         
         .scroll-animate[data-animate="rotate"].animate {
@@ -192,8 +186,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale + Rotate */
         .scroll-animate[data-animate="scale-rotate"] {
-            opacity: 1; /* Visible by default */
-            transform: scale(1) rotate(0deg); /* No initial transform */
+            opacity: 0;
+            transform: scale(0.8) rotate(10deg);
         }
         
         .scroll-animate[data-animate="scale-rotate"].animate {
@@ -203,8 +197,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide from corner */
         .scroll-animate[data-animate="slide-corner"] {
-            opacity: 1; /* Visible by default */
-            transform: translate(0, 0); /* No initial transform */
+            opacity: 0;
+            transform: translate(60px, 60px);
         }
         
         .scroll-animate[data-animate="slide-corner"].animate {
@@ -1999,7 +1993,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 
                 // If no elements found, try again later
                 if (animateElements.length === 0) {
-                    setTimeout(initScrollAnimations, 200);
+                    setTimeout(initScrollAnimations, 100);
                     return;
                 }
                 
@@ -2012,11 +2006,11 @@ require_once __DIR__ . '/includes/helpers.php';
                     return;
                 }
                 
-                // Create observer with options - more aggressive margins to catch elements earlier
+                // Create observer with options - aggressive margins to catch elements earlier
                 const observerOptions = {
                     root: null,
-                    rootMargin: '200px 0px -100px 0px', // Trigger 200px before entering viewport
-                    threshold: [0, 0.01, 0.1] // Multiple thresholds for better detection
+                    rootMargin: '300px 0px -50px 0px', // Trigger 300px before entering viewport
+                    threshold: [0, 0.01, 0.1, 0.5] // Multiple thresholds for better detection
                 };
                 
                 const observer = new IntersectionObserver((entries) => {
@@ -2028,58 +2022,45 @@ require_once __DIR__ . '/includes/helpers.php';
                     });
                 }, observerOptions);
                 
-                // Immediately show hero section elements (always visible on load)
-                const heroSection = document.querySelector('.homepage-hero');
-                if (heroSection) {
-                    heroSection.querySelectorAll('.scroll-animate').forEach(el => {
-                        if (!el.classList.contains('animate')) {
-                            el.classList.add('animate');
-                        }
-                    });
-                }
-                
-                // Process all elements - show anything near or in viewport
                 const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                const viewportBottom = viewportHeight + 500; // Very generous margin for "near viewport"
                 
+                // Process all elements - show anything in viewport or just below immediately
                 animateElements.forEach(el => {
-                    // Skip if already animated
+                    // Skip if already animated (hero section has animate class in HTML)
                     if (el.classList.contains('animate')) {
                         return;
                     }
                     
                     // Check if element is in or near viewport (very generous margin)
                     const rect = el.getBoundingClientRect();
-                    const isInViewport = rect.top < (viewportHeight + 200) && rect.bottom > -200;
+                    const isInViewport = rect.top < viewportBottom && rect.bottom > -500;
                     
                     if (isInViewport) {
-                        // If visible or near viewport, animate immediately
-                        el.classList.add('animate');
+                        // If visible or near viewport, animate immediately with small stagger
+                        const delay = parseInt(el.getAttribute('data-delay') || '0');
+                        setTimeout(() => {
+                            el.classList.add('animate');
+                        }, delay);
                     } else {
                         // Otherwise, observe for when it scrolls into view
                         observer.observe(el);
                     }
                 });
-                
-                // Fallback: Show all remaining elements after 1 second (safety net)
-                setTimeout(() => {
-                    animateElements.forEach(el => {
-                        if (!el.classList.contains('animate')) {
-                            el.classList.add('animate');
-                        }
-                    });
-                }, 1000);
             }
             
-            // Run immediately if DOM is ready, otherwise wait
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => {
-                    // Run after a short delay to ensure all content is loaded
-                    setTimeout(initScrollAnimations, 150);
-                });
-            } else {
-                // DOM is already ready, run after short delay for React components
-                setTimeout(initScrollAnimations, 150);
+            // Run immediately - no delays!
+            function startAnimations() {
+                // Small delay only to let React components mount, then run immediately
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+                } else {
+                    // Run immediately, but wait a tiny bit for React
+                    setTimeout(initScrollAnimations, 50);
+                }
             }
+            
+            startAnimations();
         })();
         
     </script>
