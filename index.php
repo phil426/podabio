@@ -1988,85 +1988,91 @@ require_once __DIR__ . '/includes/helpers.php';
         // Scroll Animations using Intersection Observer
         (function() {
             function initScrollAnimations() {
+                // Get all elements with scroll-animate class
+                const animateElements = document.querySelectorAll('.scroll-animate');
+                
+                // If no elements found, try again later
+                if (animateElements.length === 0) {
+                    setTimeout(initScrollAnimations, 200);
+                    return;
+                }
+                
                 // Check if Intersection Observer is supported
                 if (!('IntersectionObserver' in window)) {
                     // Fallback: show all elements immediately
-                    document.querySelectorAll('.scroll-animate').forEach(el => {
+                    animateElements.forEach(el => {
                         el.classList.add('animate');
                     });
                     return;
                 }
                 
-                // Helper function to check if element is in viewport
-                function isInViewport(element) {
-                    const rect = element.getBoundingClientRect();
-                    return (
-                        rect.top >= 0 &&
-                        rect.left >= 0 &&
-                        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-                    );
-                }
-                
-                // Create observer with options
+                // Create observer with options - more aggressive margins to catch elements earlier
                 const observerOptions = {
                     root: null,
-                    rootMargin: '50px 0px -50px 0px', // Trigger 50px before entering viewport
-                    threshold: 0.01 // Trigger when any part of element is visible
+                    rootMargin: '200px 0px -100px 0px', // Trigger 200px before entering viewport
+                    threshold: [0, 0.01, 0.1] // Multiple thresholds for better detection
                 };
                 
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             entry.target.classList.add('animate');
-                            // Optionally unobserve after animation to improve performance
                             observer.unobserve(entry.target);
                         }
                     });
                 }, observerOptions);
                 
-                // Get all elements with scroll-animate class
-                const animateElements = document.querySelectorAll('.scroll-animate');
-                
                 // Immediately show hero section elements (always visible on load)
                 const heroSection = document.querySelector('.homepage-hero');
                 if (heroSection) {
                     heroSection.querySelectorAll('.scroll-animate').forEach(el => {
-                        el.classList.add('animate');
+                        if (!el.classList.contains('animate')) {
+                            el.classList.add('animate');
+                        }
                     });
                 }
                 
-                // Process all other elements
+                // Process all elements - show anything near or in viewport
+                const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                
                 animateElements.forEach(el => {
-                    // Skip if already animated (hero section)
+                    // Skip if already animated
                     if (el.classList.contains('animate')) {
                         return;
                     }
                     
-                    // Check if element is already in viewport (with some margin)
+                    // Check if element is in or near viewport (very generous margin)
                     const rect = el.getBoundingClientRect();
-                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-                    const isVisible = rect.top < (viewportHeight + 50) && rect.bottom > -50;
+                    const isInViewport = rect.top < (viewportHeight + 200) && rect.bottom > -200;
                     
-                    if (isVisible) {
-                        // If already visible, animate immediately
+                    if (isInViewport) {
+                        // If visible or near viewport, animate immediately
                         el.classList.add('animate');
                     } else {
                         // Otherwise, observe for when it scrolls into view
                         observer.observe(el);
                     }
                 });
+                
+                // Fallback: Show all remaining elements after 1 second (safety net)
+                setTimeout(() => {
+                    animateElements.forEach(el => {
+                        if (!el.classList.contains('animate')) {
+                            el.classList.add('animate');
+                        }
+                    });
+                }, 1000);
             }
             
-            // Wait for DOM and React components to be ready
+            // Run immediately if DOM is ready, otherwise wait
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
-                    // Small delay to ensure React components have mounted
-                    setTimeout(initScrollAnimations, 100);
+                    // Run after a short delay to ensure all content is loaded
+                    setTimeout(initScrollAnimations, 150);
                 });
             } else {
-                // DOM is already ready, but wait a bit for React components
-                setTimeout(initScrollAnimations, 100);
+                // DOM is already ready, run after short delay for React components
+                setTimeout(initScrollAnimations, 150);
             }
         })();
         
