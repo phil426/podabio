@@ -174,8 +174,13 @@ function getCurrentBaseUrl() {
         return $protocol . '://' . $host;
     }
     
-    // Otherwise use configured APP_URL
-    return APP_URL;
+    // Otherwise use configured APP_URL (with fallback)
+    if (defined('APP_URL')) {
+        return APP_URL;
+    }
+    
+    // Fallback if APP_URL not defined
+    return $protocol . '://' . $host;
 }
 
 /**
