@@ -53,11 +53,34 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo ""
     
     echo "📦 Step 1: Pulling latest code from GitHub..."
+    
+    # IMPORTANT: Preserve uploads directory before git operations
+    echo "   Preserving uploads directory..."
+    if [ -d "uploads" ]; then
+        # Create a temporary backup of uploads outside the git directory
+        cp -r uploads /tmp/podabio_uploads_backup_$$
+        UPLOADS_BACKED_UP=true
+        echo "   ✅ Uploads backed up to /tmp/podabio_uploads_backup_$$"
+    else
+        UPLOADS_BACKED_UP=false
+        echo "   ℹ️  No uploads directory to preserve"
+    fi
+    
     # Fetch latest changes
     git fetch origin main
     
     # Reset to match remote exactly (handles divergent branches)
     git reset --hard origin/main
+    
+    # Restore uploads directory after git reset
+    if [ "$UPLOADS_BACKED_UP" = true ]; then
+        echo "   Restoring uploads directory..."
+        # Remove the empty/gitkeep uploads that came from git
+        rm -rf uploads
+        # Restore the backup
+        mv /tmp/podabio_uploads_backup_$$ uploads
+        echo "   ✅ Uploads restored"
+    fi
     
     if [ $? -eq 0 ]; then
         echo "✅ Code updated successfully"
