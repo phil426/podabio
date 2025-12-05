@@ -92,9 +92,15 @@ require_once __DIR__ . '/includes/helpers.php';
         }
         
         /* Scroll Animation Styles */
+        /* Default: Show all content immediately for better UX */
         .scroll-animate {
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        /* Only hide if explicitly marked as not animated yet (for progressive enhancement) */
+        .scroll-animate:not(.animate):not(.no-animate) {
+            /* Content is visible by default - animations are enhancement only */
         }
         
         .scroll-animate.animate {
@@ -103,7 +109,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade In */
         .scroll-animate[data-animate="fade"] {
-            opacity: 0;
+            opacity: 1; /* Visible by default */
         }
         
         .scroll-animate[data-animate="fade"].animate {
@@ -112,7 +118,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Up */
         .scroll-animate[data-animate="slide-up"] {
-            transform: translateY(60px);
+            transform: translateY(0); /* No initial transform */
         }
         
         .scroll-animate[data-animate="slide-up"].animate {
@@ -121,7 +127,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Down */
         .scroll-animate[data-animate="slide-down"] {
-            transform: translateY(-60px);
+            transform: translateY(0); /* No initial transform */
         }
         
         .scroll-animate[data-animate="slide-down"].animate {
@@ -130,7 +136,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Left */
         .scroll-animate[data-animate="slide-left"] {
-            transform: translateX(60px);
+            transform: translateX(0); /* No initial transform */
         }
         
         .scroll-animate[data-animate="slide-left"].animate {
@@ -139,7 +145,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide Right */
         .scroll-animate[data-animate="slide-right"] {
-            transform: translateX(-60px);
+            transform: translateX(0); /* No initial transform */
         }
         
         .scroll-animate[data-animate="slide-right"].animate {
@@ -148,7 +154,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale */
         .scroll-animate[data-animate="scale"] {
-            transform: scale(0.8);
+            transform: scale(1); /* No initial scale */
         }
         
         .scroll-animate[data-animate="scale"].animate {
@@ -157,7 +163,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Reveal (clip-path) */
         .scroll-animate[data-animate="reveal"] {
-            clip-path: inset(0 0 100% 0);
+            clip-path: inset(0 0 0% 0); /* Fully visible by default */
         }
         
         .scroll-animate[data-animate="reveal"].animate {
@@ -166,8 +172,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Fade + Slide Up (most common) */
         .scroll-animate[data-animate="fade-slide-up"] {
-            opacity: 0;
-            transform: translateY(40px);
+            opacity: 1; /* Visible by default - animations are enhancement only */
+            transform: translateY(0); /* No initial transform - visible immediately */
         }
         
         .scroll-animate[data-animate="fade-slide-up"].animate {
@@ -177,7 +183,7 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Rotate */
         .scroll-animate[data-animate="rotate"] {
-            transform: rotate(-5deg) scale(0.9);
+            transform: rotate(0deg) scale(1); /* No initial transform */
         }
         
         .scroll-animate[data-animate="rotate"].animate {
@@ -186,8 +192,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Scale + Rotate */
         .scroll-animate[data-animate="scale-rotate"] {
-            opacity: 0;
-            transform: scale(0.8) rotate(10deg);
+            opacity: 1; /* Visible by default */
+            transform: scale(1) rotate(0deg); /* No initial transform */
         }
         
         .scroll-animate[data-animate="scale-rotate"].animate {
@@ -197,8 +203,8 @@ require_once __DIR__ . '/includes/helpers.php';
         
         /* Slide from corner */
         .scroll-animate[data-animate="slide-corner"] {
-            opacity: 0;
-            transform: translate(60px, 60px);
+            opacity: 1; /* Visible by default */
+            transform: translate(0, 0); /* No initial transform */
         }
         
         .scroll-animate[data-animate="slide-corner"].animate {
