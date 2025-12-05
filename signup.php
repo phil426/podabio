@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = $result['error'];
             }
         }
+    }
 }
 
 $csrfToken = generateCSRFToken();
