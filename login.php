@@ -159,7 +159,12 @@ if ($show2FAInput && isset($_SESSION['2fa_pending_user_id'])) {
 }
 
 $csrfToken = generateCSRFToken();
-$googleAuthUrl = getGoogleAuthUrl();
+try {
+    $googleAuthUrl = getGoogleAuthUrl();
+} catch (Exception $e) {
+    error_log('Failed to generate Google Auth URL: ' . $e->getMessage());
+    $googleAuthUrl = '#'; // Fallback to prevent 500 error
+}
 
 ?>
 <!DOCTYPE html>
