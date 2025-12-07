@@ -91,11 +91,10 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
   const isOpen = Boolean(selectedWidgetId || selectedSocialIconId || selectedIntegrationId);
 
   // Gate inspectors by activeTab - Lefty-specific tabs only
-  const isLeftyLayerTab = activeTab === 'layers';
   const isLeftyIntegrationTab = activeTab === 'integration';
 
-  if (isLeftyLayerTab && selectedWidgetId) {
-    // Layers tab: Show widget/page inspectors
+  if (selectedWidgetId) {
+    // Show widget/page inspectors
     // Note: Podcast player is handled by switching to podcast tab, not showing in inspector drawer
     if (selectedWidgetId === 'page:footer') {
       inspector = <FooterInspector activeColor={activeColor} />;

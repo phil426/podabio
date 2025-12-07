@@ -28,7 +28,7 @@ interface PropertiesPanelProps {
   activeTab?: TabValue;
 }
 
-export function PropertiesPanel({ activeColor, activeTab = 'layers' }: PropertiesPanelProps): JSX.Element {
+export function PropertiesPanel({ activeColor, activeTab = 'themes' }: PropertiesPanelProps): JSX.Element {
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
@@ -56,11 +56,10 @@ export function PropertiesPanel({ activeColor, activeTab = 'layers' }: Propertie
   let inspector: JSX.Element | null = null;
 
   // Gate inspectors by activeTab to prevent stale inspectors from other tabs
-  const isLeftyLayerTab = activeTab === 'layers';
   const isLeftyIntegrationTab = activeTab === 'integration';
 
-  if (isLeftyLayerTab) {
-    // Style/Layers tab: Show widget/page inspectors or default to Profile
+  // Show widget/page inspectors when widget is selected
+  if (selectedWidgetId) {
     // CRITICAL: Check for 'page:footer' FIRST with exact match before any other checks
     if (selectedWidgetId === 'page:footer') {
       inspector = <FooterInspector activeColor={activeColor} />;
@@ -89,8 +88,8 @@ export function PropertiesPanel({ activeColor, activeTab = 'layers' }: Propertie
       } else {
         inspector = <WidgetInspector activeColor={activeColor} />;
       }
-    } else if (activeTab === 'layers') {
-      // Default to Profile inspector when on layers tab and nothing is selected
+    } else {
+      // Default to Profile inspector when nothing is selected
       inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
     }
     // Note: ThemeEditorPanel is handled separately via showThemeInspector state
@@ -146,12 +145,21 @@ function deriveActiveTheme(
   const systemThemes = library?.system ?? [];
   const userThemes = library?.user ?? [];
 
-  if (themeId == null) {
-    return systemThemes[0] ?? userThemes[0] ?? null;
+  // Always prefer user theme if it exists
+  if (userThemes.length > 0) {
+    // If page points to user theme, use it; otherwise use first user theme
+    if (themeId) {
+      const userTheme = userThemes.find(theme => theme.id === themeId);
+      if (userTheme) return userTheme;
+    }
+    return userThemes[0];
   }
 
-  const combined = [...userThemes, ...systemThemes];
-  return combined.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
+  // Fallback to system theme if no user theme exists
+  if (themeId == null) {
+    return systemThemes[0] ?? null;
+  }
+  return systemThemes.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? null;
 }
 
 function buildThemeTokenOverrides(theme: ThemeRecord | null): Partial<TokenBundle> | null {

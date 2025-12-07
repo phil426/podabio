@@ -34,6 +34,7 @@ export function TopBar(): JSX.Element {
   const email = account?.email ?? 'loading…';
   const displayName = account?.name ?? email;
   const plan = formatPlan(account?.plan ?? 'free');
+  // VALIDATION: Use account avatar_url only (no fallback to profile_image)
   const avatarUrl = account?.avatar_url ?? null;
   const initials = displayName
     .split(' ')

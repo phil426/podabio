@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import {
   Plus,
-  Stack,
-  Palette,
+  DeviceMobile,
   ApplePodcastsLogo,
   Plug,
   TrendUp,
@@ -33,8 +32,7 @@ interface TabDefinition {
 }
 
 const TABS: TabDefinition[] = [
-  { value: 'layers', label: 'Layers', Icon: Stack },
-  { value: 'themes', label: 'Themes', Icon: Palette },
+  { value: 'themes', label: 'Themes', Icon: DeviceMobile },
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },

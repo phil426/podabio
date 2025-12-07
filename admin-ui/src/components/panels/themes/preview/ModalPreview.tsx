@@ -167,7 +167,8 @@ export function ModalPreview({ sectionId, theme, uiState }: ModalPreviewProps): 
       const profileImageBorderWidth = cssVars['--profile-image-border-width'] || '0px';
       const profileImageBorderColor = cssVars['--profile-image-border-color'] || 'transparent';
       const profileImageBoxShadow = cssVars['--profile-image-box-shadow'] || 'none';
-      const profileImage = page?.profile_image;
+      // Use preview image URL if available (from theme wizard), otherwise use saved profile image
+      const profileImage = cssVars['--preview-profile-image-url'] || page?.profile_image;
       
       const imageStyle = {
         width: profileImageSize,

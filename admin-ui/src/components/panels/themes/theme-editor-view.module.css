@@ -18,128 +18,47 @@
   width: 100%;
 }
 
-.header {
+/* Floating Action Buttons - Horizontal row above preview */
+.floatingActions {
+  position: absolute;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
   display: flex;
-  align-items: center;
+  flex-direction: row;
   gap: 12px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
-  background: var(--admin-bg-panel, #ffffff);
-  flex-shrink: 0;
+  z-index: 999999; /* Above everything including hotspots (z-index: 100000) */
+  pointer-events: none;
 }
 
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
-
-.hotspotToggleButton,
-.undoButton,
-.redoButton {
+.floatingActionButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
-  background: transparent;
+  background: var(--admin-bg-panel, #ffffff);
   color: var(--admin-text-primary, #0f172a);
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
 }
 
-.hotspotToggleButton:hover,
-.undoButton:hover:not(:disabled),
-.redoButton:hover:not(:disabled) {
+.floatingActionButton:hover:not(:disabled) {
   background: var(--admin-surface-subtle, #f8fafc);
   border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
-.undoButton:disabled,
-.redoButton:disabled {
+.floatingActionButton:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.backButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
-  background: transparent;
-  color: var(--admin-text-primary, #0f172a);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.backButton:hover {
-  background: var(--admin-surface-subtle, #f8fafc);
-}
-
-.headerContent {
-  flex: 1;
-  min-width: 0;
-}
-
-.headerContent h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
-}
-
-.headerContent p {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: var(--admin-text-secondary, #64748b);
-}
-
-.autoSaveStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-  user-select: none;
-}
-
-.autoSaveStatus[data-status="idle"] {
-  color: var(--admin-text-secondary, #64748b);
-}
-
-.autoSaveStatus[data-status="saving"] {
-  color: var(--admin-accent-primary, #00FF7F);
-}
-
-.autoSaveStatus[data-status="saved"] {
-  color: var(--admin-success, #10b981);
-}
-
-.autoSaveStatus[data-status="error"] {
-  color: var(--admin-error, #ef4444);
-}
-
-.autoSaveStatus .spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 
 .tooltip {

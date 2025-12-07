@@ -9,8 +9,17 @@ import {
   useCreatePageMutation,
   useRemovePasswordMutation,
   useUnlinkGoogleMutation,
-  useUpdateProfileMutation
+  useUpdateProfileMutation,
+  updateAccountProfile,
+  removeAvatar
 } from '../../api/account';
+import { uploadAvatarImage as uploadAvatar } from '../../api/uploads';
+import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
+import { normalizeImageUrl } from '../../api/utils';
+import { UploadSimple, Images, X } from '@phosphor-icons/react';
+import { useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../api/utils';
 import { usePageSnapshot } from '../../api/page';
 import { ApiError } from '../../api/http';
 import type { AccountProfile } from '../../api/types';
@@ -207,6 +216,11 @@ function ProfileTab({
   const [email, setEmail] = useState('');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarStatus, setAvatarStatus] = useState<string | null>(null);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
   
   const { mutateAsync: updateProfile, isPending: isUpdating } = useUpdateProfileMutation();
 
@@ -276,6 +290,71 @@ function ProfileTab({
       setError(err instanceof Error ? err.message : 'Failed to update profile. Please try again.');
     }
   };
+
+  const handleChooseAvatarFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      setAvatarStatus(null);
+      const result = await uploadAvatar(file, true);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+      setAvatarStatus('Avatar updated successfully');
+      trackTelemetry({ event: 'account.avatar_uploaded', metadata: {} });
+    } catch (err) {
+      setAvatarStatus(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    try {
+      setIsUploadingAvatar(true);
+      setAvatarStatus(null);
+      await removeAvatar();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+      setAvatarStatus('Avatar removed successfully');
+      trackTelemetry({ event: 'account.avatar_removed', metadata: {} });
+    } catch (err) {
+      setAvatarStatus(err instanceof Error ? err.message : 'Unable to remove avatar.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleSelectAvatarFromLibrary = async (mediaItem: { file_url: string; id: number; filename: string }) => {
+    try {
+      setIsUploadingAvatar(true);
+      setAvatarStatus(null);
+      await updateAccountProfile({ avatar_url: mediaItem.file_url });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+      setMediaLibraryOpen(false);
+      setAvatarStatus('Avatar updated successfully');
+      trackTelemetry({ event: 'account.avatar_updated_from_library', metadata: {} });
+    } catch (err) {
+      setAvatarStatus(err instanceof Error ? err.message : 'Unable to update avatar.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const avatarUrl = profile?.avatar_url ?? null;
+  const initials = (profile?.name ?? profile?.email ?? '')
+    .split(' ')
+    .filter(Boolean)
+    .map((chunk) => chunk[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className={styles.sectionStack}>
@@ -369,6 +448,75 @@ function ProfileTab({
 
       <section className={styles.card}>
         <header>
+          <h2>Avatar</h2>
+          <p>Your avatar appears in the Studio interface and account menus.</p>
+        </header>
+        {avatarStatus && (
+          <div className={avatarStatus.includes('success') ? styles.statusBanner : styles.errorBanner}>
+            {avatarStatus}
+          </div>
+        )}
+        <div className={styles.avatarSection}>
+          <div className={styles.avatarPreview} data-has-avatar={avatarUrl ? 'true' : 'false'}>
+            {avatarUrl ? (
+              <img src={normalizeImageUrl(avatarUrl)} alt="Avatar" />
+            ) : (
+              <div className={styles.avatarPlaceholder}>{initials}</div>
+            )}
+            <div className={styles.avatarOverlay}>
+              <div className={styles.avatarActions}>
+                <button
+                  type="button"
+                  className={styles.avatarActionButton}
+                  onClick={handleChooseAvatarFile}
+                  disabled={isUploadingAvatar}
+                  title={isUploadingAvatar ? 'Uploading…' : avatarUrl ? 'Replace avatar' : 'Upload avatar'}
+                >
+                  <UploadSimple size={16} weight="regular" aria-hidden="true" />
+                </button>
+                <div className={styles.avatarActionDivider} />
+                <button
+                  type="button"
+                  className={styles.avatarActionButton}
+                  onClick={() => setMediaLibraryOpen(true)}
+                  disabled={isUploadingAvatar}
+                  title="Choose from library"
+                >
+                  <Images size={16} weight="regular" aria-hidden="true" />
+                </button>
+                {avatarUrl && (
+                  <>
+                    <div className={styles.avatarActionDivider} />
+                    <button
+                      type="button"
+                      className={`${styles.avatarActionButton} ${styles.avatarActionButtonDanger}`}
+                      onClick={handleRemoveAvatar}
+                      disabled={isUploadingAvatar}
+                      title="Remove avatar"
+                    >
+                      <X size={16} weight="regular" aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarFileChange}
+            style={{ display: 'none' }}
+            aria-label="Upload avatar image"
+          />
+        </div>
+        <p className={styles.helperNote}>
+          Upload a profile picture to personalize your account. This is separate from your page profile image.
+        </p>
+      </section>
+
+      <section className={styles.card}>
+        <header>
           <h2>{pageMissing ? 'Launch your PodaBio page' : 'Public presence'}</h2>
           <p>
             {pageMissing
@@ -442,6 +590,12 @@ function ProfileTab({
       {!pageMissing && pageUsername && (
         <CustomDomainSettings username={pageUsername} />
       )}
+
+      <MediaLibraryModal
+        open={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+        onSelect={handleSelectAvatarFromLibrary}
+      />
     </div>
   );
 }

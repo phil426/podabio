@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { TextB, TextItalic, TextUnderline, UploadSimple, X, Images } from '@phosphor-icons/react';
 
-import { usePageSnapshot, updatePageSettings, removeProfileImage } from '../../api/page';
+import { usePageSnapshot, updatePageSettings, updatePageAppearance, removeProfileImage } from '../../api/page';
 import { uploadProfileImage } from '../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
@@ -182,7 +182,7 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
     try {
       setUploading(true);
-      await updatePageSettings({ profile_image: mediaItem.file_url });
+      await updatePageAppearance({ profile_image: mediaItem.file_url });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setMediaLibraryOpen(false);
       setStatusTone('success');

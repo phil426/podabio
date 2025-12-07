@@ -2,7 +2,7 @@
 export type LegacyTabValue = 'structure' | 'design' | 'analytics' | 'integrations' | 'settings';
 
 // New Lefty tabs
-export type LeftyTabValue = 'layers' | 'podcast' | 'integration' | 'analytics' | 'themes' | 'account';
+export type LeftyTabValue = 'podcast' | 'integration' | 'analytics' | 'themes' | 'account';
 
 // Combined type for all tabs
 export type TabValue = LegacyTabValue | LeftyTabValue;
@@ -29,7 +29,6 @@ export const tabColors: Record<TabValue, TabColorTheme> = {
   integrations: unifiedAccent,
   settings: unifiedAccent,
   // New Lefty tabs
-  'layers': unifiedAccent,
   'podcast': unifiedAccent,
   'integration': unifiedAccent,
   'analytics': unifiedAccent,

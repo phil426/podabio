@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { 
   X, 
@@ -20,11 +21,9 @@ import { usePageSnapshot } from '../../api/page';
 import { useAccountProfile } from '../../api/account';
 import { useWidgetsQuery } from '../../api/widgets';
 import { trackTelemetry } from '../../services/telemetry';
+import { ONBOARDING_STORAGE_KEY, ONBOARDING_VERSION } from '../../hooks/useOnboardingStatus';
 
 import styles from './welcome-onboarding-modal.module.css';
-
-const ONBOARDING_STORAGE_KEY = 'podabio_onboarding_completed';
-const ONBOARDING_VERSION = '1'; // Increment to show again after major updates
 
 export interface WelcomeOnboardingModalProps {
   /** Force show the modal (for testing/demo) */
@@ -49,6 +48,7 @@ export function WelcomeOnboardingModal({
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   
   const { data: pageResponse, isLoading: pageLoading } = usePageSnapshot();
   const { data: profile, isLoading: profileLoading } = useAccountProfile();
@@ -80,11 +80,14 @@ export function WelcomeOnboardingModal({
   }, [forceOpen, pageLoading, profileLoading]);
   
   const handleComplete = useCallback(() => {
-    localStorage.setItem(ONBOARDING_STORAGE_KEY, ONBOARDING_VERSION);
+    // Only save to localStorage if "Don't show this again" is checked
+    if (dontShowAgain) {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, ONBOARDING_VERSION);
+    }
     setIsOpen(false);
-    trackTelemetry({ event: 'onboarding.completed', metadata: { dismissed: !hasInteracted } });
+    trackTelemetry({ event: 'onboarding.completed', metadata: { dismissed: !hasInteracted, dontShowAgain } });
     onComplete?.();
-  }, [hasInteracted, onComplete]);
+  }, [hasInteracted, dontShowAgain, onComplete]);
   
   const handleNext = () => {
     setHasInteracted(true);
@@ -151,7 +154,19 @@ export function WelcomeOnboardingModal({
     }}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.modal} aria-label="Welcome to PodaBio">
+        <Dialog.Content className={styles.modal}>
+          {/* Always render Title and Description for accessibility - required by Radix UI */}
+          <VisuallyHidden.Root asChild>
+            <Dialog.Title>
+              Welcome to PodaBio
+            </Dialog.Title>
+          </VisuallyHidden.Root>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Description>
+              Onboarding guide to help you set up your podcast landing page
+            </Dialog.Description>
+          </VisuallyHidden.Root>
+          
           {/* Progress indicator */}
           <div className={styles.progressBar}>
             <div 
@@ -189,13 +204,12 @@ export function WelcomeOnboardingModal({
                     <div className={styles.welcomeIcon}>
                       <Sparkle size={48} weight="duotone" aria-hidden="true" />
                     </div>
-                    <Dialog.Title className={styles.title}>
+                    <h2 className={styles.title}>
                       Welcome to PodaBio, {userName}!
-                    </Dialog.Title>
-                    <Dialog.Description className={styles.description}>
-                      You're about to create the ultimate landing page for your podcast. 
-                      Let's get you set up in just a few minutes.
-                    </Dialog.Description>
+                    </h2>
+                    <p className={styles.description}>
+                      You're about to create the ultimate landing page for your podcast. Let's get you set up in just a few minutes.
+                    </p>
                     
                     <div className={styles.welcomeStats}>
                       <div className={styles.stat}>
@@ -217,12 +231,12 @@ export function WelcomeOnboardingModal({
                 {/* Step 2: Features */}
                 {step === 'features' && (
                   <div className={styles.step}>
-                    <Dialog.Title className={styles.title}>
+                    <h2 className={styles.title}>
                       What you can do with PodaBio
-                    </Dialog.Title>
-                    <Dialog.Description className={styles.description}>
+                    </h2>
+                    <p className={styles.description}>
                       Everything you need to grow your podcast audience in one place.
-                    </Dialog.Description>
+                    </p>
                     
                     <div className={styles.featureGrid}>
                       <div className={styles.featureCard}>
@@ -263,13 +277,13 @@ export function WelcomeOnboardingModal({
                 {/* Step 3: Checklist */}
                 {step === 'checklist' && (
                   <div className={styles.step}>
-                    <Dialog.Title className={styles.title}>
+                    <h2 className={styles.title}>
                       <Rocket size={28} weight="duotone" aria-hidden="true" style={{ marginRight: '0.5rem' }} />
                       Let's get you launched
-                    </Dialog.Title>
-                    <Dialog.Description className={styles.description}>
+                    </h2>
+                    <p className={styles.description}>
                       Complete these steps to make the most of your PodaBio page.
-                    </Dialog.Description>
+                    </p>
                     
                     <div className={styles.progressSummary}>
                       <div className={styles.progressCircle}>
@@ -327,30 +341,41 @@ export function WelcomeOnboardingModal({
           </ScrollArea.Root>
           
           <footer className={styles.footer}>
-            <button
-              type="button"
-              className={styles.skipButton}
-              onClick={handleSkip}
-            >
-              {step === 'checklist' ? 'Close' : 'Skip for now'}
-            </button>
-            <button
-              type="button"
-              className={styles.nextButton}
-              onClick={handleNext}
-            >
-              {step === 'checklist' ? (
-                <>
-                  Start Creating
-                  <Rocket size={18} weight="bold" aria-hidden="true" />
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight size={18} weight="bold" aria-hidden="true" />
-                </>
-              )}
-            </button>
+            <label className={styles.dontShowAgainLabel}>
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span>Don't show this again</span>
+            </label>
+            <div className={styles.footerButtons}>
+              <button
+                type="button"
+                className={styles.skipButton}
+                onClick={handleSkip}
+              >
+                {step === 'checklist' ? 'Close' : 'Skip for now'}
+              </button>
+              <button
+                type="button"
+                className={styles.nextButton}
+                onClick={handleNext}
+              >
+                {step === 'checklist' ? (
+                  <>
+                    Start Creating
+                    <Rocket size={18} weight="bold" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <ArrowRight size={18} weight="bold" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            </div>
           </footer>
         </Dialog.Content>
       </Dialog.Portal>
@@ -358,19 +383,4 @@ export function WelcomeOnboardingModal({
   );
 }
 
-/**
- * Hook to check if onboarding has been completed
- */
-export function useOnboardingStatus(): { completed: boolean; reset: () => void } {
-  const [completed, setCompleted] = useState(() => {
-    return localStorage.getItem(ONBOARDING_STORAGE_KEY) === ONBOARDING_VERSION;
-  });
-  
-  const reset = useCallback(() => {
-    localStorage.removeItem(ONBOARDING_STORAGE_KEY);
-    setCompleted(false);
-  }, []);
-  
-  return { completed, reset };
-}
 

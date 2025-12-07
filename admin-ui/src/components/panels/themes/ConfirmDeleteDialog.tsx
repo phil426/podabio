@@ -4,6 +4,7 @@
  */
 
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Warning, X } from '@phosphor-icons/react';
 import styles from './confirm-delete-dialog.module.css';
 
@@ -36,6 +37,13 @@ export function ConfirmDeleteDialog({
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content className={styles.content}>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Title>{title}</Dialog.Title>
+          </VisuallyHidden.Root>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Description>{message}</Dialog.Description>
+          </VisuallyHidden.Root>
+          
           <button
             type="button"
             className={styles.closeButton}

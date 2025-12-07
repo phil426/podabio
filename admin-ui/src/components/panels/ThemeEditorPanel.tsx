@@ -5,7 +5,7 @@ import { X, Check, XCircle, Palette, TextAa, GridFour, Shapes, FloppyDisk, Copy,
 import profileStyles from './profile-inspector.module.css';
 
 import { usePageSnapshot, updatePageThemeId } from '../../api/page';
-import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation, type ThemeLibraryResult } from '../../api/themes';
+import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation, type ThemeLibraryResult, getOrCreateUserTheme } from '../../api/themes';
 import { useTokens } from '../../design-system/theme/TokenProvider';
 import { useThemeInspector } from '../../state/themeInspector';
 import { queryKeys } from '../../api/utils';
@@ -1224,59 +1224,45 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         fullShapeTokens: JSON.stringify(shapeTokens, null, 2)
       });
       
-      let savedThemeId: number | null = null;
+      // Always use the single user theme (get or create if needed)
+      const userThemeId = await getOrCreateUserTheme();
       
-      if (theme?.id) {
-        // Update existing theme
-        await updateMutation.mutateAsync({ themeId: theme.id, data: themeData });
-        savedThemeId = theme.id;
-        setStatusMessage('Theme updated successfully');
-      } else {
-        // Create new theme - need to get the theme ID from the response
-        const createResponse = await createMutation.mutateAsync(themeData);
-        // Note: createMutation doesn't return the theme ID, so we'll need to fetch it
-        // For now, we'll invalidate and let the next query get it
-        setStatusMessage('Theme created successfully');
-      }
+      // Update the user theme with all current settings
+      await updateMutation.mutateAsync({
+        themeId: userThemeId,
+        data: {
+          ...themeData,
+          name: 'My Theme' // Keep user theme name consistent
+        }
+      });
       
       setSaveStatus('success');
       setHasChanges(false);
+      setStatusMessage('Theme updated successfully');
+      
       // Invalidate and refetch theme library to update theme cards
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       
-      // Update page's theme_id if it doesn't match the saved theme
-      // Refresh snapshot to get latest theme_id
-      const freshSnapshot = await queryClient.fetchQuery<PageSnapshotResponse>({ queryKey: queryKeys.pageSnapshot() });
-      const currentPageThemeId = freshSnapshot?.page?.theme_id;
-      
-      // If we updated an existing theme, use that ID
-      // If we created a new theme, we need to find it from the library
-      let targetThemeId = savedThemeId;
-      if (!targetThemeId) {
-        // Find the newly created theme by name
-        const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
-        const newTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.name === themeData.name);
-        targetThemeId = newTheme?.id ?? null;
-      }
-      
-      // Update page theme_id if it doesn't match
-      // IMPORTANT: Do NOT set page_background/widget_background here - these page-level columns
-      // override theme values. Instead, clear them (set to null) so theme values are used.
-      if (targetThemeId) {
-        try {
-          // Clear page-level overrides so theme values take precedence
-          await updatePageThemeId(targetThemeId, {
-            page_background: null, // Clear to use theme value
-            widget_background: null // Clear to use theme value
-          });
-          // Explicitly refetch page snapshot to ensure preview updates
-          await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
-        } catch (error) {
-          console.error('Failed to update page theme_id:', error);
-          // Don't fail the whole save if this fails
-        }
+      // Ensure page.theme_id points to user theme and clear page-level overrides
+      try {
+        await updatePageThemeId(userThemeId, {
+          page_background: null, // Clear to use theme value
+          widget_background: null, // Clear to use theme value
+          widget_border_color: null,
+          page_primary_font: null,
+          page_secondary_font: null,
+          widget_primary_font: null,
+          widget_secondary_font: null,
+          widget_styles: null,
+          spatial_effect: null
+        });
+        // Explicitly refetch page snapshot to ensure preview updates
+        await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+      } catch (error) {
+        console.error('Failed to update page theme_id:', error);
+        // Don't fail the whole save if this fails
       }
       
       onSave?.();
@@ -1620,35 +1606,40 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         fonts: legacyFonts
       };
       
-      await createMutation.mutateAsync(themeData);
+      // Always use the single user theme instead of creating new
+      const userThemeId = await getOrCreateUserTheme();
+      await updateMutation.mutateAsync({
+        themeId: userThemeId,
+        data: {
+          ...themeData,
+          name: 'My Theme' // Keep user theme name consistent
+        }
+      });
       setStatusMessage('Theme saved as new');
       setSaveStatus('success');
       setHasChanges(false);
-      // Invalidate and refetch theme library to update theme cards
-      await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
+      
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       
-      // Update page's theme_id to point to the newly created theme
-      // Find the newly created theme by name
-      const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
-      const newTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.name === themeData.name);
-      const newThemeId = newTheme?.id ?? null;
-      
-      if (newThemeId) {
-        try {
-          // IMPORTANT: Do NOT set page_background/widget_background here - these page-level columns
-          // override theme values. Instead, clear them (set to null) so theme values are used.
-          await updatePageThemeId(newThemeId, {
-            page_background: null, // Clear to use theme value
-            widget_background: null // Clear to use theme value
-          });
-          // Explicitly refetch page snapshot to ensure preview updates
-          await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
-        } catch (error) {
-          console.error('Failed to update page theme_id:', error);
-          // Don't fail the whole save if this fails
-        }
+      // Ensure page.theme_id points to user theme and clear page-level overrides
+      try {
+        await updatePageThemeId(userThemeId, {
+          page_background: null, // Clear to use theme value
+          widget_background: null, // Clear to use theme value
+          widget_border_color: null,
+          page_primary_font: null,
+          page_secondary_font: null,
+          widget_primary_font: null,
+          widget_secondary_font: null,
+          widget_styles: null,
+          spatial_effect: null
+        });
+        // Explicitly refetch page snapshot to ensure preview updates
+        await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
+      } catch (error) {
+        console.error('Failed to update page theme_id:', error);
+        // Don't fail the whole save if this fails
       }
       
       onSave?.();

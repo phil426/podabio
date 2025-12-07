@@ -22,7 +22,7 @@ const defaultHeaders = {
   'X-Requested-With': 'XMLHttpRequest'
 };
 
-async function refreshCsrfToken(): Promise<string> {
+export async function refreshCsrfToken(): Promise<string> {
   const response = await fetch('/api/csrf.php', {
     credentials: 'include',
     headers: defaultHeaders

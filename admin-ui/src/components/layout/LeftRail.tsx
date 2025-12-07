@@ -151,18 +151,27 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   const { data: themeLibrary } = useThemeLibraryQuery();
   const page = snapshot?.page;
   
-  // Derive active theme (same logic as PropertiesPanel)
+  // Derive active theme - prefer user theme over system theme
   const activeTheme = useMemo(() => {
     const systemThemes = themeLibrary?.system ?? [];
     const userThemes = themeLibrary?.user ?? [];
     const themeId = page?.theme_id ?? null;
     
-    if (themeId == null) {
-      return systemThemes[0] ?? userThemes[0] ?? null;
+    // Always prefer user theme if it exists
+    if (userThemes.length > 0) {
+      // If page points to user theme, use it; otherwise use first user theme
+      if (themeId) {
+        const userTheme = userThemes.find(theme => theme.id === themeId);
+        if (userTheme) return userTheme;
+      }
+      return userThemes[0];
     }
     
-    const combined = [...userThemes, ...systemThemes];
-    return combined.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
+    // Fallback to system theme if no user theme exists
+    if (themeId == null) {
+      return systemThemes[0] ?? null;
+    }
+    return systemThemes.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? null;
   }, [themeLibrary, page?.theme_id]);
   const { data: widgets, isLoading: widgetsLoading, isError: widgetsError, error: widgetsErrorObj } = useWidgetsQuery();
   const { data: availableWidgets } = useAvailableWidgetsQuery();

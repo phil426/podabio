@@ -136,7 +136,7 @@ export function useCreatePageMutation() {
   });
 }
 
-export async function updateAccountProfile(data: { name?: string; email?: string }) {
+export async function updateAccountProfile(data: { name?: string; email?: string; avatar_url?: string | null }) {
   return requestJson<ApiResponse<AccountProfile>>('/api/account/profile.php', {
     method: 'POST',
     headers: {
@@ -144,6 +144,10 @@ export async function updateAccountProfile(data: { name?: string; email?: string
     },
     body: JSON.stringify(data)
   });
+}
+
+export async function removeAvatar() {
+  return updateAccountProfile({ avatar_url: null });
 }
 
 export function useUpdateProfileMutation() {

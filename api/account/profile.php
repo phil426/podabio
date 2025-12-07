@@ -74,6 +74,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $updateData['email'] = $email;
     }
+
+    // Handle avatar_url update (for setting from media library)
+    if (isset($payload['avatar_url'])) {
+        $avatarUrl = trim($payload['avatar_url']);
+        if (empty($avatarUrl)) {
+            // Allow clearing avatar
+            $updateData['avatar_url'] = null;
+        } elseif (filter_var($avatarUrl, FILTER_VALIDATE_URL) || preg_match('/^\/uploads\//', $avatarUrl)) {
+            // Allow both full URLs and relative paths
+            $updateData['avatar_url'] = $avatarUrl;
+        }
+    }
     
     if (empty($updateData)) {
         echo json_encode(['success' => false, 'error' => 'No fields to update']);

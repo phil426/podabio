@@ -8,7 +8,7 @@ import {
   LuPlug,
   LuSettings,
   LuGripVertical,
-  LuSparkles
+  LuSmartphone
 } from 'react-icons/lu';
 import {
   DndContext,
@@ -75,17 +75,12 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
   themes: {
     value: 'themes',
     label: 'Themes',
-    icon: <LuSparkles className={styles.tabIcon} aria-hidden="true" />
+    icon: <LuSmartphone className={styles.tabIcon} aria-hidden="true" />
   },
   account: {
     value: 'account',
     label: 'Account',
     icon: <LuBookOpen className={styles.tabIcon} aria-hidden="true" />
-  },
-  layers: {
-    value: 'layers',
-    label: 'Layers',
-    icon: <LuLayers className={styles.tabIcon} aria-hidden="true" />
   },
   podcast: {
     value: 'podcast',

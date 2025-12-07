@@ -340,7 +340,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            padding: var(--page-padding-vertical, 1rem) var(--page-padding-horizontal, 0.5rem);
+            padding: var(--page-padding-vertical, 1rem) var(--page-padding-horizontal, 16px);
             box-sizing: border-box;
         }
         

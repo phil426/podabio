@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { type LeftyTabValue, type TabColorTheme } from './tab-colors';
-import { LayersPanel } from '../panels/LayersPanel';
 import { PodcastPanel } from '../panels/PodcastPanel';
 import { IntegrationsPanel } from '../panels/IntegrationsPanel';
 import { AnalyticsDashboard } from '../panels/AnalyticsDashboard';
@@ -20,19 +19,6 @@ export function LeftyContentPanel({ activeTab, activeColor, onTabChange }: Lefty
   return (
     <div className={styles.container}>
       <AnimatePresence mode="wait">
-        {activeTab === 'layers' && (
-          <motion.div
-            key="layers"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.25 }}
-            className={styles.panel}
-          >
-            <LayersPanel activeColor={activeColor} onTabChange={onTabChange} />
-          </motion.div>
-        )}
-
         {activeTab === 'podcast' && (
           <motion.div
             key="podcast"

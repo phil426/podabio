@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { MagnifyingGlass, X } from '@phosphor-icons/react';
 
-import { useThemeLibraryQuery, useCloneThemeMutation, useRenameThemeMutation, useDeleteThemeMutation } from '../../api/themes';
+import { useThemeLibraryQuery, useCloneThemeMutation, useRenameThemeMutation, useDeleteThemeMutation, useUpdateThemeMutation, getOrCreateUserTheme } from '../../api/themes';
 import { usePageSnapshot, updatePageThemeId } from '../../api/page';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../api/utils';
@@ -23,6 +23,7 @@ export function ThemeLibraryPanel(): JSX.Element {
   const { data, isLoading, isError, error } = useThemeLibraryQuery();
   const cloneMutation = useCloneThemeMutation();
   const renameMutation = useRenameThemeMutation();
+  const updateThemeMutation = useUpdateThemeMutation();
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<StatusMessage | null>(null);
@@ -49,67 +50,63 @@ export function ThemeLibraryPanel(): JSX.Element {
     try {
       setIsApplying(true);
       
-      // Extract page background from theme
-      let pageBackground: string | null | undefined = theme.page_background;
+      // Get or create user theme (ensures single user theme exists)
+      const userThemeId = await getOrCreateUserTheme();
       
-      // If page_background is not set, try to extract from color_tokens
-      if (!pageBackground && theme.color_tokens) {
-        try {
-          const colorTokens = typeof theme.color_tokens === 'string' 
-            ? JSON.parse(theme.color_tokens) 
-            : theme.color_tokens;
-          
-          // Try semantic.surface.canvas path
-          if (colorTokens?.semantic?.surface?.canvas) {
-            pageBackground = colorTokens.semantic.surface.canvas as string;
-          }
-          // Try semantic.surface.background path
-          else if (colorTokens?.semantic?.surface?.background) {
-            pageBackground = colorTokens.semantic.surface.background as string;
-          }
-          // Try gradient.page path
-          else if (colorTokens?.gradient?.page) {
-            pageBackground = colorTokens.gradient.page as string;
-          }
-        } catch (e) {
-          // If parsing fails, use null to let theme value be used
-          console.warn('Failed to parse color_tokens:', e);
-        }
-      }
+      // Prepare theme data to copy from selected theme to user theme
+      const themeData = {
+        name: 'My Theme', // Keep user theme name consistent
+        color_tokens: typeof theme.color_tokens === 'string' 
+          ? JSON.parse(theme.color_tokens) 
+          : theme.color_tokens,
+        typography_tokens: typeof theme.typography_tokens === 'string'
+          ? JSON.parse(theme.typography_tokens)
+          : theme.typography_tokens,
+        spacing_tokens: typeof theme.spacing_tokens === 'string'
+          ? JSON.parse(theme.spacing_tokens)
+          : theme.spacing_tokens,
+        shape_tokens: typeof theme.shape_tokens === 'string'
+          ? JSON.parse(theme.shape_tokens)
+          : theme.shape_tokens,
+        motion_tokens: typeof theme.motion_tokens === 'string'
+          ? JSON.parse(theme.motion_tokens)
+          : theme.motion_tokens,
+        iconography_tokens: typeof theme.iconography_tokens === 'string'
+          ? JSON.parse(theme.iconography_tokens)
+          : theme.iconography_tokens,
+        page_background: theme.page_background ?? undefined,
+        widget_background: theme.widget_background ?? undefined,
+        widget_border_color: theme.widget_border_color ?? undefined,
+        page_primary_font: theme.page_primary_font ?? undefined,
+        page_secondary_font: theme.page_secondary_font ?? undefined,
+        widget_primary_font: theme.widget_primary_font ?? undefined,
+        widget_secondary_font: theme.widget_secondary_font ?? undefined,
+        widget_styles: typeof theme.widget_styles === 'string'
+          ? JSON.parse(theme.widget_styles)
+          : theme.widget_styles
+      };
       
-      // Parse widget_styles if it's a string
-      let widgetStyles: Record<string, unknown> | string | null = null;
-      if (theme.widget_styles) {
-        if (typeof theme.widget_styles === 'string') {
-          try {
-            widgetStyles = JSON.parse(theme.widget_styles);
-          } catch (e) {
-            console.warn('Failed to parse widget_styles:', e);
-            widgetStyles = theme.widget_styles;
-          }
-        } else {
-          widgetStyles = theme.widget_styles;
-        }
-      }
+      // Update user theme with all settings from selected theme
+      await updateThemeMutation.mutateAsync({
+        themeId: userThemeId,
+        data: themeData
+      });
       
-      // Extract widget background (prioritize direct column over color_tokens)
-      const widgetBackground = theme.widget_background ?? null;
-      
-      // Use updatePageThemeId with all theme fields
-      // Pass null to clear page-level overrides (so theme values are used)
-      await updatePageThemeId(theme.id, {
-        page_background: pageBackground ?? null,
-        widget_background: widgetBackground,
-        widget_border_color: theme.widget_border_color ?? null,
-        page_primary_font: theme.page_primary_font ?? null,
-        page_secondary_font: theme.page_secondary_font ?? null,
-        widget_primary_font: theme.widget_primary_font ?? null,
-        widget_secondary_font: theme.widget_secondary_font ?? null,
-        widget_styles: widgetStyles,
-        spatial_effect: theme.spatial_effect ?? null
+      // Update page.theme_id to point to user theme (not system theme)
+      await updatePageThemeId(userThemeId, {
+        page_background: null, // Clear page overrides so theme values are used
+        widget_background: null,
+        widget_border_color: null,
+        page_primary_font: null,
+        page_secondary_font: null,
+        widget_primary_font: null,
+        widget_secondary_font: null,
+        widget_styles: null,
+        spatial_effect: null
       });
       
       // Invalidate and refetch queries to update the UI
+      await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
       setStatus({ tone: 'success', message: `Theme "${theme.name}" applied.` });

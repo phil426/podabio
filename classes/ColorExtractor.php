@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
 class ColorExtractor {
@@ -65,11 +66,50 @@ class ColorExtractor {
     }
 
     /**
-     * Fetch image from URL
-     * @param string $url Image URL
+     * Fetch image from URL or file path
+     * @param string $url Image URL or file path
      * @return string|false Image data or false on failure
      */
     private function fetchImage($url) {
+        // If it's a media library URL (uploads/media/), convert to file path
+        if (strpos($url, '/uploads/media/') !== false || strpos($url, 'uploads/media/') !== false) {
+            // Extract the path part from the URL
+            $path = parse_url($url, PHP_URL_PATH);
+            if (!$path) {
+                // If parse_url fails, try to extract path manually
+                if (preg_match('#(/uploads/media/.*)$#', $url, $matches)) {
+                    $path = $matches[1];
+                } elseif (preg_match('#(uploads/media/.*)$#', $url, $matches)) {
+                    $path = '/' . $matches[1];
+                }
+            }
+            
+            if ($path) {
+                // Convert to absolute file path
+                $filePath = ROOT_PATH . $path;
+                
+                // Check if file exists
+                if (file_exists($filePath) && is_file($filePath)) {
+                    // Read directly from file system (much more reliable)
+                    $imageData = @file_get_contents($filePath);
+                    if ($imageData !== false) {
+                        return $imageData;
+                    }
+                }
+            }
+        }
+        
+        // If it's already a file path (starts with ROOT_PATH or is absolute)
+        if (strpos($url, ROOT_PATH) === 0 || (strpos($url, '/') === 0 && file_exists($url))) {
+            if (file_exists($url) && is_file($url)) {
+                $imageData = @file_get_contents($url);
+                if ($imageData !== false) {
+                    return $imageData;
+                }
+            }
+        }
+        
+        // Fallback: try to fetch via HTTP (for external URLs)
         $context = stream_context_create([
             'http' => [
                 'timeout' => 10,

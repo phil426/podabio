@@ -20,33 +20,6 @@ interface DocumentationLink {
 export function LeftyInformationPanel({ activeColor, activeTab }: LeftyInformationPanelProps): JSX.Element {
   const content = useMemo(() => {
     switch (activeTab) {
-      case 'layers':
-        return {
-          title: 'Layers',
-          icon: <Info size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Managing Layers',
-              content: 'Drag layers to reorder them. Use the visibility and lock icons to control how layers appear on your page.'
-            },
-            {
-              title: 'Profile & Footer',
-              content: 'Edit your profile image, bio, and footer text directly from the Layers tab.'
-            }
-          ],
-          documentation: [
-            {
-              title: 'Layer Management',
-              url: '/studio-docs.php#layers',
-              description: 'Complete guide to managing and organizing your page layers'
-            },
-            {
-              title: 'Profile Setup',
-              url: '/docs/profile',
-              description: 'How to set up and customize your profile'
-            }
-          ]
-        };
       case 'podcast':
         return {
           title: 'Podcast',

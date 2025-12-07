@@ -4,17 +4,23 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ArrowLeft, Eye, EyeSlash, ArrowCounterClockwise, CheckCircle, Circle, XCircle, Spinner } from '@phosphor-icons/react';
+import { ArrowLeft, Eye, EyeSlash, ArrowCounterClockwise, CheckCircle, Circle, XCircle, Spinner, ArrowsDownUp, Plus, MagicWand } from '@phosphor-icons/react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import { ThemePreview } from './preview/ThemePreview';
 import { ThemePropertyDrawer } from './ThemePropertyDrawer';
 import { ContentEditorModal, type ContentEditorType } from './ContentEditorModal';
-import { useUpdateWidgetMutation, useDeleteWidgetMutation } from '../../../api/widgets';
+import { CombinedStyleContentModal } from './CombinedStyleContentModal';
+import { WidgetReorderModal } from '../WidgetReorderModal';
+import { WidgetGalleryDrawer } from '../../overlays/WidgetGalleryDrawer';
+import { PodcastThemeGeneratorModal } from './PodcastThemeGeneratorModal';
+import { usePodcastThemePrompt } from '../../../hooks/usePodcastThemePrompt';
+import { useUpdateWidgetMutation, useDeleteWidgetMutation, useAddWidgetMutation, useAvailableWidgetsQuery } from '../../../api/widgets';
 import { usePageSnapshot } from '../../../api/page';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../api/utils';
+import { useWidgetSelection } from '../../../state/widgetSelection';
 import styles from './theme-editor-view.module.css';
 
 interface StateChange {
@@ -50,6 +56,10 @@ export function ThemeEditorView({
   const [openModalSection, setOpenModalSection] = useState<string | null>(null);
   const [openModalWidgetId, setOpenModalWidgetId] = useState<string | null>(null);
   const [contentEditor, setContentEditor] = useState<ContentEditorType | null>(null);
+  const [combinedModalSection, setCombinedModalSection] = useState<string | null>(null);
+  const [combinedModalWidgetId, setCombinedModalWidgetId] = useState<string | null>(null);
+  const [reorderModalOpen, setReorderModalOpen] = useState<boolean>(false);
+  const [isGalleryOpen, setGalleryOpen] = useState<boolean>(false);
   const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(true);
   const [undoStack, setUndoStack] = useState<StateChange[]>([]);
   const [redoStack, setRedoStack] = useState<StateChange[]>([]);
@@ -58,11 +68,22 @@ export function ThemeEditorView({
   const changeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingChangesRef = useRef<StateChange[]>([]);
   
+  // Podcast theme generator
+  const {
+    openGenerator,
+    closeGenerator,
+    isGeneratorOpen,
+    generatorProps,
+  } = usePodcastThemePrompt();
+  
   // Widget mutations for layer actions
   const { data: snapshot } = usePageSnapshot();
   const widgets = snapshot?.widgets || [];
   const updateWidgetMutation = useUpdateWidgetMutation();
   const deleteWidgetMutation = useDeleteWidgetMutation();
+  const addWidgetMutation = useAddWidgetMutation();
+  const { data: availableWidgets } = useAvailableWidgetsQuery();
+  const selectWidget = useWidgetSelection((state) => state.selectWidget);
   const queryClient = useQueryClient();
 
   // Track changes to uiState for undo/redo
@@ -180,6 +201,16 @@ export function ThemeEditorView({
     setContentEditor(null);
   };
 
+  const handleOpenCombinedModal = (sectionId: string, widgetId?: string | null) => {
+    setCombinedModalSection(sectionId);
+    setCombinedModalWidgetId(widgetId || null);
+  };
+
+  const handleCloseCombinedModal = () => {
+    setCombinedModalSection(null);
+    setCombinedModalWidgetId(null);
+  };
+
   const handleToggleVisibility = (widgetId: string) => {
     const widget = widgets.find((w) => String(w.id) === widgetId);
     if (!widget) return;
@@ -255,6 +286,29 @@ export function ThemeEditorView({
     setHotspotsVisible(prev => !prev);
   };
 
+  const handleAddWidget = useCallback(
+    (widgetType: string, label?: string) => {
+      addWidgetMutation.mutate(
+        {
+          widget_type: widgetType,
+          title: label ?? widgetType
+        },
+        {
+          onSuccess: (response) => {
+            setGalleryOpen(false);
+            const typed = (response ?? {}) as { widget_id?: number | string; data?: { widget_id?: number | string } };
+            const widgetId = typed.widget_id ?? typed.data?.widget_id;
+            if (widgetId) {
+              selectWidget(String(widgetId));
+            }
+            queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+          }
+        }
+      );
+    },
+    [addWidgetMutation, selectWidget, queryClient]
+  );
+
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) return;
 
@@ -316,157 +370,170 @@ export function ThemeEditorView({
 
   return (
     <div className={styles.container}>
-      {/* Header Bar - Minimal with back button and save */}
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backButton}
-          onClick={onBack}
-          aria-label="Back to theme library"
-        >
-          <ArrowLeft aria-hidden="true" size={20} weight="regular" />
-        </button>
-        <div className={styles.headerContent}>
-          <h2>{theme?.name || 'New Theme'}</h2>
-          <p>Click hotspots on the preview to edit properties</p>
-        </div>
-        
-        {/* Hotspot Toggle, Undo/Redo, and Save Buttons */}
-        <div className={styles.headerActions}>
-          <Tooltip.Provider delayDuration={200}>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className={styles.hotspotToggleButton}
-                  onClick={toggleHotspots}
-                  aria-label={hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
-                >
-                  {hotspotsVisible ? (
-                    <Eye aria-hidden="true" size={16} weight="regular" />
-                  ) : (
-                    <EyeSlash aria-hidden="true" size={16} weight="regular" />
-                  )}
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
-                >
-                  {hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
-                  <Tooltip.Arrow className={styles.tooltipArrow} />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          </Tooltip.Provider>
+      {/* Floating Action Buttons - Vertical row to the left of preview */}
+      {/* Floating Action Buttons - Vertical row to the left of preview */}
+      <div className={styles.floatingActions}>
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={openGenerator}
+                aria-label="Theme Wizard"
+              >
+                <MagicWand aria-hidden="true" size={20} weight="regular" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                Theme Wizard
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
 
-          <Tooltip.Provider delayDuration={200}>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className={styles.undoButton}
-                  onClick={handleUndo}
-                  disabled={undoStack.length === 0}
-                  aria-label="Undo"
-                >
-                  <ArrowCounterClockwise aria-hidden="true" size={16} weight="regular" />
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
-                >
-                  Undo (Cmd/Ctrl+Z)
-                  <Tooltip.Arrow className={styles.tooltipArrow} />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          </Tooltip.Provider>
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={toggleHotspots}
+                aria-label={hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
+              >
+                {hotspotsVisible ? (
+                  <Eye aria-hidden="true" size={20} weight="regular" />
+                ) : (
+                  <EyeSlash aria-hidden="true" size={20} weight="regular" />
+                )}
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                {hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
 
-          <Tooltip.Provider delayDuration={200}>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className={styles.redoButton}
-                  onClick={handleRedo}
-                  disabled={redoStack.length === 0}
-                  aria-label="Redo"
-                >
-                  <ArrowCounterClockwise 
-                    aria-hidden="true" 
-                    size={16} 
-                    weight="regular" 
-                    style={{ transform: 'scaleX(-1)' }}
-                  />
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
-                >
-                  Redo (Cmd/Ctrl+Shift+Z)
-                  <Tooltip.Arrow className={styles.tooltipArrow} />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          </Tooltip.Provider>
-          
-          {/* Autosave Status Indicator */}
-          <Tooltip.Provider delayDuration={200}>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <div className={styles.autoSaveStatus} data-status={autoSaveStatus}>
-                  {autoSaveStatus === 'saving' && (
-                    <>
-                      <Spinner aria-hidden="true" size={14} weight="regular" className={styles.spinner} />
-                      <span>Saving...</span>
-                    </>
-                  )}
-                  {autoSaveStatus === 'saved' && (
-                    <>
-                      <CheckCircle aria-hidden="true" size={14} weight="regular" />
-                      <span>Saved</span>
-                    </>
-                  )}
-                  {autoSaveStatus === 'error' && (
-                    <>
-                      <XCircle aria-hidden="true" size={14} weight="regular" />
-                      <span>Error</span>
-                    </>
-                  )}
-                  {autoSaveStatus === 'idle' && (
-                    <>
-                      <Circle aria-hidden="true" size={14} weight="regular" />
-                      <span>All changes saved</span>
-                    </>
-                  )}
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
-                >
-                  {autoSaveStatus === 'saving' && 'Saving your changes...'}
-                  {autoSaveStatus === 'saved' && 'Changes saved successfully'}
-                  {autoSaveStatus === 'error' && 'Failed to save. Please try again.'}
-                  {autoSaveStatus === 'idle' && 'All changes are saved'}
-                  <Tooltip.Arrow className={styles.tooltipArrow} />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          </Tooltip.Provider>
-        </div>
-      </header>
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={handleUndo}
+                disabled={undoStack.length === 0}
+                aria-label="Undo"
+              >
+                <ArrowCounterClockwise aria-hidden="true" size={20} weight="regular" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                Undo (Cmd/Ctrl+Z)
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={handleRedo}
+                disabled={redoStack.length === 0}
+                aria-label="Redo"
+              >
+                <ArrowCounterClockwise 
+                  aria-hidden="true" 
+                  size={20} 
+                  weight="regular" 
+                  style={{ transform: 'scaleX(-1)' }}
+                />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                Redo (Cmd/Ctrl+Shift+Z)
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={() => setReorderModalOpen(true)}
+                aria-label="Reorder widgets"
+              >
+                <ArrowsDownUp aria-hidden="true" size={20} weight="regular" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                Reorder Widgets
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+
+        <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <button
+                type="button"
+                className={styles.floatingActionButton}
+                onClick={() => setGalleryOpen(true)}
+                aria-label="Add widget"
+              >
+                <Plus aria-hidden="true" size={20} weight="regular" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                side="bottom"
+                align="center"
+                className={styles.tooltip}
+              >
+                Add Widget
+                <Tooltip.Arrow className={styles.tooltipArrow} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+      </div>
 
       {/* Full-width Preview Panel */}
       <div className={styles.previewPanel}>
@@ -475,6 +542,7 @@ export function ThemeEditorView({
           onHotspotClick={handleHotspotClick}
           onEditContent={handleEditContent}
           onEditStyle={(sectionId, widgetId) => handleEditStyle(sectionId, widgetId)}
+          onOpenCombinedModal={handleOpenCombinedModal}
           onToggleVisibility={handleToggleVisibility}
           onDeleteWidget={handleDeleteWidget}
           onToggleFeatured={handleToggleFeatured}
@@ -501,6 +569,42 @@ export function ThemeEditorView({
         activeColor={activeColor}
         editor={contentEditor}
         onClose={handleCloseContentModal}
+      />
+
+      {/* Combined Style/Content Modal - Opens directly for hotspots with only content and style */}
+      {combinedModalSection && (
+        <CombinedStyleContentModal
+          isOpen={true}
+          sectionId={combinedModalSection}
+          widgetId={combinedModalWidgetId}
+          onClose={handleCloseCombinedModal}
+          theme={theme}
+          uiState={uiState}
+          onFieldChange={onFieldChange}
+          activeColor={activeColor}
+        />
+      )}
+
+      {/* Widget Reorder Modal */}
+      <WidgetReorderModal
+        isOpen={reorderModalOpen}
+        onClose={() => setReorderModalOpen(false)}
+      />
+
+      {/* Widget Gallery Drawer */}
+      <WidgetGalleryDrawer
+        open={isGalleryOpen}
+        widgets={availableWidgets ?? []}
+        onClose={() => setGalleryOpen(false)}
+        onAdd={handleAddWidget}
+        isAdding={addWidgetMutation.isPending}
+      />
+
+      {/* Podcast Theme Generator Modal */}
+      <PodcastThemeGeneratorModal
+        coverImageUrl={generatorProps.coverImageUrl}
+        isOpen={isGeneratorOpen}
+        onClose={closeGenerator}
       />
     </div>
   );

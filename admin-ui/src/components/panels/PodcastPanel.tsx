@@ -82,8 +82,6 @@ export function PodcastPanel({ activeColor }: PodcastPanelProps): JSX.Element {
 
       {/* Podcast Theme Prompt Dialog */}
       <PodcastThemePromptDialog
-        coverImageUrl={generatorProps.coverImageUrl}
-        podcastName={generatorProps.podcastName}
         isOpen={showPrompt}
         onAccept={openGenerator}
         onDecline={closePrompt}
@@ -92,8 +90,6 @@ export function PodcastPanel({ activeColor }: PodcastPanelProps): JSX.Element {
       {/* Podcast Theme Generator Modal */}
       <PodcastThemeGeneratorModal
         coverImageUrl={generatorProps.coverImageUrl}
-        podcastName={generatorProps.podcastName}
-        podcastDescription={generatorProps.podcastDescription}
         isOpen={isGeneratorOpen}
         onClose={closeGenerator}
       />

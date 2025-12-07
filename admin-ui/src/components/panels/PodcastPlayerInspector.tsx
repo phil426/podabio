@@ -739,6 +739,7 @@ export function PodcastPlayerInspector({ activeColor }: PodcastPlayerInspectorPr
         <div className={styles.fieldset}>
           <div className={styles.podcastInfoCompact}>
             <div className={styles.podcastInfoImage}>
+              {/* VALIDATION: Podcast player uses cover_image_url only (not profile_image or cover_image) */}
               {page?.cover_image_url ? (
                 <img src={normalizeImageUrl(page.cover_image_url)} alt="Podcast cover" />
               ) : (

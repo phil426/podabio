@@ -453,3 +453,104 @@
   box-shadow: none;
 }
 
+/* Avatar Section */
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.avatarPreview {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  background: var(--admin-surface-canvas, #f8fafc);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.avatarPreview:hover {
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+}
+
+.avatarPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--admin-text-secondary, #64748b);
+  background: var(--admin-surface-canvas, #f8fafc);
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.avatarPreview:hover .avatarOverlay {
+  opacity: 1;
+}
+
+.avatarActions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.avatarActionButton {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-primary, #0f172a);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 150ms ease;
+}
+
+.avatarActionButton:hover:not(:disabled) {
+  background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
+}
+
+.avatarActionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatarActionButtonDanger {
+  color: #dc2626;
+}
+
+.avatarActionButtonDanger:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.avatarActionDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--admin-border-default, rgba(15, 23, 42, 0.08));
+}
+

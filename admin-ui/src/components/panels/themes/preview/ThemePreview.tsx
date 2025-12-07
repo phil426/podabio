@@ -5,7 +5,6 @@
  */
 
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { DeviceMobile } from '@phosphor-icons/react';
 import { usePageSnapshot } from '../../../../api/page';
 import { normalizeImageUrl } from '../../../../api/utils';
 import { ContextMenu, type ContextMenuOption } from './ContextMenu';
@@ -26,12 +25,12 @@ interface DevicePreset {
 
 // 6 Popular phone sizes - actual device dimensions
 const DEVICE_PRESETS: DevicePreset[] = [
+  { id: 'iphone-17-pro-max', name: 'iPhone 17 Pro Max', actualWidth: 430, actualHeight: 932 },
   { id: 'iphone-16-pro-max', name: 'iPhone 16 Pro Max', actualWidth: 430, actualHeight: 932 },
   { id: 'iphone-15-pro', name: 'iPhone 15 Pro', actualWidth: 393, actualHeight: 852 },
   { id: 'iphone-se', name: 'iPhone SE', actualWidth: 375, actualHeight: 667 },
   { id: 'samsung-s24-ultra', name: 'Samsung S24 Ultra', actualWidth: 412, actualHeight: 915 },
   { id: 'pixel-8-pro', name: 'Pixel 8 Pro', actualWidth: 412, actualHeight: 915 },
-  { id: 'iphone-15', name: 'iPhone 15', actualWidth: 390, actualHeight: 844 },
 ];
 
 const PREVIEW_SCALE = 0.7; // 70% scale
@@ -41,6 +40,7 @@ interface ThemePreviewProps {
   onHotspotClick?: (sectionId: string, widgetId?: string | null) => void;
   onEditContent?: (sectionId: string, widgetId?: string | null) => void;
   onEditStyle?: (sectionId: string, widgetId?: string | null) => void;
+  onOpenCombinedModal?: (sectionId: string, widgetId?: string | null) => void;
   onToggleVisibility?: (widgetId: string) => void;
   onDeleteWidget?: (widgetId: string) => void;
   onToggleFeatured?: (widgetId: string) => void;
@@ -54,6 +54,7 @@ export function ThemePreview({
   onHotspotClick, 
   onEditContent,
   onEditStyle,
+  onOpenCombinedModal,
   onToggleVisibility,
   onDeleteWidget,
   onToggleFeatured,
@@ -65,8 +66,12 @@ export function ThemePreview({
   const page = snapshot?.page;
   const socialIcons = snapshot?.social_icons || [];
   const widgets = snapshot?.widgets || [];
-  const [selectedDevice, setSelectedDevice] = useState<DevicePreset>(DEVICE_PRESETS[0]);
+  const [selectedDevice, setSelectedDevice] = useState<DevicePreset>(() => {
+    // Default to iPhone 17 Pro Max if available, otherwise first device
+    return DEVICE_PRESETS.find(d => d.id === 'iphone-17-pro-max') || DEVICE_PRESETS[0];
+  });
   const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState<{ type: 'auth' | 'other'; message: string } | null>(null);
   const [dataVersion, setDataVersion] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
@@ -106,6 +111,17 @@ export function ThemePreview({
       if (event.data?.type === 'hotspot-click' && event.data?.sectionId) {
         const { sectionId, widgetId, x, y } = event.data;
         
+        // Check if this hotspot only has content and style options (no other actions)
+        // These hotspots should open the combined modal directly
+        const contentOnlyHotspots = ['profile-image', 'page-title', 'page-description', 'podcast-player-bar', 'social-icons'];
+        const hasOnlyContentAndStyle = !widgetId && contentOnlyHotspots.includes(sectionId);
+        
+        if (hasOnlyContentAndStyle && onOpenCombinedModal) {
+          // Open combined modal directly for hotspots with only content and style
+          onOpenCombinedModal(sectionId, widgetId || null);
+          return;
+        }
+        
         // Convert iframe coordinates to parent window coordinates
         // The iframe is scaled and positioned, so we need to account for that
         let hotspotX = x || window.innerWidth / 2;
@@ -123,7 +139,7 @@ export function ThemePreview({
           hotspotY = iframeRect.top + (y * PREVIEW_SCALE);
         }
         
-        // Show context menu for all hotspots
+        // Show context menu for all other hotspots
         setContextMenu({
           x: hotspotX,
           y: hotspotY,
@@ -148,9 +164,89 @@ export function ThemePreview({
     return `${baseUrl}/page.php?username=${encodeURIComponent(page.username)}&preview_mode=1&preview_width=${selectedDevice.actualWidth}&_v=${dataVersion}&_t=${timestamp}`;
   }, [page?.username, selectedDevice.actualWidth, dataVersion]);
 
+  // Clear error when URL changes (user might have fixed the issue)
+  useEffect(() => {
+    setIframeError(null);
+    setIframeLoading(true);
+  }, [publicPageUrl]);
+
   const handleIframeLoad = () => {
     setIframeLoading(false);
-    injectCSSVars();
+    
+    // Check if iframe loaded a login page or error page
+    try {
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) {
+        setIframeError({ type: 'other', message: 'Unable to access preview content' });
+        return;
+      }
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!iframeDoc) {
+        setIframeError({ type: 'other', message: 'Unable to access preview content' });
+        return;
+      }
+
+      // Check if this is a login page
+      // Look for common login page indicators
+      const bodyText = iframeDoc.body?.textContent || '';
+      const hasLoginForm = iframeDoc.querySelector('form[action*="login"]') !== null ||
+        iframeDoc.querySelector('input[type="password"]') !== null ||
+        iframeDoc.querySelector('input[name="password"]') !== null;
+      
+      const hasLoginText = bodyText.includes('Log In') || 
+        bodyText.includes('Welcome back') ||
+        bodyText.includes('Sign in with Google') ||
+        bodyText.includes('Don\'t have an account');
+      
+      // Check iframe URL if accessible (may be blocked by CORS)
+      let isLoginUrl = false;
+      try {
+        const iframeUrl = iframe.contentWindow?.location.href || iframe.src;
+        isLoginUrl = iframeUrl.includes('/login');
+      } catch (e) {
+        // CORS blocked - that's okay, we'll rely on content detection
+      }
+      
+      const isLoginPage = hasLoginForm && hasLoginText || isLoginUrl;
+
+      if (isLoginPage) {
+        setIframeError({
+          type: 'auth',
+          message: 'Authentication required to preview your page. Please refresh the page to log in.'
+        });
+        return;
+      }
+
+      // Check for other error indicators
+      const hasError = 
+        iframeDoc.body?.textContent?.includes('Access denied') === true ||
+        iframeDoc.body?.textContent?.includes('403') === true ||
+        iframeDoc.body?.textContent?.includes('Forbidden') === true;
+
+      if (hasError) {
+        setIframeError({
+          type: 'other',
+          message: 'Unable to load preview. Please check your page settings and try again.'
+        });
+        return;
+      }
+
+      // Clear any previous errors
+      setIframeError(null);
+      injectCSSVars();
+    } catch (error) {
+      // Cross-origin or other access error
+      console.warn('Preview iframe access error:', error);
+      // Don't set error for cross-origin - might be normal
+      // Only set error if we can't access at all
+      if (error instanceof Error && error.message.includes('Blocked a frame')) {
+        setIframeError({
+          type: 'other',
+          message: 'Unable to load preview. Please check your page settings.'
+        });
+      }
+    }
   };
 
   // Inject CSS variables into iframe
@@ -184,9 +280,34 @@ export function ThemePreview({
         // Use all possible selectors and variable names to ensure complete override
         const overrideCSS = `
 /* Force override theme CSS with preview variables */
+/* Inner radius = 22px outer - 8px border = 14px, but we're scaled by 0.7 so use 14/0.7 = 20px */
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
 body {
   background: var(--page-background) !important;
   color: var(--text-color, var(--page-description-color, var(--body-font-color, var(--color-text-secondary)))) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+}
+/* Ensure first element fills corners - podcast banner needs rounded top corners */
+.podcast-player-bar,
+.podcast-banner,
+.podcast-top-banner,
+body > .mobile-page-container > *:first-child,
+.mobile-page-container > *:first-child {
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+}
+/* Ensure page container fills viewport */
+.mobile-page-container {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 .page-title {
   color: var(--page-title-color, var(--heading-font-color, var(--color-text-primary))) !important;
@@ -228,37 +349,60 @@ body {
           root.style.setProperty(key, value, 'important');
         });
         
-        // CRITICAL: If hotspots are not visible, disable all interactions except scrolling
+        // Update profile image if preview-profile-image-url is set (from Theme Wizard)
+        const previewProfileImageUrl = cssVars['--preview-profile-image-url'];
+        if (previewProfileImageUrl) {
+          // Find all profile image elements and update their src
+          const profileImages = iframeDoc.querySelectorAll('.profile-image-container img, .profile-image img, [data-hotspot="profile-image"] img');
+          profileImages.forEach((img: Element) => {
+            if (img instanceof HTMLImageElement) {
+              img.src = previewProfileImageUrl;
+              img.style.display = 'block'; // Ensure it's visible
+            }
+          });
+          
+          // Also try to update via data attribute if the page uses it
+          const profileImageContainers = iframeDoc.querySelectorAll('.profile-image-container, [data-hotspot="profile-image"]');
+          profileImageContainers.forEach((container: Element) => {
+            const img = container.querySelector('img');
+            if (img instanceof HTMLImageElement) {
+              img.src = previewProfileImageUrl;
+              img.style.display = 'block';
+            }
+          });
+        }
+        
+        // CRITICAL: Handle hotspot visibility
+        // Remove any existing hotspot style first
+        const existingHotspotStyle = iframeDoc.getElementById('disable-hotspots');
+        if (existingHotspotStyle) {
+          existingHotspotStyle.remove();
+        }
+        
         if (!hotspotsVisible) {
-          // Hide all hotspot indicators
+          // Hide ONLY the hotspot glow indicators (::after pseudo-elements)
+          // Do NOT affect any other styling, positioning, or interactions
           const hotspotStyle = iframeDoc.createElement('style');
           hotspotStyle.id = 'disable-hotspots';
           hotspotStyle.textContent = `
-            /* Hide all hotspot indicators */
+            /* Hide ONLY the hotspot glow indicators - nothing else */
             body.preview-mode [data-hotspot]::after,
             body.preview-mode [data-hotspot-text]::after,
-            body.preview-mode .page-background-hotspot::after {
+            body.preview-mode .page-background-hotspot::after,
+            body.preview-mode .profile-image-container[data-hotspot]::after,
+            body.preview-mode .page-title[data-hotspot]::after,
+            body.preview-mode .page-description[data-hotspot]::after,
+            body.preview-mode .widget-wrapper[data-hotspot]::after,
+            body.preview-mode .podcast-top-banner[data-hotspot]::after,
+            body.preview-mode .social-icons[data-hotspot]::after {
               display: none !important;
-            }
-            /* Disable all pointer events except scrolling */
-            body.preview-mode * {
+              opacity: 0 !important;
+              visibility: hidden !important;
+              content: none !important;
+              width: 0 !important;
+              height: 0 !important;
+              box-shadow: none !important;
               pointer-events: none !important;
-            }
-            /* Allow scrolling */
-            body.preview-mode,
-            body.preview-mode .page-container,
-            body.preview-mode .widgets-container {
-              pointer-events: auto !important;
-              overflow-y: auto !important;
-            }
-            /* Disable all clickable elements */
-            body.preview-mode a,
-            body.preview-mode button,
-            body.preview-mode [onclick],
-            body.preview-mode [data-hotspot],
-            body.preview-mode [data-hotspot-text] {
-              pointer-events: none !important;
-              cursor: default !important;
             }
           `;
           iframeDoc.head.appendChild(hotspotStyle);
@@ -468,11 +612,23 @@ body {
     (previewStyle as Record<string, string>)[name] = value;
   });
 
-  // Calculate scaled dimensions for the frame
+  // Calculate scaled dimensions for the frame (including border)
   const scaledDimensions = useMemo(() => ({
     width: selectedDevice.actualWidth * PREVIEW_SCALE,
     height: selectedDevice.actualHeight * PREVIEW_SCALE
   }), [selectedDevice]);
+
+  // Calculate iframe dimensions - needs to account for 8px border on each side
+  // With box-sizing: border-box, the content area is the full size minus border
+  // But we need the iframe to be the device size, then scaled
+  const iframeDimensions = useMemo(() => {
+    // The iframe should be the device size, which will be scaled by PREVIEW_SCALE
+    // The container has box-sizing: border-box, so the content area accounts for the border
+    return {
+      width: selectedDevice.actualWidth,
+      height: selectedDevice.actualHeight
+    };
+  }, [selectedDevice]);
 
   const phoneStyle = useMemo(() => ({
     ...previewStyle,
@@ -490,66 +646,115 @@ body {
 
   return (
     <div className={styles.previewContainer}>
-      {/* Floating Device Selector Button */}
-      <div className={styles.floatingDeviceSelector}>
-        <DeviceMobile aria-hidden="true" size={16} weight="regular" />
-        <select
-          className={styles.deviceSelect}
-          value={selectedDevice.id}
-          onChange={(e) => {
-            const device = DEVICE_PRESETS.find((d) => d.id === e.target.value);
-            if (device) setSelectedDevice(device);
-          }}
-        >
-          {DEVICE_PRESETS.map((device) => (
-            <option key={device.id} value={device.id}>
-              {device.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className={styles.previewWrapper} ref={previewWrapperRef}>
         <div 
           className={styles.previewPhone} 
           style={{
             width: `${scaledDimensions.width}px`,
             height: `${scaledDimensions.height}px`,
-            position: 'relative'
+            position: 'relative',
+            overflow: 'hidden' // Ensure content is clipped to rounded corners
           }}
         >
-          {publicPageUrl && (
-            <iframe
-              ref={iframeRef}
-              src={publicPageUrl}
-              className={styles.previewIframe}
-              title="Live page preview"
-              onLoad={handleIframeLoad}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-              style={{
-                opacity: iframeLoading ? 0 : 1,
-                transition: 'opacity 0.3s ease-in-out',
-                width: `${selectedDevice.actualWidth}px`,
-                height: `${selectedDevice.actualHeight}px`,
-                transform: `scale(${PREVIEW_SCALE})`,
-                transformOrigin: 'top left',
-                border: 'none',
-                // CRITICAL: Always allow pointer events when hotspots are visible
-                pointerEvents: hotspotsVisible ? 'auto' : 'none',
-                touchAction: hotspotsVisible ? 'auto' : 'none'
-              }}
-            />
-          )}
-          {iframeLoading && (
+          {iframeError ? (
             <div style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              color: '#666',
-              fontSize: '14px'
+              width: '80%',
+              maxWidth: '300px',
+              padding: '24px',
+              background: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              textAlign: 'center',
+              zIndex: 1000
             }}>
-              Loading preview...
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '16px',
+                color: '#ef4444'
+              }}>⚠️</div>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: '#1f2937',
+                margin: '0 0 8px 0'
+              }}>
+                Preview Unavailable
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: '0 0 16px 0',
+                lineHeight: '1.5'
+              }}>
+                {iframeError.message}
+              </p>
+              {iframeError.type === 'auth' && (
+                <div style={{
+                  fontSize: '13px',
+                  color: '#6b7280',
+                  padding: '12px',
+                  background: '#f9fafb',
+                  borderRadius: '8px',
+                  marginTop: '12px',
+                  textAlign: 'left'
+                }}>
+                  <strong style={{ color: '#374151', display: 'block', marginBottom: '4px' }}>How to fix:</strong>
+                  <ol style={{ margin: '0', paddingLeft: '20px', lineHeight: '1.6' }}>
+                    <li>Refresh this page to log in</li>
+                    <li>Make sure you're logged into your account</li>
+                    <li>If the issue persists, try logging out and back in</li>
+                  </ol>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Inner wrapper contains iframe. Parent .previewPhone clips to inner border radius */
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: `${iframeDimensions.width}px`,
+              height: `${iframeDimensions.height}px`,
+              transform: `scale(${PREVIEW_SCALE})`,
+              transformOrigin: 'top left'
+            }}>
+              {publicPageUrl && (
+                <iframe
+                  ref={iframeRef}
+                  src={publicPageUrl}
+                  className={styles.previewIframe}
+                  title="Live page preview"
+                  onLoad={handleIframeLoad}
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                  style={{
+                    opacity: iframeLoading ? 0 : 1,
+                    transition: 'opacity 0.3s ease-in-out',
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    // CRITICAL: Always allow pointer events when hotspots are visible
+                    pointerEvents: hotspotsVisible ? 'auto' : 'none',
+                    touchAction: hotspotsVisible ? 'auto' : 'none',
+                    display: 'block'
+                  }}
+                />
+              )}
+              {iframeLoading && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  color: '#666',
+                  fontSize: '14px'
+                }}>
+                  Loading preview...
+                </div>
+              )}
             </div>
           )}
           {/* Legacy React content - keeping for fallback or can be removed */}
@@ -626,7 +831,7 @@ body {
                   }}
                 >
                   <img 
-                    src={normalizeImageUrl(page?.profile_image || null)} 
+                    src={normalizeImageUrl(cssVars['--preview-profile-image-url'] || page?.profile_image || null)} 
                     alt="Profile" 
                     className={styles.profileImage}
                     onClick={(e) => {
@@ -969,9 +1174,9 @@ body {
                   }
                 });
                 options.push({
-                  label: 'Generate from Podcast',
+                  label: 'Theme Wizard',
                   icon: <Sparkle size={16} weight="regular" />,
-                  ariaLabel: 'Generate a theme from your podcast cover art',
+                  ariaLabel: 'Open Theme Wizard to generate a theme from your podcast cover art',
                   action: () => {
                     openGenerator();
                   }
@@ -1023,8 +1228,6 @@ body {
       {/* Podcast Theme Generator Modal */}
       <PodcastThemeGeneratorModal
         coverImageUrl={generatorProps.coverImageUrl}
-        podcastName={generatorProps.podcastName}
-        podcastDescription={generatorProps.podcastDescription}
         isOpen={isGeneratorOpen}
         onClose={closeGenerator}
       />

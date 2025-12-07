@@ -28,7 +28,7 @@ interface LeftyPropertiesPanelProps {
   activeTab?: LeftyTabValue;
 }
 
-export function LeftyPropertiesPanel({ activeColor, activeTab = 'layers' }: LeftyPropertiesPanelProps): JSX.Element {
+export function LeftyPropertiesPanel({ activeColor, activeTab = 'themes' }: LeftyPropertiesPanelProps): JSX.Element {
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
@@ -55,11 +55,10 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'layers' }: Left
   let inspector: JSX.Element | null = null;
 
   // Gate inspectors by activeTab - Lefty-specific tabs only
-  const isLeftyLayerTab = activeTab === 'layers';
   const isLeftyIntegrationTab = activeTab === 'integration';
 
-  if (isLeftyLayerTab) {
-    // Layers tab: Show widget/page inspectors or default to Profile
+  // Show widget/page inspectors when widget is selected
+  if (selectedWidgetId) {
     // CRITICAL: Check for 'page:footer' FIRST with exact match before any other checks
     if (selectedWidgetId === 'page:footer') {
       inspector = <FooterInspector activeColor={activeColor} />;
@@ -88,8 +87,8 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'layers' }: Left
       } else {
         inspector = <WidgetInspector activeColor={activeColor} />;
       }
-    } else if (activeTab === 'layers') {
-      // Default to Profile inspector when on layers tab and nothing is selected
+    } else {
+      // Default to Profile inspector when nothing is selected
       inspector = <ProfileInspector focus="profile" activeColor={activeColor} />;
     }
     // Note: ThemeEditorPanel is handled separately via showThemeInspector state
@@ -148,11 +147,20 @@ function deriveActiveTheme(
   const systemThemes = library?.system ?? [];
   const userThemes = library?.user ?? [];
 
-  if (themeId == null) {
-    return systemThemes[0] ?? userThemes[0] ?? null;
+  // Always prefer user theme if it exists
+  if (userThemes.length > 0) {
+    // If page points to user theme, use it; otherwise use first user theme
+    if (themeId) {
+      const userTheme = userThemes.find(theme => theme.id === themeId);
+      if (userTheme) return userTheme;
+    }
+    return userThemes[0];
   }
 
-  const combined = [...userThemes, ...systemThemes];
-  return combined.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
+  // Fallback to system theme if no user theme exists
+  if (themeId == null) {
+    return systemThemes[0] ?? null;
+  }
+  return systemThemes.find((theme) => theme.id === themeId) ?? systemThemes[0] ?? null;
 }
 

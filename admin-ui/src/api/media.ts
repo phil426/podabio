@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCsrfToken, queryKeys } from './utils';
+import { refreshCsrfToken } from './http';
 
 const MEDIA_ENDPOINT = '/api/media.php';
 
@@ -103,8 +104,18 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
     throw new Error('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
   }
   
+  // Ensure we have a valid CSRF token
+  let csrfToken = getCsrfToken();
+  if (!csrfToken) {
+    try {
+      csrfToken = await refreshCsrfToken();
+    } catch (err) {
+      throw new Error('Failed to get CSRF token. Please refresh the page and try again.');
+    }
+  }
+  
   const formData = new FormData();
-  formData.append('csrf_token', getCsrfToken());
+  formData.append('csrf_token', csrfToken);
   formData.append('image', file);
   
   const response = await fetch(MEDIA_ENDPOINT, {
@@ -114,6 +125,41 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
   });
   
   const payload = (await response.json()) as MediaUploadResponse;
+  
+  // If CSRF token error, try refreshing and retrying once
+  if ((!response.ok || !payload.success) && (payload.error?.includes('CSRF') || payload.error?.includes('Invalid CSRF') || response.status === 403)) {
+    try {
+      const newCsrfToken = await refreshCsrfToken();
+      const retryFormData = new FormData();
+      retryFormData.append('csrf_token', newCsrfToken);
+      retryFormData.append('image', file);
+      
+      const retryResponse = await fetch(MEDIA_ENDPOINT, {
+        method: 'POST',
+        body: retryFormData,
+        credentials: 'include'
+      });
+      
+      const retryPayload = (await retryResponse.json()) as MediaUploadResponse;
+      
+      if (!retryResponse.ok || !retryPayload.success) {
+        let errorMessage = retryPayload.error ?? 'Failed to upload image';
+        if (errorMessage.includes('File size exceeds')) {
+          errorMessage = `File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      return retryPayload;
+    } catch (retryErr) {
+      // If retry also fails, throw the original error
+      let errorMessage = payload.error ?? 'Failed to upload image';
+      if (errorMessage.includes('File size exceeds')) {
+        errorMessage = `File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`;
+      }
+      throw new Error(errorMessage);
+    }
+  }
   
   if (!response.ok || !payload.success) {
     let errorMessage = payload.error ?? 'Failed to upload image';

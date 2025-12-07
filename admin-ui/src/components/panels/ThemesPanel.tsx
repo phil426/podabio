@@ -6,7 +6,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { usePageSnapshot, usePageAppearanceMutation, updatePageThemeId } from '../../api/page';
-import { useThemeLibraryQuery, useUpdateThemeMutation, type ThemeLibraryResult } from '../../api/themes';
+import { useThemeLibraryQuery, useUpdateThemeMutation, type ThemeLibraryResult, getOrCreateUserTheme } from '../../api/themes';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../api/utils';
 import type { ThemeRecord } from '../../api/types';
@@ -48,14 +48,26 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   // Ref to store latest selectedTheme to avoid stale closure in autosave timeout
   const selectedThemeRef = useRef<ThemeRecord | null>(selectedTheme);
 
-  // Derive active theme from theme library (user themes retired - only system themes)
+  // Derive active theme - prefer user theme over system theme
   const activeTheme = useMemo(() => {
     if (!themeLibrary) return null;
     const themeId = snapshot?.page?.theme_id ?? null;
-    if (themeId == null) {
-      return themeLibrary.system?.[0] ?? null;
+    
+    // Always prefer user theme if it exists
+    if (themeLibrary.user && themeLibrary.user.length > 0) {
+      // If page points to user theme, use it; otherwise use first user theme
+      if (themeId) {
+        const userTheme = themeLibrary.user.find(theme => theme.id === themeId);
+        if (userTheme) return userTheme;
+      }
+      return themeLibrary.user[0];
     }
-    return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
+    
+    // Fallback to system theme if no user theme exists
+    if (themeId) {
+      return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
+    }
+    return themeLibrary.system?.[0] ?? null;
   }, [themeLibrary, snapshot?.page?.theme_id]);
 
   // Initialize UI state when theme changes
@@ -173,51 +185,41 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         widget_secondary_font: existingThemeData.widget_secondary_font,
       };
 
-      // Check if it's a system theme (user_id is null)
-      if (currentSelectedTheme.user_id === null || currentSelectedTheme.user_id === undefined) {
-        // System theme - check if custom version exists
-        const customName = `Custom - ${currentSelectedTheme.name}`;
-        const existingCustom = themeLibrary?.user?.find(t => t.name === customName);
-
-        if (existingCustom) {
-          // Update existing custom theme
-          const updateResult = await updateMutation.mutateAsync({
-            themeId: existingCustom.id,
-            data: themeData
-          });
-          console.log('Updated custom theme:', updateResult);
-          
-          // Refresh the selected theme data
-          await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
-          const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
-          const updatedTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.id === existingCustom.id) ||
-                              refreshedLibrary?.system?.find((t: ThemeRecord) => t.id === existingCustom.id);
-          if (updatedTheme) {
-            setSelectedTheme(updatedTheme);
-            selectedThemeRef.current = updatedTheme; // Update ref
-          }
-        } else {
-          // User themes retired - only system themes can be customized
-          throw new Error('Cannot create new themes. Please select a system theme to customize.');
+      // Always use the single user theme (get or create if needed)
+      const userThemeId = await getOrCreateUserTheme();
+      
+      // Update the user theme with all current settings
+      await updateMutation.mutateAsync({
+        themeId: userThemeId,
+        data: {
+          ...themeData,
+          name: 'My Theme' // Keep user theme name consistent
         }
-      } else {
-        // User theme - update directly
-        console.log('Updating user theme:', currentSelectedTheme.id, currentSelectedTheme.name);
-        const updateResult = await updateMutation.mutateAsync({
-          themeId: currentSelectedTheme.id,
-          data: themeData
+      });
+      
+      // Ensure page.theme_id points to user theme
+      const currentPageThemeId = snapshot?.page?.theme_id;
+      if (currentPageThemeId !== userThemeId) {
+        await updatePageThemeId(userThemeId, {
+          page_background: null, // Clear page overrides so theme values are used
+          widget_background: null,
+          widget_border_color: null,
+          page_primary_font: null,
+          page_secondary_font: null,
+          widget_primary_font: null,
+          widget_secondary_font: null,
+          widget_styles: null,
+          spatial_effect: null
         });
-        console.log('Update result:', updateResult);
-        
-        // Refresh the selected theme data
-        await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
-          const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
-        const updatedTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.id === currentSelectedTheme.id) ||
-                            refreshedLibrary?.system?.find((t: ThemeRecord) => t.id === currentSelectedTheme.id);
-        if (updatedTheme) {
-          setSelectedTheme(updatedTheme);
-          selectedThemeRef.current = updatedTheme; // Update ref
-        }
+      }
+      
+      // Refresh the selected theme data
+      await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
+      const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
+      const updatedTheme = refreshedLibrary?.user?.find((t: ThemeRecord) => t.id === userThemeId);
+      if (updatedTheme) {
+        setSelectedTheme(updatedTheme);
+        selectedThemeRef.current = updatedTheme; // Update ref
       }
 
       // Save page-level fields (profile image styling and page title effects)

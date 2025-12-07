@@ -30,6 +30,7 @@ export interface PageSnapshot {
   footer_privacy_link?: string | null;
   footer_terms_link?: string | null;
   cover_image_url: string | null;
+  cover_image: string | null;
   profile_image?: string | null;
   theme_id: number | null;
   colors: Record<string, unknown> | null;

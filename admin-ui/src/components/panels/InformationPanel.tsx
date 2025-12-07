@@ -28,21 +28,6 @@ export function InformationPanel({ activeColor, activeTab }: InformationPanelPro
             }
           ]
         };
-      case 'layers':
-        return {
-          title: 'Layers',
-          icon: <Info size={20} weight="regular" />,
-          sections: [
-            {
-              title: 'Managing Layers',
-              content: 'Drag layers to reorder them. Use the visibility and lock icons to control how layers appear on your page.'
-            },
-            {
-              title: 'Profile & Footer',
-              content: 'Edit your profile image, bio, and footer text directly from the Layers tab.'
-            }
-          ]
-        };
       case 'typography':
         return {
           title: 'Typography',

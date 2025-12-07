@@ -12,7 +12,7 @@ import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
 import { fieldRegistry } from '../utils/fieldRegistry';
-import { usePageSnapshot, removeProfileImage, updatePageSettings } from '../../../../api/page';
+import { usePageSnapshot, removeProfileImage, updatePageAppearance } from '../../../../api/page';
 import { uploadProfileImage } from '../../../../api/uploads';
 import { queryKeys, normalizeImageUrl } from '../../../../api/utils';
 import { MediaLibraryDrawer } from '../../../overlays/MediaLibraryDrawer';
@@ -43,7 +43,7 @@ export function PageCustomizationSection({
   const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
     try {
       setIsUploading(true);
-      await updatePageSettings({ profile_image: mediaItem.file_url });
+      await updatePageAppearance({ profile_image: mediaItem.file_url });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       setMediaLibraryOpen(false);
     } catch (error) {

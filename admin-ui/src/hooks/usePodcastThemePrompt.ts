@@ -14,9 +14,7 @@ interface UsePodcastThemePromptReturn {
   closePrompt: () => void;
   isGeneratorOpen: boolean;
   generatorProps: {
-    coverImageUrl: string | null;
-    podcastName: string | null;
-    podcastDescription: string | null;
+    coverImageUrl: string | null; // RSS feed cover image
   };
 }
 
@@ -64,8 +62,6 @@ export function usePodcastThemePrompt(): UsePodcastThemePromptReturn {
     isGeneratorOpen,
     generatorProps: {
       coverImageUrl: page?.cover_image_url || null,
-      podcastName: page?.podcast_name || null,
-      podcastDescription: page?.podcast_description || null,
     },
   };
 }

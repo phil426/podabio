@@ -13,6 +13,7 @@ require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../classes/Page.php';
 require_once __DIR__ . '/../classes/ImageHandler.php';
 require_once __DIR__ . '/../classes/MediaLibrary.php';
+require_once __DIR__ . '/../classes/User.php';
 
 // Require authentication
 requireAuth();
@@ -140,7 +141,17 @@ if ($imageType === 'theme_image') {
 }
 
 // Update page with image URL
-$updateField = $imageType === 'profile' ? 'profile_image' : ($imageType === 'background' ? 'background_image' : null);
+$updateField = null;
+$updateUserField = null;
+if ($imageType === 'profile') {
+    $updateField = 'profile_image';
+} elseif ($imageType === 'background') {
+    $updateField = 'background_image';
+} elseif ($imageType === 'cover') {
+    $updateField = 'cover_image'; // For theme generation, separate from profile_image
+} elseif ($imageType === 'avatar') {
+    $updateUserField = 'avatar_url'; // For user account avatar
+}
 
 if ($updateField) {
     // Get old image path to delete later
@@ -169,6 +180,36 @@ if ($updateField) {
         $imageHandler->deleteImage($result['path']);
         error_log('Failed to update page with image. Page ID: ' . $pageId . ', Update field: ' . $updateField);
         echo json_encode(['success' => false, 'error' => 'Failed to update page with image']);
+    }
+} elseif ($updateUserField) {
+    // Handle user account field (avatar_url)
+    $userClass = new User();
+    $currentUser = $userClass->getById($userId);
+    $oldImage = $currentUser[$updateUserField] ?? null;
+    
+    // Update user
+    $updateResult = $userClass->update($userId, [$updateUserField => $result['url']]);
+    
+    if ($updateResult) {
+        // Delete old image if exists
+        if ($oldImage && strpos($oldImage, APP_URL) === 0) {
+            $oldPath = str_replace(APP_URL, '', $oldImage);
+            $imageHandler->deleteImage($oldPath);
+        }
+        
+        error_log('Avatar updated successfully: ' . $result['url']);
+        
+        echo json_encode([
+            'success' => true,
+            'url' => $result['url'],
+            'path' => $result['path'],
+            'message' => 'Avatar uploaded successfully'
+        ]);
+    } else {
+        // Delete uploaded file if user update failed
+        $imageHandler->deleteImage($result['path']);
+        error_log('Failed to update user with image. User ID: ' . $userId . ', Update field: ' . $updateUserField);
+        echo json_encode(['success' => false, 'error' => 'Failed to update avatar']);
     }
 } else {
     // For thumbnails, just return the URL (can be used in link forms)

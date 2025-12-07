@@ -126,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'bio_text_size' => $userPage['bio_text_size'] ?? 'medium',
             'rss_feed_url' => $userPage['rss_feed_url'],
             'cover_image_url' => $userPage['cover_image_url'],
+            'cover_image' => $userPage['cover_image'] ?? null,
             'theme_id' => $userPage['theme_id'],
             'colors' => json_decode($userPage['colors'] ?? '', true),
             'fonts' => json_decode($userPage['fonts'] ?? '', true),
@@ -381,6 +382,21 @@ switch ($action) {
             $spacing = filter_var($_POST['profile_image_spacing_bottom'], FILTER_VALIDATE_INT);
             if ($spacing !== false && $spacing >= 0 && $spacing <= 100) {
                 $updateData['profile_image_spacing_bottom'] = $spacing;
+            }
+        }
+
+        // Handle cover_image (for theme generation, separate from profile_image)
+        if (isset($_POST['cover_image'])) {
+            $coverImageUrl = sanitizeInput($_POST['cover_image']);
+            if (!empty($coverImageUrl)) {
+                // Validate URL format
+                if (filter_var($coverImageUrl, FILTER_VALIDATE_URL) || preg_match('/^\/uploads\//', $coverImageUrl)) {
+                    // Allow both full URLs and relative paths starting with /uploads/
+                    $updateData['cover_image'] = $coverImageUrl;
+                }
+            } else {
+                // Allow clearing cover_image
+                $updateData['cover_image'] = null;
             }
         }
         
@@ -768,6 +784,20 @@ switch ($action) {
                 $updateData['profile_image'] = null;
             }
         }
+
+        // Handle cover_image (for theme generation, separate from profile_image)
+        if (isset($_POST['cover_image'])) {
+            $coverImageUrl = trim(sanitizeInput($_POST['cover_image']));
+            if (!empty($coverImageUrl)) {
+                // Validate URL format - allow both full URLs and relative paths
+                if (filter_var($coverImageUrl, FILTER_VALIDATE_URL) || preg_match('/^\/uploads\//', $coverImageUrl)) {
+                    $updateData['cover_image'] = $coverImageUrl;
+                }
+            } else {
+                // Allow clearing cover_image
+                $updateData['cover_image'] = null;
+            }
+        }
         
         $result = $page->update($pageId, $updateData);
         if ($result) {
@@ -956,6 +986,8 @@ switch ($action) {
         
         if ($imageType === 'profile') {
             $updateField = 'profile_image';
+        } elseif ($imageType === 'cover') {
+            $updateField = 'cover_image';
         } elseif ($imageType === 'background') {
             $updateField = 'background_image';
         } else {

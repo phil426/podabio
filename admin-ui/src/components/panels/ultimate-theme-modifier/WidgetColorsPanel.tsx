@@ -13,12 +13,21 @@ function deriveActiveTheme(themeLibrary: any, themeId: number | null) {
   const systemThemes = themeLibrary?.system ?? [];
   const userThemes = themeLibrary?.user ?? [];
   
-  if (themeId == null) {
-    return systemThemes[0] ?? userThemes[0] ?? null;
+  // Always prefer user theme if it exists
+  if (userThemes.length > 0) {
+    // If page points to user theme, use it; otherwise use first user theme
+    if (themeId) {
+      const userTheme = userThemes.find((theme: any) => theme.id === themeId);
+      if (userTheme) return userTheme;
+    }
+    return userThemes[0];
   }
   
-  const combined = [...userThemes, ...systemThemes];
-  return combined.find((theme: any) => theme.id === themeId) ?? systemThemes[0] ?? userThemes[0] ?? null;
+  // Fallback to system theme if no user theme exists
+  if (themeId == null) {
+    return systemThemes[0] ?? null;
+  }
+  return systemThemes.find((theme: any) => theme.id === themeId) ?? systemThemes[0] ?? null;
 }
 
 function safeParse(input: string | null | undefined | Record<string, unknown>): Record<string, unknown> | null {

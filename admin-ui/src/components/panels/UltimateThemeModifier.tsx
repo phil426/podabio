@@ -21,7 +21,7 @@ import {
 } from '@phosphor-icons/react';
 
 import { useTokens } from '../../design-system/theme/TokenProvider';
-import { useUpdateThemeMutation, useCreateThemeMutation } from '../../api/themes';
+import { useUpdateThemeMutation, useCreateThemeMutation, getOrCreateUserTheme } from '../../api/themes';
 import { useThemeLibraryQuery } from '../../api/themes';
 import { updatePageThemeId } from '../../api/page';
 import { useQueryClient } from '@tanstack/react-query';
@@ -583,29 +583,30 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         widget_styles: widgetStyles
       };
 
-      const isSystemTheme = theme.user_id === null || theme.user_id === undefined;
-
-      // If it's a system theme, create a new user theme copy
-      if (isSystemTheme) {
-        const customThemeName = `Custom - ${theme.name}`;
-        const response = await createMutation.mutateAsync({
+      // Always use the single user theme (get or create if needed)
+      const userThemeId = await getOrCreateUserTheme();
+      
+      // Update the user theme with all current settings
+      await updateMutation.mutateAsync({
+        themeId: userThemeId,
+        data: {
           ...themeData,
-          name: customThemeName
-        });
-        
-        if (response.success && response.data && typeof response.data === 'object' && 'theme_id' in response.data) {
-          const newThemeId = (response.data as { theme_id: number }).theme_id;
-          if (typeof newThemeId === 'number') {
-            await updatePageThemeId(newThemeId);
-          }
+          name: 'My Theme' // Keep user theme name consistent
         }
-      } else {
-        // Update existing user theme
-        await updateMutation.mutateAsync({
-          themeId: theme.id,
-          data: themeData
-        });
-      }
+      });
+      
+      // Ensure page.theme_id points to user theme
+      await updatePageThemeId(userThemeId, {
+        page_background: null, // Clear page overrides so theme values are used
+        widget_background: null,
+        widget_border_color: null,
+        page_primary_font: null,
+        page_secondary_font: null,
+        widget_primary_font: null,
+        widget_secondary_font: null,
+        widget_styles: null,
+        spatial_effect: null
+      });
 
       // Invalidate and refetch queries to refresh data immediately
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
@@ -635,7 +636,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     } finally {
       setIsSaving(false);
     }
-  }, [theme, tokens, tokenValues, updateMutation, createMutation, queryClient, onSave, isSaving]);
+  }, [theme, tokens, tokenValues, updateMutation, queryClient, onSave, isSaving]);
 
   // Update ref when handleSave changes
   useEffect(() => {

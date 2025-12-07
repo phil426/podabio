@@ -4,9 +4,10 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--admin-bg-canvas, #f8fafc);
+  background: transparent;
   overflow: hidden;
   position: relative;
+  border-radius: 0;
 }
 
 .previewWrapper {
@@ -14,21 +15,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  overflow: visible;
+  padding: 40px; /* Increased padding to allow hotspot glow to extend beyond frame */
+  overflow: visible; /* Allow hotspots to extend beyond phone frame */
   min-height: 0;
+  position: relative;
+  /* Ensure glow is never clipped by this container */
+  contain: layout style;
 }
 
 .previewPhone {
   max-width: 100%;
   max-height: 100%;
   background: var(--page-background, #ffffff);
-  border-radius: 24px;
-  overflow: visible;
+  border-radius: 22px;
+  overflow: hidden; /* Clip iframe content to rounded corners */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: width 0.3s ease, height 0.3s ease;
+  /* Ensure hotspots can render on top */
+  isolation: isolate;
+  /* 8px titanium border */
+  border: 8px solid #b8b8b8;
+  box-sizing: content-box; /* Border is added to width/height, so content area matches scaled dimensions */
 }
+
+
 
 /* Gradient animation when enabled */
 .previewPhone[style*="--page-background-animate: true"],
@@ -51,9 +62,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 14px; /* 22px - 8px border = 14px to align with inner edge */
   isolation: isolate;
-  clip-path: inset(0 round 24px);
+  clip-path: inset(0 round 14px);
 }
 
 .podcastBanner {
@@ -70,8 +81,7 @@
   box-shadow: var(--podcast-player-box-shadow, 0 6px 16px rgba(15, 23, 42, 0.16));
   border-bottom: var(--podcast-player-border-width, 1px) solid var(--podcast-player-border-color, rgba(255, 255, 255, 0.2));
   flex-shrink: 0;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-radius: 14px 14px 0 0; /* 22px - 8px border = 14px to align with inner edge, rounded top only */
 }
 
 .podcastBanner.hotspot {
@@ -112,48 +122,6 @@
 .podcastBannerToggle i:last-child {
   font-size: 8.8px;
   opacity: 0.8;
-}
-
-/* Floating Device Selector */
-.floatingDeviceSelector {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--admin-bg-panel, #ffffff);
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.deviceSelect {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 180px;
-}
-
-.deviceSelect:hover {
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
-  background: var(--admin-surface-subtle, #f8fafc);
-}
-
-.deviceSelect:focus {
-  outline: none;
-  border-color: #00FF7F;
-  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
 }
 
 .previewContent {
@@ -352,8 +320,9 @@
   cursor: pointer !important;
   position: relative;
   transition: all 0.2s ease;
-  z-index: 100;
+  z-index: 100000; /* Very high z-index to layer on top of everything, including phone frame */
   pointer-events: auto !important;
+  isolation: isolate; /* Create new stacking context */
 }
 
 /* Pulsing glowing orb indicator - matching profile hotspot style */
@@ -371,9 +340,11 @@
     0 0 36px rgba(0, 255, 127, 0.6),
     0 0 0 2px rgba(255, 255, 255, 1);
   pointer-events: none;
-  z-index: 100000;
+  z-index: 100001; /* Even higher to ensure glow extends outside frame */
   opacity: 1;
   animation: pulseGlow 2s ease-in-out infinite;
+  /* Allow glow to extend beyond parent boundaries */
+  will-change: transform, box-shadow;
 }
 
 @keyframes pulseGlow {
@@ -506,6 +477,247 @@
       0 0 54px rgba(0, 255, 127, 0.7),
       0 0 0 3px rgba(255, 255, 255, 1);
   }
+}
+
+/* Preview iframe styling for iPhone 17 */
+.previewIframe {
+  /* Sizing handled by inline styles - fills parent wrapper */
+  /* Clipping is handled by parent wrapper div with border-radius and overflow: hidden */
+}
+
+/* iOS Safari Browser UI Overlay */
+.safariBrowserUI {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 88px; /* Status bar + Safari UI height */
+  background: linear-gradient(
+    to bottom,
+    rgba(248, 249, 250, 0.95) 0%,
+    rgba(248, 249, 250, 0.98) 50%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  pointer-events: none; /* Cosmetic only, not interactive */
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+}
+
+/* iOS Status Bar */
+.statusBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 16px 0;
+  height: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.statusBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.statusBarCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.statusBarRight {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Signal bars */
+.signalBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.signalBar {
+  width: 3px;
+  background: #000000;
+  border-radius: 1px;
+}
+
+.signalBar:nth-child(1) { height: 3px; }
+.signalBar:nth-child(2) { height: 5px; }
+.signalBar:nth-child(3) { height: 7px; }
+.signalBar:nth-child(4) { height: 9px; }
+
+/* WiFi icon */
+.wifiIcon {
+  width: 16px;
+  height: 12px;
+  position: relative;
+}
+
+.wifiIcon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 8px;
+  border: 2px solid #000000;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Battery icon */
+.batteryIcon {
+  width: 24px;
+  height: 12px;
+  border: 1.5px solid #000000;
+  border-radius: 2px;
+  position: relative;
+  background: transparent;
+}
+
+.batteryIcon::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 6px;
+  background: #000000;
+  border-radius: 0 1px 1px 0;
+}
+
+.batteryIcon::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 8px;
+  background: #000000;
+  border-radius: 1px;
+}
+
+/* Safari Browser Bar */
+.safariBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  height: 44px;
+  gap: 8px;
+}
+
+.safariBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.safariBarCenter {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.safariBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Safari URL Bar */
+.safariUrlBar {
+  background: rgba(242, 242, 247, 0.8);
+  border-radius: 10px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 300px;
+  width: 100%;
+  font-size: 16px;
+  color: #000000;
+  font-weight: 400;
+  min-height: 32px;
+}
+
+.safariUrlBar::before {
+  content: '🔒';
+  font-size: 14px;
+}
+
+.safariUrlBarText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* Safari Icons */
+.safariIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  color: #007AFF;
+  font-size: 28px;
+  font-weight: 500;
+  min-width: 44px;
+}
+
+.safariIconShare {
+  color: #007AFF;
+}
+
+.safariIconTabs {
+  color: #007AFF;
+  position: relative;
+}
+
+.safariIconTabs::after {
+  content: '2';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  background: #FF3B30;
+  color: #ffffff;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(248, 249, 250, 0.95);
 }
 
 /* Background hotspot - positioned in top-left corner */

@@ -31,9 +31,9 @@ export function LeftyProfileSection(): JSX.Element {
 
   const email = account?.email ?? 'loading…';
   const displayName = account?.name ?? email;
-  // Use page profile_image if available, otherwise fall back to account avatar_url
-  const profileImage = snapshot?.page?.profile_image ?? null;
-  const avatarUrl = profileImage ?? account?.avatar_url ?? null;
+  // VALIDATION: Use account avatar_url only (no fallback to profile_image)
+  // This ensures account avatar is separate from page profile image
+  const avatarUrl = account?.avatar_url ?? null;
   const initials = displayName
     .split(' ')
     .filter(Boolean)

@@ -72,7 +72,7 @@ export function ThemeLibraryView({
                 } as React.CSSProperties}
               >
                 <Sparkle aria-hidden="true" size={16} weight="regular" />
-                Generate from Podcast
+                Theme Wizard
               </button>
             )}
           </div>
@@ -130,8 +130,6 @@ export function ThemeLibraryView({
       {/* Podcast Theme Generator Modal */}
       <PodcastThemeGeneratorModal
         coverImageUrl={generatorProps.coverImageUrl}
-        podcastName={generatorProps.podcastName}
-        podcastDescription={generatorProps.podcastDescription}
         isOpen={isGeneratorOpen}
         onClose={closeGenerator}
       />

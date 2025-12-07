@@ -177,3 +177,76 @@ export function useUpdateThemeMutation() {
   });
 }
 
+/**
+ * Get or create the user's single theme.
+ * Ensures only one user theme exists per user.
+ * If no user theme exists, creates one based on the first system theme.
+ * @returns Promise resolving to the user theme ID
+ */
+export async function getOrCreateUserTheme(): Promise<number> {
+  // Fetch theme library to get user themes
+  const library = await fetchThemeLibrary();
+  
+  // If user already has themes, use the first one (we'll consolidate to one later)
+  if (library.user && library.user.length > 0) {
+    // If multiple exist, we'll need to consolidate, but for now return the first
+    // The backend will handle ensuring only one exists
+    return library.user[0].id;
+  }
+  
+  // No user theme exists - create one based on first system theme
+  const firstSystemTheme = library.system?.[0];
+  if (!firstSystemTheme) {
+    throw new Error('No system themes available to create user theme');
+  }
+  
+  // Create user theme by copying system theme settings
+  const themeData: CreateThemeData = {
+    name: 'My Theme',
+    color_tokens: typeof firstSystemTheme.color_tokens === 'string' 
+      ? JSON.parse(firstSystemTheme.color_tokens) 
+      : firstSystemTheme.color_tokens,
+    typography_tokens: typeof firstSystemTheme.typography_tokens === 'string'
+      ? JSON.parse(firstSystemTheme.typography_tokens)
+      : firstSystemTheme.typography_tokens,
+    spacing_tokens: typeof firstSystemTheme.spacing_tokens === 'string'
+      ? JSON.parse(firstSystemTheme.spacing_tokens)
+      : firstSystemTheme.spacing_tokens,
+    shape_tokens: typeof firstSystemTheme.shape_tokens === 'string'
+      ? JSON.parse(firstSystemTheme.shape_tokens)
+      : firstSystemTheme.shape_tokens,
+    motion_tokens: typeof firstSystemTheme.motion_tokens === 'string'
+      ? JSON.parse(firstSystemTheme.motion_tokens)
+      : firstSystemTheme.motion_tokens,
+    iconography_tokens: typeof firstSystemTheme.iconography_tokens === 'string'
+      ? JSON.parse(firstSystemTheme.iconography_tokens)
+      : firstSystemTheme.iconography_tokens,
+    page_background: firstSystemTheme.page_background ?? undefined,
+    widget_background: firstSystemTheme.widget_background ?? undefined,
+    widget_border_color: firstSystemTheme.widget_border_color ?? undefined,
+    page_primary_font: firstSystemTheme.page_primary_font ?? undefined,
+    page_secondary_font: firstSystemTheme.page_secondary_font ?? undefined,
+    widget_primary_font: firstSystemTheme.widget_primary_font ?? undefined,
+    widget_secondary_font: firstSystemTheme.widget_secondary_font ?? undefined,
+    widget_styles: typeof firstSystemTheme.widget_styles === 'string'
+      ? JSON.parse(firstSystemTheme.widget_styles)
+      : firstSystemTheme.widget_styles
+  };
+  
+  const response = await createTheme(themeData);
+  
+  if (!response.success) {
+    throw new Error(response.error ?? 'Failed to create user theme');
+  }
+  
+  // Extract theme_id from response
+  const typedResponse = response as ApiResponse & { theme_id?: number; data?: { theme_id?: number } };
+  const themeId = typedResponse.theme_id ?? typedResponse.data?.theme_id;
+  
+  if (!themeId || typeof themeId !== 'number') {
+    throw new Error('Failed to get theme ID from create response');
+  }
+  
+  return themeId;
+}
+

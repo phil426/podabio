@@ -1253,10 +1253,34 @@ class Theme {
             return ['success' => false, 'theme_id' => null, 'error' => 'Theme name must be 1-100 characters'];
         }
         
-        // Check theme limit (max 9 custom themes)
-        $existingThemes = fetchOne("SELECT COUNT(*) as count FROM themes WHERE user_id = ?", [$userId]);
-        if ($existingThemes && $existingThemes['count'] >= 9) {
-            return ['success' => false, 'theme_id' => null, 'error' => 'You can create a maximum of 9 custom themes. Please delete one first.'];
+        // SINGLE USER THEME: Check if user already has a theme
+        // If exists, update it instead of creating a new one
+        $existingUserTheme = fetchOne("SELECT id FROM themes WHERE user_id = ? AND is_active = 1 ORDER BY id ASC LIMIT 1", [$userId]);
+        if ($existingUserTheme) {
+            // Update existing user theme instead of creating new
+            $success = $this->updateUserTheme($existingUserTheme['id'], $userId, $name, $themeData);
+            if ($success) {
+                return ['success' => true, 'theme_id' => $existingUserTheme['id'], 'error' => null];
+            } else {
+                return ['success' => false, 'theme_id' => null, 'error' => 'Failed to update existing user theme'];
+            }
+        }
+        
+        // If multiple user themes exist, delete extras (keep the first one)
+        $allUserThemes = fetchAll("SELECT id FROM themes WHERE user_id = ? AND is_active = 1 ORDER BY id ASC", [$userId]);
+        if (count($allUserThemes) > 1) {
+            // Keep the first one, delete the rest
+            $firstThemeId = $allUserThemes[0]['id'];
+            for ($i = 1; $i < count($allUserThemes); $i++) {
+                $this->deleteUserTheme($allUserThemes[$i]['id'], $userId);
+            }
+            // Update the first theme instead of creating new
+            $success = $this->updateUserTheme($firstThemeId, $userId, $name, $themeData);
+            if ($success) {
+                return ['success' => true, 'theme_id' => $firstThemeId, 'error' => null];
+            } else {
+                return ['success' => false, 'theme_id' => null, 'error' => 'Failed to update existing user theme'];
+            }
         }
         
         // Sanitize widget styles if provided

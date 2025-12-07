@@ -226,6 +226,16 @@ export async function removeProfileImage() {
   );
 }
 
+export async function removeCoverImage() {
+  return requestJson<ApiResponse>(
+    PAGE_ENDPOINT,
+    formPostInit({
+      action: 'remove_image',
+      type: 'cover'
+    })
+  );
+}
+
 export interface PodlinksResponse extends ApiResponse {
   data?: {
     podcast_name: string;
