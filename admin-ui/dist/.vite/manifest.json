@@ -1,0 +1,77 @@
+{
+  "_Sparkle.es-YlqLurBq.js": {
+    "file": "Sparkle.es-YlqLurBq.js",
+    "name": "Sparkle.es",
+    "imports": [
+      "_client-BXqoWhE4.js",
+      "_X.es-D2DRrnce.js"
+    ]
+  },
+  "_X.es-D2DRrnce.js": {
+    "file": "X.es-D2DRrnce.js",
+    "name": "X.es",
+    "imports": [
+      "_client-BXqoWhE4.js"
+    ]
+  },
+  "_client-BXqoWhE4.js": {
+    "file": "client-BXqoWhE4.js",
+    "name": "client"
+  },
+  "_index-B-F6DCQI.js": {
+    "file": "index-B-F6DCQI.js",
+    "name": "index",
+    "imports": [
+      "_client-BXqoWhE4.js"
+    ]
+  },
+  "src/main.tsx": {
+    "file": "main.js",
+    "name": "main",
+    "src": "src/main.tsx",
+    "isEntry": true,
+    "imports": [
+      "_client-BXqoWhE4.js",
+      "_index-B-F6DCQI.js",
+      "_X.es-D2DRrnce.js",
+      "_Sparkle.es-YlqLurBq.js"
+    ],
+    "css": [
+      "assets/main-CykGmiSK.css"
+    ]
+  },
+  "src/marketing-icons.tsx": {
+    "file": "marketing-icons.js",
+    "name": "marketingIcons",
+    "src": "src/marketing-icons.tsx",
+    "isEntry": true,
+    "imports": [
+      "_client-BXqoWhE4.js",
+      "_X.es-D2DRrnce.js",
+      "_Sparkle.es-YlqLurBq.js"
+    ]
+  },
+  "src/marketing-nav.tsx": {
+    "file": "marketing-nav.js",
+    "name": "marketingNav",
+    "src": "src/marketing-nav.tsx",
+    "isEntry": true,
+    "imports": [
+      "_client-BXqoWhE4.js",
+      "_index-B-F6DCQI.js",
+      "_X.es-D2DRrnce.js"
+    ],
+    "css": [
+      "assets/marketingNav-Drq1AvIk.css"
+    ]
+  },
+  "src/smooth-scroll.tsx": {
+    "file": "smooth-scroll.js",
+    "name": "smoothScroll",
+    "src": "src/smooth-scroll.tsx",
+    "isEntry": true,
+    "imports": [
+      "_client-BXqoWhE4.js"
+    ]
+  }
+}
