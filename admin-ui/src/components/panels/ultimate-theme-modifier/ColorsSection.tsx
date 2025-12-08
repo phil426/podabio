@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Square, Sparkle, PaintBrush } from '@phosphor-icons/react';
 import { SectionHeader } from './SectionHeader';
 import { PageSettingsPanel } from './PageSettingsPanel';
+import { ThemeUIState } from '../themes/utils/themeMapper';
 import { WidgetColorsPanel } from './WidgetColorsPanel';
 import { ThemePreviewCard } from '../ThemePreviewCard';
 import { useThemeLibraryQuery } from '../../../api/themes';
@@ -15,6 +16,8 @@ import type { TokenBundle } from '../../../design-system/tokens';
 import styles from './colors-section.module.css';
 
 interface ColorsSectionProps {
+  uiState?: ThemeUIState;
+  onFieldChange?: (fieldId: string, value: string | number | boolean) => void;
   tokens: TokenBundle;
   onTokenChange: (path: string, value: unknown, oldValue: unknown) => void;
   searchQuery?: string;
@@ -30,7 +33,7 @@ interface ColorsSectionProps {
   socialIconColor?: string | null;
 }
 
-export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenValues = new Map(), pageBackground, pageHeadingText, pageBodyText, widgetBackground, widgetBorder, widgetShadow, widgetHeadingText, widgetBodyText, socialIconColor }: ColorsSectionProps): JSX.Element {
+export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenValues = new Map(), pageBackground, pageHeadingText, pageBodyText, widgetBackground, widgetBorder, widgetShadow, widgetHeadingText, widgetBodyText, socialIconColor, uiState, onFieldChange }: ColorsSectionProps): JSX.Element {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set([
     'themes', 'customization', 'page-colors', 'widget-colors', 'podcast-colors'
   ]));
@@ -59,14 +62,14 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
     try {
       // Extract page background from theme
       let pageBackground: string | null | undefined = theme.page_background;
-      
+
       // If page_background is not set, try to extract from color_tokens
       if (!pageBackground && theme.color_tokens) {
         try {
-          const colorTokens = typeof theme.color_tokens === 'string' 
-            ? JSON.parse(theme.color_tokens) 
+          const colorTokens = typeof theme.color_tokens === 'string'
+            ? JSON.parse(theme.color_tokens)
             : theme.color_tokens;
-          
+
           // Try semantic.surface.canvas path
           if (colorTokens?.semantic?.surface?.canvas) {
             pageBackground = colorTokens.semantic.surface.canvas as string;
@@ -84,7 +87,7 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
           console.warn('Failed to parse color_tokens:', e);
         }
       }
-      
+
       // Parse widget_styles if it's a string
       let widgetStyles: Record<string, unknown> | string | null = null;
       if (theme.widget_styles) {
@@ -99,10 +102,10 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
           widgetStyles = theme.widget_styles;
         }
       }
-      
+
       // Extract widget background (prioritize direct column over color_tokens)
       const widgetBackground = theme.widget_background ?? null;
-      
+
       // Use updatePageThemeId with all theme fields
       // Pass null to clear page-level overrides (so theme values are used)
       await updatePageThemeId(theme.id, {
@@ -116,7 +119,7 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
         widget_styles: widgetStyles,
         spatial_effect: theme.spatial_effect ?? null
       });
-      
+
       // Invalidate and refetch queries to update the UI
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
@@ -211,6 +214,8 @@ export function ColorsSection({ tokens, onTokenChange, searchQuery = '', tokenVa
                             pageBackground={pageBackground}
                             pageHeadingText={pageHeadingText}
                             pageBodyText={pageBodyText}
+                            uiState={uiState}
+                            onFieldChange={onFieldChange}
                           />
                         </motion.div>
                       )}

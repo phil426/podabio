@@ -26,23 +26,26 @@ export interface ThemeDatabaseState {
  * Convert UI state to database format (JSON tokens + direct columns)
  * Handles ALL fields from fieldRegistry, even if UI not implemented
  */
-export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & { 
+export function uiToDatabase(uiState: ThemeUIState, target: Partial<ThemeDatabaseState> & Record<string, any> = {}): ThemeDatabaseState & {
   page_background?: string | null;
   widget_background?: string | null;
   widget_border_color?: string | null;
 } {
-  const dbState: ThemeDatabaseState & { 
+  const dbState: ThemeDatabaseState & {
     page_background?: string | null;
     widget_background?: string | null;
     widget_border_color?: string | null;
   } = {
-    typography_tokens: {},
-    widget_styles: {},
-    iconography_tokens: {},
-    spacing_tokens: {},
-    color_tokens: {},
-    shape_tokens: {},
-    motion_tokens: {}
+    typography_tokens: target.typography_tokens ? { ...target.typography_tokens } : {},
+    widget_styles: target.widget_styles ? { ...target.widget_styles } : {},
+    iconography_tokens: target.iconography_tokens ? { ...target.iconography_tokens } : {},
+    spacing_tokens: target.spacing_tokens ? { ...target.spacing_tokens } : {},
+    color_tokens: target.color_tokens ? { ...target.color_tokens } : {},
+    shape_tokens: target.shape_tokens ? { ...target.shape_tokens } : {},
+    motion_tokens: target.motion_tokens ? { ...target.motion_tokens } : {},
+    ...(target.page_background !== undefined ? { page_background: target.page_background } : {}),
+    ...(target.widget_background !== undefined ? { widget_background: target.widget_background } : {}),
+    ...(target.widget_border_color !== undefined ? { widget_border_color: target.widget_border_color } : {})
   };
 
   // Process all fields from registry
@@ -50,7 +53,7 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
 
   for (const field of allFields) {
     const value = uiState[field.id];
-    
+
     // Skip if value is undefined (not set in UI)
     // Note: 0, false, and empty string are valid values and should be saved
     if (value === undefined) continue;
@@ -153,7 +156,7 @@ export function uiToDatabase(uiState: ThemeUIState): ThemeDatabaseState & {
  * @param existingUIState - Existing UI state to merge with
  */
 export function databaseToUI(
-  theme: ThemeRecord | null, 
+  theme: ThemeRecord | null,
   page?: Record<string, unknown> | null,
   existingUIState?: ThemeUIState
 ): ThemeUIState {
@@ -263,8 +266,8 @@ function getNestedValue(obj: Record<string, unknown> | null | undefined, path: s
       return obj.widget_border_color;
     }
     // Then try widget_styles JSON
-    const widgetStyles = typeof obj.widget_styles === 'string' 
-      ? JSON.parse(obj.widget_styles) 
+    const widgetStyles = typeof obj.widget_styles === 'string'
+      ? JSON.parse(obj.widget_styles)
       : obj.widget_styles;
     if (widgetStyles && typeof widgetStyles === 'object' && 'border_color' in widgetStyles) {
       return (widgetStyles as Record<string, unknown>).border_color;
@@ -388,8 +391,8 @@ export function validateFieldValue(fieldId: string, value: unknown): boolean {
     case 'font':
       return typeof value === 'string' && value.length > 0;
     case 'weight':
-      return typeof value === 'object' && value !== null && 
-             ('bold' in value || 'italic' in value);
+      return typeof value === 'object' && value !== null &&
+        ('bold' in value || 'italic' in value);
     default:
       return true;
   }
@@ -419,7 +422,7 @@ export function extractTokenValues(theme: ThemeRecord | null): Record<string, un
 
   // Extract all token types
   if (theme.typography_tokens) {
-    const parsed = typeof theme.typography_tokens === 'string' 
+    const parsed = typeof theme.typography_tokens === 'string'
       ? JSON.parse(theme.typography_tokens)
       : theme.typography_tokens;
     Object.assign(tokens, flattenObject(parsed, 'typography_tokens'));

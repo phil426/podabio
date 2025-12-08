@@ -8,6 +8,7 @@ import { PodaColorPicker } from '../../../controls/PodaColorPicker';
 import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
+import { usePageSnapshot } from '../../../../api/page';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './page-customization-section.module.css';
 
@@ -23,6 +24,8 @@ export function PageTitleSection({
   activeColor
 }: PageTitleSectionProps): JSX.Element {
   // Map effect values to display names
+  const { data: snapshot } = usePageSnapshot();
+  const pageTitleText = snapshot?.page?.podcast_name || snapshot?.page?.username || 'Page Title';
   const effectValueToDisplay: Record<string, string> = {
     'none': 'None',
     'glow': 'Neon Glow',
@@ -53,31 +56,31 @@ export function PageTitleSection({
   };
   const pageTitleEffectValue = (uiState['page-title-effect'] as string) ?? 'none';
   const pageTitleEffect = effectValueToDisplay[pageTitleEffectValue] || 'None';
-  
+
   // Ensure the value matches one of the options for Radix Select
   const allOptions: string[] = ['None', 'Neon Glow', 'Drop Shadow', 'Retro Shadow', 'Anaglyphic', 'Deep', 'Game', 'Fancy', 'Pretty', 'Flat', 'Long Shadow', 'Party Time'];
   const validValue = allOptions.includes(pageTitleEffect) ? pageTitleEffect : 'None';
-  
+
   // Debug: Log to verify options are correct
   if (typeof window !== 'undefined' && (window as any).__DEBUG__) {
     console.log('PageTitleSection - Effect options:', allOptions);
     console.log('PageTitleSection - Current value:', pageTitleEffectValue, '-> Display:', pageTitleEffect, '-> Valid:', validValue);
   }
-  
+
   // Shadow properties
   const shadowColor = (uiState['page-title-shadow-color'] as string) ?? '#000000';
   const shadowIntensity = (uiState['page-title-shadow-intensity'] as number) ?? 0.5;
   const shadowDepth = (uiState['page-title-shadow-depth'] as number) ?? 4;
   const shadowBlur = (uiState['page-title-shadow-blur'] as number) ?? 8;
-  
+
   // Glow properties
   const glowColor = (uiState['page-title-glow-color'] as string) ?? '#2563eb';
   const glowWidth = (uiState['page-title-glow-width'] as number) ?? 10;
-  
+
   // Border/Stroke properties
   const borderColor = (uiState['page-title-border-color'] as string) ?? '#000000';
   const borderWidth = (uiState['page-title-border-width'] as number) ?? 0;
-  
+
   const pageTitleColor = (uiState['page-title-color'] as string) ?? '#0f172a';
   const pageTitleFont = (uiState['page-title-font'] as string) ?? 'Inter';
   const pageTitleSize = (uiState['page-title-size'] as number) ?? 24;
@@ -89,7 +92,31 @@ export function PageTitleSection({
       {/* Page Title */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Page Title</h4>
-        
+        {/* Live Preview */}
+        <div className={styles.previewBox}>
+          <h1 className={styles.previewText} style={{
+            fontFamily: pageTitleFont.split(',')[0],
+            fontSize: `${pageTitleSize}px`,
+            color: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'transparent' : pageTitleColor,
+            fontWeight: pageTitleWeight.bold ? 'bold' : 'normal',
+            fontStyle: pageTitleWeight.italic ? 'italic' : 'normal',
+            lineHeight: pageTitleSpacing,
+            textShadow: pageTitleEffectValue === 'shadow'
+              ? `${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${shadowColor}`
+              : pageTitleEffectValue === 'glow'
+                ? `0 0 ${glowWidth}px ${glowColor}`
+                : 'none',
+            backgroundImage: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? pageTitleColor : 'none',
+            backgroundClip: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'text' : 'border-box',
+            WebkitBackgroundClip: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'text' : 'border-box',
+            WebkitTextFillColor: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'transparent' : 'initial',
+            WebkitTextStroke: borderWidth > 0 ? `${borderWidth}px ${borderColor}` : '0px',
+          }}>
+            {pageTitleText}
+          </h1>
+        </div>
+
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Special Effect</label>
           <SpecialTextSelect

@@ -120,7 +120,7 @@
   color: #0f172a;
 }
 
-/* Tabs */
+/* Tabs (Pill Style) */
 .tabs {
   display: flex;
   flex-direction: column;
@@ -130,19 +130,27 @@
 
 .tabList {
   display: flex;
-  gap: 0;
-  padding: 0 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 1);
+  gap: 4px;
+  padding: 4px;
+  border-bottom: none;
+  background: var(--admin-bg-canvas, #f1f5f9);
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  margin: 16px;
+  margin-bottom: 0;
+  width: calc(100% - 32px);
+  /* Full width minus margins */
 }
 
 .tabTrigger {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 12px 16px;
+  padding: 8px 16px;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 8px;
   background: transparent;
   font-size: 13px;
   font-weight: 500;
@@ -150,16 +158,21 @@
   cursor: pointer;
   transition: all 200ms ease-out;
   position: relative;
+  white-space: nowrap;
 }
 
 .tabTrigger:hover {
   color: #0f172a;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .tabTrigger[data-state="active"] {
-  color: var(--active-tab-color, #00FF7F);
-  border-bottom-color: var(--active-tab-color, #00FF7F);
+  color: var(--active-tab-color, #0f172a);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Shadow for active pill */
+  font-weight: 600;
+  border-bottom-color: transparent;
 }
 
 .tabTrigger svg {
@@ -312,6 +325,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -336,4 +350,3 @@
   background: #ef4444;
   color: #7f1d1d;
 }
-

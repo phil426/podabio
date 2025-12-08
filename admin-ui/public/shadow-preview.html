@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shadow Preview Demo</title>
+  <style>
+    :root {
+      color: #0f172a;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f8fafc;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    p.lead {
+      margin: 0 0 20px 0;
+      color: #475569;
+      font-size: 14px;
+    }
+    .controls {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-bottom: 20px;
+    }
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: #475569;
+    }
+    input[type="text"],
+    input[type="url"] {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+    }
+    input[type="color"] {
+      width: 100%;
+      height: 42px;
+      padding: 0;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+    .host {
+      width: 100%;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      background: #ffffff;
+      min-height: 180px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Shadow DOM Preview Demo (no iframe)</h1>
+    <p class="lead">Rendered as first-party React inside a ShadowRoot. No SPA routing needed.</p>
+
+    <div class="controls">
+      <label>
+        Title
+        <input id="title" type="text" value="Shadow DOM Preview" />
+      </label>
+      <label>
+        Subtitle
+        <input id="subtitle" type="text" value="This preview is rendered inside a ShadowRoot." />
+      </label>
+      <label>
+        Avatar URL
+        <input id="avatar" type="url" value="https://placekitten.com/200/200" />
+      </label>
+      <label>
+        Accent
+        <input id="accent" type="color" value="#00FF7F" />
+      </label>
+      <label>
+        Background
+        <input id="background" type="color" value="#0f172a" />
+      </label>
+    </div>
+
+    <div id="host" class="host"></div>
+  </div>
+
+  <script type="module">
+    import React, { useEffect, useMemo, useState, useRef } from 'https://esm.sh/react@18.3.1';
+    import { createRoot } from 'https://esm.sh/react-dom@18.3.1/client';
+
+    function ShadowPreview() {
+      const hostRef = useRef(null);
+      const [shadowRoot, setShadowRoot] = useState(null);
+      const [data, setData] = useState({
+        title: document.getElementById('title').value,
+        subtitle: document.getElementById('subtitle').value,
+        avatarUrl: document.getElementById('avatar').value,
+        accent: document.getElementById('accent').value,
+        background: document.getElementById('background').value,
+      });
+
+      useEffect(() => {
+        const inputs = [
+          ['title', 'title'],
+          ['subtitle', 'subtitle'],
+          ['avatar', 'avatarUrl'],
+          ['accent', 'accent'],
+          ['background', 'background'],
+        ];
+        const handlers = inputs.map(([id, key]) => {
+          const el = document.getElementById(id);
+          const h = (e) => setData((prev) => ({ ...prev, [key]: e.target.value }));
+          el.addEventListener('input', h);
+          return () => el.removeEventListener('input', h);
+        });
+        return () => handlers.forEach((dispose) => dispose());
+      }, []);
+
+      useEffect(() => {
+        if (!hostRef.current) return;
+        const root = hostRef.current.shadowRoot ?? hostRef.current.attachShadow({ mode: 'open' });
+        setShadowRoot(root);
+      }, []);
+
+      const shadowStyles = useMemo(
+        () => `
+        :host {
+          all: initial;
+          color: #e2e8f0;
+          font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        .card {
+          background: ${data.background};
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          padding: 20px;
+          display: grid;
+          grid-template-columns: 96px 1fr;
+          gap: 16px;
+          align-items: center;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+        }
+        .avatar {
+          width: 96px;
+          height: 96px;
+          border-radius: 14px;
+          overflow: hidden;
+          border: 2px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255,255,255,0.04);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #cbd5e1;
+          font-weight: 700;
+          font-size: 24px;
+        }
+        .avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .content h2 {
+          margin: 0 0 6px 0;
+          font-size: 20px;
+          font-weight: 700;
+          color: #f8fafc;
+        }
+        .content p {
+          margin: 0;
+          color: #cbd5e1;
+          font-size: 14px;
+        }
+        .pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          margin-top: 10px;
+          border-radius: 999px;
+          background: ${data.accent};
+          color: #0b1221;
+          font-weight: 600;
+          font-size: 12px;
+        }
+        .layout {
+          display: grid;
+          gap: 16px;
+        }
+      `,
+        [data.accent, data.background]
+      );
+
+      const initials = useMemo(() => {
+        const text = data.title || 'P';
+        const parts = text.trim().split(' ');
+        const letters = parts.slice(0, 2).map((chunk) => chunk[0]).join('');
+        return letters.toUpperCase();
+      }, [data.title]);
+
+      return (
+        <>
+          <div ref={hostRef} className="shadow-host" />
+          {shadowRoot &&
+            createRoot(shadowRoot).render(
+              <div className="layout">
+                <style>{shadowStyles}</style>
+                <div className="card">
+                  <div className="avatar" aria-hidden="true">
+                    {data.avatarUrl ? <img src={data.avatarUrl} alt="Avatar" /> : initials}
+                  </div>
+                  <div className="content">
+                    <h2>{data.title || 'Shadow DOM Preview'}</h2>
+                    <p>{data.subtitle || 'Live preview rendered without an iframe.'}</p>
+                    <span className="pill">Shadow DOM</span>
+                  </div>
+                </div>
+              </div>
+            )}
+        </>
+      );
+    }
+
+    const rootEl = document.getElementById('host');
+    const root = createRoot(rootEl);
+    root.render(<ShadowPreview />);
+  </script>
+</body>
+</html>
+
+
+

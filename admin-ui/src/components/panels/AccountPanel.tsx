@@ -303,10 +303,31 @@ function ProfileTab({
       setIsUploadingAvatar(true);
       setAvatarStatus(null);
       const result = await uploadAvatar(file, true);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+      
+      console.log('Upload result:', result);
+      
+      if (!result.url) {
+        throw new Error('Upload succeeded but no URL returned');
+      }
+      
+      // Update cache immediately for instant UI update
+      if (profile) {
+        const updatedProfile = {
+          ...profile,
+          avatar_url: result.url
+        };
+        console.log('Updating cache with:', updatedProfile);
+        queryClient.setQueryData(queryKeys.accountProfile(), updatedProfile);
+      }
+      
+      // Force refetch to ensure we have the latest data from server
+      const refetched = await queryClient.refetchQueries({ queryKey: queryKeys.accountProfile() });
+      console.log('Refetched profile:', refetched);
+      
       setAvatarStatus('Avatar updated successfully');
       trackTelemetry({ event: 'account.avatar_uploaded', metadata: {} });
     } catch (err) {
+      console.error('Avatar upload error:', err);
       setAvatarStatus(err instanceof Error ? err.message : 'Upload failed. Please try again.');
     } finally {
       setIsUploadingAvatar(false);
@@ -336,7 +357,8 @@ function ProfileTab({
       setIsUploadingAvatar(true);
       setAvatarStatus(null);
       await updateAccountProfile({ avatar_url: mediaItem.file_url });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.accountProfile() });
+      // Force refetch to ensure UI updates immediately
+      await queryClient.refetchQueries({ queryKey: queryKeys.accountProfile() });
       setMediaLibraryOpen(false);
       setAvatarStatus('Avatar updated successfully');
       trackTelemetry({ event: 'account.avatar_updated_from_library', metadata: {} });
@@ -348,6 +370,15 @@ function ProfileTab({
   };
 
   const avatarUrl = profile?.avatar_url ?? null;
+  
+  // Debug logging (remove in production)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Profile data:', profile);
+      console.log('Avatar URL:', avatarUrl);
+    }
+  }, [profile, avatarUrl]);
+  
   const initials = (profile?.name ?? profile?.email ?? '')
     .split(' ')
     .filter(Boolean)
@@ -456,59 +487,86 @@ function ProfileTab({
             {avatarStatus}
           </div>
         )}
-        <div className={styles.avatarSection}>
-          <div className={styles.avatarPreview} data-has-avatar={avatarUrl ? 'true' : 'false'}>
-            {avatarUrl ? (
-              <img src={normalizeImageUrl(avatarUrl)} alt="Avatar" />
-            ) : (
-              <div className={styles.avatarPlaceholder}>{initials}</div>
-            )}
-            <div className={styles.avatarOverlay}>
-              <div className={styles.avatarActions}>
-                <button
-                  type="button"
-                  className={styles.avatarActionButton}
-                  onClick={handleChooseAvatarFile}
-                  disabled={isUploadingAvatar}
-                  title={isUploadingAvatar ? 'Uploading…' : avatarUrl ? 'Replace avatar' : 'Upload avatar'}
-                >
-                  <UploadSimple size={16} weight="regular" aria-hidden="true" />
-                </button>
-                <div className={styles.avatarActionDivider} />
-                <button
-                  type="button"
-                  className={styles.avatarActionButton}
-                  onClick={() => setMediaLibraryOpen(true)}
-                  disabled={isUploadingAvatar}
-                  title="Choose from library"
-                >
-                  <Images size={16} weight="regular" aria-hidden="true" />
-                </button>
-                {avatarUrl && (
-                  <>
-                    <div className={styles.avatarActionDivider} />
+        <div className={styles.fieldGrid}>
+          <div className={styles.fieldRow}>
+            <label className={styles.fieldLabel}>Avatar</label>
+            <div className={styles.avatarUploadContainer}>
+              <div 
+                className={styles.avatarPreview} 
+                data-has-avatar={avatarUrl ? 'true' : 'false'}
+              >
+                {avatarUrl ? (
+                  <img 
+                    src={normalizeImageUrl(avatarUrl)} 
+                    alt="Avatar"
+                    className={styles.avatarImage}
+                    onError={(e) => {
+                      // If image fails to load, show placeholder
+                      console.error('Avatar image failed to load:', normalizeImageUrl(avatarUrl));
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      const placeholder = target.parentElement?.querySelector(`.${styles.avatarPlaceholder}`);
+                      if (placeholder) {
+                        (placeholder as HTMLElement).style.display = 'flex';
+                      }
+                    }}
+                    onLoad={() => {
+                      console.log('Avatar image loaded successfully:', normalizeImageUrl(avatarUrl));
+                    }}
+                  />
+                ) : (
+                  <div className={styles.avatarPlaceholder}>
+                    <span>No image</span>
+                  </div>
+                )}
+                <div className={styles.avatarOverlay}>
+                  <div className={styles.segmentedBar}>
                     <button
                       type="button"
-                      className={`${styles.avatarActionButton} ${styles.avatarActionButtonDanger}`}
-                      onClick={handleRemoveAvatar}
+                      className={styles.segmentedButton}
+                      onClick={() => fileInputRef.current?.click()}
                       disabled={isUploadingAvatar}
-                      title="Remove avatar"
+                      title={isUploadingAvatar ? 'Uploading…' : avatarUrl ? 'Replace avatar' : 'Upload avatar'}
                     >
-                      <X size={16} weight="regular" aria-hidden="true" />
+                      <UploadSimple size={16} weight="regular" aria-hidden="true" />
                     </button>
-                  </>
-                )}
+                    <div className={styles.segmentedDivider} />
+                    <button
+                      type="button"
+                      className={styles.segmentedButton}
+                      onClick={() => setMediaLibraryOpen(true)}
+                      disabled={isUploadingAvatar}
+                      title="Choose from library"
+                    >
+                      <Images size={16} weight="regular" aria-hidden="true" />
+                    </button>
+                    {avatarUrl && (
+                      <>
+                        <div className={styles.segmentedDivider} />
+                        <button
+                          type="button"
+                          className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
+                          onClick={handleRemoveAvatar}
+                          disabled={isUploadingAvatar}
+                          title="Remove avatar"
+                        >
+                          <X size={16} weight="regular" aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFileChange}
+                style={{ display: 'none' }}
+                aria-label="Upload avatar image"
+              />
             </div>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarFileChange}
-            style={{ display: 'none' }}
-            aria-label="Upload avatar image"
-          />
         </div>
         <p className={styles.helperNote}>
           Upload a profile picture to personalize your account. This is separate from your page profile image.

@@ -15,13 +15,13 @@ export interface AdminThemeTokens {
     textWhite: string; // #FFFFFF - primary text
     textTechGrey: string; // #8E8E93 - secondary text/metadata
   };
-  
+
   // Typography
   typography: {
     fontHeading: string; // Zalando Sans Expanded
     fontBody: string; // Space Mono Regular
   };
-  
+
   // Backgrounds
   background: {
     page: string;
@@ -32,7 +32,7 @@ export interface AdminThemeTokens {
     button: string;
     buttonHover: string;
   };
-  
+
   // Text colors
   text: {
     primary: string;
@@ -41,7 +41,7 @@ export interface AdminThemeTokens {
     inverse: string;
     accent: string;
   };
-  
+
   // Borders
   border: {
     default: string;
@@ -49,7 +49,7 @@ export interface AdminThemeTokens {
     strong: string;
     accent: string;
   };
-  
+
   // Surfaces
   surface: {
     panel: string;
@@ -57,7 +57,7 @@ export interface AdminThemeTokens {
     overlay: string;
     elevated: string;
   };
-  
+
   // Shadows
   shadow: {
     sm: string;
@@ -65,7 +65,7 @@ export interface AdminThemeTokens {
     lg: string;
     glow: string; // For signal green glow effect
   };
-  
+
   // Accent colors
   accent: {
     primary: string;
@@ -190,11 +190,11 @@ export function adminThemeTokensToCSSVars(tokens: AdminThemeTokens): Record<stri
     '--admin-brand-accent-signal-green': tokens.brand.accentSignalGreen,
     '--admin-brand-text-white': tokens.brand.textWhite,
     '--admin-brand-text-tech-grey': tokens.brand.textTechGrey,
-    
+
     // Typography
     '--admin-font-heading': tokens.typography.fontHeading,
     '--admin-font-body': tokens.typography.fontBody,
-    
+
     // Backgrounds
     '--admin-bg-page': tokens.background.page,
     '--admin-bg-panel': tokens.background.panel,
@@ -203,32 +203,32 @@ export function adminThemeTokensToCSSVars(tokens: AdminThemeTokens): Record<stri
     '--admin-bg-overlay': tokens.background.overlay,
     '--admin-bg-button': tokens.background.button,
     '--admin-bg-button-hover': tokens.background.buttonHover,
-    
+
     // Text colors
     '--admin-text-primary': tokens.text.primary,
     '--admin-text-secondary': tokens.text.secondary,
     '--admin-text-muted': tokens.text.muted,
     '--admin-text-inverse': tokens.text.inverse,
     '--admin-text-accent': tokens.text.accent,
-    
+
     // Borders
     '--admin-border-default': tokens.border.default,
     '--admin-border-subtle': tokens.border.subtle,
     '--admin-border-strong': tokens.border.strong,
     '--admin-border-accent': tokens.border.accent,
-    
+
     // Surfaces
     '--admin-surface-panel': tokens.surface.panel,
     '--admin-surface-canvas': tokens.surface.canvas,
     '--admin-surface-overlay': tokens.surface.overlay,
     '--admin-surface-elevated': tokens.surface.elevated,
-    
+
     // Shadows
     '--admin-shadow-sm': tokens.shadow.sm,
     '--admin-shadow-md': tokens.shadow.md,
     '--admin-shadow-lg': tokens.shadow.lg,
     '--admin-shadow-glow': tokens.shadow.glow,
-    
+
     // Accents
     '--admin-accent-primary': tokens.accent.primary,
     '--admin-accent-primary-hover': tokens.accent.primaryHover,

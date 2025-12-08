@@ -4,22 +4,23 @@
  * Allows adding new fields without code changes
  */
 
-export type FieldType = 
-  | 'color' 
-  | 'gradient' 
-  | 'image' 
-  | 'font' 
-  | 'size' 
-  | 'spacing' 
-  | 'effect' 
-  | 'weight' 
-  | 'border-width' 
-  | 'shadow' 
+export type FieldType =
+  | 'color'
+  | 'gradient'
+  | 'image'
+  | 'font'
+  | 'size'
+  | 'spacing'
+  | 'effect'
+  | 'weight'
+  | 'border-width'
+  | 'shadow'
   | 'glow'
   | 'number'
   | 'select'
   | 'toggle'
-  | 'boolean';
+  | 'boolean'
+  | 'variable-slider';
 
 export interface FieldDefinition {
   id: string;
@@ -870,3 +871,31 @@ fieldRegistry.register({
   implemented: true
 });
 
+
+fieldRegistry.register({
+  id: 'page-spacing-multiplier',
+  label: 'Page Spacing',
+  type: 'number',
+  tokenPath: 'spacing_tokens.page_multiplier',
+  section: 'page-customization',
+  defaultValue: 1.0,
+  min: 0.5,
+  max: 2.0,
+  step: 0.05,
+  unit: '%',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'widget-width',
+  label: 'Widget Width',
+  type: 'variable-slider', // or number? PageSettings uses SliderInput (number)
+  tokenPath: 'widget_styles.width',
+  section: 'widget-layout',
+  defaultValue: 100, // %
+  min: 50,
+  max: 100,
+  step: 5,
+  unit: '%',
+  implemented: true
+});

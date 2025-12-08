@@ -31,6 +31,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -59,6 +60,7 @@
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -113,40 +115,65 @@
   border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
+/* Tabs (Pill Style) */
 .tabs {
   display: flex;
-  gap: 0.5rem;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
-  flex-shrink: 0;
+  gap: 4px;
+  background: var(--admin-bg-canvas, #f1f5f9);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  margin: 0 24px;
+  width: auto;
+  /* Allow it to fill available space with margins */
 }
 
 .tab {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: var(--admin-text-secondary, #64748b);
-  font-size: 0.9375rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 150ms ease;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  font-family: inherit;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 }
 
 .tab:hover {
   color: var(--admin-text-primary, #0f172a);
-  background: var(--admin-surface-elevated, rgba(15, 23, 42, 0.04));
+  background: rgba(255, 255, 255, 0.5);
 }
 
-.tab.activeTab {
-  color: var(--admin-text-primary, #0f172a);
-  border-bottom-color: var(--admin-color-primary, #2563eb);
+.modal.activeColorvibrant .tabActive {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Shadow for active pill */
   font-weight: 600;
+  border-bottom-color: transparent;
+}
+
+.modal.activeColorminimal .tabActive {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+  border-bottom-color: transparent;
+}
+
+.tabActive {
+  color: var(--admin-accent-primary, #2563eb);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+  border-bottom-color: transparent;
 }
 
 .tab svg {
@@ -202,23 +229,23 @@
       opacity: 0;
       transform: translateY(100%);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   .header {
     padding: 1.25rem;
   }
-  
+
   .tabs {
     padding: 0 1.25rem;
   }
-  
+
   .stylePanel,
   .contentPanel {
     padding: 1.25rem;
   }
 }
-

@@ -71,6 +71,19 @@ export function LeftyContentPanel({ activeTab, activeColor, onTabChange }: Lefty
           </motion.div>
         )}
 
+        {activeTab === 'shadow-preview' && (
+          <motion.div
+            key="shadow-preview"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.25 }}
+            className={styles.panel}
+          >
+            <ThemesPanel activeColor={activeColor} />
+          </motion.div>
+        )}
+
         {activeTab === 'account' && (
           <motion.div
             key="account"

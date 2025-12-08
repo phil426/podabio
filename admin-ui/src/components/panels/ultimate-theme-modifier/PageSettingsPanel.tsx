@@ -8,8 +8,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../api/utils';
 import type { TokenBundle } from '../../../design-system/tokens';
 import styles from './page-settings-panel.module.css';
+import { ThemeUIState } from '../themes/utils/themeMapper';
 
 interface PageSettingsPanelProps {
+  uiState?: ThemeUIState;
+  onFieldChange?: (fieldId: string, value: string | number | boolean) => void;
   tokens: TokenBundle;
   tokenValues: Map<string, unknown>;
   onTokenChange: (path: string, value: unknown, oldValue: unknown) => void;
@@ -21,7 +24,7 @@ interface PageSettingsPanelProps {
 function resolveToken(bundle: TokenBundle, path: string): unknown {
   const parts = path.split('.');
   let current: any = bundle;
-  
+
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = current[part];
@@ -29,13 +32,13 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
       return undefined;
     }
   }
-  
+
   return current;
 }
 
 function extractColorValue(tokens: TokenBundle, path: string): string {
   const resolved = resolveToken(tokens, path);
-  
+
   if (typeof resolved === 'string') {
     if (/^#([0-9a-fA-F]{3}){1,2}$/.test(resolved)) {
       return resolved;
@@ -50,7 +53,7 @@ function extractColorValue(tokens: TokenBundle, path: string): string {
       return resolved;
     }
   }
-  
+
   return '#2563eb';
 }
 
@@ -77,14 +80,14 @@ function getBackgroundType(value: string): 'solid' | 'gradient' {
   }
   return 'solid';
 }
-export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBackground: pageBackgroundProp, pageHeadingText: pageHeadingTextProp, pageBodyText: pageBodyTextProp }: PageSettingsPanelProps): JSX.Element {
+export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBackground: pageBackgroundProp, pageHeadingText: pageHeadingTextProp, pageBodyText: pageBodyTextProp, uiState, onFieldChange }: PageSettingsPanelProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const pageAppearanceMutation = usePageAppearanceMutation();
   const queryClient = useQueryClient();
   const page = snapshot?.page;
-  
+
   const [specialText, setSpecialText] = useState('None');
-  
+
   // Load current page_name_effect from snapshot
   useEffect(() => {
     const effect = page?.page_name_effect;
@@ -96,7 +99,7 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
       'chrome-metallic': 'Chrome Metallic',
       'energy-pulse': 'Energy Pulse'
     };
-    
+
     if (effect && typeof effect === 'string' && effect.trim() !== '') {
       const mappedEffect = effectMap[effect];
       setSpecialText(mappedEffect || 'None');
@@ -104,9 +107,10 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
       setSpecialText('None');
     }
   }, [page?.page_name_effect]);
-  
+
   // Extract values - prioritize tokenValues (unsaved changes), then props from active theme, then tokens
   const pageHeadingText = useMemo(() => {
+    if (uiState && uiState['page-title-color'] !== undefined) return uiState['page-title-color'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const colorFromValues = tokenValues.get('semantic.text.primary') as string | undefined;
     if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
@@ -119,8 +123,9 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     // Priority 3: Extract from tokens
     return extractColorValue(tokens, 'semantic.text.primary');
   }, [pageHeadingTextProp, tokens, tokenValues]);
-  
+
   const pageBodyText = useMemo(() => {
+    if (uiState && uiState['page-bio-color'] !== undefined) return uiState['page-bio-color'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const colorFromValues = tokenValues.get('semantic.text.secondary') as string | undefined;
     if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
@@ -133,9 +138,10 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     // Priority 3: Extract from tokens
     return extractColorValue(tokens, 'semantic.text.secondary');
   }, [pageBodyTextProp, tokens, tokenValues]);
-  
+
   // Use page_background from snapshot if available (from active theme), otherwise fall back to tokens
   const pageBackground = useMemo(() => {
+    if (uiState && uiState['page-background'] !== undefined) return uiState['page-background'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const bgFromValues = tokenValues.get('semantic.surface.canvas') as string | undefined;
     if (bgFromValues && typeof bgFromValues === 'string' && bgFromValues.trim() !== '') {
@@ -149,15 +155,15 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
       // Priority 3: Extract from tokens
       result = extractColorValue(tokens, 'semantic.surface.canvas');
     }
-    
+
     // Ensure we always return a valid string (never null/undefined)
     if (!result || typeof result !== 'string') {
       result = '#FFFFFF';
     }
-    
+
     return result;
   }, [pageBackgroundProp, tokens, tokenValues]);
-  
+
   const headingFont = useMemo(() => {
     const font = tokens.core?.typography?.font?.heading;
     return typeof font === 'string' ? font.split(',')[0].trim() : 'Inter';
@@ -169,6 +175,7 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
   }, [tokens]);
 
   const headingSize = useMemo(() => {
+    if (uiState && uiState['page-title-size'] !== undefined) return uiState['page-title-size'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const sizeFromValues = tokenValues.get('core.typography.size.heading') as number | undefined;
     if (typeof sizeFromValues === 'number' && !isNaN(sizeFromValues)) {
@@ -177,8 +184,9 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     // Priority 2: Extract from tokens
     return extractNumericValue(tokens, 'core.typography.size.heading', 24);
   }, [tokens, tokenValues]);
-  
+
   const bodySize = useMemo(() => {
+    if (uiState && uiState['page-bio-size'] !== undefined) return uiState['page-bio-size'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const sizeFromValues = tokenValues.get('core.typography.size.body') as number | undefined;
     if (typeof sizeFromValues === 'number' && !isNaN(sizeFromValues)) {
@@ -187,11 +195,12 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
     // Priority 2: Extract from tokens
     return extractNumericValue(tokens, 'core.typography.size.body', 16);
   }, [tokens, tokenValues]);
-  
+
   // Page spacing - extract from tokenValues or default to 1.0 (100%)
   // Note: page_spacing_multiplier is stored in tokenValues by UltimateThemeModifier
   // from spacing_tokens.page_multiplier, so we check tokenValues first
   const pageSpacing = useMemo(() => {
+    if (uiState && uiState['page-spacing-multiplier'] !== undefined) return uiState['page-spacing-multiplier'] as any;
     const spacing = tokenValues.get('page_spacing_multiplier') as number | undefined;
     if (typeof spacing === 'number' && !isNaN(spacing)) {
       return spacing;
@@ -202,7 +211,7 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
 
   const backgroundType = useMemo(() => {
     const bg = pageBackground || '';
-    
+
     // Check for gradient first
     if (bg.includes('gradient') || bg.includes('linear-gradient') || bg.includes('radial-gradient')) {
       return 'gradient';
@@ -212,6 +221,11 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
   }, [pageBackground]);
 
   const handleColorChange = (path: string, value: string) => {
+    if (onFieldChange) {
+      if (path === 'semantic.surface.canvas') onFieldChange('page-background', value);
+      if (path === 'semantic.text.primary') onFieldChange('page-title-color', value);
+      if (path === 'semantic.text.secondary') onFieldChange('page-bio-color', value);
+    }
     const oldValue = resolveToken(tokens, path);
     onTokenChange(path, value, oldValue);
   };
@@ -222,11 +236,18 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
   };
 
   const handleSizeChange = (path: string, value: number) => {
+    if (onFieldChange) {
+      if (path === 'core.typography.size.heading') onFieldChange('page-title-size', value);
+      if (path === 'core.typography.size.body') onFieldChange('page-bio-size', value);
+    }
     const oldValue = resolveToken(tokens, path);
     onTokenChange(path, value, oldValue);
   };
 
   const handlePageSpacingChange = (value: number) => {
+    if (onFieldChange) {
+      onFieldChange('page-spacing-multiplier', value);
+    }
     const oldValue = tokenValues.get('page_spacing_multiplier') ?? 1.0;
     onTokenChange('page_spacing_multiplier', value, oldValue);
   };
@@ -234,21 +255,21 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
   // Determine which effects use gradients (which completely override color)
   const gradientEffects = useMemo(() => ['Aurora Borealis', 'Holographic', 'Chrome Metallic'], []);
   const solidColorEffects = useMemo(() => ['Liquid Neon', 'Energy Pulse'], []);
-  
-  const isGradientEffect = useMemo(() => 
-    specialText !== 'None' && gradientEffects.includes(specialText), 
+
+  const isGradientEffect = useMemo(() =>
+    specialText !== 'None' && gradientEffects.includes(specialText),
     [specialText, gradientEffects]
   );
-  
-  const isSolidColorEffect = useMemo(() => 
-    specialText !== 'None' && solidColorEffects.includes(specialText), 
+
+  const isSolidColorEffect = useMemo(() =>
+    specialText !== 'None' && solidColorEffects.includes(specialText),
     [specialText, solidColorEffects]
   );
 
   const handleSpecialTextChange = async (value: string) => {
     const previousValue = specialText;
     setSpecialText(value);
-    
+
     try {
       // Map display names back to effect values (5 impressive new creations)
       const effectValueMap: Record<string, string> = {
@@ -258,7 +279,7 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
         'Chrome Metallic': 'chrome-metallic',
         'Energy Pulse': 'energy-pulse'
       };
-      
+
       if (value === 'None') {
         // Clear the effect (set to empty string which becomes null)
         await pageAppearanceMutation.mutateAsync({
@@ -312,119 +333,134 @@ export function PageSettingsPanel({ tokens, tokenValues, onTokenChange, pageBack
 
           {/* Page title section */}
           <div className={styles.section}>
-                <div className={styles.contentArea}>
-                  {/* Special Text Effect Selector */}
-                  <div className={styles.controlRow}>
-                    <label className={styles.controlLabel}>Special Effect</label>
-                    <SpecialTextSelect
-                      value={specialText}
-                      options={['None', 'Aurora Borealis', 'Holographic', 'Liquid Neon', 'Chrome Metallic', 'Energy Pulse']}
-                      onChange={handleSpecialTextChange}
-                      disabled={pageAppearanceMutation.isPending}
-                    />
-                  </div>
+            <div className={styles.contentArea}>
+              {/* Live Preview */}
+              <div className={styles.previewBox}>
+                <h1 className={styles.previewText} style={{
+                  fontFamily: headingFont,
+                  fontSize: `${headingSize}px`,
+                  color: isGradientEffect || getBackgroundType(pageHeadingText) === 'gradient' ? 'transparent' : pageHeadingText,
+                  backgroundImage: isGradientEffect ? 'none' : (getBackgroundType(pageHeadingText) === 'gradient' ? pageHeadingText : 'none'),
+                  backgroundClip: (isGradientEffect || getBackgroundType(pageHeadingText) === 'gradient') ? 'text' : 'border-box',
+                  WebkitBackgroundClip: (isGradientEffect || getBackgroundType(pageHeadingText) === 'gradient') ? 'text' : 'border-box',
+                  fontWeight: 700, // Default bold for title
+                }}>
+                  {specialText !== 'None' ? specialText : 'Page Title'}
+                </h1>
+              </div>
 
-                  {/* Effect-specific messaging */}
-                  {isGradientEffect && (
-                    <div style={{ 
-                      padding: '0.75rem', 
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                      border: '1px solid rgba(59, 130, 246, 0.3)', 
-                      borderRadius: '0.375rem', 
-                      marginBottom: '0.875rem',
-                      fontSize: '0.75rem',
-                      color: 'var(--color-text-secondary, #6b7280)'
-                    }}>
-                      <strong>{specialText}</strong> uses its own gradient colors. Font and size settings below will apply.
-                    </div>
-                  )}
+              {/* Special Text Effect Selector */}
+              <div className={styles.controlRow}>
+                <label className={styles.controlLabel}>Special Effect</label>
+                <SpecialTextSelect
+                  value={specialText}
+                  options={['None', 'Aurora Borealis', 'Holographic', 'Liquid Neon', 'Chrome Metallic', 'Energy Pulse']}
+                  onChange={handleSpecialTextChange}
+                  disabled={pageAppearanceMutation.isPending}
+                />
+              </div>
 
-                  {isSolidColorEffect && (
-                    <div style={{ 
-                      padding: '0.75rem', 
-                      backgroundColor: 'rgba(168, 85, 247, 0.1)', 
-                      border: '1px solid rgba(168, 85, 247, 0.3)', 
-                      borderRadius: '0.375rem', 
-                      marginBottom: '0.875rem',
-                      fontSize: '0.75rem',
-                      color: 'var(--color-text-secondary, #6b7280)'
-                    }}>
-                      <strong>{specialText}</strong> uses a fixed color for the effect. Font and size settings below will apply.
-                    </div>
-                  )}
-                  
-                  {/* Page title color - disabled for gradient effects */}
-                  <div className={styles.controlRow}>
-                    <label className={styles.controlLabel}>
-                      Page title color
-                      {isGradientEffect && (
-                        <span style={{ 
-                          fontSize: '0.7rem', 
-                          fontWeight: 'normal', 
-                          color: 'var(--color-text-secondary, #6b7280)',
-                          marginLeft: '0.5rem'
-                        }}>
-                          (disabled - effect uses gradient)
-                        </span>
-                      )}
-                      {isSolidColorEffect && (
-                        <span style={{ 
-                          fontSize: '0.7rem', 
-                          fontWeight: 'normal', 
-                          color: 'var(--color-text-secondary, #6b7280)',
-                          marginLeft: '0.5rem'
-                        }}>
-                          (effect overrides this)
-                        </span>
-                      )}
-                    </label>
-                    <BackgroundColorSwatch
-                      value={pageHeadingText}
-                      backgroundType={getBackgroundType(pageHeadingText)}
-                      onChange={(value) => handleColorChange('semantic.text.primary', value)}
-                      onTypeChange={(type) => {
-                        if (type === 'solid') {
-                          handleColorChange('semantic.text.primary', '#111827');
-                        } else if (type === 'gradient') {
-                          if (!pageHeadingText.includes('gradient')) {
-                            handleColorChange('semantic.text.primary', 'linear-gradient(135deg, #111827 0%, #4b5563 100%)');
-                          }
-                        }
-                      }}
-                      label="Page title color"
-                    />
-                  </div>
-
-                  {/* Page title font - always enabled */}
-                  <div className={styles.controlRow}>
-                    <label className={styles.controlLabel}>Page title font</label>
-                    <FontSelect
-                      value={headingFont}
-                      onChange={(value) => handleFontChange('core.typography.font.heading', value)}
-                      disabled={false}
-                    />
-                  </div>
-
-                  {/* Page title size - always enabled */}
-                  <div className={styles.controlRow}>
-                    <label className={styles.controlLabel}>Page title size</label>
-                    <SliderInput
-                      value={headingSize}
-                      min={14}
-                      max={48}
-                      step={1}
-                      onChange={(value) => handleSizeChange('core.typography.size.heading', value)}
-                      unit="px"
-                      disabled={false}
-                    />
-                  </div>
+              {/* Effect-specific messaging */}
+              {isGradientEffect && (
+                <div style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '0.375rem',
+                  marginBottom: '0.875rem',
+                  fontSize: '0.75rem',
+                  color: 'var(--color-text-secondary, #6b7280)'
+                }}>
+                  <strong>{specialText}</strong> uses its own gradient colors. Font and size settings below will apply.
                 </div>
+              )}
+
+              {isSolidColorEffect && (
+                <div style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                  border: '1px solid rgba(168, 85, 247, 0.3)',
+                  borderRadius: '0.375rem',
+                  marginBottom: '0.875rem',
+                  fontSize: '0.75rem',
+                  color: 'var(--color-text-secondary, #6b7280)'
+                }}>
+                  <strong>{specialText}</strong> uses a fixed color for the effect. Font and size settings below will apply.
+                </div>
+              )}
+
+              {/* Page title color - disabled for gradient effects */}
+              <div className={styles.controlRow}>
+                <label className={styles.controlLabel}>
+                  Page title color
+                  {isGradientEffect && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 'normal',
+                      color: 'var(--color-text-secondary, #6b7280)',
+                      marginLeft: '0.5rem'
+                    }}>
+                      (disabled - effect uses gradient)
+                    </span>
+                  )}
+                  {isSolidColorEffect && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 'normal',
+                      color: 'var(--color-text-secondary, #6b7280)',
+                      marginLeft: '0.5rem'
+                    }}>
+                      (effect overrides this)
+                    </span>
+                  )}
+                </label>
+                <BackgroundColorSwatch
+                  value={pageHeadingText}
+                  backgroundType={getBackgroundType(pageHeadingText)}
+                  onChange={(value) => handleColorChange('semantic.text.primary', value)}
+                  onTypeChange={(type) => {
+                    if (type === 'solid') {
+                      handleColorChange('semantic.text.primary', '#111827');
+                    } else if (type === 'gradient') {
+                      if (!pageHeadingText.includes('gradient')) {
+                        handleColorChange('semantic.text.primary', 'linear-gradient(135deg, #111827 0%, #4b5563 100%)');
+                      }
+                    }
+                  }}
+                  label="Page title color"
+                />
+              </div>
+
+              {/* Page title font - always enabled */}
+              <div className={styles.controlRow}>
+                <label className={styles.controlLabel}>Page title font</label>
+                <FontSelect
+                  value={headingFont}
+                  onChange={(value) => handleFontChange('core.typography.font.heading', value)}
+                  disabled={false}
+                />
+              </div>
+
+              {/* Page title size - always enabled */}
+              <div className={styles.controlRow}>
+                <label className={styles.controlLabel}>Page title size</label>
+                <SliderInput
+                  value={headingSize}
+                  min={14}
+                  max={48}
+                  step={1}
+                  onChange={(value) => handleSizeChange('core.typography.size.heading', value)}
+                  unit="px"
+                  disabled={false}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Body section */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>Page body</h4>
-            
+
             {/* Body color */}
             <div className={styles.controlRow}>
               <label className={styles.controlLabel}>Page body color</label>

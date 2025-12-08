@@ -34,6 +34,7 @@ import { MotionSection } from './ultimate-theme-modifier/MotionSection';
 import type { TabColorTheme } from '../layout/tab-colors';
 import type { ThemeRecord } from '../../api/types';
 import type { TokenBundle } from '../../design-system/tokens';
+import { databaseToUI, uiToDatabase, ThemeUIState } from './themes/utils/themeMapper';
 
 import styles from './ultimate-theme-modifier.module.css';
 
@@ -68,6 +69,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   const [redoStack, setRedoStack] = useState<TokenChange[]>([]);
   // Track all token values (including those not in TokenBundle like spacing_tokens, shape_tokens, etc.)
   const [tokenValues, setTokenValues] = useState<Map<string, unknown>>(new Map());
+  const [uiState, setUIState] = useState<ThemeUIState>({});
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const handleSaveRef = useRef<(() => Promise<void>) | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -179,11 +181,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       if (widgetStyles) {
         // Load widget border width
         if (widgetStyles.border_width) {
-          const borderWidth = typeof widgetStyles.border_width === 'string' 
+          const borderWidth = typeof widgetStyles.border_width === 'string'
             ? parseFloat(widgetStyles.border_width.replace('px', ''))
             : typeof widgetStyles.border_width === 'number'
-            ? widgetStyles.border_width
-            : undefined;
+              ? widgetStyles.border_width
+              : undefined;
           if (!isNaN(borderWidth as number)) {
             initialValues.set('widget_border_width', borderWidth);
           }
@@ -202,8 +204,8 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
           const width = typeof widgetStyles.width === 'number'
             ? widgetStyles.width
             : typeof widgetStyles.width === 'string'
-            ? parseFloat(widgetStyles.width.replace('%', ''))
-            : undefined;
+              ? parseFloat(widgetStyles.width.replace('%', ''))
+              : undefined;
           if (!isNaN(width as number)) {
             initialValues.set('widget_width', width);
           }
@@ -212,6 +214,14 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         if (widgetStyles.border_effect === 'shadow' || widgetStyles.border_effect === 'glow') {
           initialValues.set('widget_styles.border_effect', widgetStyles.border_effect);
         }
+      }
+
+      // Load widget colors (direct theme properties)
+      if (theme.widget_background) {
+        initialValues.set('widget_background', theme.widget_background);
+      }
+      if (theme.widget_border_color) {
+        initialValues.set('widget_border_color', theme.widget_border_color);
       }
 
       // Load iconography tokens
@@ -224,12 +234,13 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       }
 
       setTokenValues(initialValues);
-      
+      setUIState(databaseToUI(theme));
+
       // CRITICAL: Also initialize tokens from theme (fonts and sizes need to be in TokenBundle)
       // Initialize fonts and sizes from theme in a single update
       if ((typographyTokens?.font || typographyTokens?.size) && tokens) {
         let updatedTokens = tokens;
-        
+
         // Initialize fonts from theme
         if (typographyTokens?.font) {
           updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', typographyTokens.font.heading || 'Inter');
@@ -238,7 +249,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.metatext', typographyTokens.font.metatext);
           }
         }
-        
+
         // Initialize typography size values in TokenBundle if they exist
         if (typographyTokens?.size) {
           if (typographyTokens.size.heading !== undefined) {
@@ -248,7 +259,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.size.body', typographyTokens.size.body);
           }
         }
-        
+
         setTokens(updatedTokens);
       }
     } else {
@@ -265,22 +276,42 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   }, []);
 
   // Handle token changes from sections with auto-save
+
+  // New Interface: Handle Field Changes
+  const handleFieldChange = useCallback((fieldId: string, value: string | number | boolean) => {
+    setUIState(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+
+    // Track change for save button (using path as unique key)
+    trackChange(fieldId, undefined, value);
+
+    // AUTO-SAVE emulation for migration testing
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      // handleSaveRef.current?.(); // Enable this later when save handles uiState
+    }, 1000);
+  }, []);
+
   const handleTokenChange = useCallback((path: string, value: unknown, oldValue: unknown) => {
     if (!tokens) return;
-    
+
     // Store the value in our tokenValues map
     setTokenValues(prev => {
       const next = new Map(prev);
       next.set(path, value);
       return next;
     });
-    
+
     // If it's a TokenBundle path, update tokens
     if (path.startsWith('semantic.') || path.startsWith('core.')) {
       const updatedTokens = applyTokenUpdate(tokens, path, value);
       setTokens(updatedTokens);
     }
-    
+
     // Track the change
     trackChange(path, oldValue, value);
 
@@ -307,7 +338,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
     const parts = path.split('.');
     const result = { ...obj };
     let current: any = result;
-    
+
     for (let i = 0; i < parts.length - 1; i++) {
       const key = parts[i];
       if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
@@ -317,7 +348,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       }
       current = current[key];
     }
-    
+
     current[parts[parts.length - 1]] = value;
     return result;
   }
@@ -338,7 +369,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
   function extractColorValue(bundle: TokenBundle, path: string): string {
     const parts = path.split('.');
     let current: any = bundle;
-    
+
     for (const part of parts) {
       if (current && typeof current === 'object' && part in current) {
         current = current[part];
@@ -346,11 +377,11 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         return '#2563eb'; // Default fallback
       }
     }
-    
+
     if (typeof current === 'string') {
       return current;
     }
-    
+
     return '#2563eb';
   }
 
@@ -371,7 +402,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       const existingSpacingTokens = safeParse(theme.spacing_tokens) as any;
       const existingShapeTokens = safeParse(theme.shape_tokens) as any;
       const existingMotionTokens = safeParse(theme.motion_tokens) as any;
-      
+
       // Extract current color values from tokens
       const accentPrimary = extractColorValue(tokens, 'semantic.accent.primary');
       const accentSecondary = extractColorValue(tokens, 'semantic.accent.secondary');
@@ -380,7 +411,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       const textInverse = extractColorValue(tokens, 'semantic.text.inverse');
       const backgroundBase = extractColorValue(tokens, 'semantic.surface.canvas');
       const backgroundSurface = extractColorValue(tokens, 'semantic.surface.base');
-      
+
       // Build color tokens, preserving existing values
       const colorTokens: Record<string, any> = {
         ...(existingColorTokens || {}),
@@ -438,8 +469,8 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       };
 
       // Extract typography values
-      const headingFont = typeof tokens.core?.typography?.font?.heading === 'string' 
-        ? tokens.core.typography.font.heading 
+      const headingFont = typeof tokens.core?.typography?.font?.heading === 'string'
+        ? tokens.core.typography.font.heading
         : 'Inter';
       const bodyFont = typeof tokens.core?.typography?.font?.body === 'string'
         ? tokens.core.typography.font.body
@@ -542,13 +573,17 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       const isImage = backgroundBase.startsWith('http://') || backgroundBase.startsWith('https://') || backgroundBase.startsWith('/') || backgroundBase.startsWith('data:');
       const pageBackground = isGradient || isImage ? backgroundBase : (existingColorTokens?.gradient?.page || backgroundBase);
 
+      // Extract widget colors
+      const widgetBackground = (tokenValues.get('widget_background') as string | undefined ?? theme.widget_background) || undefined;
+      const widgetBorderColor = (tokenValues.get('widget_border_color') as string | undefined ?? theme.widget_border_color) || undefined;
+
       // Build widget_styles from custom token values
       const existingWidgetStyles = safeParse(theme?.widget_styles);
       const widgetBorderWidth = tokenValues.get('widget_border_width') as number | undefined;
       const widgetShadowIntensity = tokenValues.get('widget_shadow_intensity') as number | undefined;
       const widgetWidth = tokenValues.get('widget_width') as number | undefined;
       const borderEffect = tokenValues.get('widget_styles.border_effect') as 'shadow' | 'glow' | null | undefined;
-      
+
       const widgetStyles: Record<string, unknown> = {
         ...(existingWidgetStyles || {}),
         ...(widgetBorderWidth !== undefined && { border_width: `${widgetBorderWidth}px` }),
@@ -556,7 +591,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         ...(widgetWidth !== undefined && { width: widgetWidth }),
         ...(borderEffect !== undefined && borderEffect !== null && { border_effect: borderEffect })
       };
-      
+
       // If border_effect is explicitly set to null, remove it (to use 'none')
       if (borderEffect === null && existingWidgetStyles?.border_effect) {
         delete widgetStyles.border_effect;
@@ -580,12 +615,20 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
         motion_tokens: motionTokens,
         iconography_tokens: iconographyTokens,
         page_background: pageBackground,
+        widget_background: widgetBackground,
+        widget_border_color: widgetBorderColor,
         widget_styles: widgetStyles
       };
 
+      // [MIGRATION] Dehydrate UI State into Payload
+      if (uiState) {
+        const dehydrated = uiToDatabase(uiState, themeData as any);
+        Object.assign(themeData, dehydrated);
+      }
+
       // Always use the single user theme (get or create if needed)
       const userThemeId = await getOrCreateUserTheme();
-      
+
       // Update the user theme with all current settings
       await updateMutation.mutateAsync({
         themeId: userThemeId,
@@ -594,7 +637,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
           name: 'My Theme' // Keep user theme name consistent
         }
       });
-      
+
       // Ensure page.theme_id points to user theme
       await updatePageThemeId(userThemeId, {
         page_background: null, // Clear page overrides so theme values are used
@@ -611,7 +654,7 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
       // Invalidate and refetch queries to refresh data immediately
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      
+
       // Refetch theme library to get updated theme data immediately
       // This ensures the theme prop updates with the saved iconography_tokens.color
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
@@ -732,354 +775,354 @@ export function UltimateThemeModifier({ activeColor, theme, onSave }: UltimateTh
 
   return (
     <Tooltip.Provider delayDuration={200}>
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <h2 className={styles.title}>Theme Modifier</h2>
-          <div className={styles.headerActions}>
+      <div className={styles.container}>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.headerTop}>
+            <h2 className={styles.title}>Theme Modifier</h2>
+            <div className={styles.headerActions}>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    className={styles.saveButton}
+                    onClick={handleSave}
+                    disabled={saveStatus === 'saving' || modifiedTokens.size === 0}
+                    aria-label="Save theme"
+                    title="Save theme"
+                  >
+                    {saveStatus === 'saving' ? (
+                      <>Saving...</>
+                    ) : saveStatus === 'success' ? (
+                      <><Check weight="bold" /> Saved</>
+                    ) : (
+                      <><FloppyDisk weight="regular" /> Save</>
+                    )}
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="bottom"
+                    align="end"
+                    className={styles.tooltip}
+                  >
+                    Save your current color, type, spacing, shape, and motion changes to this theme.
+                    <Tooltip.Arrow className={styles.tooltipArrow} />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            </div>
+          </div>
+          <div className={styles.searchBar}>
+            <MagnifyingGlass className={styles.searchIcon} weight="regular" />
+            <input
+              type="text"
+              placeholder="Search tokens..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+            {searchQuery && (
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    className={styles.clearSearch}
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    <X weight="regular" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="bottom"
+                    align="end"
+                    className={styles.tooltip}
+                  >
+                    Clear your search and show all tokens again.
+                    <Tooltip.Arrow className={styles.tooltipArrow} />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            )}
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <Tabs.Root value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className={styles.tabs}>
+          <Tabs.List className={styles.tabList}>
+            <Tabs.Trigger value="colors" className={styles.tabTrigger}>
+              <Palette weight="bold" />
+              <span>Colors</span>
+              {modifiedTokens.size > 0 && <span className={styles.badge}>{modifiedTokens.size}</span>}
+            </Tabs.Trigger>
+            <Tabs.Trigger value="typography" className={styles.tabTrigger}>
+              <TextT weight="bold" />
+              <span>Typography</span>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="spacing" className={styles.tabTrigger}>
+              <GridFour weight="bold" />
+              <span>Spacing</span>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="shape" className={styles.tabTrigger}>
+              <Shapes weight="bold" />
+              <span>Shape</span>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="motion" className={styles.tabTrigger}>
+              <Lightning weight="bold" />
+              <span>Motion</span>
+            </Tabs.Trigger>
+          </Tabs.List>
+
+          {/* Tab Content */}
+          <ScrollArea.Root className={styles.scrollArea}>
+            <ScrollArea.Viewport className={styles.viewport}>
+              <div className={styles.content}>
+                <Tabs.Content value="colors" className={styles.tabContent}>
+                  <AnimatePresence mode="wait">
+                    {tokens && (
+                      <motion.div
+                        key="colors"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ColorsSection uiState={uiState} onFieldChange={handleFieldChange}
+                          tokens={tokens}
+                          onTokenChange={handleTokenChange}
+                          searchQuery={searchQuery}
+                          tokenValues={tokenValues}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Tabs.Content>
+
+                <Tabs.Content value="typography" className={styles.tabContent}>
+                  <AnimatePresence mode="wait">
+                    {tokens && (
+                      <motion.div
+                        key="typography"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <TypographySection
+                          tokens={tokens}
+                          onTokenChange={handleTokenChange}
+                          searchQuery={searchQuery}
+                          tokenValues={tokenValues}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Tabs.Content>
+
+                <Tabs.Content value="spacing" className={styles.tabContent}>
+                  <AnimatePresence mode="wait">
+                    {tokens && (
+                      <motion.div
+                        key="spacing"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <SpacingSection
+                          tokens={tokens}
+                          onTokenChange={handleTokenChange}
+                          searchQuery={searchQuery}
+                          tokenValues={tokenValues}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Tabs.Content>
+
+                <Tabs.Content value="shape" className={styles.tabContent}>
+                  <AnimatePresence mode="wait">
+                    {tokens && (
+                      <motion.div
+                        key="shape"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ShapeSection
+                          tokens={tokens}
+                          onTokenChange={handleTokenChange}
+                          searchQuery={searchQuery}
+                          tokenValues={tokenValues}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Tabs.Content>
+
+                <Tabs.Content value="motion" className={styles.tabContent}>
+                  <AnimatePresence mode="wait">
+                    {tokens && (
+                      <motion.div
+                        key="motion"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <MotionSection
+                          tokens={tokens}
+                          onTokenChange={handleTokenChange}
+                          searchQuery={searchQuery}
+                          tokenValues={tokenValues}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Tabs.Content>
+              </div>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+              <ScrollArea.Thumb className={styles.thumb} />
+            </ScrollArea.Scrollbar>
+          </ScrollArea.Root>
+        </Tabs.Root>
+
+        {/* Footer */}
+        <div className={styles.footer}>
+          <div className={styles.footerLeft}>
+            {modifiedTokens.size > 0 && (
+              <span className={styles.modifiedCount}>
+                {modifiedTokens.size} {modifiedTokens.size === 1 ? 'token' : 'tokens'} modified
+              </span>
+            )}
+          </div>
+          <div className={styles.footerRight}>
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-            <button
-              className={styles.saveButton}
-              onClick={handleSave}
-              disabled={saveStatus === 'saving' || modifiedTokens.size === 0}
-              aria-label="Save theme"
-                  title="Save theme" 
-            >
-              {saveStatus === 'saving' ? (
-                <>Saving...</>
-              ) : saveStatus === 'success' ? (
-                <><Check weight="bold" /> Saved</>
-              ) : (
-                <><FloppyDisk weight="regular" /> Save</>
-              )}
-            </button>
+                <button
+                  className={styles.footerButton}
+                  onClick={handleUndo}
+                  disabled={undoStack.length === 0}
+                  title="Undo (Cmd/Ctrl+Z)"
+                  aria-label="Undo"
+                >
+                  <ArrowCounterClockwise weight="regular" /> Undo
+                </button>
               </Tooltip.Trigger>
               <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
+                <Tooltip.Content side="top" align="center" className={styles.tooltip}>
+                  Step back one change. You can also press Cmd/Ctrl+Z.
+                  <Tooltip.Arrow className={styles.tooltipArrow} />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  className={styles.footerButton}
+                  onClick={handleRedo}
+                  disabled={redoStack.length === 0}
+                  title="Redo (Cmd/Ctrl+Shift+Z)"
+                  aria-label="Redo"
                 >
-                  Save your current color, type, spacing, shape, and motion changes to this theme.
+                  <ArrowCounterClockwise weight="regular" style={{ transform: 'scaleX(-1)' }} /> Redo
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" align="center" className={styles.tooltip}>
+                  Re-apply the last undone change. You can also press Cmd/Ctrl+Shift+Z.
+                  <Tooltip.Arrow className={styles.tooltipArrow} />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  className={styles.footerButton}
+                  onClick={() => {
+                    // Reset all - TODO: implement
+                  }}
+                  disabled={modifiedTokens.size === 0}
+                  title="Reset all changes (Coming soon)"
+                  aria-label="Reset all changes"
+                >
+                  Reset All
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" align="center" className={styles.tooltip}>
+                  Reset every modified token in this theme back to its defaults. (Coming soon)
+                  <Tooltip.Arrow className={styles.tooltipArrow} />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  className={styles.footerButton}
+                  onClick={() => {
+                    // Export - TODO: implement
+                  }}
+                  disabled
+                  title="Export tokens (Coming soon)"
+                  aria-label="Export tokens"
+                >
+                  <Download weight="regular" /> Export
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" align="center" className={styles.tooltip}>
+                  Export this theme’s tokens for use in other projects. (Coming soon)
+                  <Tooltip.Arrow className={styles.tooltipArrow} />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  className={styles.footerButton}
+                  onClick={() => {
+                    // Import - TODO: implement
+                  }}
+                  disabled
+                  title="Import tokens (Coming soon)"
+                  aria-label="Import tokens"
+                >
+                  <Upload weight="regular" /> Import
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" align="center" className={styles.tooltip}>
+                  Import a token JSON file to update this theme. (Coming soon)
                   <Tooltip.Arrow className={styles.tooltipArrow} />
                 </Tooltip.Content>
               </Tooltip.Portal>
             </Tooltip.Root>
           </div>
         </div>
-        <div className={styles.searchBar}>
-          <MagnifyingGlass className={styles.searchIcon} weight="regular" />
-          <input
-            type="text"
-            placeholder="Search tokens..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
-          {searchQuery && (
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-            <button
-              className={styles.clearSearch}
-              onClick={() => setSearchQuery('')}
-              aria-label="Clear search"
-                  title="Clear search"
+
+        {/* Status Message */}
+        <AnimatePresence>
+          {statusMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className={`${styles.statusMessage} ${styles[`status${saveStatus}`]}`}
             >
-              <X weight="regular" />
-            </button>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="bottom"
-                  align="end"
-                  className={styles.tooltip}
-                >
-                  Clear your search and show all tokens again.
-                  <Tooltip.Arrow className={styles.tooltipArrow} />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
+              {statusMessage}
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
-
-      {/* Tab Navigation */}
-      <Tabs.Root value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className={styles.tabs}>
-        <Tabs.List className={styles.tabList}>
-          <Tabs.Trigger value="colors" className={styles.tabTrigger}>
-            <Palette weight="bold" />
-            <span>Colors</span>
-            {modifiedTokens.size > 0 && <span className={styles.badge}>{modifiedTokens.size}</span>}
-          </Tabs.Trigger>
-          <Tabs.Trigger value="typography" className={styles.tabTrigger}>
-            <TextT weight="bold" />
-            <span>Typography</span>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="spacing" className={styles.tabTrigger}>
-            <GridFour weight="bold" />
-            <span>Spacing</span>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="shape" className={styles.tabTrigger}>
-            <Shapes weight="bold" />
-            <span>Shape</span>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="motion" className={styles.tabTrigger}>
-            <Lightning weight="bold" />
-            <span>Motion</span>
-          </Tabs.Trigger>
-        </Tabs.List>
-
-        {/* Tab Content */}
-        <ScrollArea.Root className={styles.scrollArea}>
-          <ScrollArea.Viewport className={styles.viewport}>
-            <div className={styles.content}>
-              <Tabs.Content value="colors" className={styles.tabContent}>
-                <AnimatePresence mode="wait">
-                  {tokens && (
-                    <motion.div
-                      key="colors"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ColorsSection
-                        tokens={tokens}
-                        onTokenChange={handleTokenChange}
-                        searchQuery={searchQuery}
-                        tokenValues={tokenValues}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Tabs.Content>
-
-              <Tabs.Content value="typography" className={styles.tabContent}>
-                <AnimatePresence mode="wait">
-                  {tokens && (
-                    <motion.div
-                      key="typography"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <TypographySection
-                        tokens={tokens}
-                        onTokenChange={handleTokenChange}
-                        searchQuery={searchQuery}
-                        tokenValues={tokenValues}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Tabs.Content>
-
-              <Tabs.Content value="spacing" className={styles.tabContent}>
-                <AnimatePresence mode="wait">
-                  {tokens && (
-                    <motion.div
-                      key="spacing"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <SpacingSection
-                        tokens={tokens}
-                        onTokenChange={handleTokenChange}
-                        searchQuery={searchQuery}
-                        tokenValues={tokenValues}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Tabs.Content>
-
-              <Tabs.Content value="shape" className={styles.tabContent}>
-                <AnimatePresence mode="wait">
-                  {tokens && (
-                    <motion.div
-                      key="shape"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ShapeSection
-                        tokens={tokens}
-                        onTokenChange={handleTokenChange}
-                        searchQuery={searchQuery}
-                        tokenValues={tokenValues}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Tabs.Content>
-
-              <Tabs.Content value="motion" className={styles.tabContent}>
-                <AnimatePresence mode="wait">
-                  {tokens && (
-                    <motion.div
-                      key="motion"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <MotionSection
-                        tokens={tokens}
-                        onTokenChange={handleTokenChange}
-                        searchQuery={searchQuery}
-                        tokenValues={tokenValues}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Tabs.Content>
-            </div>
-          </ScrollArea.Viewport>
-          <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-            <ScrollArea.Thumb className={styles.thumb} />
-          </ScrollArea.Scrollbar>
-        </ScrollArea.Root>
-      </Tabs.Root>
-
-      {/* Footer */}
-      <div className={styles.footer}>
-        <div className={styles.footerLeft}>
-          {modifiedTokens.size > 0 && (
-            <span className={styles.modifiedCount}>
-              {modifiedTokens.size} {modifiedTokens.size === 1 ? 'token' : 'tokens'} modified
-            </span>
-          )}
-        </div>
-        <div className={styles.footerRight}>
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-          <button
-            className={styles.footerButton}
-            onClick={handleUndo}
-            disabled={undoStack.length === 0}
-            title="Undo (Cmd/Ctrl+Z)"
-            aria-label="Undo"
-          >
-            <ArrowCounterClockwise weight="regular" /> Undo
-          </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" align="center" className={styles.tooltip}>
-                Step back one change. You can also press Cmd/Ctrl+Z.
-                <Tooltip.Arrow className={styles.tooltipArrow} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-          <button
-            className={styles.footerButton}
-            onClick={handleRedo}
-            disabled={redoStack.length === 0}
-            title="Redo (Cmd/Ctrl+Shift+Z)"
-            aria-label="Redo"
-          >
-            <ArrowCounterClockwise weight="regular" style={{ transform: 'scaleX(-1)' }} /> Redo
-          </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" align="center" className={styles.tooltip}>
-                Re-apply the last undone change. You can also press Cmd/Ctrl+Shift+Z.
-                <Tooltip.Arrow className={styles.tooltipArrow} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-          <button
-            className={styles.footerButton}
-            onClick={() => {
-              // Reset all - TODO: implement
-            }}
-            disabled={modifiedTokens.size === 0}
-            title="Reset all changes (Coming soon)"
-            aria-label="Reset all changes"
-          >
-            Reset All
-          </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" align="center" className={styles.tooltip}>
-                Reset every modified token in this theme back to its defaults. (Coming soon)
-                <Tooltip.Arrow className={styles.tooltipArrow} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-          <button
-            className={styles.footerButton}
-            onClick={() => {
-              // Export - TODO: implement
-            }}
-            disabled
-            title="Export tokens (Coming soon)"
-            aria-label="Export tokens"
-          >
-            <Download weight="regular" /> Export
-          </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" align="center" className={styles.tooltip}>
-                Export this theme’s tokens for use in other projects. (Coming soon)
-                <Tooltip.Arrow className={styles.tooltipArrow} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-          <button
-            className={styles.footerButton}
-            onClick={() => {
-              // Import - TODO: implement
-            }}
-            disabled
-            title="Import tokens (Coming soon)"
-            aria-label="Import tokens"
-          >
-            <Upload weight="regular" /> Import
-          </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" align="center" className={styles.tooltip}>
-                Import a token JSON file to update this theme. (Coming soon)
-                <Tooltip.Arrow className={styles.tooltipArrow} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        </div>
-      </div>
-
-      {/* Status Message */}
-      <AnimatePresence>
-        {statusMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className={`${styles.statusMessage} ${styles[`status${saveStatus}`]}`}
-          >
-            {statusMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
     </Tooltip.Provider>
   );
 }

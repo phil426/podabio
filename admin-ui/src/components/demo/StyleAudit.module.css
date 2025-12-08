@@ -1,0 +1,214 @@
+.container {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #0f172a;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.header {
+    margin-bottom: 40px;
+}
+
+.header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #64748b;
+    font-size: 16px;
+}
+
+.section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.sectionTitle {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.columnHeader {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+/* --- LEGACY STYLES (From PageSettingsDemo) --- */
+
+.legacyButton {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.legacyButton:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.legacyTabList {
+    display: inline-flex;
+    gap: 4px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.legacyTab {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.legacyTabActive {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.legacyInput {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+}
+
+
+/* --- NEW STYLES (From Theme Wizard) --- */
+
+.newButton {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.newButton:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.newTabList {
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.newTab {
+    padding: 12px 0;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.newTab:hover {
+    color: #0f172a;
+}
+
+.newTabActive {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.newInput {
+    padding: 10px 16px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #1e293b;
+    color: #ffffff;
+    width: 100%;
+}
+
+/* --- THEME WIZARD BUTTONS --- */
+
+.wizardSaveButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 127, 0.3);
+    background: linear-gradient(120deg, rgba(0, 255, 127, 0.95), rgba(0, 255, 127, 0.85));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wizardShuffleButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 127, 0.3);
+    background: rgba(0, 255, 127, 0.1);
+    color: #00FF7F;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Tabs from '@radix-ui/react-tabs';
 import { X, Check, XCircle, Palette, TextAa, GridFour, Shapes, FloppyDisk, Copy, Image, Swatches, Square, Sparkle, TextB, TextItalic, TextUnderline, AlignLeft, TextAlignCenter, AlignRight, Share } from '@phosphor-icons/react';
@@ -8,7 +9,7 @@ import { usePageSnapshot, updatePageThemeId } from '../../api/page';
 import { useThemeLibraryQuery, useUpdateThemeMutation, useCreateThemeMutation, type ThemeLibraryResult, getOrCreateUserTheme } from '../../api/themes';
 import { useTokens } from '../../design-system/theme/TokenProvider';
 import { useThemeInspector } from '../../state/themeInspector';
-import { queryKeys } from '../../api/utils';
+import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { uploadBackgroundImage } from '../../api/uploads';
 import { PageBackgroundPicker } from '../controls/PageBackgroundPicker';
 import { ColorPaletteEditor } from './ColorPaletteEditor';
@@ -18,6 +19,7 @@ import { BlockBackgroundSection } from './theme-editor/BlockBackgroundSection';
 import { TypographySection } from './theme-editor/TypographySection';
 import { SpacingSection } from './theme-editor/SpacingSection';
 import { ShapeSection } from './theme-editor/ShapeSection';
+import { previewRenderer } from './themes/utils/previewRenderer';
 import type { TabColorTheme } from '../layout/tab-colors';
 import type { ThemeRecord, PageSnapshotResponse } from '../../api/types';
 import type { TokenBundle } from '../../design-system/tokens';
@@ -2189,8 +2191,287 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     {
       value: 'block-widget-style',
       label: 'Block / widget style'
+    },
+    {
+      value: 'shadow-preview',
+      label: 'Shadow preview'
     }
   ];
+
+  // Shadow preview (read-only) generated from current theme
+  // Note: ThemeEditorPanel uses tokens, not uiState, so preview shows saved theme state
+  // For real-time updates, we'd need to convert tokens to uiState format
+  const shadowPreviewVars = useMemo(() => {
+    const pageRecord = snapshot?.page ? (snapshot.page as unknown as Record<string, unknown>) : undefined;
+    // Use empty uiState - preview will show theme's saved state
+    // TODO: Convert tokens to uiState for real-time updates
+    const emptyUIState: Record<string, unknown> = {};
+    return previewRenderer.generateCSSVariables(theme ?? null, emptyUIState, pageRecord);
+  }, [snapshot?.page, theme]);
+
+  // Get page data for shadow preview
+  const page = snapshot?.page;
+  const widgets = snapshot?.widgets || [];
+  const socialIcons = snapshot?.social_icons || [];
+  const shadowPreviewAvatar = (page?.profile_image as string | null) ?? null;
+  const podcastName = (page?.podcast_name as string | undefined) || (page?.username as string | undefined);
+  const podcastDescription = (page?.podcast_description as string | undefined);
+
+  // Get platform icon helper (simplified version)
+  const getPlatformIcon = (platformName: string): JSX.Element => {
+    const platform = platformName.toLowerCase();
+    const platformIcons: Record<string, string> = {
+      'apple_podcasts': 'fas fa-podcast',
+      'spotify': 'fab fa-spotify',
+      'youtube_music': 'fab fa-youtube',
+      'iheart_radio': 'fas fa-heart',
+      'amazon_music': 'fab fa-amazon',
+      'facebook': 'fab fa-facebook',
+      'twitter': 'fab fa-twitter',
+      'instagram': 'fab fa-instagram',
+      'linkedin': 'fab fa-linkedin',
+      'youtube': 'fab fa-youtube',
+      'tiktok': 'fab fa-tiktok',
+      'snapchat': 'fab fa-snapchat',
+      'pinterest': 'fab fa-pinterest',
+      'reddit': 'fab fa-reddit',
+      'discord': 'fab fa-discord',
+      'twitch': 'fab fa-twitch',
+      'github': 'fab fa-github',
+      'behance': 'fab fa-behance',
+      'dribbble': 'fab fa-dribbble',
+      'medium': 'fab fa-medium',
+      'substack': 'fas fa-newspaper'
+    };
+    const iconClass = platformIcons[platform] || 'fas fa-link';
+    return <i className={iconClass} />;
+  };
+
+  const ShadowPreviewCard = () => {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      const root = hostRef.current.shadowRoot ?? hostRef.current.attachShadow({ mode: 'open' });
+      setShadowRoot(root);
+    }, []);
+
+    const varLines = useMemo(
+      () => Object.entries(shadowPreviewVars).map(([k, v]) => `  ${k}: ${v};`).join('\n'),
+      [shadowPreviewVars]
+    );
+
+    const initials = useMemo(() => {
+      const text = podcastName || 'P';
+      const parts = text.trim().split(' ');
+      const letters = parts.slice(0, 2).map((chunk) => chunk[0]).join('');
+      return letters.toUpperCase();
+    }, [podcastName]);
+
+    // Load Font Awesome into Shadow DOM
+    useEffect(() => {
+      if (!shadowRoot) return;
+      
+      const link = shadowRoot.ownerDocument.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+      link.integrity = 'sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==';
+      link.crossOrigin = 'anonymous';
+      shadowRoot.appendChild(link);
+    }, [shadowRoot]);
+
+    const shadowStyles = useMemo(
+      () => `
+      :host {
+        all: initial;
+        display: block;
+        font-family: var(--font-family-body, 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif);
+        color: var(--page-description-color, #475569);
+        background: var(--page-background, #ffffff);
+      }
+      :root {
+${varLines}
+      }
+      .mobile-page-container {
+        width: 100%;
+        min-height: 100vh;
+        background: var(--page-background, #ffffff);
+        padding: var(--page-spacing, 16px);
+      }
+      .page-container {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+      .profile-header {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .profile-image-container {
+        margin: 0 auto 16px;
+        display: inline-block;
+      }
+      .profile-image {
+        width: var(--profile-image-size, 120px);
+        height: var(--profile-image-size, 120px);
+        border-radius: var(--profile-image-radius, 16%);
+        border-width: var(--profile-image-border-width, 0px);
+        border-color: var(--profile-image-border-color, transparent);
+        border-style: ${shadowPreviewVars['--profile-image-border-width'] && parseFloat(String(shadowPreviewVars['--profile-image-border-width']).replace('px', '')) > 0 ? 'solid' : 'none'};
+        box-shadow: var(--profile-image-box-shadow, none);
+        object-fit: cover;
+        display: block;
+      }
+      .page-title {
+        font-family: var(--page-title-font, var(--font-family-heading, inherit));
+        font-size: var(--page-title-size, 24px);
+        font-weight: var(--page-title-weight, 700);
+        color: var(--page-title-color, #0f172a);
+        margin: 0 0 12px 0;
+        text-align: center;
+      }
+      .page-description {
+        font-family: var(--page-description-font, var(--font-family-body, inherit));
+        font-size: var(--page-bio-size, 14px);
+        font-weight: var(--page-bio-weight, 400);
+        color: var(--page-description-color, #475569);
+        margin: 0 0 24px 0;
+        text-align: center;
+        line-height: 1.5;
+      }
+      .social-icons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--social-icon-spacing, var(--icon-spacing, 16px));
+        margin: 0 0 24px 0;
+      }
+      .social-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--social-icon-size, var(--icon-size, 32px));
+        height: var(--social-icon-size, var(--icon-size, 32px));
+        color: var(--social-icon-color, var(--icon-color, #2563eb));
+        text-decoration: none;
+        font-size: calc(var(--social-icon-size, var(--icon-size, 32px)) * 0.625);
+      }
+      .widgets-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .widget-item {
+        background: var(--widget-background, #ffffff);
+        border: var(--widget-border-width, 1px) solid var(--widget-border-color, #e2e8f0);
+        border-radius: var(--widget-border-radius, 12px);
+        padding: 16px;
+        box-shadow: var(--widget-shadow-depth, none);
+      }
+      .widget-title {
+        font-family: var(--widget-heading-font, var(--font-family-heading, inherit));
+        font-size: var(--widget-heading-size, 16px);
+        font-weight: var(--widget-heading-weight, 600);
+        color: var(--widget-heading-color, #0f172a);
+        margin: 0 0 8px 0;
+      }
+      .widget-description {
+        font-family: var(--widget-body-font, var(--font-family-body, inherit));
+        font-size: var(--widget-body-size, 14px);
+        font-weight: var(--widget-body-weight, 400);
+        color: var(--widget-body-color, #475569);
+        margin: 0;
+        line-height: 1.5;
+      }
+    `,
+      [varLines, shadowPreviewVars]
+    );
+
+    return (
+      <div style={{ width: '100%', minHeight: 400 }}>
+        <div ref={hostRef} style={{ width: '100%', border: '1px dashed #cbd5e1', borderRadius: 12, padding: 12, background: '#f8fafc', minHeight: 400 }} />
+        {shadowRoot &&
+          createPortal(
+            <div className="mobile-page-container">
+              <style>{shadowStyles}</style>
+              <div className="page-container">
+                {/* Profile Image */}
+                {shadowPreviewAvatar && (
+                  <div className="profile-header">
+                    <div className="profile-image-container">
+                      <img 
+                        src={normalizeImageUrl(shadowPreviewAvatar)} 
+                        alt="Profile" 
+                        className="profile-image"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Page Title */}
+                {podcastName && (
+                  <h1 className="page-title">{podcastName}</h1>
+                )}
+
+                {/* Page Description */}
+                {podcastDescription && (
+                  <p className="page-description">{podcastDescription}</p>
+                )}
+
+                {/* Social Icons */}
+                {socialIcons.length > 0 && (
+                  <div className="social-icons">
+                    {socialIcons.map((icon: any) => (
+                      <a
+                        key={icon.id}
+                        href={icon.url}
+                        className="social-icon"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={icon.platform_name}
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        {getPlatformIcon(icon.platform_name)}
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* Widgets */}
+                {widgets.length > 0 && (
+                  <div className="widgets-container">
+                    {widgets.slice(0, 3).map((widget: any) => (
+                      <div key={widget.id} className="widget-item">
+                        {widget.title && (
+                          <div className="widget-title">{widget.title}</div>
+                        )}
+                        {widget.config_data && (() => {
+                          try {
+                            const config = typeof widget.config_data === 'string' 
+                              ? JSON.parse(widget.config_data) 
+                              : widget.config_data;
+                            if (config.description) {
+                              return <div className="widget-description">{config.description}</div>;
+                            }
+                          } catch {
+                            // Ignore parse errors
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>,
+            shadowRoot as unknown as Element
+          )}
+      </div>
+    );
+  };
   
   return (
     <section
@@ -2271,6 +2552,18 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
 
         <Tabs.Content value="block-widget-style" className={styles.themeTabContent}>
           <TokenAccordion items={blockWidgetStyleItems} type="multiple" defaultValue={['block-background-type', 'typography-block']} />
+        </Tabs.Content>
+
+        <Tabs.Content value="shadow-preview" className={styles.themeTabContent}>
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gap: 4 }}>
+              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Shadow DOM preview</h4>
+              <p style={{ margin: 0, fontSize: 13, color: '#475569' }}>
+                Read-only live preview rendered in a ShadowRoot (no iframe). Uses current theme CSS variables.
+              </p>
+            </div>
+            <ShadowPreviewCard />
+          </div>
         </Tabs.Content>
       </Tabs.Root>
       

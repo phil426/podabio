@@ -1,0 +1,69 @@
+
+> podabio-admin-ui@2.1.0 type-check
+> tsc --noEmit
+
+src/components/layout/TabBar.tsx(48,7): error TS2741: Property '"shadow-preview"' is missing in type '{ structure: { value: "structure"; label: string; icon: JSX.Element; }; design: { value: "design"; label: string; icon: JSX.Element; }; analytics: { value: "analytics"; label: string; icon: JSX.Element; }; ... 5 more ...; integration: { ...; }; }' but required in type 'Record<TabValue, TabDefinition>'.
+src/components/panels/EmailSubscriptionSettings.tsx(22,58): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(23,54): error TS2339: Property 'email_service_api_key' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(24,54): error TS2339: Property 'email_list_id' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(25,73): error TS2339: Property 'email_double_optin' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(44,23): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(45,21): error TS2339: Property 'email_service_api_key' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(46,21): error TS2339: Property 'email_list_id' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(47,34): error TS2339: Property 'email_double_optin' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(48,13): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(48,43): error TS2339: Property 'email_service_api_key' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(48,72): error TS2339: Property 'email_list_id' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(48,93): error TS2339: Property 'email_double_optin' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(67,9): error TS2322: Type 'string | null' is not assignable to type 'FormDataEntryValue | undefined'.
+  Type 'null' is not assignable to type 'FormDataEntryValue | undefined'.
+src/components/panels/EmailSubscriptionSettings.tsx(78,25): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(79,23): error TS2339: Property 'email_service_api_key' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(80,23): error TS2339: Property 'email_list_id' does not exist on type 'PageSnapshot'.
+src/components/panels/EmailSubscriptionSettings.tsx(81,35): error TS2339: Property 'email_double_optin' does not exist on type 'PageSnapshot'.
+src/components/panels/IntegrationsPanel.tsx(311,38): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/IntegrationsPanel.tsx(314,58): error TS2339: Property 'email_service_provider' does not exist on type 'PageSnapshot'.
+src/components/panels/themes/components/SelectedImageCard.tsx(16,3): error TS2339: Property 'onRetryLoad' does not exist on type 'SelectedImageCardProps'.
+src/components/panels/themes/hooks/useColorHistory.ts(90,16): error TS2345: Argument of type '(prev: ColorHistoryState) => { past: string[][]; present: string[]; future: (string | string[])[]; }' is not assignable to parameter of type 'SetStateAction<ColorHistoryState>'.
+  Type '(prev: ColorHistoryState) => { past: string[][]; present: string[]; future: (string | string[])[]; }' is not assignable to type '(prevState: ColorHistoryState) => ColorHistoryState'.
+    Call signature return types '{ past: string[][]; present: string[]; future: (string | string[])[]; }' and 'ColorHistoryState' are incompatible.
+      The types of 'future' are incompatible between these types.
+        Type '(string | string[])[]' is not assignable to type 'string[]'.
+          Type 'string | string[]' is not assignable to type 'string'.
+            Type 'string[]' is not assignable to type 'string'.
+src/components/panels/themes/hooks/useColorHistory.ts(110,16): error TS2345: Argument of type '(prev: ColorHistoryState) => ColorHistoryState | { past: string[][]; present: string; future: string[]; }' is not assignable to parameter of type 'SetStateAction<ColorHistoryState>'.
+  Type '(prev: ColorHistoryState) => ColorHistoryState | { past: string[][]; present: string; future: string[]; }' is not assignable to type '(prevState: ColorHistoryState) => ColorHistoryState'.
+    Type 'ColorHistoryState | { past: string[][]; present: string; future: string[]; }' is not assignable to type 'ColorHistoryState'.
+      Type '{ past: string[][]; present: string; future: string[]; }' is not assignable to type 'ColorHistoryState'.
+        Types of property 'present' are incompatible.
+          Type 'string' is not assignable to type 'string[]'.
+src/components/panels/themes/PodcastThemeGenerator.tsx(52,11): error TS2430: Interface 'TypedThemeData' incorrectly extends interface 'GeneratedThemeData'.
+  Types of property 'color_tokens' are incompatible.
+    Type 'ColorTokens' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'ColorTokens'.
+src/components/panels/themes/PodcastThemeGenerator.tsx(690,30): error TS2352: Conversion of type 'GeneratedThemeData' to type 'TypedThemeData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'typography_tokens' are incompatible.
+    Property 'color' is missing in type 'Record<string, unknown>' but required in type 'TypographyTokens'.
+src/components/panels/themes/utils/fieldRegistry.ts(891,3): error TS2322: Type '"variable-slider"' is not assignable to type 'FieldType'.
+src/components/panels/ultimate-theme-modifier/ColorsSection.tsx(6,30): error TS2307: Cannot find module '../../themes/utils/stateUtils' or its corresponding type declarations.
+src/components/panels/ultimate-theme-modifier/PageSettingsPanel.tsx(11,30): error TS2307: Cannot find module '../../themes/utils/stateUtils' or its corresponding type declarations.
+src/components/panels/ultimate-theme-modifier/WidgetColorsPanel.tsx(10,30): error TS2307: Cannot find module '../../themes/utils/stateUtils' or its corresponding type declarations.
+src/components/panels/UltimateThemeModifier.tsx(287,5): error TS2304: Cannot find name 'setHasChanges'.
+src/components/panels/UltimateThemeModifier.tsx(631,9): error TS2322: Type '{ name: string; color_tokens: Record<string, any>; typography_tokens: Record<string, any>; spacing_tokens: Record<string, any>; shape_tokens: Record<string, any>; ... 5 more ...; widget_styles: Record<...>; }' is not assignable to type 'CreateThemeData'.
+  Types of property 'widget_background' are incompatible.
+    Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+      Type 'null' is not assignable to type 'string | undefined'.
+src/utils/__tests__/themeWizardValidation.test.ts(58,5): error TS2304: Cannot find name 'beforeAll'.
+src/utils/__tests__/themeWizardValidation.test.ts(67,7): error TS2322: Type 'MockInstance<(obj: Blob | MediaSource) => string>' is not assignable to type 'MockInstance<(this: unknown, ...args: unknown[]) => unknown>'.
+  Types of property 'mock' are incompatible.
+    Type 'MockContext<(obj: Blob | MediaSource) => string>' is not assignable to type 'MockContext<(this: unknown, ...args: unknown[]) => unknown>'.
+      Type '(obj: Blob | MediaSource) => string' is not assignable to type '(this: unknown, ...args: unknown[]) => unknown'.
+        Types of parameters 'obj' and 'args' are incompatible.
+          Type 'unknown' is not assignable to type 'Blob | MediaSource'.
+src/utils/generatePreviewCSSVars.ts(34,11): error TS2430: Interface 'TypedThemeData' incorrectly extends interface 'GeneratedThemeData'.
+  Types of property 'color_tokens' are incompatible.
+    Type 'ColorTokens' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'ColorTokens'.
+src/utils/generatePreviewCSSVars.ts(50,26): error TS2352: Conversion of type 'GeneratedThemeData' to type 'TypedThemeData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'typography_tokens' are incompatible.
+    Property 'color' is missing in type 'Record<string, unknown>' but required in type 'TypographyTokens'.

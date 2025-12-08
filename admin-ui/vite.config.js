@@ -5,6 +5,12 @@ import { resolve } from 'path';
 export default defineConfig({
     plugins: [react()],
     base: process.env.NODE_ENV === 'production' ? '/admin-ui/dist/' : '/',
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: [],
+        include: ['src/**/*.{test,spec}.{ts,tsx}']
+    },
     server: {
         port: 5174,
         host: '0.0.0.0'

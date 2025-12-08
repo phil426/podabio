@@ -5,7 +5,7 @@
 
 import { useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, X, Images } from '@phosphor-icons/react';
+import { Upload, X, Images, User } from '@phosphor-icons/react';
 import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
@@ -37,7 +37,7 @@ export function ProfileImageSection({
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  
+
   const profileImage = page?.profile_image ?? null;
 
   const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
@@ -71,19 +71,57 @@ export function ProfileImageSection({
       {/* Profile Image */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Profile Image</h4>
-        
+
+        {/* Live Preview */}
+        <div className={styles.previewBox}>
+          <div style={{
+            width: `${(uiState['profile-image-size'] as number) ?? 120}px`,
+            height: `${(uiState['profile-image-size'] as number) ?? 120}px`,
+            borderRadius: `${(uiState['profile-image-radius'] as number) ?? 16}%`,
+            border: (uiState['profile-image-border-width'] as number) > 0
+              ? `${uiState['profile-image-border-width']}px solid ${uiState['profile-image-border-color'] ?? '#000000'}`
+              : 'none',
+            boxShadow: (uiState['profile-image-effect'] === 'shadow')
+              ? `${(uiState['profile-image-shadow-depth'] as number) ?? 4}px ${(uiState['profile-image-shadow-depth'] as number) ?? 4}px ${(uiState['profile-image-shadow-blur'] as number) ?? 8}px ${(uiState['profile-image-shadow-color'] as string) ?? '#000000'}`
+              : (uiState['profile-image-effect'] === 'glow')
+                ? `0 0 ${(uiState['profile-image-glow-width'] as number) ?? 10}px ${(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}`
+                : 'none',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#f1f5f9',
+            transition: 'all 0.2s ease',
+            position: 'relative'
+          }}>
+            {profileImage ? (
+              <img
+                src={normalizeImageUrl(profileImage)}
+                alt="Profile Preview"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              <User size={48} color="#94a3b8" weight="duotone" />
+            )}
+          </div>
+        </div>
+
         {/* Profile Image Upload */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Image</label>
           <div className={styles.imageUploadContainer}>
-            <div 
+            <div
               className={styles.imagePreview}
               data-has-image={profileImage ? 'true' : 'false'}
             >
               {profileImage ? (
-                <img 
-                  src={normalizeImageUrl(profileImage)} 
-                  alt="Profile" 
+                <img
+                  src={normalizeImageUrl(profileImage)}
+                  alt="Profile"
                   className={styles.imagePreviewImg}
                 />
               ) : (
@@ -147,7 +185,7 @@ export function ProfileImageSection({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                
+
                 // Validate file type
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 if (!allowedTypes.includes(file.type)) {
@@ -157,7 +195,7 @@ export function ProfileImageSection({
                   }
                   return;
                 }
-                
+
                 // Check file size (5MB limit)
                 const maxSize = 5 * 1024 * 1024;
                 if (file.size > maxSize) {
@@ -167,7 +205,7 @@ export function ProfileImageSection({
                   }
                   return;
                 }
-                
+
                 // Create preview URL and show crop modal
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -185,7 +223,7 @@ export function ProfileImageSection({
             />
           </div>
         </div>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Size</label>
           <SliderInput

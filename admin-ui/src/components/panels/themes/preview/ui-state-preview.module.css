@@ -1,0 +1,144 @@
+.previewContainer {
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    /* Outer background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.deviceFrame {
+    width: 430px;
+    /* iPhone 17 Pro Max width */
+    height: 932px;
+    /* iPhone 17 Pro Max height */
+    background: var(--page-background, #ffffff);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+}
+
+.deviceFrame::-webkit-scrollbar {
+    display: none;
+}
+
+/* Page Background Animation Support */
+.animatedBackground {
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Section Styles */
+.profileImageContainer {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 10;
+}
+
+.profileImage {
+    display: block;
+    object-fit: cover;
+}
+
+.profileImagePlaceholder {
+    background-color: #e2e8f0;
+}
+
+.pageHeader {
+    text-align: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.pageTitle {
+    margin: 0;
+    padding: 0;
+    word-break: break-word;
+}
+
+.pageDescription {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    width: 100%;
+    padding: 0 1rem;
+    white-space: pre-wrap;
+}
+
+.socialIcons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.socialIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widgetsContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 0.5rem;
+}
+
+.widget {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.widgetHeading {
+    margin: 0 0 0.5rem 0;
+}
+
+.widgetBody {
+    margin: 0;
+}
+
+.playerBar {
+    margin-top: 2rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Page Title Effects */
+.pageTitleEffectRetro {
+    text-shadow: 2px 2px 0px var(--page-background, #fff), 3px 3px 0px #707070;
+}

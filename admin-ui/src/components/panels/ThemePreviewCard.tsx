@@ -105,7 +105,19 @@ export function ThemePreviewCard({
       
       <div className={styles.cardContent}>
         <div className={styles.cardHeader}>
-          <div className={styles.cardTitleSection}>
+          {/* Widget Preview Container */}
+          <div 
+            className={styles.cardTitleSection}
+            style={{
+              background: theme.widget_background ?? undefined,
+              borderColor: theme.widget_border_color ?? 'transparent',
+              borderWidth: theme.widget_border_color ? '1px' : '0px',
+              borderStyle: 'solid',
+              padding: '12px',
+              borderRadius: '8px',
+              boxShadow: theme.widget_background ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+            }}
+          >
             <h3 
               className={styles.cardTitle}
               style={{ fontFamily: headingFontFamily }}

@@ -6,6 +6,8 @@ import { ColorPickerDemo } from './components/demo/ColorPickerDemo';
 import { PagePropertiesToolbarDemo } from './components/demo/PagePropertiesToolbarDemo';
 import { PageSettingsDemo } from './components/demo/PageSettingsDemo';
 import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
+import { ShadowPreviewDemo } from './components/demo/ShadowPreviewDemo';
+import { StyleAudit } from './components/demo/StyleAudit';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
 import { SupportCMS, BlogCMS } from './components/cms';
 import { TokenProvider } from './design-system/theme/TokenProvider';
@@ -21,28 +23,32 @@ export default function App(): JSX.Element {
         <ThemeModeProvider>
           <FeatureFlagProvider>
             <TokenSynchronizer>
-            <Routes>
-              <Route path="/demo/color-picker" element={<ColorPickerDemo />} />
-              <Route path="/demo/color-picker.php" element={<ColorPickerDemo />} />
-              <Route path="/demo/page-properties-toolbar" element={<PagePropertiesToolbarDemo />} />
-              <Route path="/demo/page-properties-toolbar.php" element={<PagePropertiesToolbarDemo />} />
-              <Route path="/demo/page-settings" element={<PageSettingsDemo />} />
-              <Route path="/demo/page-settings.php" element={<PageSettingsDemo />} />
-              <Route path="/demo/color-picker-drag-test" element={<ColorPickerDragTest />} />
-              <Route path="/demo/color-picker-drag-test.php" element={<ColorPickerDragTest />} />
-              {/* Also match when accessed directly via PHP file */}
-              <Route path="/demo/color-picker-drag-test.php/" element={<ColorPickerDragTest />} />
-              <Route path="/studio-docs" element={<DocumentationViewer />} />
-              <Route path="/studio-docs.php" element={<DocumentationViewer />} />
-              {/* CMS Admin Routes */}
-              <Route path="/admin/cms/support" element={<SupportCMS />} />
-              <Route path="/admin/cms/blog" element={<BlogCMS />} />
-              <Route path="/*" element={<EditorShell />} />
-            </Routes>
-          </TokenSynchronizer>
-        </FeatureFlagProvider>
-      </ThemeModeProvider>
-    </TokenProvider>
+              <Routes>
+                <Route path="/demo/color-picker" element={<ColorPickerDemo />} />
+                <Route path="/demo/color-picker.php" element={<ColorPickerDemo />} />
+                <Route path="/demo/page-properties-toolbar" element={<PagePropertiesToolbarDemo />} />
+                <Route path="/demo/page-properties-toolbar.php" element={<PagePropertiesToolbarDemo />} />
+                <Route path="/demo/page-settings" element={<PageSettingsDemo />} />
+                <Route path="/demo/page-settings.php" element={<PageSettingsDemo />} />
+                <Route path="/demo/color-picker-drag-test" element={<ColorPickerDragTest />} />
+                <Route path="/demo/color-picker-drag-test.php" element={<ColorPickerDragTest />} />
+                <Route path="/demo/shadow-preview" element={<ShadowPreviewDemo />} />
+                <Route path="/demo/shadow-preview.php" element={<ShadowPreviewDemo />} />
+                <Route path="/demo/style-audit" element={<StyleAudit />} />
+                <Route path="/demo/style-audit.php" element={<StyleAudit />} />
+                {/* Also match when accessed directly via PHP file */}
+                <Route path="/demo/color-picker-drag-test.php/" element={<ColorPickerDragTest />} />
+                <Route path="/studio-docs" element={<DocumentationViewer />} />
+                <Route path="/studio-docs.php" element={<DocumentationViewer />} />
+                {/* CMS Admin Routes */}
+                <Route path="/admin/cms/support" element={<SupportCMS />} />
+                <Route path="/admin/cms/blog" element={<BlogCMS />} />
+                <Route path="/*" element={<EditorShell />} />
+              </Routes>
+            </TokenSynchronizer>
+          </FeatureFlagProvider>
+        </ThemeModeProvider>
+      </TokenProvider>
     </AdminThemeProvider>
   );
 }

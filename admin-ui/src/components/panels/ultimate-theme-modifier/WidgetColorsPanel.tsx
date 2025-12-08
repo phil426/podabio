@@ -7,12 +7,13 @@ import { usePageSnapshot } from '../../../api/page';
 import { useThemeLibraryQuery } from '../../../api/themes';
 import type { TokenBundle } from '../../../design-system/tokens';
 import styles from './page-settings-panel.module.css';
+import { ThemeUIState } from '../themes/utils/themeMapper';
 
 function deriveActiveTheme(themeLibrary: any, themeId: number | null) {
   if (!themeLibrary) return null;
   const systemThemes = themeLibrary?.system ?? [];
   const userThemes = themeLibrary?.user ?? [];
-  
+
   // Always prefer user theme if it exists
   if (userThemes.length > 0) {
     // If page points to user theme, use it; otherwise use first user theme
@@ -22,7 +23,7 @@ function deriveActiveTheme(themeLibrary: any, themeId: number | null) {
     }
     return userThemes[0];
   }
-  
+
   // Fallback to system theme if no user theme exists
   if (themeId == null) {
     return systemThemes[0] ?? null;
@@ -43,6 +44,8 @@ function safeParse(input: string | null | undefined | Record<string, unknown>): 
 }
 
 interface WidgetColorsPanelProps {
+  uiState?: ThemeUIState;
+  onFieldChange?: (fieldId: string, value: string | number | boolean) => void;
   tokens: TokenBundle;
   tokenValues: Map<string, unknown>;
   onTokenChange: (path: string, value: unknown, oldValue: unknown) => void;
@@ -57,7 +60,7 @@ interface WidgetColorsPanelProps {
 function resolveToken(bundle: TokenBundle, path: string): unknown {
   const parts = path.split('.');
   let current: any = bundle;
-  
+
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = current[part];
@@ -65,13 +68,13 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
       return undefined;
     }
   }
-  
+
   return current;
 }
 
 function extractColorValue(tokens: TokenBundle, path: string): string {
   const resolved = resolveToken(tokens, path);
-  
+
   if (typeof resolved === 'string') {
     if (/^#([0-9a-fA-F]{3}){1,2}$/.test(resolved)) {
       return resolved;
@@ -86,7 +89,7 @@ function extractColorValue(tokens: TokenBundle, path: string): string {
       return resolved;
     }
   }
-  
+
   return '#2563eb';
 }
 
@@ -113,29 +116,35 @@ function getBackgroundType(value: string): 'solid' | 'gradient' {
   return 'solid';
 }
 
-export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBackground: widgetBackgroundProp, widgetBorder: widgetBorderProp, widgetShadow: widgetShadowProp, widgetHeadingText: widgetHeadingTextProp, widgetBodyText: widgetBodyTextProp, socialIconColor: socialIconColorProp }: WidgetColorsPanelProps): JSX.Element {
+export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBackground: widgetBackgroundProp, widgetBorder: widgetBorderProp, widgetShadow: widgetShadowProp, widgetHeadingText: widgetHeadingTextProp, widgetBodyText: widgetBodyTextProp, socialIconColor: socialIconColorProp, uiState, onFieldChange }: WidgetColorsPanelProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const { data: themeLibrary } = useThemeLibraryQuery();
-  
+
   // Derive active theme from theme library
   const activeTheme = useMemo(() => {
     return deriveActiveTheme(themeLibrary, snapshot?.page?.theme_id ?? null);
   }, [themeLibrary, snapshot?.page?.theme_id]);
-  
+
   // Load border_effect from widget_styles
-  const [borderEffect, setBorderEffect] = useState<'none' | 'shadow' | 'glow'>('shadow');
-  
+  const borderEffect = useMemo(() => {
+    if (uiState && uiState['widget-border-effect'] !== undefined) return uiState['widget-border-effect'] as any;
+    // Fallback to active theme
+    const widgetStyles = activeTheme?.widget_styles ? safeParse(activeTheme.widget_styles) : null;
+    return widgetStyles?.border_effect || 'none';
+  }, [uiState, activeTheme]);
+
   useEffect(() => {
     const widgetStyles = activeTheme?.widget_styles ? safeParse(activeTheme.widget_styles) : null;
     const effect = widgetStyles?.border_effect;
     if (effect === 'shadow' || effect === 'glow') {
-      setBorderEffect(effect);
+      //       setBorderEffect(effect);
     } else {
-      setBorderEffect('none');
+      //       setBorderEffect('none');
     }
   }, [activeTheme?.widget_styles]);
   // Extract values - prioritize tokenValues (unsaved changes), then props from active theme, then tokens
   const widgetHeadingText = useMemo(() => {
+    if (uiState && uiState['widget-heading-color'] !== undefined) return uiState['widget-heading-color'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved) - use widget-specific token
     const colorFromValues = tokenValues.get('core.typography.color.widget_heading') as string | undefined;
     if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
@@ -153,8 +162,9 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     // Priority 4: Fallback to page heading color if widget color not set
     return extractColorValue(tokens, 'semantic.text.primary');
   }, [widgetHeadingTextProp, tokens, tokenValues]);
-  
+
   const widgetBodyText = useMemo(() => {
+    if (uiState && uiState['widget-body-color'] !== undefined) return uiState['widget-body-color'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved) - use widget-specific token
     const colorFromValues = tokenValues.get('core.typography.color.widget_body') as string | undefined;
     if (colorFromValues && typeof colorFromValues === 'string' && colorFromValues.trim() !== '') {
@@ -172,8 +182,9 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     // Priority 4: Fallback to page body color if widget color not set
     return extractColorValue(tokens, 'semantic.text.secondary');
   }, [widgetBodyTextProp, tokens, tokenValues]);
-  
+
   const widgetBackground = useMemo(() => {
+    if (uiState && uiState['widget-background'] !== undefined) return uiState['widget-background'] as any;
     // Priority 1: Check tokenValues (changed but not yet saved)
     const bgFromValues = tokenValues.get('semantic.surface.base') as string | undefined;
     if (bgFromValues && typeof bgFromValues === 'string' && bgFromValues.trim() !== '') {
@@ -205,8 +216,9 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     // Return default white if token value is the default blue (means not found)
     return tokenValue !== '#2563eb' ? tokenValue : '#FFFFFF';
   }, [widgetBackgroundProp, tokens, activeTheme, tokenValues]);
-  
+
   const widgetBorder = useMemo(() => {
+    if (uiState && uiState['widget-border-color'] !== undefined) return uiState['widget-border-color'] as any;
     // Priority 1: Check prop from ColorsPanel (which loads from active theme)
     if (widgetBorderProp && typeof widgetBorderProp === 'string' && widgetBorderProp.trim() !== '') {
       return widgetBorderProp;
@@ -221,7 +233,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     // Return default rgba if token value is the default blue (means not found)
     return tokenValue !== '#2563eb' ? tokenValue : 'rgba(0, 0, 0, 0.1)';
   }, [widgetBorderProp, tokens, activeTheme]);
-  
+
   const widgetShadow = useMemo(() => {
     if (widgetShadowProp && typeof widgetShadowProp === 'string' && widgetShadowProp.trim() !== '') {
       return widgetShadowProp;
@@ -242,10 +254,13 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
 
   // Widget sizes - widgets use the same size tokens as page
   const widgetHeadingSize = useMemo(() => extractNumericValue(tokens, 'core.typography.size.heading', 24), [tokens]);
+  if (uiState && uiState['widget-heading-size'] !== undefined) return uiState['widget-heading-size'] as any;
   const widgetBodySize = useMemo(() => extractNumericValue(tokens, 'core.typography.size.body', 16), [tokens]);
+  if (uiState && uiState['widget-body-size'] !== undefined) return uiState['widget-body-size'] as any;
 
   // Widget border width - extract from shape_tokens.border_width.regular or tokenValues
   const widgetBorderWidth = useMemo(() => {
+    if (uiState && uiState['widget-border-width'] !== undefined) return uiState['widget-border-width'] as any;
     // First check tokenValues
     const width = tokenValues.get('widget_border_width') as string | number | undefined;
     if (typeof width === 'number') {
@@ -264,6 +279,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
 
   // Widget shadow/glow intensity - extract from tokenValues or default to 50 (0-100 scale)
   const widgetShadowIntensity = useMemo(() => {
+    if (uiState && uiState['widget-shadow-intensity'] !== undefined) return uiState['widget-shadow-intensity'] as any;
     const intensity = tokenValues.get('widget_shadow_intensity') as string | number | undefined;
     if (typeof intensity === 'number') {
       return intensity;
@@ -280,6 +296,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
 
   // Widget width - extract from tokenValues or default to 100 (percentage)
   const widgetWidth = useMemo(() => {
+    if (uiState && uiState['widget-width'] !== undefined) return uiState['widget-width'] as any;
     const width = tokenValues.get('widget_width') as string | number | undefined;
     if (typeof width === 'number') {
       return width;
@@ -297,6 +314,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
 
   // Social icons values from iconography tokens - prioritize prop from active theme
   const socialIconColor = useMemo(() => {
+    if (uiState && uiState['social-icon-color'] !== undefined) return uiState['social-icon-color'] as any;
     if (socialIconColorProp && typeof socialIconColorProp === 'string' && socialIconColorProp.trim() !== '') {
       return socialIconColorProp;
     }
@@ -311,6 +329,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   }, [socialIconColorProp, tokenValues]);
 
   const socialIconSize = useMemo(() => {
+    if (uiState && uiState['social-icon-size'] !== undefined) return uiState['social-icon-size'] as any;
     const size = tokenValues.get('iconography_tokens.size') as string | number | undefined;
     if (typeof size === 'number') {
       return size;
@@ -326,6 +345,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   }, [tokenValues]);
 
   const socialIconSpacing = useMemo(() => {
+    if (uiState && uiState['social-icon-spacing'] !== undefined) return uiState['social-icon-spacing'] as any;
     const spacing = tokenValues.get('iconography_tokens.spacing') as string | number | undefined;
     if (typeof spacing === 'number') {
       return spacing;
@@ -350,6 +370,12 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   }, [backgroundType, widgetBackground]);
 
   const handleColorChange = (path: string, value: string) => {
+    if (onFieldChange) {
+      if (path === 'semantic.surface.base') onFieldChange('widget-background', value);
+      if (path === 'semantic.divider.subtle') onFieldChange('widget-border-color', value);
+      if (path === 'core.typography.color.widget_heading') onFieldChange('widget-heading-color', value);
+      if (path === 'core.typography.color.widget_body') onFieldChange('widget-body-color', value);
+    }
     const oldValue = resolveToken(tokens, path);
     onTokenChange(path, value, oldValue);
   };
@@ -360,11 +386,20 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   };
 
   const handleSizeChange = (path: string, value: number) => {
+    if (onFieldChange) {
+      if (path === 'core.typography.size.heading') onFieldChange('widget-heading-size', value);
+      if (path === 'core.typography.size.body') onFieldChange('widget-body-size', value);
+    }
     const oldValue = resolveToken(tokens, path);
     onTokenChange(path, value, oldValue);
   };
 
   const handleIconographyChange = (key: 'color' | 'size' | 'spacing', value: string | number) => {
+    if (onFieldChange) {
+      if (key === 'color') onFieldChange('social-icon-color', value);
+      if (key === 'size') onFieldChange('social-icon-size', value);
+      if (key === 'spacing') onFieldChange('social-icon-spacing', value);
+    }
     // Iconography tokens are stored in tokenValues, not in TokenBundle
     // We need to update them via a special path
     const path = `iconography_tokens.${key}`;
@@ -373,25 +408,29 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
   };
 
   const handleWidgetBorderWidthChange = (value: number) => {
+    if (onFieldChange) onFieldChange('widget-border-width', value);
     const path = 'widget_border_width';
     const oldValue = tokenValues.get(path);
     onTokenChange(path, value, oldValue);
   };
 
   const handleWidgetShadowIntensityChange = (value: number) => {
+    if (onFieldChange) onFieldChange('widget-shadow-intensity', value);
     const path = 'widget_shadow_intensity';
     const oldValue = tokenValues.get(path);
     onTokenChange(path, value, oldValue);
   };
 
   const handleWidgetWidthChange = (value: number) => {
+    if (onFieldChange) onFieldChange('widget-width', value);
     const path = 'widget_width';
     const oldValue = tokenValues.get(path);
     onTokenChange(path, value, oldValue);
   };
 
   const handleBorderEffectChange = (value: 'none' | 'shadow' | 'glow') => {
-    setBorderEffect(value);
+    if (onFieldChange) onFieldChange('widget-border-effect', value);
+    //     setBorderEffect(value);
     // Store border_effect in widget_styles via a special token path
     const path = 'widget_styles.border_effect';
     const oldValue = tokenValues.get(path);
@@ -399,7 +438,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
     const effectValue = value === 'none' ? null : value;
     onTokenChange(path, effectValue, oldValue);
   };
-  
+
   // Get border type and image for widget border
   const borderBackgroundType = useMemo(() => {
     if (!widgetBorder || typeof widgetBorder !== 'string') {
@@ -494,7 +533,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
           {/* Widget Heading section */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>Widget heading</h4>
-            
+
             {/* Widget Heading color */}
             <div className={styles.controlRow}>
               <label className={styles.controlLabel}>Widget heading color</label>
@@ -541,7 +580,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
           {/* Widget Body section */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>Widget body</h4>
-            
+
             {/* Widget Body color */}
             <div className={styles.controlRow}>
               <label className={styles.controlLabel}>Widget body color</label>
@@ -588,7 +627,7 @@ export function WidgetColorsPanel({ tokens, tokenValues, onTokenChange, widgetBa
           {/* Social Icons section */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>Social icons</h4>
-            
+
             {/* Social Icons color */}
             <div className={styles.controlRow}>
               <label className={styles.controlLabel}>Social icons color</label>

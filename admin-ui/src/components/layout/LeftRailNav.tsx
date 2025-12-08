@@ -8,7 +8,8 @@ import {
   Plug,
   TrendUp,
   Question,
-  User
+  User,
+  Cube
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { type LeftyTabValue, tabColors, type TabColorTheme } from './tab-colors';
@@ -33,6 +34,7 @@ interface TabDefinition {
 
 const TABS: TabDefinition[] = [
   { value: 'themes', label: 'Themes', Icon: DeviceMobile },
+  { value: 'shadow-preview', label: 'Shadow preview', Icon: Cube },
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },

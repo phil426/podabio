@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import Cropper from 'react-easy-crop';
-import { X, Check, RotateCw } from '@phosphor-icons/react';
+import { X, Check, ArrowClockwise } from '@phosphor-icons/react';
 
 import styles from './image-crop-modal.module.css';
 
@@ -228,7 +228,7 @@ export function ImageCropModal({
               onClick={handleRotate}
               title="Rotate 90°"
             >
-              <RotateCw size={20} weight="regular" />
+              <ArrowClockwise size={20} weight="regular" />
               Rotate
             </button>
 
