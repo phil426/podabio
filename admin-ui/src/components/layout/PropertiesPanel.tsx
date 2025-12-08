@@ -12,7 +12,7 @@ import { FeaturedBlockInspector } from '../panels/FeaturedBlockInspector';
 import { SocialIconInspector } from '../panels/SocialIconInspector';
 import { IntegrationInspector } from '../panels/IntegrationInspector';
 import { useThemeInspector } from '../../state/themeInspector';
-import { ThemeEditorPanel } from '../panels/ThemeEditorPanel';
+
 import { useThemeLibraryQuery, type ThemeLibraryResult } from '../../api/themes';
 import { usePageSnapshot } from '../../api/page';
 import { queryKeys } from '../../api/utils';
@@ -32,7 +32,7 @@ export function PropertiesPanel({ activeColor, activeTab = 'themes' }: Propertie
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
-  const showThemeInspector = useThemeInspector((state) => state.isThemeInspectorVisible);
+
   const queryClient = useQueryClient();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const { data: snapshot } = usePageSnapshot();
@@ -108,10 +108,10 @@ export function PropertiesPanel({ activeColor, activeTab = 'themes' }: Propertie
   }
 
   return (
-    <div 
-      className={styles.container} 
+    <div
+      className={styles.container}
       aria-label="Properties panel"
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -119,19 +119,6 @@ export function PropertiesPanel({ activeColor, activeTab = 'themes' }: Propertie
       } as React.CSSProperties}
     >
       <div className={styles.scrollArea}>
-        {showThemeInspector && (
-          <>
-            <ThemeEditorPanel 
-              activeColor={activeColor} 
-              theme={activeTheme}
-              onSave={async () => {
-                // Explicitly refetch to ensure preview updates immediately
-                await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
-              }}
-            />
-          </>
-        )}
-
         {inspector}
       </div>
     </div>
@@ -340,8 +327,8 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
     path.startsWith('core.') || path.startsWith('semantic.') || path.startsWith('component.')
       ? path
       : path.startsWith('color.') || path.startsWith('space.') || path.startsWith('type.')
-      ? `core.${path}`
-      : path;
+        ? `core.${path}`
+        : path;
 
   while (currentPath && !visited.has(currentPath)) {
     visited.add(currentPath);
@@ -357,8 +344,8 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
         value.startsWith('core.') || value.startsWith('semantic.') || value.startsWith('component.')
           ? value
           : value.startsWith('color.') || value.startsWith('space.') || value.startsWith('type.')
-          ? `core.${value}`
-          : value;
+            ? `core.${value}`
+            : value;
       continue;
     }
 

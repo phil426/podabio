@@ -33,7 +33,7 @@ interface TabDefinition {
 }
 
 const TABS: TabDefinition[] = [
-  { value: 'themes', label: 'Themes', Icon: DeviceMobile },
+
   { value: 'shadow-preview', label: 'Shadow preview', Icon: Cube },
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
@@ -67,7 +67,7 @@ export function LeftRailNav({ activeTab, onTabChange }: LeftRailNavProps): JSX.E
         }
 
         onTabChange(TABS[newIndex].value);
-        
+
         // Focus the new tab button
         const newTabButton = document.querySelector(
           `button[data-tab="${TABS[newIndex].value}"]`

@@ -12,7 +12,7 @@ import { FeaturedBlockInspector } from '../FeaturedBlockInspector';
 import { SocialIconInspector } from '../SocialIconInspector';
 import { IntegrationInspector } from '../IntegrationInspector';
 import { useThemeInspector } from '../../../state/themeInspector';
-import { ThemeEditorPanel } from '../ThemeEditorPanel';
+
 import { useThemeLibraryQuery, type ThemeLibraryResult } from '../../../api/themes';
 import { usePageSnapshot } from '../../../api/page';
 import { queryKeys } from '../../../api/utils';
@@ -32,7 +32,7 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'themes' }: Left
   const selectedWidgetId = useWidgetSelection((state) => state.selectedWidgetId);
   const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
   const selectedIntegrationId = useIntegrationSelection((state) => state.selectedIntegrationId);
-  const showThemeInspector = useThemeInspector((state) => state.isThemeInspectorVisible);
+
   const queryClient = useQueryClient();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const { data: snapshot } = usePageSnapshot();
@@ -110,10 +110,10 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'themes' }: Left
   }
 
   return (
-    <div 
-      className={styles.container} 
+    <div
+      className={styles.container}
       aria-label="Properties panel"
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -121,19 +121,6 @@ export function LeftyPropertiesPanel({ activeColor, activeTab = 'themes' }: Left
       } as React.CSSProperties}
     >
       <div className={styles.scrollArea}>
-        {showThemeInspector && (
-          <>
-            <ThemeEditorPanel 
-              activeColor={activeColor} 
-              theme={activeTheme}
-              onSave={async () => {
-                // Explicitly refetch to ensure preview updates immediately
-                await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });
-              }}
-            />
-          </>
-        )}
-
         {inspector}
       </div>
     </div>
