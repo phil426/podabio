@@ -341,7 +341,7 @@ class User {
      * @return bool
      */
     public function update($userId, $data) {
-        $allowedFields = ['email', 'first_name', 'last_name'];
+        $allowedFields = ['email', 'first_name', 'last_name', 'avatar_url'];
         $updates = [];
         $params = [];
         

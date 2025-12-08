@@ -17,103 +17,159 @@ require_once __DIR__ . '/../classes/Theme.php';
 // Suppress any output before JSON (warnings, notices, etc.)
 ob_start();
 
+// Set error handler to catch fatal errors
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    // Log the error but don't output it
+    error_log("Theme API Error: [$errno] $errstr in $errfile on line $errline");
+    return false; // Let PHP handle the error normally
+});
+
+// Set exception handler
+set_exception_handler(function($exception) {
+    ob_clean();
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Internal server error: ' . $exception->getMessage()
+    ]);
+    exit;
+});
+
 header('Content-Type: application/json');
 
-requireAuth();
-
-$user = getCurrentUser();
-$userId = $user['id'];
-$themeClass = new Theme();
-$method = $_SERVER['REQUEST_METHOD'];
-$themeId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-
-if ($method === 'GET') {
-    if ($themeId > 0) {
-        $theme = $themeClass->getTheme($themeId);
-
-        if (!$theme) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Theme not found']);
-            exit;
-        }
-
-        echo json_encode(['success' => true, 'theme' => $theme]);
-        exit;
-    }
-
-    $scope = $_GET['scope'] ?? 'system';
-
-    if ($scope === 'user') {
-        $userThemes = $themeClass->getUserThemes($userId);
-        echo json_encode(['success' => true, 'themes' => array_values($userThemes)]);
-        exit;
-    }
-
-    if ($scope === 'all') {
-        $systemThemes = $themeClass->getSystemThemes(true);
-        $userThemes = $themeClass->getUserThemes($userId);
-        echo json_encode([
-            'success' => true,
-            'system' => array_values($systemThemes),
-            'user' => array_values($userThemes)
-        ]);
-        exit;
-    }
-
-    $themes = $themeClass->getAllThemes(true);
+try {
+    requireAuth();
+} catch (Exception $e) {
+    ob_clean();
+    http_response_code(401);
     echo json_encode([
-        'success' => true,
-        'themes' => $themes,
-        'count' => count($themes)
+        'success' => false,
+        'error' => 'Authentication required'
     ]);
     exit;
 }
 
-if ($method === 'POST') {
-    $action = $_POST['action'] ?? '';
+$user = getCurrentUser();
+$userId = $user['id'];
+$themeClass = new Theme();
+$method = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+$themeId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
-    switch ($action) {
+// Debug logging
+error_log("THEME API: Method = " . $method . ", Action = " . ($_POST['action'] ?? 'NOT SET'));
+
+if ($method === 'GET') {
+    try {
+        if ($themeId > 0) {
+            $theme = $themeClass->getTheme($themeId);
+
+            if (!$theme) {
+                ob_clean();
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Theme not found']);
+                exit;
+            }
+
+            ob_clean();
+            echo json_encode(['success' => true, 'theme' => $theme]);
+            exit;
+        }
+
+        $scope = $_GET['scope'] ?? 'system';
+
+        if ($scope === 'user') {
+            $userThemes = $themeClass->getUserThemes($userId);
+            ob_clean();
+            echo json_encode(['success' => true, 'themes' => array_values($userThemes)]);
+            exit;
+        }
+
+        if ($scope === 'all') {
+            $systemThemes = $themeClass->getSystemThemes(true);
+            $userThemes = $themeClass->getUserThemes($userId);
+            ob_clean();
+            echo json_encode([
+                'success' => true,
+                'system' => array_values($systemThemes),
+                'user' => array_values($userThemes)
+            ]);
+            exit;
+        }
+
+        $themes = $themeClass->getAllThemes(true);
+        ob_clean();
+        echo json_encode([
+            'success' => true,
+            'themes' => $themes,
+            'count' => count($themes)
+        ]);
+        exit;
+    } catch (Exception $e) {
+        ob_clean();
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to fetch themes: ' . $e->getMessage()
+        ]);
+        exit;
+    }
+}
+
+if ($method === 'POST') {
+    try {
+        $action = $_POST['action'] ?? '';
+        error_log("THEME API POST: Action = " . $action . ", Method = " . $method . ", POST keys = " . implode(', ', array_keys($_POST ?? [])));
+
+        switch ($action) {
         case 'clone':
             $sourceId = (int) ($_POST['theme_id'] ?? 0);
             $name = trim($_POST['name'] ?? '');
 
             if (!$sourceId) {
+                ob_clean();
                 echo json_encode(['success' => false, 'theme_id' => null, 'error' => 'Theme ID required to clone.']);
-                break;
+                exit;
             }
 
             $result = $themeClass->cloneTheme($sourceId, $userId, $name ?: null);
+            ob_clean();
             echo json_encode($result);
-            break;
+            exit;
 
         case 'delete':
             $deleteId = (int) ($_POST['theme_id'] ?? 0);
             if (!$deleteId) {
+                ob_clean();
                 echo json_encode(['success' => false, 'error' => 'Theme ID required to delete.']);
-                break;
+                exit;
             }
 
             $success = $themeClass->deleteUserTheme($deleteId, $userId);
+            ob_clean();
             echo json_encode(['success' => $success, 'error' => $success ? null : 'Unable to delete theme.']);
-            break;
+            exit;
 
         case 'rename':
             $renameId = (int) ($_POST['theme_id'] ?? 0);
             $name = trim($_POST['name'] ?? '');
 
             if (!$renameId) {
+                ob_clean();
                 echo json_encode(['success' => false, 'error' => 'Theme ID required to rename.']);
-                break;
+                exit;
             }
 
             if ($name === '') {
+                ob_clean();
                 echo json_encode(['success' => false, 'error' => 'Theme name cannot be empty.']);
-                break;
+                exit;
             }
 
             $success = $themeClass->updateUserTheme($renameId, $userId, $name);
+            ob_clean();
             echo json_encode(['success' => $success, 'error' => $success ? null : 'Unable to rename theme.']);
-            break;
+            exit;
 
         case 'create':
             $name = trim($_POST['name'] ?? '');
@@ -168,18 +224,20 @@ if ($method === 'POST') {
             error_log("THEME API CREATE: About to call createTheme with widget_background=" . ($themeData['widget_background'] ?? 'NOT SET') . " (type: " . gettype($themeData['widget_background'] ?? null) . ")");
 
             if ($name === '') {
+                ob_clean();
                 echo json_encode(['success' => false, 'error' => 'Theme name is required.']);
-                break;
+                exit;
             }
 
             $result = $themeClass->createTheme($userId, $name, $themeData);
             
             // Ensure we always return JSON, even on errors
+            ob_clean();
             if (!$result['success']) {
                 http_response_code(500);
             }
             echo json_encode($result);
-            break;
+            exit;
 
         case 'update':
             $updateId = (int) ($_POST['theme_id'] ?? 0);
@@ -263,8 +321,9 @@ if ($method === 'POST') {
             error_log("THEME API UPDATE: About to call updateUserTheme with widget_background=" . ($themeData['widget_background'] ?? 'NOT SET') . " (type: " . gettype($themeData['widget_background'] ?? null) . ")");
 
             if (!$updateId) {
+                ob_clean();
                 echo json_encode(['success' => false, 'error' => 'Theme ID required to update.']);
-                break;
+                exit;
             }
 
             // DEBUG: Log theme update
@@ -280,22 +339,33 @@ if ($method === 'POST') {
             }
             // Clear any output buffer before sending JSON
             ob_clean();
+            if (!$success) {
+                http_response_code(500);
+            }
             echo json_encode(['success' => $success, 'error' => $success ? null : 'Unable to update theme.']);
-            break;
+            exit;
 
         default:
             http_response_code(400);
             ob_clean();
             echo json_encode(['success' => false, 'error' => 'Unsupported theme action.']);
-            break;
+            exit;
+        }
+    } catch (Exception $e) {
+        ob_clean();
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to process request: ' . $e->getMessage()
+        ]);
+        exit;
     }
-    // Discard any buffered output
-    ob_end_flush();
-    exit;
 }
 
+// If we get here, the method is not GET or POST
+error_log("THEME API ERROR: Method not allowed. Method = " . $method . ", POST = " . (empty($_POST) ? 'EMPTY' : 'HAS DATA'));
 http_response_code(405);
 ob_clean();
-echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-ob_end_flush();
+echo json_encode(['success' => false, 'error' => 'Method not allowed. Received method: ' . $method]);
+exit;
 

@@ -81,7 +81,7 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 }
 
 $imageType = sanitizeInput($_POST['type'] ?? '');
-$allowedTypes = ['profile', 'background', 'thumbnail', 'theme_image'];
+$allowedTypes = ['profile', 'background', 'thumbnail', 'theme_image', 'cover', 'avatar'];
 
 if (!in_array($imageType, $allowedTypes)) {
     http_response_code(400);
