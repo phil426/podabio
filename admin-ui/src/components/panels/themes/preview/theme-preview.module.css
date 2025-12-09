@@ -15,8 +15,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px; /* Increased padding to allow hotspot glow to extend beyond frame */
-  overflow: visible; /* Allow hotspots to extend beyond phone frame */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* Allow hotspots to extend beyond phone frame */
   min-height: 0;
   position: relative;
   /* Ensure glow is never clipped by this container */
@@ -28,7 +34,8 @@
   max-height: 100%;
   background: var(--page-background, #ffffff);
   border-radius: 22px;
-  overflow: hidden; /* Clip iframe content to rounded corners */
+  overflow: hidden;
+  /* Clip iframe content to rounded corners */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: width 0.3s ease, height 0.3s ease;
@@ -36,7 +43,8 @@
   isolation: isolate;
   /* 8px titanium border */
   border: 8px solid #b8b8b8;
-  box-sizing: content-box; /* Border is added to width/height, so content area matches scaled dimensions */
+  box-sizing: content-box;
+  /* Border is added to width/height, so content area matches scaled dimensions */
 }
 
 
@@ -49,9 +57,17 @@
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Content wrapper that scales everything proportionally */
@@ -62,7 +78,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 14px; /* 22px - 8px border = 14px to align with inner edge */
+  border-radius: 14px;
+  /* 22px - 8px border = 14px to align with inner edge */
   isolation: isolate;
   clip-path: inset(0 round 14px);
 }
@@ -81,7 +98,8 @@
   box-shadow: var(--podcast-player-box-shadow, 0 6px 16px rgba(15, 23, 42, 0.16));
   border-bottom: var(--podcast-player-border-width, 1px) solid var(--podcast-player-border-color, rgba(255, 255, 255, 0.2));
   flex-shrink: 0;
-  border-radius: 14px 14px 0 0; /* 22px - 8px border = 14px to align with inner edge, rounded top only */
+  border-radius: 14px 14px 0 0;
+  /* 22px - 8px border = 14px to align with inner edge, rounded top only */
 }
 
 .podcastBanner.hotspot {
@@ -126,11 +144,14 @@
 
 .previewContent {
   flex: 1;
-  padding: 20px 10px; /* Half padding on left/right for widgets */
-  padding-top: calc(48px + 20px); /* Account for podcast banner height (48px) + padding */
+  padding: 20px 10px;
+  /* Half padding on left/right for widgets */
+  padding-top: calc(48px + 20px);
+  /* Account for podcast banner height (48px) + padding */
   display: flex;
   flex-direction: column;
-  gap: 0; /* Spacing handled by individual element margins */
+  gap: 0;
+  /* Spacing handled by individual element margins */
   align-items: center;
   width: 100%;
   overflow-y: auto;
@@ -202,7 +223,8 @@
 
 .widget {
   position: relative;
-  width: calc(100% - 10px); /* Account for half padding on sides (10px left + 10px right) */
+  width: calc(100% - 10px);
+  /* Account for half padding on sides (10px left + 10px right) */
   max-width: var(--widget-width, 100%);
   padding: 20px;
   border-radius: var(--widget-border-radius, 12px);
@@ -320,9 +342,11 @@
   cursor: pointer !important;
   position: relative;
   transition: all 0.2s ease;
-  z-index: 100000; /* Very high z-index to layer on top of everything, including phone frame */
+  z-index: 100000;
+  /* Very high z-index to layer on top of everything, including phone frame */
   pointer-events: auto !important;
-  isolation: isolate; /* Create new stacking context */
+  isolation: isolate;
+  /* Create new stacking context */
 }
 
 /* Pulsing glowing orb indicator - matching profile hotspot style */
@@ -334,13 +358,14 @@
   background: rgba(255, 255, 255, 1);
   border-radius: 50%;
   border: 2px solid #00FF7F;
-  box-shadow: 
+  box-shadow:
     0 0 12px #00FF7F,
     0 0 24px rgba(0, 255, 127, 0.8),
     0 0 36px rgba(0, 255, 127, 0.6),
     0 0 0 2px rgba(255, 255, 255, 1);
   pointer-events: none;
-  z-index: 100001; /* Even higher to ensure glow extends outside frame */
+  z-index: 100001;
+  /* Even higher to ensure glow extends outside frame */
   opacity: 1;
   animation: pulseGlow 2s ease-in-out infinite;
   /* Allow glow to extend beyond parent boundaries */
@@ -348,19 +373,22 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
-    box-shadow: 
+    box-shadow:
       0 0 12px #00FF7F,
       0 0 24px rgba(0, 255, 127, 0.8),
       0 0 36px rgba(0, 255, 127, 0.6),
       0 0 0 2px rgba(255, 255, 255, 1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.4);
-    box-shadow: 
+    box-shadow:
       0 0 18px #00FF7F,
       0 0 36px rgba(0, 255, 127, 0.9),
       0 0 54px rgba(0, 255, 127, 0.7),
@@ -459,19 +487,22 @@
 }
 
 @keyframes pulseGlowBanner {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1) translateY(-50%);
-    box-shadow: 
+    box-shadow:
       0 0 12px #00FF7F,
       0 0 24px rgba(0, 255, 127, 0.8),
       0 0 36px rgba(0, 255, 127, 0.6),
       0 0 0 2px rgba(255, 255, 255, 1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.4) translateY(-50%);
-    box-shadow: 
+    box-shadow:
       0 0 18px #00FF7F,
       0 0 36px rgba(0, 255, 127, 0.9),
       0 0 54px rgba(0, 255, 127, 0.7),
@@ -491,18 +522,18 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 88px; /* Status bar + Safari UI height */
-  background: linear-gradient(
-    to bottom,
-    rgba(248, 249, 250, 0.95) 0%,
-    rgba(248, 249, 250, 0.98) 50%,
-    rgba(255, 255, 255, 1) 100%
-  );
+  height: 88px;
+  /* Status bar + Safari UI height */
+  background: linear-gradient(to bottom,
+      rgba(248, 249, 250, 0.95) 0%,
+      rgba(248, 249, 250, 0.98) 50%,
+      rgba(255, 255, 255, 1) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
   z-index: 999;
-  pointer-events: none; /* Cosmetic only, not interactive */
+  pointer-events: none;
+  /* Cosmetic only, not interactive */
   border-top-left-radius: 22px;
   border-top-right-radius: 22px;
 }
@@ -557,10 +588,21 @@
   border-radius: 1px;
 }
 
-.signalBar:nth-child(1) { height: 3px; }
-.signalBar:nth-child(2) { height: 5px; }
-.signalBar:nth-child(3) { height: 7px; }
-.signalBar:nth-child(4) { height: 9px; }
+.signalBar:nth-child(1) {
+  height: 3px;
+}
+
+.signalBar:nth-child(2) {
+  height: 5px;
+}
+
+.signalBar:nth-child(3) {
+  height: 7px;
+}
+
+.signalBar:nth-child(4) {
+  height: 9px;
+}
 
 /* WiFi icon */
 .wifiIcon {
@@ -737,4 +779,3 @@
   top: -8px;
   left: -8px;
 }
-

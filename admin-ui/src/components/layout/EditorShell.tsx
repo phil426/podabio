@@ -30,7 +30,7 @@ export function EditorShell(): JSX.Element {
     if (isAccountRoute) {
       return 'account';
     }
-    return 'podcast';
+    return 'shadow-preview';
   });
 
   const [selectedDevice] = useState(() => {
