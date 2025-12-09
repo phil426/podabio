@@ -86,7 +86,7 @@ export function EditorShell(): JSX.Element {
   }, [activeTab, selectSocialIcon, selectIntegration, selectWidget]);
 
   return (
-    <div className="editor-shell">
+    <div className="editor-shell" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <EditorPanels
         activeTab={activeTab as LeftyTabValue}
         onTabChange={handleTabChange as (tab: LeftyTabValue) => void}

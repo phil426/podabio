@@ -34,8 +34,11 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo "📦 Step 1: Pulling latest code from GitHub..."
     git pull origin main
     
+    
     if [ $? -eq 0 ]; then
         echo "✅ Code updated successfully"
+        echo "🔧 Fixing permissions for admin-ui/dist..."
+        chmod -R 755 admin-ui/dist
     else
         echo "❌ Failed to pull code"
         exit 1
