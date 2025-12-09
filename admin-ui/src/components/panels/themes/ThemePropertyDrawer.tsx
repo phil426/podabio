@@ -51,7 +51,7 @@ export function ThemePropertyDrawer({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <Dialog.Portal>
-        <Dialog.Overlay 
+        <Dialog.Overlay
           className={styles.overlay}
           onClick={(e) => {
             // Only close if clicking directly on overlay (not on Popover above it)
@@ -60,27 +60,27 @@ export function ThemePropertyDrawer({
             }
           }}
         />
-        <Dialog.Content 
-          className={styles.modal} 
+        <Dialog.Content
+          className={`${styles.modal} glassPanel`}
           aria-label={section.title}
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
             // Check if the click is inside a Popover Portal or any interactive element
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]');
+
             // If inside a Popover or slider, prevent dialog from closing
             // Radix UI Dialog requires e.preventDefault() to prevent closing
             if (isInPopover) {
               e.preventDefault();
               return;
             }
-            
+
             // Only prevent if truly outside both Dialog and Popover
             // Closing is handled by overlay click
           }}
@@ -88,20 +88,20 @@ export function ThemePropertyDrawer({
             const target = e.target as HTMLElement;
             // Check if the interaction is inside a Popover Portal or any interactive element
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]');
+
             // If inside a Popover or slider, prevent dialog from closing
             // Radix UI Dialog requires e.preventDefault() to prevent closing
             if (isInPopover) {
               e.preventDefault();
               return;
             }
-            
+
             // Only prevent if truly outside both Dialog and Popover
           }}
         >
@@ -113,7 +113,7 @@ export function ThemePropertyDrawer({
                   {section.description}
                 </Dialog.Description>
               )}
-              <ModalPreview 
+              <ModalPreview
                 sectionId={sectionId}
                 theme={theme}
                 uiState={uiState}

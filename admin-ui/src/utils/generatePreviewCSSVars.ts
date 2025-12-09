@@ -31,7 +31,7 @@ interface ColorTokens {
   semantic: SemanticTokens;
 }
 
-interface TypedThemeData extends GeneratedThemeData {
+interface TypedThemeData extends Omit<GeneratedThemeData, 'typography_tokens' | 'color_tokens'> {
   typography_tokens: TypographyTokens;
   color_tokens: ColorTokens;
 }
@@ -47,31 +47,31 @@ export function generatePreviewCSSVars(
   coverImageUrl: string | null = null
 ): Record<string, string> {
   // Extract color values with proper type checking
-  const typedThemeData = themeData as TypedThemeData;
+  const typedThemeData = themeData as unknown as TypedThemeData;
   const typographyColor = typedThemeData.typography_tokens?.color;
   const headingColor = typographyColor?.heading || '#000000';
   const bodyColor = typographyColor?.body || '#666666';
   const widgetHeadingColor = typographyColor?.widget_heading || '#000000';
   const widgetBodyColor = typographyColor?.widget_body || '#666666';
-  
+
   // Extract accent color with proper type checking
   const semanticTokens = typedThemeData.color_tokens?.semantic;
   const accentTokens = semanticTokens?.accent;
   const accentPrimary = accentTokens?.primary || '#2563eb';
-  
+
   const cssVars: Record<string, string> = {
     // Backgrounds - CRITICAL: These must be set to clear previous theme
     '--page-background': themeData.page_background || '#ffffff',
     '--widget-background': themeData.widget_background || '#ffffff',
     '--widget-border-color': themeData.widget_border_color || '#e5e7eb',
-    
+
     // Typography colors - CRITICAL: Clear previous theme colors
     // Set all possible variable names that CSS files might use
     '--page-title-color': headingColor,
     '--page-description-color': bodyColor,
     '--widget-heading-color': widgetHeadingColor,
     '--widget-body-color': widgetBodyColor,
-    
+
     // Additional color variables that page.php and CSS files use
     '--heading-font-color': headingColor,
     '--body-font-color': bodyColor,
@@ -80,7 +80,7 @@ export function generatePreviewCSSVars(
     '--color-text-primary': headingColor,
     '--color-text-secondary': bodyColor,
     '--text-color': bodyColor,
-    
+
     // Typography fonts - CRITICAL: Set fonts to clear previous theme
     '--page-title-font': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
     '--page-description-font': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', monospace` : "'Space Mono', monospace",
@@ -92,43 +92,43 @@ export function generatePreviewCSSVars(
     '--widget-secondary-font': themeData.widget_secondary_font || 'Space Mono',
     '--font-family-heading': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Zalando Sans Expanded', sans-serif",
     '--font-family-body': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Space Mono', monospace",
-    
+
     // Typography sizes - Set defaults to clear previous theme
     '--page-title-size': '32px',
     '--page-description-size': '16px',
     '--widget-heading-size': '20px',
     '--widget-body-size': '14px',
-    
+
     // Accent colors - CRITICAL: Clear previous theme accents
     '--icon-color': accentPrimary,
     '--social-icon-color': accentPrimary,
     '--color-accent-primary': accentPrimary,
-    
+
     // Profile image - CRITICAL: Clear previous theme settings
     '--profile-image-radius': themeData.profile_image_radius ? `${themeData.profile_image_radius}%` : '15%',
     '--profile-image-size': '120px',
     '--profile-image-border-width': '0px',
     '--profile-image-border-color': 'transparent',
     '--profile-image-box-shadow': 'none',
-    
+
     // Icon settings - CRITICAL: Clear previous theme
     '--icon-size': '32px',
     '--social-icon-size': '32px',
     '--icon-spacing': '1rem',
     '--social-icon-spacing': '1rem',
-    
+
     // Widget styling
     '--widget-border-width': '2px',
     '--widget-border-radius': '12px',
     '--widget-spacing': '1rem',
-    
+
     // Clear any effect-related variables from previous theme
     '--page-title-effect-class': '',
     '--page-title-text-shadow': 'none',
     '--widget-shadow-box-shadow': 'none',
     '--widget-glow-box-shadow': 'none',
   };
-  
+
   // Also store the selected cover image URL for temporary preview display
   // This will be used by ThemePreview to update the profile image in the iframe temporarily
   // NOTE: This is for preview only - the actual cover_image is saved separately from profile_image

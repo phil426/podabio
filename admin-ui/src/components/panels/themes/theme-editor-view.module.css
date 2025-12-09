@@ -19,44 +19,155 @@
 }
 
 /* Floating Action Buttons - Horizontal row above preview */
+/* Floating Action Dock - Vertical pill on the right */
 .floatingActions {
   position: absolute;
-  left: 50%;
-  top: 24px;
-  transform: translateX(-50%);
+  right: 24px;
+  top: 50%;
+  left: auto;
+  transform: translateY(-50%);
   display: flex;
-  flex-direction: row;
-  gap: 12px;
-  z-index: 999999; /* Above everything including hotspots (z-index: 100000) */
-  pointer-events: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  /* Reduced from 12px */
+  padding: 6px;
+  /* Reduced from 12px */
+  z-index: 999999;
+  pointer-events: auto;
+
+  /* Premium Glassmorphism */
+  /* Premium Glassmorphism */
+  background: linear-gradient(180deg, rgba(35, 45, 65, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  /* Unified border to fix corner curves */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 0 10px -2px rgba(0, 255, 127, 0.1),
+    /* Ultra-subtle green outer glow */
+    inset 0 1px 0 0 rgba(0, 255, 127, 0.3);
+  /* Top Green Highlight via Shadow */
 }
 
 .floatingActionButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
+  width: 36px;
+  /* Reduced from 44px */
+  height: 36px;
+  /* Reduced from 44px */
+  border-radius: 8px;
+  /* Reduced from 12px */
+  border: 1px solid rgba(0, 255, 127, 0.15);
+  /* Subtle green border */
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  pointer-events: auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle inner gradient for buttons */
+.floatingActionButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .floatingActionButton:hover:not(:disabled) {
-  background: var(--admin-surface-subtle, #f8fafc);
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.floatingActionButton:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.floatingActionButton:active:not(:disabled) {
+  transform: scale(0.95) translateY(0);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
 }
 
 .floatingActionButton:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
+  background: transparent;
+}
+
+/* --- Specific Button Colors --- */
+
+/* Wizard: Purple/Pink Gradient */
+.actionWizard:hover {
+  color: #d8b4fe;
+  /* Fallback */
+  border-color: rgba(216, 180, 254, 0.3);
+  box-shadow: 0 0 15px rgba(216, 180, 254, 0.2);
+}
+
+.actionWizard:hover svg {
+  filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.5));
+}
+
+/* Preview Eye: Signal Green */
+.actionPreview:hover {
+  color: #00FF7F;
+  /* Signal Green */
+  border-color: rgba(0, 255, 127, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 127, 0.2);
+}
+
+.actionPreview:hover svg {
+  filter: drop-shadow(0 0 5px rgba(0, 255, 127, 0.5));
+}
+
+/* Undo/Redo: Clean White/Blue */
+.actionUndo:hover,
+.actionRedo:hover {
+  color: #93c5fd;
+  /* Soft Blue */
+  border-color: rgba(147, 197, 253, 0.3);
+}
+
+/* Reorder: Soft Orange */
+.actionReorder:hover {
+  color: #fbbf24;
+  /* Amber */
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+/* Add Widget: Brand Blue */
+.actionAdd {
+  background: rgba(37, 99, 235, 0.15);
+  /* Slight blue tint always */
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  color: #eff6ff;
+}
+
+.actionAdd:hover {
+  background: #2563eb;
+  /* Full Brand Blue */
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
 }
 
 
@@ -73,4 +184,3 @@
 .tooltipArrow {
   fill: var(--admin-bg-panel, #1e293b);
 }
-

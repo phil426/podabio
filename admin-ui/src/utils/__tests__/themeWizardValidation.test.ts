@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import {
   validateImageFile,
   validateImageDimensions,
@@ -52,8 +52,8 @@ describe('themeWizardValidation', () => {
   });
 
   describe('validateImageDimensions', () => {
-    let createObjectURLSpy: ReturnType<typeof vi.spyOn>;
-    let revokeObjectURLSpy: ReturnType<typeof vi.spyOn>;
+    let createObjectURLSpy: any;
+    let revokeObjectURLSpy: any;
 
     beforeAll(() => {
       // Polyfill createObjectURL/revokeObjectURL for JSDOM

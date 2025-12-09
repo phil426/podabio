@@ -40,15 +40,15 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
     const findSelectedElement = () => {
       // Try to find the selected item in the DraggableLayerList
       // Look for elements with data-layer-id or data-selected attributes
-      const selectedElement = 
+      const selectedElement =
         document.querySelector(`[data-layer-id="${selectedWidgetId}"]`) ||
         document.querySelector(`[data-selected="true"][data-id="${selectedWidgetId}"]`) ||
         document.querySelector(`[data-id="${selectedWidgetId}"]`);
-      
+
       if (selectedElement) {
         const rect = selectedElement.getBoundingClientRect();
-        const container = drawerRef.current?.closest('.lefty-content-panel__container') || 
-                         drawerRef.current?.parentElement;
+        const container = drawerRef.current?.closest('.lefty-content-panel__container') ||
+          drawerRef.current?.parentElement;
         if (container) {
           const containerRect = container.getBoundingClientRect();
           const top = rect.bottom - containerRect.top + 8; // 8px gap below item
@@ -88,10 +88,7 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
   const isFeaturedWidget = selectedWidget?.is_featured === 1;
 
   let inspector: JSX.Element | null = null;
-  const isOpen = Boolean(selectedWidgetId || selectedSocialIconId || selectedIntegrationId);
-
-  // Gate inspectors by activeTab - Lefty-specific tabs only
-  const isLeftyIntegrationTab = activeTab === 'integration';
+  const isOpen = Boolean(selectedWidgetId);
 
   if (selectedWidgetId) {
     // Show widget/page inspectors
@@ -124,8 +121,6 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
         inspector = <WidgetInspector activeColor={activeColor} />;
       }
     }
-  } else if (isLeftyIntegrationTab && selectedIntegrationId !== null) {
-    inspector = <IntegrationInspector activeColor={activeColor} />;
   }
 
   return (
@@ -146,13 +141,13 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
             ref={drawerRef}
             className={styles.drawer}
             initial={{ y: '100%', opacity: 0 }}
-            animate={{ 
-              y: 0, 
+            animate={{
+              y: 0,
               opacity: 1,
               ...(selectedItemPosition ? { top: selectedItemPosition.top } : {})
             }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ 
+            transition={{
               type: 'spring',
               damping: 25,
               stiffness: 200,
@@ -161,7 +156,7 @@ export function LeftyInspectorDrawer({ activeColor, activeTab }: LeftyInspectorD
             style={{
               '--active-tab-color': activeColor.text,
               '--active-tab-bg': activeColor.primary,
-              ...(selectedItemPosition ? { 
+              ...(selectedItemPosition ? {
                 left: `${selectedItemPosition.left}px`,
                 ...(selectedItemPosition.height ? { height: `${selectedItemPosition.height}px`, maxHeight: `${selectedItemPosition.height}px` } : {})
               } : {})

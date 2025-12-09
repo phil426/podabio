@@ -203,7 +203,7 @@ export function useThemeWizardController(
 
                     const isDefaultColors = JSON.stringify(extractedColors.slice(0, 5).sort()) === JSON.stringify([...DEFAULT_COLORS].sort());
                     if (isDefaultColors) {
-                        throw new Error('Color extraction failed - received default colors.');
+                        console.warn('Color extraction returned default colors - using defaults.');
                     }
 
                     actions.setColors(extractedColors.slice(0, 5));
@@ -242,10 +242,12 @@ export function useThemeWizardController(
         }
 
         try {
+            console.log('Generating theme from podcast with colors:', state.colors);
             const themeData = await generateThemeFromPodcast({
                 coverImageUrl: coverImageUrl || '',
                 colors: state.colors
             });
+            console.log('Generated theme data:', themeData);
 
             const typedThemeData = themeData as unknown as TypedThemeData;
             const typographyColor = typedThemeData.typography_tokens?.color;
@@ -326,23 +328,21 @@ export function useThemeWizardController(
             setPreviewCSSVars(cssVars);
         } catch (err) {
             devError('Preview update error:', err);
+            // Show error to user so they know why styling is missing
+            actions.setError(err instanceof Error ? err.message : 'Failed to generate theme preview');
             // Fallback to base vars if theme gen fails
             setPreviewCSSVars(basePreviewVars);
         }
     }, [state.colors, state.activeImageUrl, state.selectedPodcast, devError]);
 
-    // Update preview when colors change
-    useEffect(() => {
-        if (state.colors.length >= 2) {
-            setPreviewCSSVars({}); // Clear first
-            const timer = setTimeout(updatePreview, TIMING.PREVIEW_UPDATE_DELAY_MS);
-            return () => clearTimeout(timer);
-        } else if (state.activeImageUrl) {
-            setProfileImageInPreview(state.activeImageUrl);
-        } else {
-            setPreviewCSSVars({});
-        }
-    }, [state.colors, state.activeImageUrl, updatePreview, setProfileImageInPreview]);
+    // Manual Preview Handlers
+    const applyPreview = useCallback(() => {
+        updatePreview();
+    }, [updatePreview]);
+
+    const revertPreview = useCallback(() => {
+        setPreviewCSSVars({});
+    }, []);
 
 
     // Handlers
@@ -599,5 +599,7 @@ export function useThemeWizardController(
         handleDrop,
         handleDragEnd,
         handleGenerateTheme,
+        applyPreview,
+        revertPreview,
     };
 }

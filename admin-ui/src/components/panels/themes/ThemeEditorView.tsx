@@ -67,7 +67,7 @@ export function ThemeEditorView({
   const isUndoRedoRef = useRef<boolean>(false);
   const changeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingChangesRef = useRef<StateChange[]>([]);
-  
+
   // Podcast theme generator
   const {
     openGenerator,
@@ -75,7 +75,7 @@ export function ThemeEditorView({
     isGeneratorOpen,
     generatorProps,
   } = usePodcastThemePrompt();
-  
+
   // Widget mutations for layer actions
   const { data: snapshot } = usePageSnapshot();
   const widgets = snapshot?.widgets || [];
@@ -117,7 +117,7 @@ export function ThemeEditorView({
     if (changes.length > 0 && Object.keys(previous).length > 0) {
       // Batch changes that happen within 100ms
       pendingChangesRef.current.push(...changes);
-      
+
       // Clear existing timeout
       if (changeTimeoutRef.current) {
         clearTimeout(changeTimeoutRef.current);
@@ -149,10 +149,10 @@ export function ThemeEditorView({
   const handleEditContent = (sectionId: string, widgetId?: string | null) => {
     // Close style editor if open
     setOpenModalSection(null);
-    
+
     // Map section ID to content editor type
     let editor: ContentEditorType | null = null;
-    
+
     if (widgetId) {
       // Widget content editing
       editor = { type: 'widget', widgetId };
@@ -179,7 +179,7 @@ export function ThemeEditorView({
           return;
       }
     }
-    
+
     setContentEditor(editor);
   };
 
@@ -252,7 +252,7 @@ export function ThemeEditorView({
 
     const isCurrentlyFeatured = widget.is_featured === 1;
     const newFeaturedValue = isCurrentlyFeatured ? '0' : '1';
-    
+
     // The backend will automatically unfeature other widgets when one is featured
     updateWidgetMutation.mutate(
       { widget_id: widgetId, is_featured: newFeaturedValue },
@@ -317,10 +317,10 @@ export function ThemeEditorView({
     const timestamps = [...new Set(undoStack.map(c => c.timestamp))];
     const lastTimestamp = timestamps[timestamps.length - 1];
     const changesToUndo = undoStack.filter(change => change.timestamp === lastTimestamp);
-    
+
     // Mark as undo/redo operation to prevent tracking
     isUndoRedoRef.current = true;
-    
+
     // Apply undo: restore old values
     changesToUndo.forEach(change => {
       onFieldChange(change.fieldId, change.oldValue);
@@ -338,10 +338,10 @@ export function ThemeEditorView({
     const timestamps = [...new Set(redoStack.map(c => c.timestamp))];
     const lastTimestamp = timestamps[timestamps.length - 1];
     const changesToRedo = redoStack.filter(change => change.timestamp === lastTimestamp);
-    
+
     // Mark as undo/redo operation to prevent tracking
     isUndoRedoRef.current = true;
-    
+
     // Apply redo: restore new values
     changesToRedo.forEach(change => {
       onFieldChange(change.fieldId, change.newValue);
@@ -378,7 +378,7 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionWizard}`}
                 onClick={openGenerator}
                 aria-label="Theme Wizard"
               >
@@ -387,7 +387,7 @@ export function ThemeEditorView({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -403,7 +403,7 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionPreview}`}
                 onClick={toggleHotspots}
                 aria-label={hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
               >
@@ -416,7 +416,7 @@ export function ThemeEditorView({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -432,7 +432,7 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionUndo}`}
                 onClick={handleUndo}
                 disabled={undoStack.length === 0}
                 aria-label="Undo"
@@ -442,7 +442,7 @@ export function ThemeEditorView({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -458,22 +458,22 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionRedo}`}
                 onClick={handleRedo}
                 disabled={redoStack.length === 0}
                 aria-label="Redo"
               >
-                <ArrowCounterClockwise 
-                  aria-hidden="true" 
-                  size={20} 
-                  weight="regular" 
+                <ArrowCounterClockwise
+                  aria-hidden="true"
+                  size={20}
+                  weight="regular"
                   style={{ transform: 'scaleX(-1)' }}
                 />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -489,7 +489,7 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionReorder}`}
                 onClick={() => setReorderModalOpen(true)}
                 aria-label="Reorder widgets"
               >
@@ -498,7 +498,7 @@ export function ThemeEditorView({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -514,7 +514,7 @@ export function ThemeEditorView({
             <Tooltip.Trigger asChild>
               <button
                 type="button"
-                className={styles.floatingActionButton}
+                className={`${styles.floatingActionButton} ${styles.actionAdd}`}
                 onClick={() => setGalleryOpen(true)}
                 aria-label="Add widget"
               >
@@ -523,7 +523,7 @@ export function ThemeEditorView({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                side="bottom"
+                side="left"
                 align="center"
                 className={styles.tooltip}
               >
@@ -537,8 +537,8 @@ export function ThemeEditorView({
 
       {/* Full-width Preview Panel */}
       <div className={styles.previewPanel}>
-        <ThemePreview 
-          cssVars={previewCSSVars} 
+        <ThemePreview
+          cssVars={previewCSSVars}
           onHotspotClick={handleHotspotClick}
           onEditContent={handleEditContent}
           onEditStyle={(sectionId, widgetId) => handleEditStyle(sectionId, widgetId)}

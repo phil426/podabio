@@ -6,7 +6,7 @@ import { formPostInit, queryKeys } from './utils';
 
 const PAGE_ENDPOINT = '/api/page.php';
 
-type Payload = Record<string, FormDataEntryValue | undefined>;
+type Payload = Record<string, FormDataEntryValue | undefined | null>;
 
 export async function fetchPageSnapshot(): Promise<PageSnapshotResponse> {
   return requestJson<PageSnapshotResponse>(`${PAGE_ENDPOINT}?action=get_snapshot`, { method: 'GET' });
@@ -45,7 +45,7 @@ export async function updatePageThemeId(themeId: number | null, themeData?: Them
   const payload: Record<string, string | null> = {
     theme_id: themeId !== null ? String(themeId) : ''
   };
-  
+
   // If theme data is provided, send all theme fields
   // Pass null to clear page-level overrides (so theme values are used)
   if (themeData) {
@@ -87,7 +87,7 @@ export async function updatePageThemeId(themeId: number | null, themeData?: Them
       payload.spatial_effect = themeData.spatial_effect;
     }
   }
-  
+
   return requestJson<ApiResponse>(
     PAGE_ENDPOINT,
     formPostInit({
@@ -272,12 +272,18 @@ export async function searchPodcasts(query: string) {
   );
 }
 
-export async function generatePodlinks() {
+export async function generatePodlinks(rssFeedUrl?: string) {
+  const payload: Record<string, string> = {
+    action: 'generate_podlinks'
+  };
+
+  if (rssFeedUrl) {
+    payload.rss_feed_url = rssFeedUrl;
+  }
+
   return requestJson<PodlinksResponse>(
     '/api/podlinks.php',
-    formPostInit({
-      action: 'generate_podlinks'
-    })
+    formPostInit(payload)
   );
 }
 

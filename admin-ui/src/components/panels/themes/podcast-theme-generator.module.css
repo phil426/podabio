@@ -122,8 +122,11 @@
 
 .searchInput {
   width: 100%;
-  padding: 10px 16px 10px 40px;
-  /* Left padding for icon */
+  padding: 10px 16px;
+  padding-left: 50px !important;
+  /* Force padding to prevent override */
+  text-indent: 0px;
+  /* Ensure no negative indent */
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
   border-radius: 8px;
   font-size: 14px;
@@ -588,17 +591,124 @@
 }
 
 
-.success {
+/* Actions Footer */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--admin-surface-elevated, #f8fafc);
+  border-top: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
+}
+
+.leftActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.iconActionButton:hover:not(:disabled) {
+  background: var(--admin-surface-elevated, #f8fafc);
+  color: var(--admin-text-primary, #0f172a);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+  transform: translateY(-1px);
+}
+
+.iconActionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancelButton {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary, #64748b);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.secondaryButton {
+  padding: 10px 16px;
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
+  background: var(--admin-bg-panel, #ffffff);
+  color: var(--admin-text-primary, #0f172a);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--admin-surface-elevated, #f8fafc);
+  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+}
+
+.secondaryButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.generateButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 8px;
-  color: #059669;
+  padding: 10px 20px;
+  border: none;
+  background: var(--admin-accent-primary, #2563eb);
+  color: #ffffff;
   font-size: 14px;
-  animation: slideIn 200ms ease-out;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.generateButton:hover:not(:disabled) {
+  background: var(--admin-accent-hover, #1d4ed8);
+  transform: translateY(-1px);
+}
+
+.generateButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generateButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--admin-accent-secondary, #94a3b8);
 }
 
 @keyframes slideIn {
@@ -662,7 +772,7 @@
   background: #1e293b;
   border: 1px solid var(--admin-border-default, rgba(30, 41, 59, 0.5));
   border-radius: 8px;
-  cursor: grab;
+  /* cursor: grab; Removed - only swatch is draggable */
   transition: all 0.2s;
 }
 
@@ -671,9 +781,7 @@
   transform: translateY(-1px);
 }
 
-.colorItem:active {
-  cursor: grabbing;
-}
+
 
 .colorSwatch {
   width: 40px;
@@ -682,6 +790,11 @@
   background-color: var(--color-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: grab;
+}
+
+.colorSwatch:active {
+  cursor: grabbing;
 }
 
 .colorInfo {
@@ -932,24 +1045,78 @@
 }
 
 /* Fix preview image size */
+/* Fix preview image size */
+.selectionPreview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--admin-surface-elevated, #f8fafc);
+  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.1));
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
 .previewImageContainer {
   position: relative;
-  width: 100%;
-  max-width: 250px;
-  /* Constrain width */
-  margin: 0 auto;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--admin-bg-panel, #ffffff);
 }
 
 .previewImage {
   width: 100%;
-  height: auto;
-  display: block;
-  max-height: 250px;
-  /* Constrain height */
+  height: 100%;
   object-fit: cover;
+}
+
+.previewDetails {
+  flex: 1;
+  min-width: 0;
+  /* meaningful for truncation if needed */
+}
+
+.previewDetails h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-text-primary, #0f172a);
+}
+
+.previewDetails p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary, #64748b);
+}
+
+.previewOverlay {
+  display: none;
+  /* Hide the big overlay icon for the small card */
+}
+
+/* Uploaded Preview - make sure it matches the card style or similar constraint */
+.uploadedPreview {
+  width: 160px;
+  /* Bit larger for upload preview maybe, or keep same */
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: var(--admin-surface-elevated, #f8fafc);
+  border-radius: 8px;
+  border: 1px dashed var(--admin-border-default, rgba(15, 23, 42, 0.2));
 }
 
 /* Improve Text Contrast & Colors */

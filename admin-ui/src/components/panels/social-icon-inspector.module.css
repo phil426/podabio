@@ -1,8 +1,8 @@
 .wrapper {
   padding: 0.6rem 0.7rem;
   border-radius: 0;
-  background: var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
-  border: 1px solid var(--active-tab-border, var(--admin-border-default, var(--admin-border-default, rgba(15, 23, 42, 0.08))));
+  background: transparent;
+  border: none;
   display: grid;
   gap: 0.65rem;
   margin: 0 0 0.6rem;
@@ -17,7 +17,7 @@
   padding: 0;
 }
 
-.header > div {
+.header>div {
   flex: 1;
   min-width: 0;
 }
@@ -26,13 +26,13 @@
   margin: 0;
   font-size: var(--admin-font-size-lg, 1.1rem);
   font-weight: 600;
-  color: var(--active-tab-color, var(--admin-text-primary, #0f172a));
+  color: #ffffff;
 }
 
 .header p {
   margin: 0.2rem 0 0;
   font-size: var(--admin-font-size-md, 0.95rem);
-  color: var(--admin-text-secondary, #475569);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .closeButton {
@@ -64,25 +64,27 @@
 .status_success {
   padding: 0.6rem 0.9rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: rgba(34, 197, 94, 0.15);
-  color: #15803d;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-size: var(--admin-font-size-base, 1rem);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .status_error {
   padding: 0.6rem 0.9rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  background: rgba(248, 113, 113, 0.18);
-  color: #b91c1c;
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff453a;
   font-size: var(--admin-font-size-base, 1rem);
+  border: 1px solid rgba(255, 59, 48, 0.3);
 }
 
 .fieldset {
   display: grid;
   gap: 0.65rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  background: var(--active-tab-light, rgba(15, 23, 42, 0.04));
-  border: 1px solid var(--active-tab-light, transparent);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.6rem 0.7rem;
 }
 
@@ -93,8 +95,8 @@
 
 .control span {
   font-size: var(--admin-font-size-md, 0.95rem);
-  font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .input,
@@ -102,19 +104,20 @@
   width: 100%;
   padding: 0.55rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
-  border: 1px solid var(--active-tab-light, rgba(15, 23, 42, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: var(--admin-font-size-base, 1rem);
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
-  transition: border-color 150ms ease;
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  transition: all 150ms ease;
   font-family: inherit;
 }
 
 .input:focus,
 .select:focus {
   outline: none;
-  border-color: var(--active-tab-border, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--active-tab-light, var(--admin-surface-elevated, rgba(15, 23, 42, 0.05)));
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .select {
@@ -149,7 +152,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--active-tab-border, rgba(15, 23, 42, 0.2));
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 24px;
   transition: background-color 0.2s ease;
 }
@@ -161,18 +164,19 @@
   width: 16px;
   left: 3px;
   bottom: 3px;
-  background-color: var(--admin-bg-panel, #ffffff);
+  background-color: #ffffff;
   border-radius: 50%;
   transition: transform 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.toggleSwitch input:checked + .toggleSlider {
-  background-color: var(--active-tab-color, var(--admin-accent-primary, #00FF7F));
+.toggleSwitch input:checked+.toggleSlider {
+  background-color: #ffffff;
 }
 
-.toggleSwitch input:checked + .toggleSlider:before {
+.toggleSwitch input:checked+.toggleSlider:before {
   transform: translateX(18px);
+  background-color: #000000;
 }
 
 .footer {
@@ -185,17 +189,18 @@
 .saveButton {
   padding: 0.55rem 1rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: none;
-  background: var(--pod-component-button-primary-background, #00FF7F);
-  color: var(--pod-component-button-primary-color, #ffffff);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-size: var(--admin-font-size-base, 1rem);
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 150ms ease;
+  transition: all 150ms ease;
 }
 
 .saveButton:hover:not(:disabled) {
-  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .saveButton:disabled {
@@ -226,4 +231,3 @@
   color: var(--admin-text-secondary, #64748b);
   font-size: var(--admin-font-size-base, 1rem);
 }
-

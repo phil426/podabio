@@ -1,5 +1,5 @@
 import styles from './StyleAudit.module.css';
-import { Sparkle, Fingerprint } from '@phosphor-icons/react';
+import { Sparkle, Fingerprint, ArrowCounterClockwise, MagicWand, Star } from '@phosphor-icons/react';
 
 export function StyleAudit() {
     console.log('Rendering StyleAudit Page');
@@ -12,7 +12,9 @@ export function StyleAudit() {
 
             <div className={styles.section}>
                 <div className={styles.sectionTitle}>Buttons</div>
-                <div className={styles.grid}>
+                <div className={styles.grid} style={{
+                    gridTemplateColumns: '1fr 1fr 1fr'
+                }}>
                     <div className={styles.column}>
                         <div className={styles.columnHeader}>Legacy (Page Settings)</div>
                         <button className={styles.legacyButton}>
@@ -30,6 +32,20 @@ export function StyleAudit() {
                         <button className={styles.newButton}>
                             <Sparkle weight="fill" /> With Icon
                         </button>
+                    </div>
+                    <div className={styles.column}>
+                        <div className={styles.columnHeader}>Latest (Action Icons)</div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button className={styles.iconActionButton} title="Revert">
+                                <ArrowCounterClockwise size={20} />
+                            </button>
+                            <button className={styles.iconActionButton} title="Apply">
+                                <MagicWand size={20} weight="fill" />
+                            </button>
+                            <button className={styles.primaryIconActionButton} title="Save">
+                                <Star size={20} weight="fill" />
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className={styles.grid} style={{ marginTop: '32px' }}>
@@ -82,6 +98,6 @@ export function StyleAudit() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

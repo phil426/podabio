@@ -2,43 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from '@phosphor-icons/react';
 
-import { usePageSnapshot, updateSocialIcon, deleteSocialIcon, toggleSocialIconVisibility } from '../../api/page';
+import { usePageSnapshot, updateSocialIcon, deleteSocialIcon, toggleSocialIconVisibility, addSocialIcon } from '../../api/page';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { queryKeys } from '../../api/utils';
 import { type TabColorTheme } from '../layout/tab-colors';
 
 import styles from './social-icon-inspector.module.css';
 
-// Platform definitions matching SettingsPanel
-const ALL_PLATFORMS: Record<string, string> = {
-  // High Priority - Podcast Platforms
-  apple_podcasts: 'Apple Podcasts',
-  spotify: 'Spotify',
-  youtube_music: 'YouTube Music',
-  iheart_radio: 'iHeart Radio',
-  amazon_music: 'Amazon Music',
-  pocket_casts: 'Pocket Casts',
-  castro: 'Castro',
-  overcast: 'Overcast',
-  // Medium-High Priority - Video/Social
-  youtube: 'YouTube',
-  instagram: 'Instagram',
-  twitter: 'Twitter / X',
-  tiktok: 'TikTok',
-  substack: 'Substack',
-  // Medium Priority - Social/Professional
-  facebook: 'Facebook',
-  linkedin: 'LinkedIn',
-  reddit: 'Reddit',
-  discord: 'Discord',
-  // Lower Priority - Specialized
-  twitch: 'Twitch',
-  github: 'GitHub',
-  dribbble: 'Dribbble',
-  medium: 'Medium',
-  snapchat: 'Snapchat',
-  pinterest: 'Pinterest'
-};
+import { ALL_PLATFORMS } from './social-platforms';
+import { getPlatformIcon } from './social-icons';
 
 interface SocialIconInspectorProps {
   activeColor: TabColorTheme;
@@ -51,9 +23,12 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
   const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
 
   const selectedIcon = useMemo(() => {
-    if (!selectedSocialIconId || !snapshot?.social_icons) return undefined;
-    return snapshot.social_icons.find((icon) => String(icon.id) === selectedSocialIconId);
+    if (!selectedSocialIconId || selectedSocialIconId.startsWith('new:')) return undefined;
+    return snapshot?.social_icons?.find((icon) => String(icon.id) === selectedSocialIconId);
   }, [selectedSocialIconId, snapshot?.social_icons]);
+
+  const isAdding = selectedSocialIconId?.startsWith('new:') ?? false;
+  const addingPlatform = isAdding ? selectedSocialIconId?.split(':')[1] : '';
 
   const [platformName, setPlatformName] = useState('');
   const [url, setUrl] = useState('');
@@ -62,6 +37,15 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isAdding && addingPlatform) {
+      setPlatformName(addingPlatform);
+      setUrl('');
+      setIsActive(true);
+      setSaveStatus('idle');
+      setStatusMessage(null);
+      return;
+    }
+
     if (!selectedIcon) {
       setPlatformName('');
       setUrl('');
@@ -76,46 +60,67 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
     setIsActive(selectedIcon.is_active !== 0);
     setSaveStatus('idle');
     setStatusMessage(null);
-  }, [selectedIcon]);
+  }, [selectedIcon, isAdding, addingPlatform]);
 
   const handleSave = async () => {
-    if (!selectedIcon || !platformName || !url) {
+    if (!platformName || !url) {
       setSaveStatus('error');
       setStatusMessage('Platform name and URL are required.');
       return;
     }
 
+    // Basic URL validation
     try {
-      await updateSocialIcon({
-        directory_id: String(selectedIcon.id),
-        platform_name: platformName,
-        url: url
-      });
-      
+      new URL(url);
+    } catch {
+      setSaveStatus('error');
+      setStatusMessage('Please enter a valid URL (e.g. https://...)');
+      return;
+    }
+
+    try {
+      if (isAdding) {
+        await addSocialIcon({
+          platform_name: platformName,
+          url: url
+        });
+        setStatusMessage('Social icon added successfully.');
+      } else if (selectedIcon) {
+        await updateSocialIcon({
+          directory_id: String(selectedIcon.id),
+          platform_name: platformName,
+          url: url
+        });
+        setStatusMessage('Social icon updated successfully.');
+      }
+
       setSaveStatus('success');
-      setStatusMessage('Social icon updated successfully.');
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      
+
       setTimeout(() => {
         setSaveStatus('idle');
         setStatusMessage(null);
-      }, 3000);
+        // If we just added, we should probably close or select the new one, but closing is safer for now
+        if (isAdding) {
+          selectSocialIcon(null);
+        }
+      }, 1500);
     } catch (error) {
       setSaveStatus('error');
-      setStatusMessage(error instanceof Error ? error.message : 'Failed to update social icon.');
+      setStatusMessage(error instanceof Error ? error.message : 'Failed to save social icon.');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedIcon) return;
-    
+
     if (!confirm('Are you sure you want to delete this social icon?')) return;
 
     try {
       await deleteSocialIcon({
         directory_id: String(selectedIcon.id)
       });
-      
+
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       selectSocialIcon(null);
     } catch (error) {
@@ -132,7 +137,7 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
         icon_id: String(selectedIcon.id),
         is_active: String(!isActive)
       });
-      
+
       setIsActive(!isActive);
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
     } catch (error) {
@@ -141,7 +146,7 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
     }
   };
 
-  if (!selectedIcon) {
+  if (!selectedIcon && !isAdding) {
     return (
       <section className={styles.wrapper}>
         <div className={styles.emptyState}>
@@ -152,10 +157,10 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
   }
 
   return (
-    <section 
+    <section
       className={styles.wrapper}
       aria-label="Social icon inspector"
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -163,9 +168,12 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
       } as React.CSSProperties}
     >
       <header className={styles.header}>
-        <div>
-          <h3>Social Icon</h3>
-          <p>Edit social icon settings</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {getPlatformIcon(platformName)}
+          <div>
+            <h3>{isAdding ? 'Add Social Icon' : 'Social Icon'}</h3>
+            <p>{isAdding ? 'Configure new social link' : 'Edit social icon settings'}</p>
+          </div>
         </div>
         <button
           type="button"
@@ -238,15 +246,17 @@ export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): 
           className={styles.saveButton}
           disabled={!platformName || !url}
         >
-          Save
+          {isAdding ? 'Add' : 'Save'}
         </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className={styles.deleteButton}
-        >
-          Delete
-        </button>
+        {!isAdding && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className={styles.deleteButton}
+          >
+            Delete
+          </button>
+        )}
       </footer>
     </section>
   );

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import {
   Plus,
-  DeviceMobile,
+
   ApplePodcastsLogo,
   Plug,
   TrendUp,
@@ -132,9 +132,7 @@ export function LeftRailNav({ activeTab, onTabChange }: LeftRailNavProps): JSX.E
       <div className={styles.docsSection}>
         <DocumentationButton />
       </div>
-      <div className={styles.themeToggleSection}>
-        <ThemeToggle />
-      </div>
+
       <LeftyProfileSection />
     </motion.div>
   );

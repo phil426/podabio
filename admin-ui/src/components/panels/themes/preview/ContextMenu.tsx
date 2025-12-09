@@ -35,17 +35,17 @@ export function ContextMenu({ x, y, options, onClose, widgetTitle, previewContai
 
     const menuWidth = 220; // Match min-width in CSS
     const menuHeight = options.length * 48 + 12; // 48px per item + padding (6px top + 6px bottom)
-    
+
     // If preview container ref is provided, position relative to it
     if (previewContainerRef?.current) {
       const containerRect = previewContainerRef.current.getBoundingClientRect();
-      
+
       // Horizontally centered above the preview
       const adjustedX = containerRect.left + (containerRect.width / 2) - (menuWidth / 2);
-      
+
       // Vertically positioned a little above center (40% from top of container)
       const adjustedY = containerRect.top + (containerRect.height * 0.4) - (menuHeight / 2);
-      
+
       setPosition({ x: adjustedX, y: adjustedY });
     } else {
       // Fallback to click-based positioning if no container ref
@@ -180,16 +180,16 @@ export function ContextMenu({ x, y, options, onClose, widgetTitle, previewContai
 
   return (
     <div
-        ref={menuRef}
-        className={styles.contextMenu}
-        role="menu"
-        aria-label={widgetTitle ? `Actions for ${widgetTitle}` : 'Widget actions'}
-        aria-orientation="vertical"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`
-        }}
-      >
+      ref={menuRef}
+      className={`${styles.contextMenu} glassPanel`}
+      role="menu"
+      aria-label={widgetTitle ? `Actions for ${widgetTitle}` : 'Widget actions'}
+      aria-orientation="vertical"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`
+      }}
+    >
       {options.map((option, index) => (
         <button
           key={index}

@@ -10,15 +10,16 @@
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: var(--admin-bg-panel, #ffffff);
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  /* Glass transparent background with subtle border */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .subsectionTitle {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--admin-text-primary, #0f172a);
+  color: rgba(255, 255, 255, 0.9);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -32,7 +33,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--admin-text-primary, #0f172a);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .toggleGroup {
@@ -43,9 +44,9 @@
 .toggleButton {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -53,59 +54,62 @@
 }
 
 .toggleButton:hover {
-  background: var(--admin-surface-elevated, rgba(255, 255, 255, 0.1));
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .toggleButton.active {
   background: var(--admin-accent-primary, #00FF7F);
   color: var(--admin-text-inverse, #ffffff);
   border-color: var(--admin-accent-primary, #00FF7F);
+  box-shadow: 0 0 12px rgba(0, 255, 127, 0.4);
 }
 
 .textInput {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
+  background: rgba(0, 0, 0, 0.2);
+  color: #ffffff;
 }
 
 .textInput:focus {
   outline: none;
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--admin-shadow-sm, rgba(15, 23, 42, 0.05));
+  border-color: var(--admin-accent-primary, #00FF7F);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 255, 127, 0.2);
 }
 
 .helpText {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--admin-text-secondary, #64748b);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.15));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--admin-bg-panel, #ffffff);
-  color: var(--admin-text-primary, #0f172a);
+  background: rgba(0, 0, 0, 0.2);
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .select:focus {
   outline: none;
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.3));
-  box-shadow: 0 0 0 3px var(--admin-shadow-sm, rgba(15, 23, 42, 0.05));
+  border-color: var(--admin-accent-primary, #00FF7F);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 255, 127, 0.2);
 }
 
 .select:hover {
-  border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.25);
 }
-

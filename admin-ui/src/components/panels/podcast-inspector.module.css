@@ -1,0 +1,464 @@
+.gridContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    width: 100%;
+}
+
+.inspectorCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--pod-core-shape-radius-md, 12px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+}
+
+/* Base wrapper override */
+.wrapper {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.header>div {
+    flex: 1;
+    min-width: 0;
+}
+
+.header h3 {
+    margin: 0;
+    font-size: var(--admin-font-size-lg, 1.25rem);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.header p {
+    margin: 0.2rem 0 0;
+    font-size: var(--admin-font-size-md, 0.95rem);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.status_success {
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--pod-core-shape-radius-sm, 6px);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: var(--admin-font-size-base, 1rem);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status_error {
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--pod-core-shape-radius-sm, 6px);
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff453a;
+    font-size: var(--admin-font-size-base, 1rem);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.fieldset {
+    display: grid;
+    gap: 0.75rem;
+    border-radius: var(--pod-core-shape-radius-md, 12px);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+}
+
+.control {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.control span {
+    font-size: var(--admin-font-size-md, 0.95rem);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.input,
+.select {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--pod-core-shape-radius-sm, 8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: var(--admin-font-size-base, 1rem);
+    background: rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    transition: all 150ms ease;
+    font-family: inherit;
+}
+
+.input:focus,
+.select:focus {
+    outline: none;
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+}
+
+.inputWrapper .input {
+    padding-left: 2.5rem;
+}
+
+.rssFeedContainer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+}
+
+.actionButton {
+    padding: 0 1.2rem;
+    border-radius: var(--pod-core-shape-radius-sm, 8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: var(--admin-font-size-base, 0.9rem);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.actionButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.helperText {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.2rem 0 0;
+}
+
+.toggleSwitch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.toggleSwitch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggleSlider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggleSlider::before {
+    position: absolute;
+    content: '';
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 2px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleSwitch input:checked+.toggleSlider {
+    background-color: #00FF7F;
+    /* Success green */
+    border-color: transparent;
+}
+
+.toggleSwitch input:checked+.toggleSlider::before {
+    transform: translateX(22px);
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.podcastInfoCompact {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.podcastInfoImage {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.podcastInfoImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.podcastInfoContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.podcastInfoName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.podcastInfoDescription {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.searchResults {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 1rem;
+    padding-right: 0.2rem;
+}
+
+.searchResultItem {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 150ms ease;
+    align-items: center;
+}
+
+.searchResultItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.searchResultArtwork {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.searchResultContent {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.searchResultName {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.searchResultArtist {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.podlinksResults {
+    margin-top: 1.5rem;
+}
+
+.podlinksGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.75rem;
+}
+
+.podlinksCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: var(--pod-core-shape-radius-sm, 8px);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 150ms ease;
+}
+
+.podlinksCard:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.podlinksCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.podlinksIconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.podlinksIconWrapper svg {
+    width: 18px;
+    height: 18px;
+}
+
+.podlinksPlatformName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+.podlinksStatus {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.1rem;
+}
+
+.podlinksActions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.podlinksBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badgeFound {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badgeMissing {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.copyButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copyButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.copyButtonSuccess {
+    background: rgba(34, 197, 94, 0.2) !important;
+    color: #4ade80 !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+}

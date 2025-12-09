@@ -10,7 +10,7 @@ const MAX_HISTORY_SIZE = 50;
 interface ColorHistoryState {
   past: string[][];
   present: string[];
-  future: string[];
+  future: string[][];
 }
 
 export interface UseColorHistoryResult {
@@ -50,9 +50,9 @@ export function useColorHistory(initialColors: string[] = []): UseColorHistoryRe
     if (JSON.stringify(currentColors) !== JSON.stringify(previousColors)) {
       setHistory((prev) => {
         const newPast = [...prev.past, previousColors];
-        
+
         // Limit history size
-        const trimmedPast = newPast.length > MAX_HISTORY_SIZE 
+        const trimmedPast = newPast.length > MAX_HISTORY_SIZE
           ? newPast.slice(-MAX_HISTORY_SIZE)
           : newPast;
 
@@ -77,7 +77,7 @@ export function useColorHistory(initialColors: string[] = []): UseColorHistoryRe
           present: colors,
         };
       }
-      
+
       // Normal update - will be recorded by useEffect
       return {
         ...prev,
@@ -87,44 +87,40 @@ export function useColorHistory(initialColors: string[] = []): UseColorHistoryRe
   }, []);
 
   const undo = useCallback(() => {
-    setHistory((prev) => {
-      if (prev.past.length === 0) {
-        return prev;
-      }
+    if (history.past.length === 0) {
+      return;
+    }
 
-      const previous = prev.past[prev.past.length - 1];
-      const newPast = prev.past.slice(0, -1);
+    const previous = history.past[history.past.length - 1];
+    const newPast = history.past.slice(0, -1);
 
-      isInternalUpdateRef.current = true;
-      previousColorsRef.current = prev.present;
+    shouldRecordHistory.current = false;
+    previousColorsRef.current = history.present;
 
-      return {
-        past: newPast,
-        present: previous,
-        future: [prev.present, ...prev.future],
-      };
+    setHistory({
+      past: newPast,
+      present: previous,
+      future: [history.present, ...history.future],
     });
-  }, []);
+  }, [history]);
 
   const redo = useCallback(() => {
-    setHistory((prev) => {
-      if (prev.future.length === 0) {
-        return prev;
-      }
+    if (history.future.length === 0) {
+      return;
+    }
 
-      const next = prev.future[0];
-      const newFuture = prev.future.slice(1);
+    const next = history.future[0];
+    const newFuture = history.future.slice(1);
 
-      isInternalUpdateRef.current = true;
-      previousColorsRef.current = prev.present;
+    shouldRecordHistory.current = false;
+    previousColorsRef.current = history.present;
 
-      return {
-        past: [...prev.past, prev.present],
-        present: next,
-        future: newFuture,
-      };
+    setHistory({
+      past: [...history.past, history.present],
+      present: next,
+      future: newFuture,
     });
-  }, []);
+  }, [history]);
 
   const clearHistory = useCallback(() => {
     setHistory((prev) => ({

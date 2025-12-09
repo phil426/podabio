@@ -1,9 +1,11 @@
 .panel {
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--admin-bg-panel, #ffffff);
+  background: linear-gradient(180deg, #18181b 0%, #020617 100%);
+  /* Deep gradient */
+  /* Remove backdrop filters for deep gradient */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #ffffff;
 }
 
 .scrollArea {
@@ -56,6 +58,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -71,4 +74,3 @@
   background: #ef4444;
   color: #7f1d1d;
 }
-

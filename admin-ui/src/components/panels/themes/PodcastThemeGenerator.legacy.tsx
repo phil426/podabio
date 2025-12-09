@@ -49,7 +49,7 @@ interface ColorTokens {
   semantic: SemanticTokens;
 }
 
-interface TypedThemeData extends GeneratedThemeData {
+interface TypedThemeData extends Omit<GeneratedThemeData, 'typography_tokens' | 'color_tokens'> {
   typography_tokens: TypographyTokens;
   color_tokens: ColorTokens;
 }
@@ -76,21 +76,21 @@ export function PodcastThemeGenerator({
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>('rss');
-  
+
   // RSS Tab state
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PodcastSearchResult[]>([]);
   const [selectedPodcast, setSelectedPodcast] = useState<PodcastSearchResult | null>(null);
   const [isUploadingArtwork, setIsUploadingArtwork] = useState(false);
-  
+
   // Photo Tab state
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  
+
   // State for the active image URL (from media library)
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
-  
+
   // Use active image URL (from media library) as primary source
   // This ensures we always use the media library URL for display and extraction
   // Fallback to selected podcast artwork, uploaded image, current page cover_image, or initial RSS image if activeImageUrl not set yet
@@ -105,10 +105,10 @@ export function PodcastThemeGenerator({
   const [previewCSSVars, setPreviewCSSVars] = useState<Record<string, string>>({});
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  
+
   // Track the last image URL we extracted colors from to avoid re-extraction
   const lastExtractedImageUrl = useRef<string | null>(null);
-  
+
   // Track if we've initialized from current theme (to prevent re-initialization)
   const hasInitializedFromTheme = useRef(false);
 
@@ -136,7 +136,7 @@ export function PodcastThemeGenerator({
       console.error(message, ...args);
     }
   }, []);
-  
+
   // Auto-extract colors when active image URL changes (only if no colors exist yet and upload is complete)
   useEffect(() => {
     // Only extract if:
@@ -146,23 +146,23 @@ export function PodcastThemeGenerator({
     // 4. Not currently uploading (wait for upload to complete)
     // 5. The image URL is different from the last one we extracted from
     const isDifferentImage = activeImageUrl && activeImageUrl !== lastExtractedImageUrl.current;
-    
+
     if (
-      activeImageUrl && 
+      activeImageUrl &&
       isDifferentImage &&
-      colors.length === 0 && 
-      !isExtracting && 
+      colors.length === 0 &&
+      !isExtracting &&
       !isUploadingArtwork
     ) {
       // Auto-extract colors when image is ready
       const extract = async () => {
         if (!activeImageUrl) return;
-        
+
         // Double-check we haven't already extracted for this URL
         if (lastExtractedImageUrl.current === activeImageUrl) {
           return;
         }
-        
+
         setIsExtracting(true);
         setError(null);
 
@@ -170,24 +170,24 @@ export function PodcastThemeGenerator({
           // Use the image URL for extraction (normalized)
           const imageUrlForExtraction = normalizeImageUrl(activeImageUrl);
           devLog('Extracting colors from image URL:', imageUrlForExtraction);
-          
+
           // Wait a bit to ensure the image is fully available
           await new Promise(resolve => setTimeout(resolve, TIMING.EXTRACTION_DELAY_MS));
-          
+
           // Attempt extraction - backend will handle URL accessibility
           const extractedColors = await extractColorsFromImage(imageUrlForExtraction);
           if (extractedColors.length < 5) {
             setError('Failed to extract 5 colors from image');
             return;
           }
-          
+
           // CRITICAL: Check if we got default colors (backend fallback)
           const isDefaultColors = JSON.stringify(extractedColors.slice(0, 5).sort()) === JSON.stringify([...DEFAULT_COLORS].sort());
-          
+
           if (isDefaultColors) {
             throw new Error('Color extraction failed - received default colors. The image may not be accessible.');
           }
-          
+
           devLog('Extracted colors:', extractedColors);
           setColors(extractedColors.slice(0, 5));
           lastExtractedImageUrl.current = activeImageUrl; // Mark as extracted
@@ -202,12 +202,12 @@ export function PodcastThemeGenerator({
           setIsExtracting(false);
         }
       };
-      
+
       // Delay to ensure image is fully loaded and available
       const timer = setTimeout(() => {
         extract();
       }, TIMING.EXTRACTION_DELAY_MS);
-      
+
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -220,7 +220,7 @@ export function PodcastThemeGenerator({
       setError('Colors already extracted. Use shuffle to rearrange them.');
       return;
     }
-    
+
     if (!coverImageUrl) {
       setError('No cover image URL provided');
       return;
@@ -244,18 +244,18 @@ export function PodcastThemeGenerator({
       setIsExtracting(false);
     }
   }, [coverImageUrl, colors.length, devError]);
-  
+
   // RSS Tab: Handle podcast search
   const handleSearchPodcasts = useCallback(async () => {
     if (!searchQuery.trim()) {
       setError('Please enter a search query');
       return;
     }
-    
+
     setIsSearching(true);
     setError(null);
     setSearchResults([]);
-    
+
     try {
       const response = await searchPodcasts(searchQuery.trim());
       if (response.success && response.data?.results) {
@@ -269,7 +269,7 @@ export function PodcastThemeGenerator({
       setIsSearching(false);
     }
   }, [searchQuery]);
-  
+
   // RSS Tab: Handle podcast selection (uploads to media library, then auto-extracts colors)
   const handleSelectPodcast = useCallback(async (podcast: PodcastSearchResult) => {
     setUploadedImageUrl(null); // Clear uploaded image when selecting a podcast
@@ -280,7 +280,7 @@ export function PodcastThemeGenerator({
     setColors([]); // Reset colors - will be auto-extracted after upload
     setError(null);
     setIsUploadingArtwork(true);
-    
+
     // If podcast has artwork, add it to media library first before showing it
     if (podcast.artwork_url) {
       try {
@@ -298,14 +298,14 @@ export function PodcastThemeGenerator({
           }
           throw new Error('Unable to fetch podcast artwork due to CORS restrictions. Please try a different podcast or upload an image directly.');
         }
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch artwork: ${response.status} ${response.statusText}`);
         }
-        
+
         const blob = await response.blob();
         const file = new File([blob], `${podcast.name.replace(/[^a-z0-9]/gi, '_')}_cover.jpg`, { type: blob.type || 'image/jpeg' });
-        
+
         const uploadResult = await uploadToMediaLibraryMutation.mutateAsync(file);
         if (uploadResult.media?.file_url) {
           // Set the uploaded URL as active image (from media library)
@@ -329,7 +329,7 @@ export function PodcastThemeGenerator({
       setIsUploadingArtwork(false);
     }
   }, [uploadToMediaLibraryMutation]);
-  
+
   // Photo Tab: Handle image upload (uploads to media library, then auto-extracts colors)
   const handleImageUpload = useCallback(async (file: File) => {
     try {
@@ -354,7 +354,7 @@ export function PodcastThemeGenerator({
       setIsUploadingArtwork(false);
     }
   }, [uploadToMediaLibraryMutation]);
-  
+
   // Photo Tab: Handle Media Library selection (loads from media library, then auto-extracts colors)
   const handleSelectFromMediaLibrary = useCallback((mediaItem: MediaItem) => {
     setUploadedImageUrl(mediaItem.file_url);
@@ -365,27 +365,27 @@ export function PodcastThemeGenerator({
     setMediaLibraryOpen(false);
     // Colors will be auto-extracted via useEffect when activeImageUrl updates
   }, []);
-  
+
   // Initialize from current theme settings
   useEffect(() => {
     if (hasInitializedFromTheme.current || !page) return;
-    
+
     hasInitializedFromTheme.current = true;
-    
+
     // Initialize cover image from current page cover_image if available
     if (page.cover_image && !activeImageUrl && !selectedPodcast && !uploadedImageUrl && !initialCoverImageUrl) {
       setActiveImageUrl(page.cover_image);
     }
-    
+
     // Extract colors from current theme if available
     if (page.colors && typeof page.colors === 'object' && !Array.isArray(page.colors)) {
       // Try to extract color array from theme colors object
       // The colors object might have a 'palette' or 'colors' array, or be structured differently
       const colorObj = page.colors as Record<string, unknown>;
-      
+
       // Check for common color array patterns
       let extractedColors: string[] = [];
-      
+
       if (Array.isArray(colorObj.palette)) {
         extractedColors = (colorObj.palette as string[]).slice(0, 5);
       } else if (Array.isArray(colorObj.colors)) {
@@ -405,7 +405,7 @@ export function PodcastThemeGenerator({
           }
         }
       }
-      
+
       // If we found colors, set them (but only if we don't already have colors)
       if (extractedColors.length >= 2 && colors.length === 0) {
         // Pad to 5 colors if needed (repeat last color)
@@ -417,12 +417,12 @@ export function PodcastThemeGenerator({
         }
       }
     }
-    
+
     // Initialize preview with current theme settings if available
     if (page && colors.length === 0) {
       // Create a preview from current page settings
       const currentPreviewVars: Record<string, string> = {};
-      
+
       // Backgrounds
       if (page.page_background) {
         currentPreviewVars['--page-background'] = page.page_background;
@@ -433,7 +433,7 @@ export function PodcastThemeGenerator({
       if (page.widget_border_color) {
         currentPreviewVars['--widget-border-color'] = page.widget_border_color;
       }
-      
+
       // Fonts
       if (page.page_primary_font) {
         currentPreviewVars['--page-title-font'] = `'${page.page_primary_font}', sans-serif`;
@@ -453,12 +453,12 @@ export function PodcastThemeGenerator({
         currentPreviewVars['--widget-body-font'] = `'${page.widget_secondary_font}', monospace`;
         currentPreviewVars['--widget-secondary-font'] = page.widget_secondary_font;
       }
-      
+
       // Cover image for preview
       if (page.cover_image) {
         currentPreviewVars['--preview-profile-image-url'] = normalizeImageUrl(page.cover_image);
       }
-      
+
       // Set preview vars if we have any
       if (Object.keys(currentPreviewVars).length > 0) {
         setPreviewCSSVars(currentPreviewVars);
@@ -473,12 +473,12 @@ export function PodcastThemeGenerator({
         try {
           setIsUploadingArtwork(true);
           setError(null); // Clear any previous errors
-          
+
           // Check if the image is already a media library URL
-          const isMediaLibraryUrl = initialCoverImageUrl.includes('/uploads/media/') || 
-                                    initialCoverImageUrl.includes('/uploads/') ||
-                                    (initialCoverImageUrl.startsWith('/') && !initialCoverImageUrl.startsWith('//'));
-          
+          const isMediaLibraryUrl = initialCoverImageUrl.includes('/uploads/media/') ||
+            initialCoverImageUrl.includes('/uploads/') ||
+            (initialCoverImageUrl.startsWith('/') && !initialCoverImageUrl.startsWith('//'));
+
           if (isMediaLibraryUrl) {
             // Already in media library or local path, use it directly
             // Reset extraction tracking since this is a new image
@@ -488,7 +488,7 @@ export function PodcastThemeGenerator({
             // Colors will be auto-extracted via useEffect when activeImageUrl is set
             return;
           }
-          
+
           // Not in media library - try to upload it
           // But if upload fails, still try to use the original URL for extraction
           let response: Response;
@@ -497,14 +497,14 @@ export function PodcastThemeGenerator({
               mode: 'cors',
               credentials: 'omit',
             });
-            
+
             if (!response.ok) {
               throw new Error(`Failed to fetch initial image: ${response.status} ${response.statusText}`);
             }
-            
+
             const blob = await response.blob();
             const file = new File([blob], 'rss_cover.jpg', { type: blob.type || 'image/jpeg' });
-            
+
             const uploadResult = await uploadToMediaLibraryMutation.mutateAsync(file);
             if (uploadResult.media?.file_url) {
               lastExtractedImageUrl.current = null; // Reset extraction tracking
@@ -517,13 +517,13 @@ export function PodcastThemeGenerator({
             if (process.env.NODE_ENV === 'development') {
               console.warn('Failed to upload initial image, but will try to use original URL:', uploadError);
             }
-            
+
             // If it's a local URL or poda.bio URL, try using it directly
             // The backend ColorExtractor can handle local file paths
-            if (initialCoverImageUrl.includes('poda.bio') || 
-                initialCoverImageUrl.startsWith('/') || 
-                initialCoverImageUrl.startsWith('http://localhost') ||
-                initialCoverImageUrl.startsWith('https://localhost')) {
+            if (initialCoverImageUrl.includes('poda.bio') ||
+              initialCoverImageUrl.startsWith('/') ||
+              initialCoverImageUrl.startsWith('http://localhost') ||
+              initialCoverImageUrl.startsWith('https://localhost')) {
               devLog('Using initial image URL directly (local/poda.bio URL):', initialCoverImageUrl);
               lastExtractedImageUrl.current = null;
               setActiveImageUrl(initialCoverImageUrl);
@@ -548,7 +548,7 @@ export function PodcastThemeGenerator({
           setIsUploadingArtwork(false);
         }
       };
-      
+
       setupInitialImage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -626,7 +626,7 @@ export function PodcastThemeGenerator({
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    
+
     if (draggedIndex === null || draggedIndex === dropIndex) {
       setDraggedIndex(null);
       setDragOverIndex(null);
@@ -635,13 +635,13 @@ export function PodcastThemeGenerator({
 
     const newColors = [...colors];
     const draggedColor = newColors[draggedIndex];
-    
+
     // Remove dragged color
     newColors.splice(draggedIndex, 1);
-    
+
     // Insert at new position
     newColors.splice(dropIndex, 0, draggedColor);
-    
+
     setColors(newColors);
     setDraggedIndex(null);
     setDragOverIndex(null);
@@ -685,33 +685,33 @@ export function PodcastThemeGenerator({
       // CRITICAL: Clear previous CSS variables and set ALL new ones
       // This ensures no leftover values from previous themes
       // We need to set ALL CSS variables that ThemePreview uses, not just a few
-      
+
       // Extract color values with proper type checking
-      const typedThemeData = themeData as TypedThemeData;
+      const typedThemeData = themeData as unknown as TypedThemeData;
       const typographyColor = typedThemeData.typography_tokens?.color;
       const headingColor = typographyColor?.heading || '#000000';
       const bodyColor = typographyColor?.body || '#666666';
       const widgetHeadingColor = typographyColor?.widget_heading || '#000000';
       const widgetBodyColor = typographyColor?.widget_body || '#666666';
-      
+
       // Extract accent color with proper type checking
       const semanticTokens = typedThemeData.color_tokens?.semantic;
       const accentTokens = semanticTokens?.accent;
       const accentPrimary = accentTokens?.primary || '#2563eb';
-      
+
       const cssVars: Record<string, string> = {
         // Backgrounds - CRITICAL: These must be set to clear previous theme
         '--page-background': themeData.page_background || '#ffffff',
         '--widget-background': themeData.widget_background || '#ffffff',
         '--widget-border-color': themeData.widget_border_color || '#e5e7eb',
-        
+
         // Typography colors - CRITICAL: Clear previous theme colors
         // Set all possible variable names that CSS files might use
         '--page-title-color': headingColor,
         '--page-description-color': bodyColor,
         '--widget-heading-color': widgetHeadingColor,
         '--widget-body-color': widgetBodyColor,
-        
+
         // Additional color variables that page.php and CSS files use
         '--heading-font-color': headingColor,
         '--body-font-color': bodyColor,
@@ -720,7 +720,7 @@ export function PodcastThemeGenerator({
         '--color-text-primary': headingColor,
         '--color-text-secondary': bodyColor,
         '--text-color': bodyColor,
-        
+
         // Typography fonts - CRITICAL: Set fonts to clear previous theme
         '--page-title-font': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Inter', sans-serif",
         '--page-description-font': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', monospace` : "'Space Mono', monospace",
@@ -732,43 +732,43 @@ export function PodcastThemeGenerator({
         '--widget-secondary-font': themeData.widget_secondary_font || 'Space Mono',
         '--font-family-heading': themeData.page_primary_font ? `'${themeData.page_primary_font}', sans-serif` : "'Zalando Sans Expanded', sans-serif",
         '--font-family-body': themeData.page_secondary_font ? `'${themeData.page_secondary_font}', sans-serif` : "'Space Mono', monospace",
-        
+
         // Typography sizes - Set defaults to clear previous theme
         '--page-title-size': '32px',
         '--page-description-size': '16px',
         '--widget-heading-size': '20px',
         '--widget-body-size': '14px',
-        
+
         // Accent colors - CRITICAL: Clear previous theme accents
         '--icon-color': accentPrimary,
         '--social-icon-color': accentPrimary,
         '--color-accent-primary': accentPrimary,
-        
+
         // Profile image - CRITICAL: Clear previous theme settings
         '--profile-image-radius': themeData.profile_image_radius ? `${themeData.profile_image_radius}%` : '15%',
         '--profile-image-size': '120px',
         '--profile-image-border-width': '0px',
         '--profile-image-border-color': 'transparent',
         '--profile-image-box-shadow': 'none',
-        
+
         // Icon settings - CRITICAL: Clear previous theme
         '--icon-size': '32px',
         '--social-icon-size': '32px',
         '--icon-spacing': '1rem',
         '--social-icon-spacing': '1rem',
-        
+
         // Widget styling
         '--widget-border-width': '2px',
         '--widget-border-radius': '12px',
         '--widget-spacing': '1rem',
-        
+
         // Clear any effect-related variables from previous theme
         '--page-title-effect-class': '',
         '--page-title-text-shadow': 'none',
         '--widget-shadow-box-shadow': 'none',
         '--widget-glow-box-shadow': 'none',
       };
-      
+
       // Also store the selected cover image URL for temporary preview display
       // This will be used by ThemePreview to update the profile image in the iframe temporarily
       // NOTE: This is for preview only - the actual cover_image is saved separately from profile_image
@@ -1001,7 +1001,7 @@ export function PodcastThemeGenerator({
                   )}
                 </button>
               </div>
-              
+
               {searchResults.length > 0 && (
                 <div className={styles.searchResults}>
                   {searchResults.map((podcast) => (
@@ -1026,7 +1026,7 @@ export function PodcastThemeGenerator({
                   ))}
                 </div>
               )}
-              
+
             </div>
           </section>
         )}
@@ -1061,7 +1061,7 @@ export function PodcastThemeGenerator({
                   />
                 </label>
               </div>
-              
+
               {uploadedImageUrl && (
                 <div className={styles.selectedImage}>
                   <div className={styles.coverImage}>
@@ -1090,9 +1090,9 @@ export function PodcastThemeGenerator({
             <h3 className={styles.cardTitle}>Selected Image</h3>
             <div className={styles.cardContent}>
               <div className={styles.coverImage}>
-                <img 
-                  src={coverImageUrl} 
-                  alt="Selected image" 
+                <img
+                  src={coverImageUrl}
+                  alt="Selected image"
                   onError={(e) => {
                     devError('Image failed to load:', coverImageUrl);
                     setError(`Failed to load image from: ${coverImageUrl}`);
@@ -1102,7 +1102,7 @@ export function PodcastThemeGenerator({
             </div>
           </section>
         )}
-        
+
         {/* Media Library Drawer */}
         <MediaLibraryDrawer
           open={mediaLibraryOpen}
@@ -1114,12 +1114,12 @@ export function PodcastThemeGenerator({
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Color Palette</h3>
-                    {colors.length === 0 && isExtracting && (
-                      <div className={styles.extracting}>
-                        <CircleNotch className={styles.spinner} aria-hidden="true" size={16} weight="regular" />
-                        Extracting colors...
-                      </div>
-                    )}
+            {colors.length === 0 && isExtracting && (
+              <div className={styles.extracting}>
+                <CircleNotch className={styles.spinner} aria-hidden="true" size={16} weight="regular" />
+                Extracting colors...
+              </div>
+            )}
             {colors.length >= 5 && (
               <p className={styles.infoText}>5 colors extracted. Drag to reorder or shuffle to rearrange.</p>
             )}
@@ -1183,8 +1183,8 @@ export function PodcastThemeGenerator({
           <section className={styles.section}>
             <h3 className={styles.cardTitle}>Preview</h3>
             <div className={styles.previewContainer}>
-              <ThemePreview 
-                cssVars={previewCSSVars} 
+              <ThemePreview
+                cssVars={previewCSSVars}
                 hotspotsVisible={false}
               />
             </div>

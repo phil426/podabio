@@ -9,7 +9,7 @@ import { RSSTabContent } from './wizard/RSSTabContent';
 import { PhotoTabContent } from './wizard/PhotoTabContent';
 import { ColorPalette } from './wizard/ColorPalette';
 import { PreviewActions } from './wizard/PreviewActions';
-import { UIStatePagePreview } from './preview/UIStatePagePreview';
+import { ThemePreview } from './preview/ThemePreview';
 import { MediaLibraryDrawer } from '../../overlays/MediaLibraryDrawer';
 import { useThemeWizardController } from './hooks/useThemeWizardController';
 import styles from './podcast-theme-generator.module.css';
@@ -42,6 +42,8 @@ export function PodcastThemeGenerator({
     handleDrop,
     handleDragEnd,
     handleGenerateTheme,
+    applyPreview,
+    revertPreview,
   } = useThemeWizardController(coverImageUrl, onClose, onThemeGenerated);
 
   return (
@@ -98,19 +100,17 @@ export function PodcastThemeGenerator({
           colorsCount={state.colors.length}
           onGenerate={handleGenerateTheme}
           onCancel={onClose}
+          onApply={applyPreview}
+          onRevert={revertPreview}
         />
       </div>
 
       {/* Right Panel: Live Preview */}
       <div className={styles.previewPanel}>
         <div className={styles.previewWrapper}>
-          <UIStatePagePreview
+          <ThemePreview
             cssVars={previewCSSVars}
-            scale={0.7}
-            title={previewContent.title}
-            description={previewContent.description}
-            socialIcons={previewContent.socialIcons}
-            widgets={previewContent.widgets}
+            hotspotsVisible={false}
           />
         </div>
       </div>

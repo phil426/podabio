@@ -42,8 +42,24 @@ if (!$userPage) {
 
 $pageId = $userPage['id'];
 
-// Get RSS feed URL
-$rssFeedUrl = $userPage['rss_feed_url'] ?? null;
+// Get RSS feed URL from POST (priority) or DB
+$inputRssUrl = $_POST['rss_feed_url'] ?? null;
+$dbRssUrl = $userPage['rss_feed_url'] ?? null;
+$rssFeedUrl = $dbRssUrl;
+
+// If input URL is provided and differs from DB, update the page
+if ($inputRssUrl && $inputRssUrl !== $dbRssUrl) {
+    // Validate URL
+    if (filter_var($inputRssUrl, FILTER_VALIDATE_URL)) {
+        $updateData = ['rss_feed_url' => $inputRssUrl];
+        if ($page->update($pageId, $updateData)) {
+            $rssFeedUrl = $inputRssUrl;
+        } else {
+            // If update fails, we can still try to use the input URL for generation
+            $rssFeedUrl = $inputRssUrl;
+        }
+    }
+}
 
 if (empty($rssFeedUrl)) {
     echo APIResponse::error('RSS feed URL is not set. Please add an RSS feed URL first.');

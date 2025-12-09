@@ -6,7 +6,7 @@
 
 // Application settings
 define('APP_NAME', 'PodaBio');
-define('APP_VERSION', '2.1.0');
+define('APP_VERSION', '2.1.1');
 define('APP_URL', 'https://poda.bio'); // Production URL - override in config/local.php for local development
 
 // Debug mode - set to true in config/local.php for development

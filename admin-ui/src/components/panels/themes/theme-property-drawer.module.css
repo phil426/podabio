@@ -36,6 +36,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -48,9 +49,11 @@
   transform: translate(-50%, -50%);
   width: min(600px, 90vw);
   max-height: 85vh;
-  background: var(--admin-bg-panel, #ffffff);
-  border-radius: 16px;
-  box-shadow: var(--admin-shadow-lg, 0 24px 48px rgba(15, 23, 42, 0.3));
+  /* Background/Border handled by .glassPanel */
+  background: transparent;
+  border: none;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  /* Stronger shadow for modal */
   display: flex;
   flex-direction: column;
   z-index: 10001;
@@ -64,6 +67,7 @@
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -89,13 +93,15 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--admin-text-primary, #0f172a);
+  color: #ffffff;
+  /* White text for Glass */
 }
 
 .description {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
-  color: var(--admin-text-secondary, #64748b);
+  color: rgba(255, 255, 255, 0.7);
+  /* Subtle white text */
 }
 
 .closeButton {
@@ -165,18 +171,18 @@
       opacity: 0;
       transform: translateY(100%);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   .header {
     padding: 1.25rem;
   }
-  
+
   .body {
     padding: 1.25rem;
   }
 }
-

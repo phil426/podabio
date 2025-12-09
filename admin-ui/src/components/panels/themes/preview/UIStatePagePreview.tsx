@@ -67,8 +67,6 @@ export function UIStatePagePreview({
         font-family: var(--font-family-body, 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif);
         color: var(--page-description-color, #475569);
         background: var(--page-background, #ffffff);
-      }
-      :root {
 ${varLines}
       }
       .mobile-page-container {

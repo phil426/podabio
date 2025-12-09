@@ -24,7 +24,7 @@ export const queryKeys = {
   media: (options?: { page?: number; per_page?: number; search?: string }) => ['media', options] as const
 };
 
-export function formPostInit(payload: Record<string, FormDataEntryValue | undefined>): RequestInit {
+export function formPostInit(payload: Record<string, FormDataEntryValue | undefined | null>): RequestInit {
   return {
     method: 'POST',
     body: buildFormData({ csrf_token: getCsrfToken(), ...payload })
@@ -47,7 +47,7 @@ export function normalizeImageUrl(url: string | null | undefined): string {
 
   // Get production URL from window (set by PHP)
   const productionUrl = window.__APP_URL__ ?? 'https://www.poda.bio';
-  
+
   // If it's a full URL with production domain, convert to current base URL
   if (url.startsWith(productionUrl)) {
     const path = url.substring(productionUrl.length);

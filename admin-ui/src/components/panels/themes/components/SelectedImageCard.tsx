@@ -7,6 +7,7 @@ export interface SelectedImageCardProps {
   coverImageUrl: string | null;
   isUploading: boolean;
   onImageLoadError: (imageUrl: string) => void;
+  onRetryLoad?: () => void;
 }
 
 export function SelectedImageCard({

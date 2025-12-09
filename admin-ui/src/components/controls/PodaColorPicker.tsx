@@ -51,7 +51,7 @@ function buildGradient(direction: number, color1: string, color2: string): strin
   return `linear-gradient(${direction}deg, ${color1} 0%, ${color2} 100%)`;
 }
 
-export function PodaColorPicker({ 
+export function PodaColorPicker({
   value = 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
   onChange,
   onTypeChange,
@@ -60,7 +60,7 @@ export function PodaColorPicker({
   const isGrad = value ? isGradient(value) : false;
   const parsed = isGrad ? (parseGradient(value!) || { direction: 135, color1: '#6366f1', color2: '#4f46e5' }) : null;
   const solidColor = isGrad ? (parsed?.color1 ?? '#6366f1') : (value && typeof value === 'string' && value.startsWith('#') ? value : '#6366f1');
-  
+
   // Force solid mode if solidOnly is true
   const [mode, setMode] = useState<'solid' | 'gradient'>(solidOnly ? 'solid' : (isGrad ? 'gradient' : 'solid'));
   const [direction, setDirection] = useState(parsed?.direction ?? 135);
@@ -71,7 +71,7 @@ export function PodaColorPicker({
   const [picker2Open, setPicker2Open] = useState(false);
   const [solidPickerOpen, setSolidPickerOpen] = useState(false);
   const [isEyedropperSupported, setIsEyedropperSupported] = useState(false);
-  
+
   // Track previous value to detect actual changes and avoid stale closure bugs
   const prevValueRef = useRef<string | undefined>(value);
 
@@ -103,12 +103,12 @@ export function PodaColorPicker({
         // Extract solid color from previous value for comparison (avoid stale closure)
         // Only compare if we have a previous value - skip onChange on first render
         const hasPreviousValue = prevValueRef.current !== undefined;
-        const prevSolid = hasPreviousValue && typeof prevValueRef.current === 'string' && prevValueRef.current.startsWith('#') 
-          ? prevValueRef.current 
-          : (hasPreviousValue && prevValueRef.current && isGradient(prevValueRef.current) 
+        const prevSolid = hasPreviousValue && typeof prevValueRef.current === 'string' && prevValueRef.current.startsWith('#')
+          ? prevValueRef.current
+          : (hasPreviousValue && prevValueRef.current && isGradient(prevValueRef.current)
             ? (parseGradient(prevValueRef.current)?.color1 ?? '#6366f1')
             : newSolid); // Use newSolid as fallback to avoid false positives on first render
-        
+
         // Always update state to stay in sync with external value prop
         setSolid(newSolid);
         // Only call onChange if the value actually changed AND we have a previous value to compare against
@@ -127,7 +127,7 @@ export function PodaColorPicker({
       }
       return;
     }
-    
+
     const newIsGrad = isGradient(value);
     if (newIsGrad && mode === 'solid' && value) {
       const newParsed = parseGradient(value);
@@ -204,7 +204,7 @@ export function PodaColorPicker({
       // @ts-expect-error - EyeDropper API is not in TypeScript types yet
       const eyeDropper = new window.EyeDropper();
       const result = await eyeDropper.open();
-      
+
       if (result.sRGBHex) {
         if (colorNumber === 'solid') {
           handleSolidChange(result.sRGBHex);
@@ -222,24 +222,24 @@ export function PodaColorPicker({
     }
   };
 
-  const previewStyle = mode === 'gradient' 
+  const previewStyle = mode === 'gradient'
     ? { background: buildGradient(direction, color1, color2) }
     : { backgroundColor: solid };
 
   return (
-    <div className={styles.gradientPicker}>
+    <div className={`${styles.gradientPicker} glassPanel`}>
       {!solidOnly && (
         <div className={styles.tabs}>
           <button
             type="button"
-            className={`${styles.tab} ${mode === 'solid' ? styles.tabActive : ''}`}
+            className={`${styles.tab} glassButton ${mode === 'solid' ? 'glassButtonActive' : ''}`}
             onClick={() => handleModeChange('solid')}
           >
             Solid
           </button>
           <button
             type="button"
-            className={`${styles.tab} ${mode === 'gradient' ? styles.tabActive : ''}`}
+            className={`${styles.tab} glassButton ${mode === 'gradient' ? 'glassButtonActive' : ''}`}
             onClick={() => handleModeChange('gradient')}
           >
             Gradient
@@ -247,7 +247,7 @@ export function PodaColorPicker({
         </div>
       )}
       <div className={styles.preview} style={previewStyle} />
-      
+
       <div className={styles.controls}>
         {mode === 'gradient' && (
           <div className={styles.colorStops}>
@@ -338,7 +338,7 @@ export function PodaColorPicker({
             </div>
           </div>
         )}
-        
+
         {mode === 'solid' ? (
           <div className={styles.colorStop}>
             <label className={styles.label}>Color</label>
@@ -384,24 +384,24 @@ export function PodaColorPicker({
           </div>
         ) : (
           <>
-        <div className={styles.controlGroup}>
-          <label className={styles.label}>Direction</label>
-          <div className={styles.sliderContainer}>
-            <Slider.Root
-              className={styles.sliderRoot}
-              value={[direction]}
-              onValueChange={(values) => handleDirectionChange(values[0])}
-              min={0}
-              max={360}
-              step={1}
-            >
-              <Slider.Track className={styles.sliderTrack}>
-                <Slider.Range className={styles.sliderRange} />
-              </Slider.Track>
-              <Slider.Thumb className={styles.sliderThumb} aria-label="Gradient direction" />
-            </Slider.Root>
-          </div>
-        </div>
+            <div className={styles.controlGroup}>
+              <label className={styles.label}>Direction</label>
+              <div className={styles.sliderContainer}>
+                <Slider.Root
+                  className={styles.sliderRoot}
+                  value={[direction]}
+                  onValueChange={(values) => handleDirectionChange(values[0])}
+                  min={0}
+                  max={360}
+                  step={1}
+                >
+                  <Slider.Track className={styles.sliderTrack}>
+                    <Slider.Range className={styles.sliderRange} />
+                  </Slider.Track>
+                  <Slider.Thumb className={styles.sliderThumb} aria-label="Gradient direction" />
+                </Slider.Root>
+              </div>
+            </div>
           </>
         )}
       </div>

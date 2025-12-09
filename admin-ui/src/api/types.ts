@@ -60,6 +60,10 @@ export interface PageSnapshot {
   podcast_player_enabled?: boolean | null;
   spatial_effect?: string | null;
   page_name_effect?: string | null;
+  email_service_provider?: string | null;
+  email_service_api_key?: string | null;
+  email_list_id?: string | null;
+  email_double_optin?: boolean | number | string | null;
 }
 
 export interface WidgetConfig {

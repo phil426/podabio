@@ -15,7 +15,7 @@ import { usePageSnapshot } from '../../../api/page';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import styles from './content-editor-modal.module.css';
 
-export type ContentEditorType = 
+export type ContentEditorType =
   | { type: 'widget'; widgetId: string }
   | { type: 'profile'; focus?: 'profile' | 'image' | 'bio' }
   | { type: 'podcast-player' }
@@ -92,7 +92,7 @@ export function ContentEditorModal({ activeColor, editor, onClose }: ContentEdit
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <Dialog.Portal>
-        <Dialog.Overlay 
+        <Dialog.Overlay
           className={styles.overlay}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -100,21 +100,21 @@ export function ContentEditorModal({ activeColor, editor, onClose }: ContentEdit
             }
           }}
         />
-        <Dialog.Content 
-          className={styles.modal} 
+        <Dialog.Content
+          className={`${styles.modal} glassPanel`}
           aria-label={getTitle()}
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]') ||
-                               target.closest('[aria-label="Media library"]') ||
-                               target.closest('._drawer_');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]') ||
+              target.closest('[aria-label="Media library"]') ||
+              target.closest('._drawer_');
+
             if (isInPopover) {
               e.preventDefault();
               return;
@@ -123,15 +123,15 @@ export function ContentEditorModal({ activeColor, editor, onClose }: ContentEdit
           onInteractOutside={(e) => {
             const target = e.target as HTMLElement;
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]') ||
-                               target.closest('[aria-label="Media library"]') ||
-                               target.closest('._drawer_');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]') ||
+              target.closest('[aria-label="Media library"]') ||
+              target.closest('._drawer_');
+
             if (isInPopover) {
               e.preventDefault();
               return;

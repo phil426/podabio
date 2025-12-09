@@ -77,6 +77,11 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     label: 'Themes',
     icon: <LuSmartphone className={styles.tabIcon} aria-hidden="true" />
   },
+  'shadow-preview': {
+    value: 'shadow-preview',
+    label: 'Shadow Preview',
+    icon: <LuLayers className={styles.tabIcon} aria-hidden="true" />
+  },
   account: {
     value: 'account',
     label: 'Account',
@@ -151,7 +156,7 @@ function SortableTabTrigger({ tab, activeTab, onTabChange }: SortableTabTriggerP
       style={{ '--tab-color': tabColors[tab.value].text, ...style } as React.CSSProperties}
       onClick={() => onTabChange(tab.value)}
     >
-      <span 
+      <span
         className={styles.gripIcon}
         {...attributes}
         {...listeners}
@@ -186,12 +191,12 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps): JSX.Element {
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
-    
+
     const oldIndex = tabOrder.findIndex(tab => tab === active.id);
     const newIndex = tabOrder.findIndex(tab => tab === over.id);
-    
+
     if (oldIndex === -1 || newIndex === -1) return;
-    
+
     const newOrder = arrayMove(tabOrder, oldIndex, newIndex);
     setTabOrder(newOrder);
     saveTabOrder(newOrder);

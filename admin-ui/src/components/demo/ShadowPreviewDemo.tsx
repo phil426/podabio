@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { usePageSnapshot } from '../../api/page';
 
 interface PreviewData {
   title: string;
@@ -12,6 +13,7 @@ interface PreviewData {
 export function ShadowPreviewDemo(): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
+  const { data: snapshot } = usePageSnapshot();
 
   const [data, setData] = useState<PreviewData>(() => ({
     title: 'Shadow DOM Preview',
@@ -20,6 +22,21 @@ export function ShadowPreviewDemo(): JSX.Element {
     accent: '#00FF7F',
     background: '#0f172a'
   }));
+
+  // Sync with global theme when loaded
+  useEffect(() => {
+    if (snapshot?.page) {
+      setData(prev => ({
+        ...prev,
+        title: snapshot.page.podcast_name || snapshot.page.username || prev.title,
+        subtitle: snapshot.page.podcast_description || prev.subtitle,
+        avatarUrl: snapshot.page.profile_image || snapshot.page.cover_image || prev.avatarUrl,
+        // Use page_background from theme, fallback to current or default
+        background: snapshot.page.page_background || prev.background,
+        // We could also try to extract an accent from snapshot.page.colors if structured
+      }));
+    }
+  }, [snapshot]);
 
   useEffect(() => {
     if (!hostRef.current) return;

@@ -4,6 +4,7 @@
  */
 
 import { requestJson } from './http';
+import { getCsrfToken } from './utils';
 import type { ApiResponse } from './types';
 
 export interface ColorPalette {
@@ -62,6 +63,7 @@ const PODCAST_THEME_ENDPOINT = '/api/podcast-theme.php';
 
 function formPostInit(data: Record<string, unknown>): RequestInit {
   const formData = new FormData();
+  formData.append('csrf_token', getCsrfToken()); // Add CSRF token
   Object.entries(data).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
       if (typeof value === 'object') {
@@ -88,11 +90,11 @@ export async function extractColorsFromImage(imageUrl: string): Promise<string[]
       image_url: imageUrl,
     })
   );
-  
+
   if (!response.success || !response.colors) {
     throw new Error(response.error || 'Failed to extract colors');
   }
-  
+
   return response.colors;
 }
 
@@ -106,24 +108,24 @@ export async function generateThemeFromPodcast(
     action: 'generate_theme',
     colors: data.colors || [],
   };
-  
+
   if (data.podcastName) {
     payload.podcast_name = data.podcastName;
   }
-  
+
   if (data.podcastDescription) {
     payload.podcast_description = data.podcastDescription;
   }
-  
+
   const response = await requestJson<GenerateThemeResponse>(
     PODCAST_THEME_ENDPOINT,
     formPostInit(payload)
   );
-  
+
   if (!response.success || !response.theme_data) {
     throw new Error(response.error || 'Failed to generate theme');
   }
-  
+
   return response.theme_data;
 }
 
@@ -138,11 +140,11 @@ export async function shuffleThemeColors(colors: string[]): Promise<string[]> {
       colors: colors,
     })
   );
-  
+
   if (!response.success || !response.colors) {
     throw new Error(response.error || 'Failed to shuffle colors');
   }
-  
+
   return response.colors;
 }
 

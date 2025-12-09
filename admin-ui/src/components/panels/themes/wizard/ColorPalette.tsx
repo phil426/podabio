@@ -99,22 +99,48 @@ export function ColorPalette({
             <div className={styles.colorGrid}>
                 {colors.map((color, index) => (
                     <div
-                        key={`${index}`} // Changed from color-index to stable index for stable dragging/updates
+                        key={`${index}`}
                         className={`${styles.colorItem} ${draggedIndex === index ? styles.dragging : ''} ${dragOverIndex === index ? styles.dragOver : ''}`}
-                        draggable
-                        onDragStart={() => onDragStart(index)}
                         onDragOver={(e) => onDragOver(e, index)}
                         onDragLeave={onDragLeave}
                         onDrop={(e) => onDrop(e, index)}
-                        onDragEnd={onDragEnd}
                         style={{ '--color-bg': color } as React.CSSProperties}
-                        tabIndex={0}
-                        aria-roledescription="draggable color swatch"
-                        aria-label={`Color ${index + 1}: ${getColorRole(index)}. Drag to reorder, click to edit.`}
+                        aria-label={`Color ${index + 1}: ${getColorRole(index)}.`}
                     >
                         <Popover.Root>
                             <Popover.Trigger asChild>
-                                <button className={styles.colorSwatch} aria-label={`Edit color ${color}`} />
+                                <button
+                                    className={styles.colorSwatch}
+                                    aria-label={`Edit color ${color}. Drag to reorder.`}
+                                    draggable
+                                    onDragStart={(e) => {
+                                        // Create a custom ghost element
+                                        const ghost = document.createElement('div');
+                                        ghost.style.width = '40px';
+                                        ghost.style.height = '40px';
+                                        ghost.style.borderRadius = '6px';
+                                        ghost.style.backgroundColor = color;
+                                        ghost.style.position = 'absolute';
+                                        ghost.style.top = '-1000px';
+                                        ghost.style.left = '-1000px';
+                                        ghost.style.zIndex = '10000';
+                                        ghost.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                                        document.body.appendChild(ghost);
+
+                                        e.dataTransfer.setDragImage(ghost, 20, 20); // Center the ghost
+                                        e.dataTransfer.effectAllowed = 'move';
+
+                                        // Remove ghost element after browser has taken the snapshot
+                                        setTimeout(() => {
+                                            if (document.body.contains(ghost)) {
+                                                document.body.removeChild(ghost);
+                                            }
+                                        }, 0);
+
+                                        onDragStart(index);
+                                    }}
+                                    onDragEnd={onDragEnd}
+                                />
                             </Popover.Trigger>
                             <Popover.Portal>
                                 <Popover.Content className={styles.colorPickerPopover} sideOffset={5} align="start">

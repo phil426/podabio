@@ -33,7 +33,7 @@ export async function refreshCsrfToken(): Promise<string> {
   }
 
   const data = (await response.json()) as { success: boolean; csrf_token?: string };
-  
+
   if (!data.success || !data.csrf_token) {
     throw new ApiError('Invalid CSRF token response', 500, data);
   }
@@ -51,7 +51,7 @@ export async function requestJson<TResponse>(
   init: JsonRequestInit = {}
 ): Promise<TResponse> {
   const { parseJson = true, headers, ...rest } = init;
-  
+
   // Store original body for potential retry
   const originalBody = rest.body;
   const isFormData = originalBody instanceof FormData;
@@ -78,7 +78,7 @@ export async function requestJson<TResponse>(
       typeof payload === 'object' && payload && 'error' in payload
         ? String((payload as { error?: string }).error)
         : `Request failed with status ${response.status}`;
-    
+
     // Handle 401 Unauthorized - redirect to login
     if (response.status === 401) {
       // Only redirect if we're not already on the login page
@@ -92,26 +92,26 @@ export async function requestJson<TResponse>(
         return Promise.reject(new ApiError('Unauthorized - redirecting to login', 401, payload));
       }
     }
-    
+
     // Check if this is a CSRF token error
     // Treat any 403 error as a potential CSRF error for POST requests
-    const isCsrfError = 
-      response.status === 403 && 
-      (typeof payload === 'object' && 
-       payload && 
-       'error' in payload &&
-       String((payload as { error?: string }).error).toLowerCase().includes('csrf')) ||
+    const isCsrfError =
+      response.status === 403 &&
+      (typeof payload === 'object' &&
+        payload &&
+        'error' in payload &&
+        String((payload as { error?: string }).error).toLowerCase().includes('csrf')) ||
       (response.status === 403 && rest.method === 'POST');
 
     // If it's a CSRF error and the request was a POST with form data, try refreshing the token and retrying
     if (isCsrfError && rest.method === 'POST' && isFormData && originalBody instanceof FormData) {
       try {
         await refreshCsrfToken();
-        
+
         // Update the CSRF token in the form data
         const updatedFormData = new FormData();
         const csrfToken = (window as Window & { __CSRF_TOKEN__?: string }).__CSRF_TOKEN__ ?? '';
-        
+
         // Copy all entries from the original form data, updating csrf_token
         for (const [key, value] of originalBody.entries()) {
           if (key === 'csrf_token') {
@@ -120,7 +120,7 @@ export async function requestJson<TResponse>(
             updatedFormData.append(key, value);
           }
         }
-        
+
         // Retry the request with the new token
         const retryResponse = await fetch(input, {
           credentials: 'include',
@@ -156,7 +156,7 @@ export async function requestJson<TResponse>(
   return payload as TResponse;
 }
 
-export function buildFormData(payload: Record<string, FormDataEntryValue | undefined>): FormData {
+export function buildFormData(payload: Record<string, FormDataEntryValue | undefined | null>): FormData {
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
@@ -175,10 +175,10 @@ function safeJsonParse(text: string): unknown {
   } catch (parseError) {
     // Check if the response looks like HTML (common when PHP errors occur)
     const isHtml = text.trim().startsWith('<!') || text.includes('<html') || text.includes('<body');
-    const errorMessage = isHtml 
+    const errorMessage = isHtml
       ? 'Server returned HTML instead of JSON. Check for PHP errors or feature flag status.'
       : 'Failed to parse JSON response';
-    
+
     throw new ApiError(errorMessage, 500, text.substring(0, 500)); // Limit payload size
   }
 }
