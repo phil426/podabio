@@ -60,7 +60,7 @@ export function ThemeEditorView({
   const [combinedModalWidgetId, setCombinedModalWidgetId] = useState<string | null>(null);
   const [reorderModalOpen, setReorderModalOpen] = useState<boolean>(false);
   const [isGalleryOpen, setGalleryOpen] = useState<boolean>(false);
-  const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(true);
+  const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(false);
   const [undoStack, setUndoStack] = useState<StateChange[]>([]);
   const [redoStack, setRedoStack] = useState<StateChange[]>([]);
   const previousUiStateRef = useRef<Record<string, unknown>>(uiState);
