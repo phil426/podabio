@@ -4,6 +4,7 @@ import * as ScrollArea from '@radix-ui/react-scroll-area';
 import {
   Plus,
 
+  NotePencil,
   ApplePodcastsLogo,
   Plug,
   TrendUp,
@@ -34,7 +35,7 @@ interface TabDefinition {
 
 const TABS: TabDefinition[] = [
 
-  { value: 'page-editor', label: 'Page Editor', Icon: Cube },
+  { value: 'page-editor', label: 'Page Editor', Icon: note-pencil },
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },
