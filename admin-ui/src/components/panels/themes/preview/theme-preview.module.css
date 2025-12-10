@@ -15,12 +15,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   height: 100%;
+  padding: 0;
   overflow: visible;
   /* Allow hotspots to extend beyond phone frame */
   min-height: 0;
@@ -176,10 +173,7 @@
   display: inline-block;
 }
 
-.profileImage {
-  /* Size, radius, border, and box-shadow are controlled via inline styles from CSS variables */
-  /* object-fit, margin, and display are set inline to match page.php exactly */
-}
+
 
 .pageTitle {
   margin-top: var(--page-spacing, 16px);
@@ -511,10 +505,7 @@
 }
 
 /* Preview iframe styling for iPhone 17 */
-.previewIframe {
-  /* Sizing handled by inline styles - fills parent wrapper */
-  /* Clipping is handled by parent wrapper div with border-radius and overflow: hidden */
-}
+
 
 /* iOS Safari Browser UI Overlay */
 .safariBrowserUI {

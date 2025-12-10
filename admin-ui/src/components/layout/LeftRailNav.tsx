@@ -35,7 +35,7 @@ interface TabDefinition {
 
 const TABS: TabDefinition[] = [
 
-  { value: 'page-editor', label: 'Page Editor', Icon: note-pencil },
+  { value: 'page-editor', label: 'Page Editor', Icon: NotePencil },
   { value: 'podcast', label: 'Podcast / rss', Icon: ApplePodcastsLogo },
   { value: 'integration', label: 'Integrations', Icon: Plug },
   { value: 'analytics', label: 'Analytics', Icon: TrendUp },
