@@ -6,7 +6,7 @@ import { ColorPickerDemo } from './components/demo/ColorPickerDemo';
 import { PagePropertiesToolbarDemo } from './components/demo/PagePropertiesToolbarDemo';
 import { PageSettingsDemo } from './components/demo/PageSettingsDemo';
 import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
-import { PageEditorDemo } from './components/demo/PageEditorDemo';
+import { PageEditorDemo } from './components/demo/page_editor';
 import { StyleAudit } from './components/demo/StyleAudit';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
 import { SupportCMS, BlogCMS } from './components/cms';
