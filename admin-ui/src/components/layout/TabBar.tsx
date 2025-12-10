@@ -77,9 +77,9 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     label: 'Themes',
     icon: <LuSmartphone className={styles.tabIcon} aria-hidden="true" />
   },
-  'shadow-preview': {
-    value: 'shadow-preview',
-    label: 'Shadow Preview',
+  'page-editor': {
+    value: 'page-editor',
+    label: 'Page Editor',
     icon: <LuLayers className={styles.tabIcon} aria-hidden="true" />
   },
   account: {

@@ -32,7 +32,8 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     cd /home/u925957603/domains/poda.bio/public_html/
     
     echo "📦 Step 1: Pulling latest code from GitHub..."
-    git pull origin main
+    git fetch origin main
+    git reset --hard origin/main
     
     
     if [ $? -eq 0 ]; then

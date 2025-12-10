@@ -16,7 +16,7 @@ export function ShadowPreviewDemo(): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
 
   const [data, setData] = useState<PreviewData>(() => ({
-    title: 'Shadow DOM Preview',
+    title: 'Page Editor Preview',
     subtitle: 'This preview is rendered inside a ShadowRoot.',
     avatarUrl: 'https://placekitten.com/200/200',
     accent: '#00FF7F',
@@ -121,7 +121,7 @@ export function ShadowPreviewDemo(): JSX.Element {
 
   return (
     <div style={{ padding: '24px', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ marginBottom: 12 }}>Shadow DOM Preview Demo</h1>
+      <h1 style={{ marginBottom: 12 }}>Page Editor Preview Demo</h1>
       <p style={{ marginBottom: 20, color: '#475569' }}>
         This renders the preview as first-party React inside a ShadowRoot (no iframe). Update the fields below to see it live.
       </p>

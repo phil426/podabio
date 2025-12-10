@@ -32,8 +32,8 @@ export default function App(): JSX.Element {
                 <Route path="/demo/page-settings.php" element={<PageSettingsDemo />} />
                 <Route path="/demo/color-picker-drag-test" element={<ColorPickerDragTest />} />
                 <Route path="/demo/color-picker-drag-test.php" element={<ColorPickerDragTest />} />
-                <Route path="/demo/shadow-preview" element={<ShadowPreviewDemo />} />
-                <Route path="/demo/shadow-preview.php" element={<ShadowPreviewDemo />} />
+                <Route path="/demo/page-editor" element={<ShadowPreviewDemo />} />
+                <Route path="/demo/page-editor.php" element={<ShadowPreviewDemo />} />
                 <Route path="/demo/style-audit" element={<StyleAudit />} />
                 <Route path="/demo/style-audit.php" element={<StyleAudit />} />
                 {/* Also match when accessed directly via PHP file */}

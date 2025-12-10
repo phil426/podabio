@@ -30,7 +30,7 @@ export function EditorShell(): JSX.Element {
     if (isAccountRoute) {
       return 'account';
     }
-    return 'shadow-preview';
+    return 'page-editor';
   });
 
   const [selectedDevice] = useState(() => {

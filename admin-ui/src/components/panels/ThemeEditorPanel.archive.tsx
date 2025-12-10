@@ -46,7 +46,7 @@ function safeParse(input: string | null | undefined | Record<string, unknown>): 
 function resolveToken(bundle: TokenBundle, path: string): unknown {
   const parts = path.split('.');
   let current: any = bundle;
-  
+
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = current[part];
@@ -54,28 +54,28 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
       return undefined;
     }
   }
-  
+
   return current;
 }
 
 function extractColorValue(tokens: TokenBundle, path: string): string {
   const resolved = resolveToken(tokens, path);
-  
+
   // If it's already a hex color, return it
   if (typeof resolved === 'string' && /^#([0-9a-fA-F]{3}){1,2}$/.test(resolved)) {
     return resolved;
   }
-  
+
   // If it's a gradient, return it as-is
   if (typeof resolved === 'string' && (resolved.includes('gradient') || resolved.includes('linear-gradient') || resolved.includes('radial-gradient'))) {
     return resolved;
   }
-  
+
   // If it's an image URL (starts with http:// or https:// or /), return it as-is
   if (typeof resolved === 'string' && (resolved.startsWith('http://') || resolved.startsWith('https://') || resolved.startsWith('/') || resolved.startsWith('data:'))) {
     return resolved;
   }
-  
+
   // If it's a token reference, try to resolve it
   if (typeof resolved === 'string' && resolved.startsWith('color.')) {
     // Try to resolve the reference
@@ -95,15 +95,15 @@ function extractColorValue(tokens: TokenBundle, path: string): string {
       }
     }
   }
-  
+
   // Fallback to defaults based on path
   if (path.includes('accent.primary')) return '#2563eb';
-    if (path.includes('accent.secondary')) return '#3b82f6';
+  if (path.includes('accent.secondary')) return '#3b82f6';
   if (path.includes('text.primary')) return '#0f172a';
   if (path.includes('text.secondary')) return '#64748b';
   if (path.includes('surface.canvas')) return '#ffffff';
   if (path.includes('surface.base')) return '#ffffff';
-  
+
   return '#2563eb';
 }
 
@@ -111,7 +111,7 @@ function applyTokenUpdate<T extends Record<string, any>>(obj: T, path: string, v
   const parts = path.split('.');
   const result = { ...obj };
   let current: any = result;
-  
+
   for (let i = 0; i < parts.length - 1; i++) {
     const key = parts[i];
     if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
@@ -121,7 +121,7 @@ function applyTokenUpdate<T extends Record<string, any>>(obj: T, path: string, v
     }
     current = current[key];
   }
-  
+
   current[parts[parts.length - 1]] = value;
   return result;
 }
@@ -182,12 +182,12 @@ function isImageUrl(value: string): boolean {
 
 export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPanelProps): JSX.Element {
   // DEBUG: Log component initialization - v3 (widgetBorderWidth removed, buttonRadius2 fixed)
-  console.log('[ThemeEditorPanel] ✅ Component initializing v3', { 
-    themeId: theme?.id, 
+  console.log('[ThemeEditorPanel] ✅ Component initializing v3', {
+    themeId: theme?.id,
     themeName: theme?.name,
-    hasActiveColor: !!activeColor 
+    hasActiveColor: !!activeColor
   });
-  
+
   const { data: snapshot } = usePageSnapshot();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const queryClient = useQueryClient();
@@ -195,53 +195,53 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
   const { setThemeInspectorVisible } = useThemeInspector();
   const updateMutation = useUpdateThemeMutation();
   const createMutation = useCreateThemeMutation();
-  
+
   const [themeName, setThemeName] = useState(theme?.name ?? '');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  
+
   // Color values from tokens
-  const primaryColor = useMemo(() => 
+  const primaryColor = useMemo(() =>
     extractColorValue(tokens, 'semantic.accent.primary'),
     [tokens]
   );
-  const secondaryColor = useMemo(() => 
+  const secondaryColor = useMemo(() =>
     extractColorValue(tokens, 'semantic.accent.secondary'),
     [tokens]
   );
-  const accentColor = useMemo(() => 
+  const accentColor = useMemo(() =>
     extractColorValue(tokens, 'semantic.accent.primary'),
     [tokens]
   );
-  const pageBackground = useMemo(() => 
+  const pageBackground = useMemo(() =>
     extractColorValue(tokens, 'semantic.surface.canvas'),
     [tokens]
   );
-  const blockBackground = useMemo(() => 
+  const blockBackground = useMemo(() =>
     extractColorValue(tokens, 'semantic.surface.base'),
     [tokens]
   );
-  const textPrimary = useMemo(() => 
+  const textPrimary = useMemo(() =>
     extractColorValue(tokens, 'semantic.text.primary'),
     [tokens]
   );
-  const textSecondary = useMemo(() => 
+  const textSecondary = useMemo(() =>
     extractColorValue(tokens, 'semantic.text.secondary'),
     [tokens]
   );
-  
+
   // Typography
   const headingFont = useMemo(() => {
     const font = tokens.core?.typography?.font?.heading;
     return typeof font === 'string' ? font : 'Inter';
   }, [tokens]);
-  
+
   const bodyFont = useMemo(() => {
     const font = tokens.core?.typography?.font?.body;
     return typeof font === 'string' ? font : 'Inter';
   }, [tokens]);
-  
+
   // Typography colors
   const headingColor = useMemo(() => {
     const typography = tokens.core?.typography as any;
@@ -250,7 +250,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     // Fallback to semantic text primary if no override
     return extractColorValue(tokens, 'semantic.text.primary');
   }, [tokens]);
-  
+
   const bodyColor = useMemo(() => {
     const typography = tokens.core?.typography as any;
     const color = typography?.color?.body;
@@ -258,29 +258,29 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     // Fallback to semantic text primary if no override
     return extractColorValue(tokens, 'semantic.text.primary');
   }, [tokens]);
-  
+
   // Page typography font size presets
   const [headingFontSizePreset, setHeadingFontSizePreset] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   const [bodyFontSizePreset, setBodyFontSizePreset] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
-  
+
   // Widget typography font size presets (separate from page typography)
   const [widgetHeadingFontSizePreset, setWidgetHeadingFontSizePreset] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   const [widgetBodyFontSizePreset, setWidgetBodyFontSizePreset] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
-  
+
   // Typography formatting
   const [headingBold, setHeadingBold] = useState(false);
   const [headingItalic, setHeadingItalic] = useState(false);
   const [headingUnderline, setHeadingUnderline] = useState(false);
   const [headingAlignment, setHeadingAlignment] = useState<'left' | 'center' | 'right'>('center');
-  
+
   const [bodyBold, setBodyBold] = useState(false);
   const [bodyItalic, setBodyItalic] = useState(false);
   const [bodyUnderline, setBodyUnderline] = useState(false);
   const [bodyAlignment, setBodyAlignment] = useState<'left' | 'center' | 'right'>('center');
-  
+
   // Color mode for typography colors (solid or gradient)
   const [colorMode, setColorMode] = useState<'solid' | 'gradient'>('solid');
-  
+
   // Widget typography colors (separate from page typography)
   const widgetHeadingColor = useMemo(() => {
     const typography = tokens.core?.typography as any;
@@ -289,7 +289,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     // Fallback to page heading color if not set
     return headingColor;
   }, [tokens, headingColor]);
-  
+
   const widgetBodyColor = useMemo(() => {
     const typography = tokens.core?.typography as any;
     const color = typography?.color?.widget_body;
@@ -297,62 +297,62 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     // Fallback to page body color if not set
     return bodyColor;
   }, [tokens, bodyColor]);
-  
+
   // Widget color mode (separate from page color mode)
   const [widgetColorMode, setWidgetColorMode] = useState<'solid' | 'gradient'>('solid');
-  
+
   // Iconography
   const [iconSize, setIconSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [iconColor, setIconColor] = useState<string>('#6b7280');
   const [iconSpacing, setIconSpacing] = useState<number>(0.75); // rem units
-  
+
   // Spacing density
   const [spacingDensity, setSpacingDensity] = useState<'compact' | 'cozy' | 'comfortable'>('cozy');
-  
+
   // Background
   const [backgroundType, setBackgroundType] = useState<'solid' | 'gradient' | 'image'>('solid');
   const [backgroundType2, setBackgroundType2] = useState<'solid' | 'gradient' | 'image'>('solid');
-  
+
   // Background images
   const [pageBackgroundImage, setPageBackgroundImage] = useState<string | null>(null);
   const [blockBackgroundImage, setBlockBackgroundImage] = useState<string | null>(null);
-  
+
   // Shape & Effects
   const [buttonRadius, setButtonRadius] = useState<'square' | 'rounded' | 'pill'>('rounded');
   const [borderEffect, setBorderEffect] = useState<'shadow' | 'glow'>('shadow');
   const [shadowIntensity, setShadowIntensity] = useState<'none' | 'subtle' | 'pronounced'>('subtle');
   const [glowIntensity, setGlowIntensity] = useState<'subtle' | 'pronounced'>('subtle');
   const [glowColor, setGlowColor] = useState<string>('#ff00ff');
-  
+
   // Shape & Effects 2 (for Block Background)
   const [buttonRadius2, setButtonRadius2] = useState<'square' | 'rounded' | 'pill'>('rounded');
   const [borderEffect2, setBorderEffect2] = useState<'shadow' | 'glow'>('shadow');
   const [shadowIntensity2, setShadowIntensity2] = useState<'none' | 'subtle' | 'pronounced'>('subtle');
   const [glowIntensity2, setGlowIntensity2] = useState<'subtle' | 'pronounced'>('subtle');
   const [glowColor2, setGlowColor2] = useState<string>('#ff00ff');
-  
+
   // Track last processed theme ID to avoid re-processing the same theme
   const lastProcessedThemeId = useRef<number | null>(null);
-  
+
   useEffect(() => {
     // Guard against missing tokens
     if (!tokens) {
       return;
     }
-    
+
     if (theme) {
       setThemeName(theme.name);
-      
+
       // Start with snapshot tokens if available (includes token_overrides)
       let updatedTokens = snapshot?.tokens ? { ...snapshot.tokens } : { ...tokens };
-      
+
       // Load theme token values and apply to tokens
       const colorTokens = safeParse(theme.color_tokens);
       const typographyTokens = safeParse(theme.typography_tokens);
       const spacingTokens = safeParse(theme.spacing_tokens);
       const shapeTokens = safeParse(theme.shape_tokens);
       const iconographyTokens = safeParse((theme as any).iconography_tokens);
-      
+
       // Initialize iconography state
       if (iconographyTokens) {
         if (iconographyTokens.size) {
@@ -376,7 +376,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
       }
-      
+
       // Apply color tokens - map backend structure to semantic tokens
       if (colorTokens) {
         const tokens = colorTokens as any;
@@ -391,7 +391,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.surface.base', tokens.background.surface);
           }
         }
-        
+
         // Map text tokens
         if (tokens.text) {
           if (tokens.text.primary && typeof tokens.text.primary === 'string') {
@@ -401,7 +401,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             updatedTokens = applyTokenUpdate(updatedTokens, 'semantic.text.secondary', tokens.text.secondary);
           }
         }
-        
+
         // Map accent tokens
         if (tokens.accent) {
           if (tokens.accent.primary && typeof tokens.accent.primary === 'string') {
@@ -412,7 +412,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
       }
-      
+
       // Also check database columns for backward compatibility
       if (theme.page_primary_font) {
         updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.heading', theme.page_primary_font);
@@ -420,7 +420,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       if (theme.page_secondary_font) {
         updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.body', theme.page_secondary_font);
       }
-      
+
       // Apply typography tokens
       if (typographyTokens && typeof typographyTokens === 'object') {
         const fonts = (typographyTokens as any).font;
@@ -432,7 +432,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.font.body', fonts.body);
           }
         }
-        
+
         // Apply typography colors if present
         const colors = (typographyTokens as any).color;
         if (colors) {
@@ -450,7 +450,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             updatedTokens = applyTokenUpdate(updatedTokens, 'core.typography.color.widget_body', colors.widget_body);
           }
         }
-        
+
         // Load font size preset from scale values
         // NOTE: Scale is shared between page and widgets, so we load it for both
         // Both page and widget presets are initialized from the same scale
@@ -481,7 +481,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
           setHeadingFontSizePreset(detectedHeadingPreset);
           setWidgetHeadingFontSizePreset(detectedHeadingPreset); // Initialize widget preset from scale
-          
+
           // Detect body preset from sm scale (body uses sm)
           let detectedBodyPreset: 'small' | 'medium' | 'large' | 'xlarge' = 'medium';
           if (scale.sm === 0.9 || (scale.sm >= 0.85 && scale.sm < 1.0)) {
@@ -497,7 +497,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           setWidgetBodyFontSizePreset(detectedBodyPreset); // Initialize widget preset from scale
         }
       }
-      
+
       // Also check token_overrides from snapshot for typography
       if (snapshot?.token_overrides) {
         const overrides = snapshot.token_overrides as any;
@@ -534,7 +534,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
       }
-      
+
       // Apply spacing tokens
       if (spacingTokens && typeof spacingTokens === 'object') {
         const density = (spacingTokens as any).density;
@@ -542,7 +542,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           setSpacingDensity(density as 'compact' | 'cozy' | 'comfortable');
         }
       }
-      
+
       // Apply shape tokens - map from new structure (corner.*, border_width.*, shadow.level_*)
       if (shapeTokens && typeof shapeTokens === 'object') {
         // Map button_corner tokens to buttonRadius (page-level buttons)
@@ -562,7 +562,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             }
           }
         }
-        
+
         // Fallback: Map corner tokens to buttonRadius if button_corner doesn't exist
         const corner = (shapeTokens as any).corner;
         if (!buttonCorner && corner) {
@@ -580,7 +580,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
             }
           }
         }
-        
+
         // Fallback to old structure for backward compatibility
         const buttonRadiusOld = (shapeTokens as any).button_radius;
         if (buttonRadiusOld && !buttonCorner && !corner) {
@@ -588,10 +588,10 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           else if (buttonRadiusOld === '9999px') setButtonRadius('pill');
           else setButtonRadius('rounded');
         }
-        
+
         // Border width and shadow level are no longer configurable for page-level
         // They are only configurable for block widgets via border_effect
-        
+
         // CRITICAL: Also load block widget settings (buttonRadius2)
         // These use the SAME shape_tokens but are for block widgets
         // For block widgets, we need to find which corner is set (legacy: square, rounded, pill)
@@ -611,7 +611,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
       }
-      
+
       // Load widget_styles for border effects (shadow/glow)
       const widgetStyles = safeParse(theme?.widget_styles);
       if (widgetStyles) {
@@ -636,13 +636,13 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           setGlowColor2(widgetStyles.glow_color);
         }
       }
-      
+
       // Load motion tokens (store for future use, no UI controls yet)
       const motionTokens = safeParse(theme.motion_tokens);
       // Motion tokens are loaded but not displayed in UI yet
-      
+
       setTokens(updatedTokens);
-      
+
       // Load background images from page_background if it's a URL
       // Also check color_tokens.background.base and gradient.page
       let pageBgValue: string | null = null;
@@ -656,7 +656,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           pageBgValue = tokens.gradient.page;
         }
       }
-      
+
       if (pageBgValue) {
         // Check if it's an image URL (not a color or gradient)
         if ((pageBgValue.startsWith('http://') || pageBgValue.startsWith('https://') || pageBgValue.startsWith('/') || pageBgValue.startsWith('data:')) && !isGradient(pageBgValue)) {
@@ -670,7 +670,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       } else {
         setPageBackgroundImage(null);
       }
-      
+
       // Load block background image if available
       // Check widget_background column, color_tokens.background.surface, and gradient.widget
       // CRITICAL: If theme.widget_background exists, it takes priority and must update tokens
@@ -692,7 +692,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           blockBgValue = resolvedBlockBg;
         }
       }
-      
+
       if (blockBgValue) {
         if ((blockBgValue.startsWith('http://') || blockBgValue.startsWith('https://') || blockBgValue.startsWith('/') || blockBgValue.startsWith('data:')) && !isGradient(blockBgValue)) {
           setBlockBackgroundImage(blockBgValue);
@@ -704,7 +704,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       } else {
         setBlockBackgroundImage(null);
       }
-      
+
       // Set background type based on what we found
       if (pageBgValue && isImageUrl(pageBgValue)) {
         setBackgroundType('image');
@@ -713,7 +713,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       } else {
         setBackgroundType('solid');
       }
-      
+
       if (blockBgValue && isGradient(blockBgValue)) {
         setBackgroundType2('gradient');
       } else if (blockBgValue && isImageUrl(blockBgValue)) {
@@ -721,7 +721,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       } else {
         setBackgroundType2('solid');
       }
-      
+
       setHasChanges(false);
     } else {
       // Reset to defaults when no theme
@@ -732,7 +732,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       setHasChanges(false);
     }
   }, [theme?.id, setTokens]); // Only depend on theme ID to avoid infinite loops
-  
+
   useEffect(() => {
     if (saveStatus === 'success' || saveStatus === 'error') {
       const timer = setTimeout(() => {
@@ -742,33 +742,33 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       return () => clearTimeout(timer);
     }
   }, [saveStatus]);
-  
+
   const handleColorChange = (tokenPath: string, value: string) => {
     setTokens(applyTokenUpdate(tokens, tokenPath, value));
     setHasChanges(true);
   };
-  
+
   const handleFontChange = (tokenPath: string, value: string) => {
     setTokens(applyTokenUpdate(tokens, tokenPath, value));
     setHasChanges(true);
   };
-  
+
   const handleHeadingPresetChange = (preset: 'small' | 'medium' | 'large' | 'xlarge') => {
     setHeadingFontSizePreset(preset);
     setHasChanges(true);
   };
-  
+
   const handleBodyPresetChange = (preset: 'small' | 'medium' | 'large' | 'xlarge') => {
     setBodyFontSizePreset(preset);
     setHasChanges(true);
   };
-  
+
   const handleDensityChange = (density: 'compact' | 'cozy' | 'comfortable') => {
     setSpacingDensity(density);
     setHasChanges(true);
   };
-  
-  
+
+
   const handleShapeChange = (
     type: 'buttonRadius',
     value: 'square' | 'rounded' | 'pill'
@@ -776,7 +776,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     if (type === 'buttonRadius') setButtonRadius(value);
     setHasChanges(true);
   };
-  
+
   const handleShapeChange2 = (
     type: 'buttonRadius',
     value: 'square' | 'rounded' | 'pill'
@@ -784,7 +784,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     if (type === 'buttonRadius') setButtonRadius2(value);
     setHasChanges(true);
   };
-  
+
   const handleBackgroundImageUpload = async (file: File, type: 'page' | 'block') => {
     try {
       const result = await uploadBackgroundImage(file);
@@ -804,7 +804,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       setSaveStatus('error');
     }
   };
-  
+
   const handleBackgroundImageUrlChange = (url: string, type: 'page' | 'block') => {
     if (type === 'page') {
       setPageBackgroundImage(url);
@@ -815,7 +815,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     }
     setHasChanges(true);
   };
-  
+
   const handleBackgroundImageRemove = (type: 'page' | 'block') => {
     if (type === 'page') {
       setPageBackgroundImage(null);
@@ -826,18 +826,18 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     }
     setHasChanges(true);
   };
-  
+
   const handleSave = async () => {
     try {
       setSaveStatus('saving');
-      
+
       // Load existing tokens to preserve values not edited in UI
       const existingColorTokens = safeParse(theme?.color_tokens);
       const existingTypographyTokens = safeParse(theme?.typography_tokens);
       const existingSpacingTokens = safeParse(theme?.spacing_tokens);
       const existingShapeTokens = safeParse(theme?.shape_tokens);
       const existingMotionTokens = safeParse(theme?.motion_tokens);
-      
+
       // Extract current values
       const accentPrimary = extractColorValue(tokens, 'semantic.accent.primary');
       const accentSecondary = extractColorValue(tokens, 'semantic.accent.secondary');
@@ -845,28 +845,28 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const textSecondary = extractColorValue(tokens, 'semantic.text.secondary');
       const backgroundBase = extractColorValue(tokens, 'semantic.surface.canvas');
       const backgroundSurface = extractColorValue(tokens, 'semantic.surface.base');
-      
+
       // Determine widget_background value FIRST (before building colorTokens)
       // CRITICAL: Only use saved theme.widget_background if it's NOT the fallback white value
       // If saved value is #ffffff (fallback), ignore it and use current state
       // This prevents #ffffff from persisting when user sets a new background
       const savedWidgetBackground = theme?.widget_background;
       const isSavedValueFallback = savedWidgetBackground === '#ffffff' || savedWidgetBackground === '#fff' || savedWidgetBackground === 'white';
-      const finalWidgetBackground = (!isSavedValueFallback && savedWidgetBackground) 
-        ? savedWidgetBackground 
+      const finalWidgetBackground = (!isSavedValueFallback && savedWidgetBackground)
+        ? savedWidgetBackground
         : (blockBackgroundImage || blockBackground);
       // CRITICAL: Ensure colorTokens.background.surface matches widget_background
       const finalBackgroundSurface = finalWidgetBackground;
       const isBlockGradient = isGradient(finalWidgetBackground);
       const isBlockImage = isImageUrl(finalWidgetBackground);
-      
+
       // Determine page_background value - always use backgroundBase (which comes from semantic.surface.canvas token)
       // This ensures gradients, images, and solid colors set via PageBackgroundPicker are all saved correctly
       // pageBackgroundImage is only used for uploaded images, but backgroundBase already contains the value
       const finalPageBackground = pageBackgroundImage || backgroundBase;
       const isPageGradient = isGradient(finalPageBackground);
       const isPageImage = isImageUrl(finalPageBackground);
-      
+
       // Derive additional color values
       const existingColors = existingColorTokens as any;
       const accentMuted = existingColors?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
@@ -875,7 +875,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const borderFocus = existingColors?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
       const backgroundSurfaceRaised = existingColors?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
       const backgroundOverlay = existingColors?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
-      
+
       // Build complete color tokens, preserving existing values
       const colorTokens: Record<string, any> = {
         ...(existingColorTokens || {}),
@@ -932,7 +932,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           primary: existingColors?.glow?.primary || null
         }
       };
-      
+
       // Build iconography tokens
       const existingIconographyTokens = safeParse(theme?.iconography_tokens);
       const iconographyTokens: Record<string, any> = {
@@ -941,7 +941,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         color: iconColor,
         spacing: `${iconSpacing}rem`
       };
-      
+
       // DEBUG: Log iconography tokens being saved
       console.log('SAVING ICONOGRAPHY DEBUG:', {
         iconSize,
@@ -949,7 +949,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         iconSpacing,
         iconographyTokens
       });
-      
+
       // Build typography tokens, preserving existing values
       const existingTypography = existingTypographyTokens as any;
       const typographyTokens: Record<string, any> = {
@@ -972,17 +972,17 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           ...(existingTypography?.scale || {}),
           // Map heading preset to xl (page title), lg, and md scale values
           xl: headingFontSizePreset === 'small' ? 1.5 :
-              headingFontSizePreset === 'medium' ? 2.0 :
+            headingFontSizePreset === 'medium' ? 2.0 :
               headingFontSizePreset === 'large' ? 2.488 : 3.0,
           lg: headingFontSizePreset === 'small' ? 1.2 :
-              headingFontSizePreset === 'medium' ? 1.5 :
+            headingFontSizePreset === 'medium' ? 1.5 :
               headingFontSizePreset === 'large' ? 1.777 : 2.2,
           md: headingFontSizePreset === 'small' ? 1.1 :
-              headingFontSizePreset === 'medium' ? 1.333 :
+            headingFontSizePreset === 'medium' ? 1.333 :
               headingFontSizePreset === 'large' ? 1.5 : 1.777,
           // Map body preset to sm (body text) scale value
           sm: bodyFontSizePreset === 'small' ? 0.9 :
-              bodyFontSizePreset === 'medium' ? 1.111 :
+            bodyFontSizePreset === 'medium' ? 1.111 :
               bodyFontSizePreset === 'large' ? 1.25 : 1.5,
           xs: existingTypography?.scale?.xs || 0.889
         },
@@ -999,7 +999,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           bold: existingTypography?.weight?.bold || 600
         }
       };
-      
+
       // Build spacing tokens, preserving existing values
       const spacingTokens: Record<string, any> = {
         ...(existingSpacingTokens || {}),
@@ -1044,7 +1044,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         },
         modifiers: existingSpacingTokens?.modifiers || []
       };
-      
+
       // Map buttonRadius to shape_tokens.corner.*
       // Map buttonRadius2 to shape_tokens.corner.* (legacy: square, rounded, pill)
       const cornerMap: Record<string, string> = {
@@ -1052,14 +1052,14 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         'rounded': 'md',
         'pill': 'pill'
       };
-      
+
       // Map shadowLevel to shape_tokens.shadow.level_*
       const shadowMap: Record<string, string | null> = {
         'none': null, // Omit if none
         'subtle': 'level_1',
         'pronounced': 'level_2'
       };
-      
+
       // Build shape tokens with correct structure
       // CRITICAL: Use buttonRadius2 for BLOCK WIDGETS
       // These are the block widget settings from the "Block / widget style" tab
@@ -1067,8 +1067,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       // Only set the one value that matches buttonRadius2
       const cornerKey = cornerMap[buttonRadius2];
       const cornerValue = buttonRadius2 === 'square' ? '0px' :
-                         buttonRadius2 === 'rounded' ? '0.75rem' :
-                         '9999px'; // pill
+        buttonRadius2 === 'rounded' ? '0.75rem' :
+          '9999px'; // pill
 
       // Build a clean corner object with only the active value
       const cleanCorner: Record<string, string> = {};
@@ -1078,8 +1078,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       // Use a separate key to distinguish from widget corner
       const buttonCornerKey = cornerMap[buttonRadius];
       const buttonCornerValue = buttonRadius === 'square' ? '0px' :
-                               buttonRadius === 'rounded' ? '0.75rem' :
-                               '9999px'; // pill
+        buttonRadius === 'rounded' ? '0.75rem' :
+          '9999px'; // pill
       const cleanButtonCorner: Record<string, string> = {};
       cleanButtonCorner[buttonCornerKey] = buttonCornerValue;
 
@@ -1088,14 +1088,14 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         corner: cleanCorner, // For widgets
         button_corner: cleanButtonCorner // For page-level buttons
       };
-      
+
       // Add shadow if border effect is shadow and intensity is not none
       const existingShape = existingShapeTokens as any;
       if (borderEffect2 === 'shadow' && shadowMap[shadowIntensity2]) {
         shapeTokens.shadow = {
           ...(existingShape?.shadow || {}),
-          [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
-            ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
+          [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle'
+            ? '0 1px 2px rgba(15, 23, 42, 0.06)'
             : '0 16px 48px rgba(15, 23, 42, 0.5)',
           focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
@@ -1105,7 +1105,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       }
-      
+
       // Build motion tokens with defaults
       const existingMotion = existingMotionTokens as any;
       const motionTokens: Record<string, any> = {
@@ -1126,7 +1126,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           ring_offset: existingMotion?.focus?.ring_offset || '2px'
         }
       };
-      
+
       // finalWidgetBackground and finalBackgroundSurface already defined above
       // DEBUG: Log what we're saving for widget background
       console.log('SAVING WIDGET BACKGROUND DEBUG:', {
@@ -1138,12 +1138,12 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         isGradient: isGradient(finalWidgetBackground),
         isImage: isImageUrl(finalWidgetBackground)
       });
-      
+
       // Map buttonRadius for widget_styles.shape (legacy)
       const widgetStylesShape = buttonRadius2 === 'square' ? 'square' :
-                               buttonRadius2 === 'rounded' ? 'rounded' :
-                               'pill';
-      
+        buttonRadius2 === 'rounded' ? 'rounded' :
+          'pill';
+
       // Build widget_styles for backward compatibility
       const existingWidgetStyles = safeParse(theme?.widget_styles);
       const widgetStyles: Record<string, any> = {
@@ -1155,22 +1155,22 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         border_glow_intensity: borderEffect2 === 'glow' ? glowIntensity2 : 'subtle',
         glow_color: borderEffect2 === 'glow' ? glowColor2 : '#ff00ff',
         spacing: spacingDensity === 'compact' ? 'tight' :
-                 spacingDensity === 'cozy' ? 'comfortable' : 'spacious'
+          spacingDensity === 'cozy' ? 'comfortable' : 'spacious'
       };
-      
+
       // Build legacy colors JSON
       const legacyColors = {
         primary: textPrimary,
         secondary: backgroundSurface,
         accent: accentPrimary
       };
-      
+
       // Build legacy fonts JSON
       const legacyFonts = {
         heading: headingFont,
         body: bodyFont
       };
-      
+
       // DEBUG: Log what we're saving
       console.log('SAVING THEME DEBUG:', {
         shapeTokens: shapeTokens,
@@ -1183,7 +1183,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         blockBackground: blockBackground,
         blockBackgroundImage: blockBackgroundImage
       });
-      
+
       const themeData = {
         name: themeName || theme?.name || 'Untitled Theme',
         color_tokens: colorTokens,
@@ -1204,7 +1204,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         colors: legacyColors,
         fonts: legacyFonts
       };
-      
+
       // DEBUG: Log scale values being saved
       const scaleToSave = typographyTokens?.scale;
       console.log('SAVING THEME DEBUG:', {
@@ -1214,7 +1214,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         scale_sm: scaleToSave?.sm,
         fullScale: scaleToSave
       });
-      
+
       // CRITICAL DEBUG: Log widget shape being saved
       console.log('WIDGET SHAPE SAVE DEBUG:', {
         buttonRadius2: buttonRadius2,
@@ -1225,10 +1225,10 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         shapeTokens: shapeTokens,
         fullShapeTokens: JSON.stringify(shapeTokens, null, 2)
       });
-      
+
       // Always use the single user theme (get or create if needed)
       const userThemeId = await getOrCreateUserTheme();
-      
+
       // Update the user theme with all current settings
       await updateMutation.mutateAsync({
         themeId: userThemeId,
@@ -1237,16 +1237,16 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           name: 'My Theme' // Keep user theme name consistent
         }
       });
-      
+
       setSaveStatus('success');
       setHasChanges(false);
       setStatusMessage('Theme updated successfully');
-      
+
       // Invalidate and refetch theme library to update theme cards
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      
+
       // Ensure page.theme_id points to user theme and clear page-level overrides
       try {
         await updatePageThemeId(userThemeId, {
@@ -1266,7 +1266,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         console.error('Failed to update page theme_id:', error);
         // Don't fail the whole save if this fails
       }
-      
+
       onSave?.();
     } catch (error) {
       console.error('Failed to save theme', error);
@@ -1274,11 +1274,11 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       setStatusMessage(error instanceof Error ? error.message : 'Failed to save theme');
     }
   };
-  
+
   const handleSaveAsNew = async () => {
     try {
       setSaveStatus('saving');
-      
+
       // Reuse the same comprehensive logic as handleSave
       // Load existing tokens to preserve values not edited in UI
       const existingColorTokens = safeParse(theme?.color_tokens);
@@ -1286,7 +1286,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const existingSpacingTokens = safeParse(theme?.spacing_tokens);
       const existingShapeTokens = safeParse(theme?.shape_tokens);
       const existingMotionTokens = safeParse(theme?.motion_tokens);
-      
+
       // Extract current values
       const accentPrimary = extractColorValue(tokens, 'semantic.accent.primary');
       const accentSecondary = extractColorValue(tokens, 'semantic.accent.secondary');
@@ -1294,24 +1294,24 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const textSecondary = extractColorValue(tokens, 'semantic.text.secondary');
       const backgroundBase = extractColorValue(tokens, 'semantic.surface.canvas');
       const backgroundSurface = extractColorValue(tokens, 'semantic.surface.base');
-      
+
       // Determine page_background value - use image if set, otherwise use the token value
       const finalPageBackground = pageBackgroundImage || backgroundBase;
       const isPageGradient = isGradient(finalPageBackground);
-      
+
       // Determine block background value
       // CRITICAL: Only use saved theme.widget_background if it's NOT the fallback white value
       // If saved value is #ffffff (fallback), ignore it and use current state
       const savedWidgetBackground = theme?.widget_background;
       const isSavedValueFallback = savedWidgetBackground === '#ffffff' || savedWidgetBackground === '#fff' || savedWidgetBackground === 'white';
-      const finalWidgetBackground = (!isSavedValueFallback && savedWidgetBackground) 
-        ? savedWidgetBackground 
+      const finalWidgetBackground = (!isSavedValueFallback && savedWidgetBackground)
+        ? savedWidgetBackground
         : (blockBackgroundImage || blockBackground);
       const isBlockGradient = isGradient(finalWidgetBackground);
-      
+
       // CRITICAL: Ensure colorTokens.background.surface matches widget_background
       const finalBackgroundSurface = finalWidgetBackground;
-      
+
       // Derive additional color values
       const existingColors = existingColorTokens as any;
       const accentMuted = existingColors?.accent?.muted || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.75) : '#e0edff');
@@ -1320,7 +1320,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const borderFocus = existingColors?.border?.focus || (accentPrimary && /^#/.test(accentPrimary) ? lightenColor(accentPrimary, 0.25) : '#2563eb');
       const backgroundSurfaceRaised = existingColors?.background?.surface_raised || (backgroundSurface && /^#/.test(backgroundSurface) ? lightenColor(backgroundSurface, 0.22) : '#f9fafb');
       const backgroundOverlay = existingColors?.background?.overlay || 'rgba(15, 23, 42, 0.6)';
-      
+
       // Build complete color tokens (same structure as handleSave)
       const colorTokens: Record<string, any> = {
         ...(existingColorTokens || {}),
@@ -1377,7 +1377,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           primary: existingColors?.glow?.primary || null
         }
       };
-      
+
       // Build typography tokens (same as handleSave)
       const existingTypography = existingTypographyTokens as any;
       const typographyTokens: Record<string, any> = {
@@ -1400,17 +1400,17 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           ...(existingTypography?.scale || {}),
           // Map heading preset to xl (page title), lg, and md scale values
           xl: headingFontSizePreset === 'small' ? 1.5 :
-              headingFontSizePreset === 'medium' ? 2.0 :
+            headingFontSizePreset === 'medium' ? 2.0 :
               headingFontSizePreset === 'large' ? 2.488 : 3.0,
           lg: headingFontSizePreset === 'small' ? 1.2 :
-              headingFontSizePreset === 'medium' ? 1.5 :
+            headingFontSizePreset === 'medium' ? 1.5 :
               headingFontSizePreset === 'large' ? 1.777 : 2.2,
           md: headingFontSizePreset === 'small' ? 1.1 :
-              headingFontSizePreset === 'medium' ? 1.333 :
+            headingFontSizePreset === 'medium' ? 1.333 :
               headingFontSizePreset === 'large' ? 1.5 : 1.777,
           // Map body preset to sm (body text) scale value
           sm: bodyFontSizePreset === 'small' ? 0.9 :
-              bodyFontSizePreset === 'medium' ? 1.111 :
+            bodyFontSizePreset === 'medium' ? 1.111 :
               bodyFontSizePreset === 'large' ? 1.25 : 1.5,
           xs: existingTypography?.scale?.xs || 0.889
         },
@@ -1427,7 +1427,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           bold: existingTypography?.weight?.bold || 600
         }
       };
-      
+
       // Build spacing tokens (same as handleSave)
       const existingSpacing = existingSpacingTokens as any;
       const spacingTokens: Record<string, any> = {
@@ -1464,7 +1464,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         },
         modifiers: existingSpacing?.modifiers || []
       };
-      
+
       // Map buttonRadius to shape_tokens.corner.*
       const cornerMap: Record<string, string> = {
         'none': 'none',
@@ -1473,38 +1473,38 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         'large': 'lg',
         'pill': 'pill'
       };
-      
+
       // Map shadowIntensity2 to shape_tokens.shadow.level_* (only if border effect is shadow)
       const shadowMap: Record<string, string | null> = {
         'none': null,
         'subtle': 'level_1',
         'pronounced': 'level_2'
       };
-      
+
       // Build shape tokens (same as handleSave)
       // CRITICAL: Clear all other corner values to prevent cross-contamination
       // Only set the one value that matches buttonRadius2 (block widget shape)
       const cornerKey2 = cornerMap[buttonRadius2];
       const cornerValue2 = buttonRadius2 === 'square' ? '0px' :
-                          buttonRadius2 === 'rounded' ? '0.75rem' :
-                          '9999px'; // pill
-      
+        buttonRadius2 === 'rounded' ? '0.75rem' :
+          '9999px'; // pill
+
       // Build a clean corner object with only the active value
       const cleanCorner2: Record<string, string> = {};
       cleanCorner2[cornerKey2] = cornerValue2;
-      
+
       const shapeTokens: Record<string, any> = {
         ...(existingShapeTokens || {}),
         corner: cleanCorner2
       };
-      
+
       // Add shadow if border effect is shadow and intensity is not none
       const existingShape = existingShapeTokens as any;
       if (borderEffect2 === 'shadow' && shadowMap[shadowIntensity2]) {
         shapeTokens.shadow = {
           ...(existingShape?.shadow || {}),
-          [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle' 
-            ? '0 1px 2px rgba(15, 23, 42, 0.06)' 
+          [shadowMap[shadowIntensity2]!]: shadowIntensity2 === 'subtle'
+            ? '0 1px 2px rgba(15, 23, 42, 0.06)'
             : '0 16px 48px rgba(15, 23, 42, 0.5)',
           focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
@@ -1514,7 +1514,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           focus: existingShape?.shadow?.focus || '0 0 0 4px rgba(37, 99, 235, 0.35)'
         };
       }
-      
+
       // Build motion tokens (same as handleSave)
       const existingMotion = existingMotionTokens as any;
       const motionTokens: Record<string, any> = {
@@ -1535,7 +1535,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           ring_offset: existingMotion?.focus?.ring_offset || '2px'
         }
       };
-      
+
       // Build iconography tokens (same as handleSave)
       const existingIconographyTokens = safeParse(theme?.iconography_tokens);
       const iconographyTokens: Record<string, any> = {
@@ -1544,7 +1544,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         color: iconColor,
         spacing: `${iconSpacing}rem`
       };
-      
+
       // finalWidgetBackground already defined above (line 1277)
       // Build widget_styles for backward compatibility
       const existingWidgetStyles = safeParse(theme?.widget_styles);
@@ -1552,16 +1552,16 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         ...(existingWidgetStyles || {}),
         border_width: 'none', // No longer configurable
         shape: buttonRadius2 === 'square' ? 'square' :
-               buttonRadius2 === 'rounded' ? 'rounded' :
-               'pill', // buttonRadius2 === 'pill'
+          buttonRadius2 === 'rounded' ? 'rounded' :
+            'pill', // buttonRadius2 === 'pill'
         border_effect: borderEffect2,
         border_shadow_intensity: borderEffect2 === 'shadow' ? shadowIntensity2 : 'none',
         border_glow_intensity: borderEffect2 === 'glow' ? glowIntensity2 : 'subtle',
         glow_color: borderEffect2 === 'glow' ? glowColor2 : '#ff00ff',
         spacing: spacingDensity === 'compact' ? 'tight' :
-                 spacingDensity === 'cozy' ? 'comfortable' : 'spacious'
+          spacingDensity === 'cozy' ? 'comfortable' : 'spacious'
       };
-      
+
       // DEBUG: Log glow settings being saved
       console.log('[ThemeEditorPanel] 💾 Saving glow settings:', {
         borderEffect2,
@@ -1573,20 +1573,20 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           glow_color: widgetStyles.glow_color
         }
       });
-      
+
       // Build legacy colors JSON
       const legacyColors = {
         primary: textPrimary,
         secondary: backgroundSurface,
         accent: accentPrimary
       };
-      
+
       // Build legacy fonts JSON
       const legacyFonts = {
         heading: headingFont,
         body: bodyFont
       };
-      
+
       const themeData = {
         name: themeName ? `${themeName} Copy` : `${theme?.name || 'Untitled Theme'} Copy`,
         color_tokens: colorTokens,
@@ -1607,7 +1607,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         colors: legacyColors,
         fonts: legacyFonts
       };
-      
+
       // Always use the single user theme instead of creating new
       const userThemeId = await getOrCreateUserTheme();
       await updateMutation.mutateAsync({
@@ -1620,10 +1620,10 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       setStatusMessage('Theme saved as new');
       setSaveStatus('success');
       setHasChanges(false);
-      
+
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      
+
       // Ensure page.theme_id points to user theme and clear page-level overrides
       try {
         await updatePageThemeId(userThemeId, {
@@ -1643,7 +1643,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
         console.error('Failed to update page theme_id:', error);
         // Don't fail the whole save if this fails
       }
-      
+
       onSave?.();
     } catch (error) {
       console.error('Failed to save theme', error);
@@ -1651,7 +1651,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       setStatusMessage(error instanceof Error ? error.message : 'Failed to save theme');
     }
   };
-  
+
   const handleReset = () => {
     if (theme) {
       // Reload theme data
@@ -1659,9 +1659,9 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       const typographyTokens = safeParse(theme.typography_tokens);
       const spacingTokens = safeParse(theme.spacing_tokens);
       const shapeTokens = safeParse(theme.shape_tokens);
-      
+
       let updatedTokens = { ...tokens };
-      
+
       if (colorTokens) {
         Object.entries(colorTokens).forEach(([key, value]) => {
           if (typeof value === 'object' && value !== null) {
@@ -1674,7 +1674,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         });
       }
-      
+
       if (typographyTokens && typeof typographyTokens === 'object') {
         const fonts = (typographyTokens as any).font;
         if (fonts) {
@@ -1686,14 +1686,14 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           }
         }
       }
-      
+
       if (spacingTokens && typeof spacingTokens === 'object') {
         const density = (spacingTokens as any).density;
         if (density && ['compact', 'cozy', 'comfortable'].includes(density)) {
           setSpacingDensity(density as 'compact' | 'cozy' | 'comfortable');
         }
       }
-      
+
       if (shapeTokens && typeof shapeTokens === 'object') {
         const buttonRadiusOld = (shapeTokens as any).button_radius;
         if (buttonRadiusOld) {
@@ -1701,20 +1701,20 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
           else if (buttonRadiusOld === '9999px') setButtonRadius('pill');
           else setButtonRadius('rounded');
         }
-        
+
         // Border width and shadow level are no longer configurable
         // They are only configurable for block widgets via border_effect
       }
-      
+
       setTokens(updatedTokens);
       setHasChanges(false);
       setStatusMessage('Changes reset');
       setTimeout(() => setStatusMessage(null), 2000);
     }
   };
-  
+
   const fontOptions = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Raleway', 'Source Sans Pro'];
-  
+
   // Page Style accordion items - using extracted components
   const pageStyleItems: TokenAccordionItem[] = useMemo(() => [
     {
@@ -2193,8 +2193,8 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
       label: 'Block / widget style'
     },
     {
-      value: 'shadow-preview',
-      label: 'Shadow preview'
+      value: 'page-editor',
+      label: 'Page Editor'
     }
   ];
 
@@ -2272,7 +2272,7 @@ export function ThemeEditorPanel({ activeColor, theme, onSave }: ThemeEditorPane
     // Load Font Awesome into Shadow DOM
     useEffect(() => {
       if (!shadowRoot) return;
-      
+
       const link = shadowRoot.ownerDocument.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
@@ -2399,9 +2399,9 @@ ${varLines}
                 {shadowPreviewAvatar && (
                   <div className="profile-header">
                     <div className="profile-image-container">
-                      <img 
-                        src={normalizeImageUrl(shadowPreviewAvatar)} 
-                        alt="Profile" 
+                      <img
+                        src={normalizeImageUrl(shadowPreviewAvatar)}
+                        alt="Profile"
                         className="profile-image"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
@@ -2450,8 +2450,8 @@ ${varLines}
                         )}
                         {widget.config_data && (() => {
                           try {
-                            const config = typeof widget.config_data === 'string' 
-                              ? JSON.parse(widget.config_data) 
+                            const config = typeof widget.config_data === 'string'
+                              ? JSON.parse(widget.config_data)
                               : widget.config_data;
                             if (config.description) {
                               return <div className="widget-description">{config.description}</div>;
@@ -2472,7 +2472,7 @@ ${varLines}
       </div>
     );
   };
-  
+
   return (
     <section
       className={styles.wrapper}
@@ -2532,7 +2532,7 @@ ${varLines}
           </div>
         </div>
       </header>
-      
+
       <Tabs.Root className={styles.themeTabs} defaultValue="page-style">
         <Tabs.List className={styles.themeTabList} aria-label="Theme style sections">
           {themeTabDefinitions.map((tab) => (
@@ -2554,7 +2554,7 @@ ${varLines}
           <TokenAccordion items={blockWidgetStyleItems} type="multiple" defaultValue={['block-background-type', 'typography-block']} />
         </Tabs.Content>
 
-        <Tabs.Content value="shadow-preview" className={styles.themeTabContent}>
+        <Tabs.Content value="page-editor" className={styles.themeTabContent}>
           <div style={{ display: 'grid', gap: 12 }}>
             <div style={{ display: 'grid', gap: 4 }}>
               <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Shadow DOM preview</h4>
@@ -2566,7 +2566,7 @@ ${varLines}
           </div>
         </Tabs.Content>
       </Tabs.Root>
-      
+
       <div className={styles.actions}>
         <div className={styles.actionButtons}>
           {hasChanges && (
