@@ -6,7 +6,7 @@ import { ColorPickerDemo } from './components/demo/ColorPickerDemo';
 import { PagePropertiesToolbarDemo } from './components/demo/PagePropertiesToolbarDemo';
 import { PageSettingsDemo } from './components/demo/PageSettingsDemo';
 import { ColorPickerDragTest } from './components/demo/ColorPickerDragTest';
-import { ShadowPreviewDemo } from './components/demo/ShadowPreviewDemo';
+import { PageEditorDemo } from './components/demo/PageEditorDemo';
 import { StyleAudit } from './components/demo/StyleAudit';
 import { DocumentationViewer } from './components/docs/DocumentationViewer';
 import { SupportCMS, BlogCMS } from './components/cms';
@@ -32,8 +32,8 @@ export default function App(): JSX.Element {
                 <Route path="/demo/page-settings.php" element={<PageSettingsDemo />} />
                 <Route path="/demo/color-picker-drag-test" element={<ColorPickerDragTest />} />
                 <Route path="/demo/color-picker-drag-test.php" element={<ColorPickerDragTest />} />
-                <Route path="/demo/page-editor" element={<ShadowPreviewDemo />} />
-                <Route path="/demo/page-editor.php" element={<ShadowPreviewDemo />} />
+                <Route path="/demo/page-editor" element={<PageEditorDemo />} />
+                <Route path="/demo/page-editor.php" element={<PageEditorDemo />} />
                 <Route path="/demo/style-audit" element={<StyleAudit />} />
                 <Route path="/demo/style-audit.php" element={<StyleAudit />} />
                 {/* Also match when accessed directly via PHP file */}

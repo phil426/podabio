@@ -10,7 +10,7 @@ interface PreviewData {
   background: string;
 }
 
-export function ShadowPreviewDemo(): JSX.Element {
+export function PageEditorDemo(): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
   const { data: snapshot } = usePageSnapshot();
