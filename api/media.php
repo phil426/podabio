@@ -42,33 +42,33 @@ if ($method === 'GET') {
         ]);
         exit;
     }
-    
+
     // Get single media item
     if (isset($_GET['id'])) {
-        $mediaId = (int)$_GET['id'];
+        $mediaId = (int) $_GET['id'];
         $mediaItem = $mediaLibrary->getMediaItem($mediaId, $userId);
-        
+
         if (!$mediaItem) {
             http_response_code(404);
             echo json_encode(['success' => false, 'error' => 'Media item not found']);
             exit;
         }
-        
+
         echo json_encode(['success' => true, 'media' => $mediaItem]);
         exit;
     }
-    
+
     // List user's media with pagination
-    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-    $perPage = isset($_GET['per_page']) ? max(1, (int)$_GET['per_page']) : MEDIA_PER_PAGE;
+    $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+    $perPage = isset($_GET['per_page']) ? max(1, (int) $_GET['per_page']) : MEDIA_PER_PAGE;
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-    
+
     $result = $mediaLibrary->getUserMedia($userId, [
         'page' => $page,
         'per_page' => $perPage,
         'search' => $search
     ]);
-    
+
     echo json_encode($result);
     exit;
 }
@@ -81,7 +81,7 @@ if ($method === 'POST') {
         echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
         exit;
     }
-    
+
     // Check if file was uploaded
     if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         $error = 'No file uploaded';
@@ -101,25 +101,25 @@ if ($method === 'POST') {
                     $error = 'Upload error occurred (error code: ' . $_FILES['image']['error'] . ')';
             }
         }
-        
+
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => $error]);
         exit;
     }
-    
+
     // Upload to media library
     $result = $mediaLibrary->uploadToLibrary($_FILES['image'], $userId);
-    
+
     if (!$result['success']) {
         http_response_code(400);
         ob_clean(); // Clear any output before JSON
         echo json_encode($result);
         exit;
     }
-    
+
     // Get full media item for response
     $mediaItem = $mediaLibrary->getMediaItem($result['media_id'], $userId);
-    
+
     if (!$mediaItem) {
         http_response_code(500);
         ob_clean(); // Clear any output before JSON
@@ -129,12 +129,50 @@ if ($method === 'POST') {
         ]);
         exit;
     }
-    
+
     ob_clean(); // Clear any output before JSON
     echo json_encode([
         'success' => true,
         'media' => $mediaItem,
         'message' => 'Image uploaded to media library successfully'
+    ]);
+    exit;
+}
+
+
+
+// Handle PUT requests (update)
+if ($method === 'PUT') {
+    // Verify CSRF token
+    // For PUT/DELETE, we often get data from php://input
+    $input = json_decode(file_get_contents('php://input'), true);
+    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $input['csrf_token'] ?? '';
+
+    if (!verifyCSRFToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+        exit;
+    }
+
+    $mediaId = isset($input['id']) ? (int) $input['id'] : 0;
+
+    if (!$mediaId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Media ID required']);
+        exit;
+    }
+
+    $result = $mediaLibrary->updateMedia($mediaId, $userId, $input);
+
+    if (!$result['success']) {
+        http_response_code(400);
+        echo json_encode($result);
+        exit;
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Media item updated successfully'
     ]);
     exit;
 }
@@ -148,23 +186,23 @@ if ($method === 'DELETE') {
         echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
         exit;
     }
-    
-    $mediaId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    
+
+    $mediaId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
     if (!$mediaId) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Media ID required']);
         exit;
     }
-    
+
     $result = $mediaLibrary->deleteMedia($mediaId, $userId);
-    
+
     if (!$result['success']) {
         http_response_code(400);
         echo json_encode($result);
         exit;
     }
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'Media item deleted successfully'

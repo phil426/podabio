@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, X, Check, CheckSquare, Square, Images, Plus, Trash } from '@phosphor-icons/react';
+import { X, Check, CheckSquare, Square, Images, Plus, Trash } from '@phosphor-icons/react';
 
 import { useAvailableWidgetsQuery, useUpdateWidgetMutation } from '../../api/widgets';
 import { usePageSnapshot } from '../../api/page';
@@ -8,10 +8,9 @@ import { useWidgetSelection } from '../../state/widgetSelection';
 import { uploadWidgetThumbnail } from '../../api/uploads';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { normalizeImageUrl } from '../../api/utils';
-import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
-import { ImageCropModal } from '../overlays/ImageCropModal';
+import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
 import type { MediaItem } from '../../api/media';
-import { useUploadToMediaLibraryMutation, useMediaLibraryQuery } from '../../api/media';
+import { useMediaLibraryQuery } from '../../api/media';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -70,9 +69,6 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isUploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
   const widgetType =
     selectedWidget?.widget_type ?? (typeof widgetDefinition?.widget_id === 'string' ? widgetDefinition?.widget_id : '');
 
@@ -216,84 +212,6 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
     currentThumbnail ||
     (widgetType === 'youtube_video' ? getYouTubeThumbnail(videoUrlConfig ?? '') ?? '' : '');
 
-  const handleChooseThumbnailFile = () => {
-    thumbnailInputRef.current?.click();
-  };
-
-  const handleThumbnailFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file || !selectedWidget) return;
-
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setThumbnailError('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
-      if (thumbnailInputRef.current) {
-        thumbnailInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setThumbnailError('File size exceeds the maximum allowed size of 5MB.');
-      if (thumbnailInputRef.current) {
-        thumbnailInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Create preview URL and show crop modal
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageSrc = e.target?.result as string;
-      setImageToCrop(imageSrc);
-      setCropModalOpen(true);
-    };
-    reader.readAsDataURL(file);
-
-    // Reset file input
-    if (thumbnailInputRef.current) {
-      thumbnailInputRef.current.value = '';
-    }
-  };
-
-  const handleThumbnailCropComplete = async (croppedImageBlob: Blob) => {
-    if (!selectedWidget) return;
-
-    setThumbnailError(null);
-    setUploadingThumbnail(true);
-    try {
-      const croppedFile = new File([croppedImageBlob], 'thumbnail.jpg', { type: 'image/jpeg' });
-      const result = await uploadWidgetThumbnail(croppedFile);
-      if (result.url) {
-        handleInputChange('thumbnail_image', result.url);
-        setSaveStatus('success');
-        // Auto-save the widget after thumbnail upload
-        if (formState) {
-          await updateWidget({
-            widget_id: String(selectedWidget.id),
-            title: formState.title,
-            is_active: formState.isActive ? '1' : '0',
-            config_data: JSON.stringify({
-              ...formState.config,
-              thumbnail_image: result.url
-            })
-          });
-        }
-      }
-      setCropModalOpen(false);
-      setImageToCrop(null);
-    } catch (error) {
-      setThumbnailError(error instanceof Error ? error.message : 'Unable to upload thumbnail.');
-      setSaveStatus('error');
-    } finally {
-      setUploadingThumbnail(false);
-    }
-  };
 
   const handleSelectThumbnailFromLibrary = async (mediaItem: MediaItem) => {
     if (!selectedWidget) return;
@@ -477,18 +395,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
                       <button
                         type="button"
                         className={styles.segmentedButton}
-                        onClick={handleChooseThumbnailFile}
-                        disabled={isUploadingThumbnail}
-                        title={isUploadingThumbnail ? 'Uploading…' : resolvedThumbnail ? 'Replace thumbnail' : 'Upload thumbnail'}
-                      >
-                        <Upload size={16} weight="regular" aria-hidden="true" />
-                      </button>
-                      <div className={styles.segmentedDivider} />
-                      <button
-                        type="button"
-                        className={styles.segmentedButton}
                         onClick={() => setMediaLibraryOpen(true)}
-                        disabled={isUploadingThumbnail}
                         title="Choose from library"
                       >
                         <Images size={16} weight="regular" aria-hidden="true" />
@@ -510,34 +417,11 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
                     </div>
                   </div>
                 </div>
-                <input
-                  ref={thumbnailInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className={styles.hiddenInput}
-                  onChange={handleThumbnailFileChange}
-                />
-                <MediaLibraryDrawer
+                <MediaLibraryModal
                   open={mediaLibraryOpen}
                   onClose={() => setMediaLibraryOpen(false)}
                   onSelect={handleSelectThumbnailFromLibrary}
                 />
-                {imageToCrop && (
-                  <ImageCropModal
-                    open={cropModalOpen}
-                    onClose={() => {
-                      setCropModalOpen(false);
-                      setImageToCrop(null);
-                    }}
-                    imageSrc={imageToCrop}
-                    onCropComplete={handleThumbnailCropComplete}
-                    aspectRatio={undefined} // Free crop for thumbnails
-                    cropShape="rect"
-                    minZoom={1}
-                    maxZoom={3}
-                    initialZoom={1}
-                  />
-                )}
                 {thumbnailError && <p className={styles.thumbnailError}>{thumbnailError}</p>}
                 {widgetType === 'people' && (
                   <input
@@ -1877,8 +1761,6 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
   const required = Boolean(definition.required);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const uploadMutation = useUploadToMediaLibraryMutation();
 
   // Parse images array from value
   const images = useMemo(() => {
@@ -1917,25 +1799,6 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
     setMediaLibraryOpen(false);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const result = await uploadMutation.mutateAsync(file);
-      if (result.media?.file_url) {
-        handleAddImage(result.media.file_url);
-      }
-    } catch (error) {
-      console.error('Failed to upload image:', error);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
 
   return (
     <div className={styles.control}>
@@ -1991,26 +1854,10 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
           <Images size={16} weight="regular" />
           Choose from Library
         </button>
-        <button
-          type="button"
-          className={styles.carouselImageAddButton}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-        >
-          <Upload size={16} weight="regular" />
-          Upload Image
-        </button>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
-        className={styles.hiddenInput}
-        onChange={handleFileUpload}
-      />
 
-      <MediaLibraryDrawer
+      <MediaLibraryModal
         open={mediaLibraryOpen}
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={handleSelectFromLibrary}

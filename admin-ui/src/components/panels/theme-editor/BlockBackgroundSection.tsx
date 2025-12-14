@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Image, Swatches, Square } from '@phosphor-icons/react';
+import { Image, Swatches, Square, Images } from '@phosphor-icons/react';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
+import { MediaLibraryModal } from '../../overlays/MediaLibraryModal';
+import type { MediaItem } from '../../../api/media';
 import styles from '../theme-editor-panel.module.css';
 
 interface BlockBackgroundSectionProps {
@@ -10,7 +13,7 @@ interface BlockBackgroundSectionProps {
   onBackgroundChange: (value: string) => void;
   blockBackgroundImage: string | null;
   onBackgroundImageUrlChange: (url: string) => void;
-  onBackgroundImageUpload: (file: File) => Promise<void>;
+  onBackgroundImageUpload?: (file: File) => Promise<void>;
   onBackgroundImageRemove: () => void;
 }
 
@@ -24,8 +27,9 @@ export function BlockBackgroundSection({
   onBackgroundImageUpload,
   onBackgroundImageRemove
 }: BlockBackgroundSectionProps): JSX.Element {
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   return (
-    <Tabs.Root 
+    <Tabs.Root
       className={styles.backgroundTabs}
       value={backgroundType}
       onValueChange={(value) => onBackgroundTypeChange(value as 'solid' | 'gradient' | 'image')}
@@ -66,31 +70,43 @@ export function BlockBackgroundSection({
           <div className={styles.control}>
             <label>
               <span>Background Image URL</span>
-              <input
-                type="url"
-                value={blockBackgroundImage || ''}
-                onChange={(e) => onBackgroundImageUrlChange(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className={styles.urlInput}
-              />
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="url"
+                  value={blockBackgroundImage || ''}
+                  onChange={(e) => onBackgroundImageUrlChange(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className={styles.urlInput}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMediaLibraryOpen(true)}
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--pod-semantic-text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Choose from Library"
+                >
+                  <Images size={16} weight="regular" />
+                </button>
+              </div>
             </label>
-            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--pod-semantic-text-secondary)' }}>or</span>
-            </div>
-            <label style={{ marginTop: '0.5rem', display: 'block' }}>
-              <span>Upload Image</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    onBackgroundImageUpload(file);
-                  }
-                }}
-                style={{ marginTop: '0.25rem', width: '100%' }}
-              />
-            </label>
+            <MediaLibraryModal
+              open={mediaLibraryOpen}
+              onClose={() => setMediaLibraryOpen(false)}
+              onSelect={(item: MediaItem) => {
+                onBackgroundImageUrlChange(item.file_url);
+                setMediaLibraryOpen(false);
+              }}
+            />
             {blockBackgroundImage && (
               <div style={{ marginTop: '1rem' }}>
                 <div style={{ position: 'relative', display: 'inline-block' }}>

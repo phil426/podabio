@@ -10,7 +10,7 @@ import { PhotoTabContent } from './wizard/PhotoTabContent';
 import { ColorPalette } from './wizard/ColorPalette';
 import { PreviewActions } from './wizard/PreviewActions';
 import { ThemePreview } from './preview/ThemePreview';
-import { MediaLibraryDrawer } from '../../overlays/MediaLibraryDrawer';
+import { MediaLibraryModal } from '../../overlays/MediaLibraryModal';
 import { useThemeWizardController } from './hooks/useThemeWizardController';
 import styles from './podcast-theme-generator.module.css';
 
@@ -73,7 +73,6 @@ export function PodcastThemeGenerator({
             <PhotoTabContent
               uploadedImageUrl={state.activeImageUrl || state.uploadedImageUrl}
               isUploading={false} // Controller doesn't expose generic uploading state yet, usually fast enough
-              onFileUpload={handleImageUpload}
               onOpenMediaLibrary={() => actions.setMediaLibraryOpen(true)}
             />
           )}
@@ -116,11 +115,14 @@ export function PodcastThemeGenerator({
       </div>
 
       {/* External Drawers */}
-      <MediaLibraryDrawer
+      {/* External Drawers */}
+      <MediaLibraryModal
         open={state.mediaLibraryOpen}
         onClose={() => actions.setMediaLibraryOpen(false)}
-        onSelect={handleSelectFromMediaLibrary}
-      // type="image" // Removed invalid type prop
+        onSelect={(item) => {
+          handleSelectFromMediaLibrary(item);
+          actions.setMediaLibraryOpen(false);
+        }}
       />
     </div>
   );

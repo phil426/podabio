@@ -8,7 +8,8 @@ import {
   SignOut,
   Layout,
   CaretUp,
-  Images
+  Images,
+  LockKey
 } from '@phosphor-icons/react';
 import { useAccountProfile } from '../../api/account';
 import { usePageSnapshot } from '../../api/page';
@@ -126,51 +127,41 @@ export function LeftyProfileSection(): JSX.Element {
                     <p className={styles.menuEmail}>{email}</p>
                   </div>
                   <div className={styles.menuBody}>
-                    {accountWorkspaceEnabled ? (
-                      <>
-                        <button
-                          type="button"
-                          className={styles.menuLink}
-                          onClick={() => handleNavigate('/account/profile')}
-                        >
-                          <User aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
-                          Profile &amp; security
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.menuLink}
-                          onClick={() => handleNavigate('/account/billing')}
-                        >
-                          <CreditCard aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
-                          Plans &amp; billing
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.menuLink}
-                        onClick={() => {
-                          trackTelemetry({ event: 'lefty.profile_navigate', metadata: { destination: 'account_workspace' } });
-                          handleNavigate('/account/profile');
-                        }}
-                      >
-                        <User aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
-                        Manage account
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className={styles.menuLink}
+                      onClick={() => handleNavigate('/account/profile')}
+                    >
+                      <User aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
+                      Profile
+                    </button>
                     <button
                       type="button"
                       className={styles.menuLink}
                       onClick={() => {
                         setMenuOpen(false);
-                        setMediaLibraryOpen(true);
-                        trackTelemetry({ event: 'lefty.profile_navigate', metadata: { destination: 'media_library' } });
+                        handleNavigate('/account/media');
                       }}
                     >
                       <Images aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
                       Media Library
                     </button>
-                    {/* Panel switcher removed - Lefty is now the only admin panel */}
+                    <button
+                      type="button"
+                      className={styles.menuLink}
+                      onClick={() => handleNavigate('/account/security')}
+                    >
+                      <LockKey aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
+                      Security
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.menuLink}
+                      onClick={() => handleNavigate('/account/billing')}
+                    >
+                      <CreditCard aria-hidden="true" className={styles.menuIcon} size={16} weight="regular" />
+                      Billing
+                    </button>
                   </div>
                   <div className={styles.menuFooter}>
                     <button

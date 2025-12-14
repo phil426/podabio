@@ -69,6 +69,13 @@
   color: #ffffff;
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
 .modeButtonActive {
   background: rgba(0, 255, 127, 0.2);
   color: #00FF7F;

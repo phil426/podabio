@@ -10,27 +10,30 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/ImageHandler.php';
 
-class MediaLibrary {
+class MediaLibrary
+{
     private $pdo;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->pdo = getDB();
     }
-    
+
     /**
      * Upload image to media library
      * @param array $file
      * @param int $userId
      * @return array ['success' => bool, 'media_id' => int|null, 'path' => string|null, 'url' => string|null, 'error' => string|null]
      */
-    public function uploadToLibrary($file, $userId) {
+    public function uploadToLibrary($file, $userId)
+    {
         $imageHandler = new ImageHandler();
         $result = $imageHandler->uploadToMediaLibrary($file, $userId);
-        
+
         if (!$result['success']) {
             return $result;
         }
-        
+
         // Create database entry
         try {
             $stmt = $this->pdo->prepare("
@@ -45,9 +48,9 @@ class MediaLibrary {
                 $result['file_size'],
                 $result['mime_type']
             ]);
-            
+
             $mediaId = $this->pdo->lastInsertId();
-            
+
             return [
                 'success' => true,
                 'media_id' => $mediaId,
@@ -79,33 +82,34 @@ class MediaLibrary {
             ];
         }
     }
-    
+
     /**
      * Get user's media items (paginated)
      * @param int $userId
      * @param array $options ['page' => int, 'per_page' => int, 'search' => string]
      * @return array ['success' => bool, 'media' => array, 'total' => int, 'page' => int, 'per_page' => int]
      */
-    public function getUserMedia($userId, $options = []) {
-        $page = isset($options['page']) ? max(1, (int)$options['page']) : 1;
-        $perPage = isset($options['per_page']) ? max(1, (int)$options['per_page']) : MEDIA_PER_PAGE;
+    public function getUserMedia($userId, $options = [])
+    {
+        $page = isset($options['page']) ? max(1, (int) $options['page']) : 1;
+        $perPage = isset($options['per_page']) ? max(1, (int) $options['per_page']) : MEDIA_PER_PAGE;
         $search = isset($options['search']) ? trim($options['search']) : '';
-        
+
         $offset = ($page - 1) * $perPage;
-        
+
         $whereClause = "user_id = ?";
         $params = [$userId];
-        
+
         if (!empty($search)) {
             $whereClause .= " AND filename LIKE ?";
             $params[] = '%' . $search . '%';
         }
-        
+
         // Get total count
         $countStmt = $this->pdo->prepare("SELECT COUNT(*) as total FROM user_media WHERE $whereClause");
         $countStmt->execute($params);
-        $total = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-        
+        $total = (int) $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
         // Get paginated results
         $stmt = $this->pdo->prepare("
             SELECT * FROM user_media 
@@ -116,93 +120,95 @@ class MediaLibrary {
         $params[] = $perPage;
         $params[] = $offset;
         $stmt->execute($params);
-        
+
         $media = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $media[] = [
-                'id' => (int)$row['id'],
-                'user_id' => (int)$row['user_id'],
+                'id' => (int) $row['id'],
+                'user_id' => (int) $row['user_id'],
                 'filename' => $row['filename'],
                 'file_path' => $row['file_path'],
                 'file_url' => $row['file_url'],
-                'file_size' => (int)$row['file_size'],
+                'file_size' => (int) $row['file_size'],
                 'mime_type' => $row['mime_type'],
                 'uploaded_at' => $row['uploaded_at'],
                 'created_at' => $row['created_at'],
                 'updated_at' => $row['updated_at']
             ];
         }
-        
+
         return [
             'success' => true,
             'media' => $media,
             'total' => $total,
             'page' => $page,
             'per_page' => $perPage,
-            'total_pages' => (int)ceil($total / $perPage)
+            'total_pages' => (int) ceil($total / $perPage)
         ];
     }
-    
+
     /**
      * Get single media item (with user verification)
      * @param int $mediaId
      * @param int $userId
      * @return array|null
      */
-    public function getMediaItem($mediaId, $userId) {
+    public function getMediaItem($mediaId, $userId)
+    {
         $media = fetchOne(
             "SELECT * FROM user_media WHERE id = ? AND user_id = ?",
             [$mediaId, $userId]
         );
-        
+
         if (!$media) {
             return null;
         }
-        
+
         return [
-            'id' => (int)$media['id'],
-            'user_id' => (int)$media['user_id'],
+            'id' => (int) $media['id'],
+            'user_id' => (int) $media['user_id'],
             'filename' => $media['filename'],
             'file_path' => $media['file_path'],
             'file_url' => $media['file_url'],
-            'file_size' => (int)$media['file_size'],
+            'file_size' => (int) $media['file_size'],
             'mime_type' => $media['mime_type'],
             'uploaded_at' => $media['uploaded_at'],
             'created_at' => $media['created_at'],
             'updated_at' => $media['updated_at']
         ];
     }
-    
+
     /**
      * Delete media item and file
      * @param int $mediaId
      * @param int $userId
      * @return array ['success' => bool, 'error' => string|null]
      */
-    public function deleteMedia($mediaId, $userId) {
+    public function deleteMedia($mediaId, $userId)
+    {
         // Get media item (verify ownership)
         $media = $this->getMediaItem($mediaId, $userId);
-        
+
         if (!$media) {
             return ['success' => false, 'error' => 'Media item not found'];
         }
-        
+
         // Delete file
         $imageHandler = new ImageHandler();
         $fileDeleted = $imageHandler->deleteImage($media['file_path']);
-        
+
         // Delete database entry
         try {
             $stmt = $this->pdo->prepare("DELETE FROM user_media WHERE id = ? AND user_id = ?");
             $stmt->execute([$mediaId, $userId]);
-            
+
             return ['success' => true, 'error' => null];
         } catch (PDOException $e) {
             error_log("Media library deletion failed: " . $e->getMessage());
             return ['success' => false, 'error' => 'Failed to delete media library entry'];
         }
     }
-    
+
     /**
      * Migrate existing image to media library
      * @param string $filePath Relative path from root
@@ -210,18 +216,19 @@ class MediaLibrary {
      * @param array $metadata ['filename' => string, 'file_size' => int, 'mime_type' => string]
      * @return array ['success' => bool, 'media_id' => int|null, 'error' => string|null]
      */
-    public function migrateExistingImage($filePath, $userId, $metadata = []) {
+    public function migrateExistingImage($filePath, $userId, $metadata = [])
+    {
         $fullPath = ROOT_PATH . $filePath;
-        
+
         // Check if file exists
         if (!file_exists($fullPath) || !is_file($fullPath)) {
             return ['success' => false, 'media_id' => null, 'error' => 'File not found'];
         }
-        
+
         // Get file info if not provided
         $filename = $metadata['filename'] ?? basename($filePath);
         $fileSize = $metadata['file_size'] ?? filesize($fullPath);
-        
+
         if (empty($metadata['mime_type'])) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $fullPath);
@@ -229,26 +236,26 @@ class MediaLibrary {
         } else {
             $mimeType = $metadata['mime_type'];
         }
-        
+
         // Check if already in library
         $existing = fetchOne(
             "SELECT id FROM user_media WHERE user_id = ? AND file_path = ?",
             [$userId, $filePath]
         );
-        
+
         if ($existing) {
             return [
                 'success' => true,
-                'media_id' => (int)$existing['id'],
+                'media_id' => (int) $existing['id'],
                 'error' => null,
                 'already_exists' => true
             ];
         }
-        
+
         // Create database entry
         try {
             $fileUrl = APP_URL . $filePath;
-            
+
             $stmt = $this->pdo->prepare("
                 INSERT INTO user_media (user_id, filename, file_path, file_url, file_size, mime_type, uploaded_at)
                 VALUES (?, ?, ?, ?, ?, ?, NOW())
@@ -261,9 +268,9 @@ class MediaLibrary {
                 $fileSize,
                 $mimeType
             ]);
-            
+
             $mediaId = $this->pdo->lastInsertId();
-            
+
             return [
                 'success' => true,
                 'media_id' => $mediaId,
@@ -279,7 +286,7 @@ class MediaLibrary {
             ];
         }
     }
-    
+
     /**
      * Download image from URL and save to media library
      * @param string $imageUrl URL of the image to download
@@ -287,16 +294,17 @@ class MediaLibrary {
      * @param string $filename Optional custom filename (will be generated if not provided)
      * @return array ['success' => bool, 'media_id' => int|null, 'path' => string|null, 'url' => string|null, 'error' => string|null]
      */
-    public function downloadAndSaveImage($imageUrl, $userId, $filename = null) {
+    public function downloadAndSaveImage($imageUrl, $userId, $filename = null)
+    {
         if (empty($imageUrl)) {
             return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Image URL is required'];
         }
-        
+
         // Validate URL
         if (!filter_var($imageUrl, FILTER_VALIDATE_URL)) {
             return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Invalid image URL'];
         }
-        
+
         // Download image
         $context = stream_context_create([
             'http' => [
@@ -306,24 +314,24 @@ class MediaLibrary {
                 'max_redirects' => 5
             ]
         ]);
-        
+
         $imageData = @file_get_contents($imageUrl, false, $context);
-        
+
         if ($imageData === false) {
             return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Failed to download image from URL'];
         }
-        
+
         // Detect MIME type
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_buffer($finfo, $imageData);
         finfo_close($finfo);
-        
+
         // Validate it's an image
         $allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         if (!in_array($mimeType, $allowedMimeTypes)) {
             return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Invalid image format'];
         }
-        
+
         // Get file extension from MIME type
         $extensionMap = [
             'image/jpeg' => 'jpg',
@@ -333,7 +341,7 @@ class MediaLibrary {
             'image/webp' => 'webp'
         ];
         $extension = $extensionMap[$mimeType] ?? 'jpg';
-        
+
         // Generate filename if not provided
         if (empty($filename)) {
             $urlPath = parse_url($imageUrl, PHP_URL_PATH);
@@ -352,23 +360,23 @@ class MediaLibrary {
             $ext = $pathInfo['extension'] ?? $extension;
             $filename = generateSecureFilename($baseName . '-' . time() . '.' . $ext);
         }
-        
+
         // Get upload directory
-        $uploadDir = UPLOAD_MEDIA . '/' . (int)$userId;
+        $uploadDir = UPLOAD_MEDIA . '/' . (int) $userId;
         if (!is_dir($uploadDir)) {
             if (!mkdir($uploadDir, 0755, true)) {
                 return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Failed to create upload directory'];
             }
         }
-        
+
         // Save image file
         $filepath = $uploadDir . '/' . $filename;
         $bytesWritten = @file_put_contents($filepath, $imageData);
-        
+
         if ($bytesWritten === false) {
             return ['success' => false, 'media_id' => null, 'path' => null, 'url' => null, 'error' => 'Failed to save image file'];
         }
-        
+
         // Get relative path - ensure proper path handling
         // Remove ROOT_PATH and normalize slashes
         $relativePath = str_replace(ROOT_PATH, '', $filepath);
@@ -379,25 +387,25 @@ class MediaLibrary {
         }
         $fileUrl = APP_URL . '/' . $relativePath;
         $fileSize = filesize($filepath);
-        
+
         // Check if file already exists at this location (avoid duplicate database entries)
         // Check by file path AND by original image URL to avoid duplicates
         $existing = fetchOne(
             "SELECT id, file_path, file_url FROM user_media WHERE user_id = ? AND (file_path = ? OR file_url LIKE ?)",
             [$userId, $relativePath, '%' . basename($imageUrl) . '%']
         );
-        
+
         if ($existing) {
             return [
                 'success' => true,
-                'media_id' => (int)$existing['id'],
+                'media_id' => (int) $existing['id'],
                 'path' => $existing['file_path'],
                 'url' => $existing['file_url'],
                 'error' => null,
                 'already_exists' => true
             ];
         }
-        
+
         // Create database entry
         try {
             $stmt = $this->pdo->prepare("
@@ -412,9 +420,9 @@ class MediaLibrary {
                 $fileSize,
                 $mimeType
             ]);
-            
+
             $mediaId = $this->pdo->lastInsertId();
-            
+
             return [
                 'success' => true,
                 'media_id' => $mediaId,
@@ -436,6 +444,66 @@ class MediaLibrary {
                 'url' => null,
                 'error' => 'Failed to save image to media library'
             ];
+        }
+    }
+    /**
+     * Update media item details (e.g. filename)
+     * @param int $mediaId
+     * @param int $userId
+     * @param array $data ['filename' => string]
+     * @return array ['success' => bool, 'error' => string|null]
+     */
+    public function updateMedia($mediaId, $userId, $data)
+    {
+        // Get media item (verify ownership)
+        $media = $this->getMediaItem($mediaId, $userId);
+
+        if (!$media) {
+            return ['success' => false, 'error' => 'Media item not found'];
+        }
+
+        // Prepare update fields
+        $updates = [];
+        $params = [];
+
+        if (isset($data['filename']) && !empty($data['filename'])) {
+            $newFilename = trim($data['filename']);
+            // Basic validation
+            if (strlen($newFilename) > 255) {
+                return ['success' => false, 'error' => 'Filename too long'];
+            }
+
+            // Keep original extension
+            $info = pathinfo($media['filename']);
+            $ext = $info['extension'] ?? '';
+
+            // If new filename doesn't have extension, append it
+            if ($ext && !str_ends_with($newFilename, '.' . $ext)) {
+                $newFilename .= '.' . $ext;
+            }
+
+            $updates[] = "filename = ?";
+            $params[] = $newFilename;
+        }
+
+        if (empty($updates)) {
+            return ['success' => true, 'message' => 'No changes made'];
+        }
+
+        $updates[] = "updated_at = NOW()";
+
+        try {
+            $sql = "UPDATE user_media SET " . implode(", ", $updates) . " WHERE id = ? AND user_id = ?";
+            $params[] = $mediaId;
+            $params[] = $userId;
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
+            return ['success' => true, 'error' => null];
+        } catch (PDOException $e) {
+            error_log("Media library update failed: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to update media item'];
         }
     }
 }

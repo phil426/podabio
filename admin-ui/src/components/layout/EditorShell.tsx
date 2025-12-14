@@ -53,7 +53,7 @@ export function EditorShell(): JSX.Element {
       const pathSegments = location.pathname.split('/').filter(Boolean);
       if (pathSegments.length > 1 && pathSegments[0] === 'account') {
         const subTab = pathSegments[1];
-        if (['profile', 'security', 'billing'].includes(subTab)) {
+        if (['profile', 'media', 'security', 'billing'].includes(subTab)) {
           navigate({ pathname: '/', hash: `#${subTab}` }, { replace: true });
         } else {
           navigate({ pathname: '/', hash: '#profile' }, { replace: true });

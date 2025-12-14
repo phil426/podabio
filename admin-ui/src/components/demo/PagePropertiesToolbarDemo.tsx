@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { 
-  TextT, 
-  Palette, 
-  TextB, 
-  TextItalic, 
-  TextUnderline, 
-  TextAlignLeft, 
-  TextAlignCenter, 
+import {
+  TextT,
+  Palette,
+  TextB,
+  TextItalic,
+  TextUnderline,
+  TextAlignLeft,
+  TextAlignCenter,
   TextAlignRight,
   Image as ImageIcon,
+  Images,
   Sparkle,
   Square
 } from '@phosphor-icons/react';
@@ -17,6 +18,8 @@ import * as Popover from '@radix-ui/react-popover';
 import { HexColorPicker } from 'react-colorful';
 import { ColorTokenPicker } from '../controls/ColorTokenPicker';
 import { PageBackgroundPicker } from '../controls/PageBackgroundPicker';
+import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
+import type { MediaItem } from '../../api/media';
 import styles from './page-properties-toolbar-demo.module.css';
 
 interface PagePropertiesToolbarDemoProps {
@@ -32,12 +35,12 @@ interface PagePropertiesToolbarDemoProps {
   bodyItalic?: boolean;
   bodyUnderline?: boolean;
   textAlignment?: 'left' | 'center' | 'right';
-  
+
   // Background
   pageBackground?: string;
   pageBackgroundType?: 'solid' | 'gradient' | 'image';
   pageBackgroundImage?: string | null;
-  
+
   // Callbacks
   onHeadingFontChange?: (font: string) => void;
   onBodyFontChange?: (font: string) => void;
@@ -139,7 +142,7 @@ export function PagePropertiesToolbarDemo({
                     onHeadingColorChange?.(value);
                   }}
                 />
-                <select 
+                <select
                   className={styles.toolbarSelect}
                   value={localHeadingFont}
                   onChange={(e) => {
@@ -168,7 +171,7 @@ export function PagePropertiesToolbarDemo({
                     onBodyColorChange?.(value);
                   }}
                 />
-                <select 
+                <select
                   className={styles.toolbarSelect}
                   value={localBodyFont}
                   onChange={(e) => {
@@ -315,7 +318,7 @@ export function PagePropertiesToolbarDemo({
                         onHeadingColorChange?.(value);
                       }}
                     />
-                    <select 
+                    <select
                       className={styles.controlSelect}
                       value={localHeadingFont}
                       onChange={(e) => {
@@ -338,7 +341,7 @@ export function PagePropertiesToolbarDemo({
                         onBodyColorChange?.(value);
                       }}
                     />
-                    <select 
+                    <select
                       className={styles.controlSelect}
                       value={localBodyFont}
                       onChange={(e) => {
@@ -496,7 +499,7 @@ export function PagePropertiesToolbarDemo({
                 <div className={styles.sectionContent}>
                   <div className={styles.controlRow}>
                     <label>Heading Font</label>
-                    <select 
+                    <select
                       className={styles.controlSelect}
                       value={localHeadingFont}
                       onChange={(e) => {
@@ -511,7 +514,7 @@ export function PagePropertiesToolbarDemo({
                   </div>
                   <div className={styles.controlRow}>
                     <label>Body Font</label>
-                    <select 
+                    <select
                       className={styles.controlSelect}
                       value={localBodyFont}
                       onChange={(e) => {
@@ -732,16 +735,16 @@ function ColorButton({ label, value, onChange }: ColorButtonProps): JSX.Element 
         >
           <div className={styles.colorButtonIcon}>
             <TextT size={16} weight="bold" />
-            <div 
+            <div
               className={styles.colorButtonSwatch}
-              style={{ 
+              style={{
                 backgroundColor: hexColor,
                 backgroundImage: isGradient ? value : undefined
               }}
             />
-            <div 
+            <div
               className={styles.colorButtonChip}
-              style={{ 
+              style={{
                 backgroundColor: hexColor,
                 backgroundImage: isGradient ? value : undefined
               }}
@@ -793,18 +796,19 @@ interface BackgroundButtonProps {
   variant?: 'compact' | 'full';
 }
 
-function BackgroundButton({ 
-  label, 
-  value, 
+function BackgroundButton({
+  label,
+  value,
   backgroundType,
   backgroundImage,
-  onValueChange, 
+  onValueChange,
   onTypeChange,
   onImageChange,
   onImageUpload,
   variant = 'compact'
 }: BackgroundButtonProps): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Get display color/swatch for the button
@@ -839,18 +843,18 @@ function BackgroundButton({
         >
           <div className={styles.colorButtonIcon}>
             <Palette size={18} weight="bold" />
-            <div 
+            <div
               className={styles.colorButtonSwatch}
-              style={{ 
+              style={{
                 backgroundColor: isImage ? 'transparent' : (isGradient ? 'transparent' : displayValue),
                 backgroundImage: isGradient || isImage ? (isImage ? `url(${displayValue})` : displayValue) : undefined,
                 backgroundSize: isImage ? 'cover' : undefined,
                 backgroundPosition: isImage ? 'center' : undefined
               }}
             />
-            <div 
+            <div
               className={styles.colorButtonChip}
-              style={{ 
+              style={{
                 backgroundColor: isImage ? 'transparent' : (isGradient ? 'transparent' : displayValue),
                 backgroundImage: isGradient || isImage ? (isImage ? `url(${displayValue})` : displayValue) : undefined,
                 backgroundSize: isImage ? 'cover' : undefined,
@@ -868,7 +872,7 @@ function BackgroundButton({
           align="start"
         >
           <div className={styles.backgroundPopoverContent}>
-            <Tabs.Root 
+            <Tabs.Root
               value={backgroundType}
               onValueChange={(value) => onTypeChange(value as 'solid' | 'gradient' | 'image')}
             >
@@ -889,23 +893,34 @@ function BackgroundButton({
               <Tabs.Content value={backgroundType} className={styles.backgroundTabContent}>
                 {backgroundType === 'image' ? (
                   <div className={styles.imageUpload}>
-                    <input
-                      type="url"
-                      placeholder="Image URL"
-                      value={backgroundImage || ''}
-                      onChange={(e) => {
-                        onImageChange?.(e.target.value);
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <input
+                        type="url"
+                        placeholder="Image URL"
+                        value={backgroundImage || ''}
+                        onChange={(e) => {
+                          onImageChange?.(e.target.value);
+                        }}
+                        className={styles.urlInput}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMediaLibraryOpen(true)}
+                        className={styles.colorButton}
+                        style={{ width: 'auto', padding: '0 0.5rem' }}
+                        title="Choose from Library"
+                      >
+                        <Images size={16} weight="regular" />
+                      </button>
+                    </div>
+                    <MediaLibraryModal
+                      open={mediaLibraryOpen}
+                      onClose={() => setMediaLibraryOpen(false)}
+                      onSelect={(item: MediaItem) => {
+                        onImageChange?.(item.file_url);
+                        setMediaLibraryOpen(false);
                       }}
-                      className={styles.urlInput}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) onImageUpload?.(file);
-                      }}
-                      className={styles.fileInput}
                     />
                   </div>
                 ) : (

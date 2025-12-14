@@ -10,10 +10,8 @@ import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
 import { usePageSnapshot, removeProfileImage, updatePageAppearance } from '../../../../api/page';
-import { uploadProfileImage } from '../../../../api/uploads';
+import { MediaLibraryModal } from '../../../overlays/MediaLibraryModal';
 import { queryKeys, normalizeImageUrl } from '../../../../api/utils';
-import { MediaLibraryDrawer } from '../../../overlays/MediaLibraryDrawer';
-import { ImageCropModal } from '../../../overlays/ImageCropModal';
 import type { MediaItem } from '../../../../api/media';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './page-customization-section.module.css';
@@ -34,11 +32,8 @@ export function ProfileImageSection({
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
   const page = snapshot?.page;
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
   const profileImage = page?.profile_image ?? null;
 
@@ -136,18 +131,7 @@ export function ProfileImageSection({
                   <button
                     type="button"
                     className={styles.segmentedButton}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                  >
-                    <Upload size={16} weight="regular" aria-hidden="true" />
-                  </button>
-                  <div className={styles.segmentedDivider} />
-                  <button
-                    type="button"
-                    className={styles.segmentedButton}
                     onClick={() => setMediaLibraryOpen(true)}
-                    disabled={isUploading}
                     title="Choose from library"
                   >
                     <Images size={16} weight="regular" aria-hidden="true" />
@@ -179,50 +163,6 @@ export function ProfileImageSection({
                 </div>
               </div>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-
-                // Validate file type
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!allowedTypes.includes(file.type)) {
-                  alert('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                  return;
-                }
-
-                // Check file size (5MB limit)
-                const maxSize = 5 * 1024 * 1024;
-                if (file.size > maxSize) {
-                  alert(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                  return;
-                }
-
-                // Create preview URL and show crop modal
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  const imageSrc = event.target?.result as string;
-                  setImageToCrop(imageSrc);
-                  setCropModalOpen(true);
-                };
-                reader.readAsDataURL(file);
-
-                // Reset file input
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = '';
-                }
-              }}
-            />
           </div>
         </div>
 
@@ -361,42 +301,11 @@ export function ProfileImageSection({
           />
         </div>
       </div>
-      <MediaLibraryDrawer
+      <MediaLibraryModal
         open={mediaLibraryOpen}
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={handleSelectFromLibrary}
       />
-      {imageToCrop && (
-        <ImageCropModal
-          open={cropModalOpen}
-          onClose={() => {
-            setCropModalOpen(false);
-            setImageToCrop(null);
-          }}
-          imageSrc={imageToCrop}
-          onCropComplete={async (croppedImageBlob: Blob) => {
-            try {
-              setIsUploading(true);
-              const croppedFile = new File([croppedImageBlob], 'profile-image.jpg', { type: 'image/jpeg' });
-              await uploadProfileImage(croppedFile);
-              await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-              setCropModalOpen(false);
-              setImageToCrop(null);
-            } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
-              alert(errorMessage);
-              console.error('Upload failed:', error);
-            } finally {
-              setIsUploading(false);
-            }
-          }}
-          aspectRatio={1}
-          cropShape="round"
-          minZoom={1}
-          maxZoom={3}
-          initialZoom={1}
-        />
-      )}
     </div>
   );
 }

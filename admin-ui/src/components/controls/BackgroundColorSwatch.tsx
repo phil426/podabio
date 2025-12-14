@@ -11,6 +11,7 @@ interface BackgroundColorSwatchProps {
   label: string;
   solidOnly?: boolean; // If true, only allow solid colors (no gradients)
   palette?: string[]; // Optional preset palette
+  children?: React.ReactNode;
 }
 
 export function BackgroundColorSwatch({
@@ -20,7 +21,8 @@ export function BackgroundColorSwatch({
   onTypeChange,
   label,
   solidOnly = false,
-  palette
+  palette,
+  children
 }: BackgroundColorSwatchProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
@@ -76,6 +78,11 @@ export function BackgroundColorSwatch({
           </Popover.Root>
         </div>
       </header>
+      {children && (
+        <div className={styles.content}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

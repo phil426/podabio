@@ -12,7 +12,7 @@ import { useCreateThemeMutation } from '../../../api/themes';
 import { usePageAppearanceMutation, updatePageThemeId, searchPodcasts, type PodcastSearchResult, usePageSnapshot } from '../../../api/page';
 import { queryKeys, normalizeImageUrl } from '../../../api/utils';
 import { ThemePreview } from './preview/ThemePreview';
-import { MediaLibraryDrawer } from '../../overlays/MediaLibraryDrawer';
+import { MediaLibraryModal } from '../../overlays/MediaLibraryModal';
 import { useUploadToMediaLibraryMutation, type MediaItem } from '../../../api/media';
 import styles from './podcast-theme-generator.module.css';
 
@@ -1041,25 +1041,11 @@ export function PodcastThemeGenerator({
                   type="button"
                   className={styles.photoOptionButton}
                   onClick={() => setMediaLibraryOpen(true)}
+                  style={{ width: '100%', justifyContent: 'center' }}
                 >
                   <Images aria-hidden="true" size={24} weight="regular" />
                   Choose from Library
                 </button>
-                <label className={styles.photoOptionButton}>
-                  <Upload aria-hidden="true" size={24} weight="regular" />
-                  Upload Image
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleImageUpload(file);
-                      }
-                    }}
-                  />
-                </label>
               </div>
 
               {uploadedImageUrl && (
@@ -1103,8 +1089,8 @@ export function PodcastThemeGenerator({
           </section>
         )}
 
-        {/* Media Library Drawer */}
-        <MediaLibraryDrawer
+        {/* Media Library Modal */}
+        <MediaLibraryModal
           open={mediaLibraryOpen}
           onClose={() => setMediaLibraryOpen(false)}
           onSelect={handleSelectFromMediaLibrary}

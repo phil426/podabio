@@ -167,11 +167,9 @@
 }
 
 .action_primary:hover:enabled {
-  background: linear-gradient(
-    135deg,
-    rgba(37, 99, 235, 0.95) 0%,
-    rgba(59, 130, 246, 0.95) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(37, 99, 235, 0.95) 0%,
+      rgba(59, 130, 246, 0.95) 100%);
 }
 
 .action_ghost:disabled,
@@ -308,14 +306,20 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 220px;
-  background: var(--pod-semantic-surface-panel, #ffffff);
-  border-radius: var(--pod-core-shape-radius-md, 12px);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 14px 45px rgba(15, 23, 42, 0.22);
+  background: linear-gradient(180deg, rgba(35, 45, 65, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 14px 45px rgba(0, 0, 0, 0.5),
+    0 0 10px -2px rgba(0, 255, 127, 0.05);
+  /* Subtle green glow hint */
   padding: 0.75rem;
   display: grid;
   gap: 0.6rem;
   z-index: 11;
+  color: #ffffff;
 }
 
 .menuHeader {
@@ -329,13 +333,13 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--pod-semantic-text-primary, #111827);
+  color: #ffffff;
 }
 
 .menuEmail {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--pod-semantic-text-secondary, #6b7280);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .menuBody {
@@ -349,13 +353,14 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.45rem 0.6rem;
-  border-radius: var(--pod-core-shape-radius-md, 12px);
+  border-radius: 8px;
   border: none;
-  background: var(--pod-app-color-menu-item-bg);
-  color: inherit;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
 }
 
 .menuLink[disabled] {
@@ -364,7 +369,8 @@
 }
 
 .menuLink:hover {
-  background: var(--pod-app-color-icon-hover-bg);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .menuLink[disabled]:hover {
@@ -383,7 +389,7 @@
   width: 20px;
   height: 20px;
   font-size: 1rem;
-  color: var(--pod-semantic-text-secondary, #475569);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .menuIcon svg {
@@ -404,4 +410,3 @@
     justify-content: space-between;
   }
 }
-

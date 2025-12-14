@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Tabs from '@radix-ui/react-tabs';
-import { TextT, Palette, Square, Sparkle, Image as ImageIcon, TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight } from '@phosphor-icons/react';
+import { TextT, Palette, Square, Sparkle, Image as ImageIcon, TextB, TextItalic, TextUnderline, TextAlignLeft, TextAlignCenter, TextAlignRight, Images } from '@phosphor-icons/react';
 import { HexColorPicker } from 'react-colorful';
 import { PageBackgroundPicker } from '../../controls/PageBackgroundPicker';
 import { FontSelect } from './FontSelect';
 import { ALL_FONTS } from './fonts';
+import { MediaLibraryModal } from '../../overlays/MediaLibraryModal';
+import type { MediaItem } from '../../../api/media';
 import type { TokenBundle } from '../../../design-system/tokens';
 import styles from './page-colors-toolbar.module.css';
 
@@ -18,7 +20,7 @@ interface PageColorsToolbarProps {
 function resolveToken(bundle: TokenBundle, path: string): unknown {
   const parts = path.split('.');
   let current: any = bundle;
-  
+
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = current[part];
@@ -26,13 +28,13 @@ function resolveToken(bundle: TokenBundle, path: string): unknown {
       return undefined;
     }
   }
-  
+
   return current;
 }
 
 function extractColorValue(tokens: TokenBundle, path: string): string {
   const resolved = resolveToken(tokens, path);
-  
+
   if (typeof resolved === 'string') {
     if (/^#([0-9a-fA-F]{3}){1,2}$/.test(resolved)) {
       return resolved;
@@ -47,7 +49,7 @@ function extractColorValue(tokens: TokenBundle, path: string): string {
       return resolved;
     }
   }
-  
+
   return '#2563eb';
 }
 
@@ -106,16 +108,16 @@ function ColorButton({ label, value, onChange }: ColorButtonProps): JSX.Element 
         >
           <div className={styles.colorButtonIcon}>
             <TextT size={16} weight="bold" />
-            <div 
+            <div
               className={styles.colorButtonSwatch}
-              style={{ 
+              style={{
                 backgroundColor: hexColor,
                 backgroundImage: isGradient ? value : undefined
               }}
             />
-            <div 
+            <div
               className={styles.colorButtonChip}
-              style={{ 
+              style={{
                 backgroundColor: hexColor,
                 backgroundImage: isGradient ? value : undefined
               }}
@@ -166,17 +168,18 @@ interface BackgroundButtonProps {
   onImageUpload?: (file: File) => void;
 }
 
-function BackgroundButton({ 
-  label, 
-  value, 
+function BackgroundButton({
+  label,
+  value,
   backgroundType,
   backgroundImage,
-  onValueChange, 
+  onValueChange,
   onTypeChange,
   onImageChange,
   onImageUpload
 }: BackgroundButtonProps): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const getDisplayValue = (): string => {
@@ -208,18 +211,18 @@ function BackgroundButton({
         >
           <div className={styles.colorButtonIcon}>
             <Palette size={18} weight="bold" />
-            <div 
+            <div
               className={styles.colorButtonSwatch}
-              style={{ 
+              style={{
                 backgroundColor: isImage ? 'transparent' : (isGradient ? 'transparent' : displayValue),
                 backgroundImage: isGradient || isImage ? (isImage ? `url(${displayValue})` : displayValue) : undefined,
                 backgroundSize: isImage ? 'cover' : undefined,
                 backgroundPosition: isImage ? 'center' : undefined
               }}
             />
-            <div 
+            <div
               className={styles.colorButtonChip}
-              style={{ 
+              style={{
                 backgroundColor: isImage ? 'transparent' : (isGradient ? 'transparent' : displayValue),
                 backgroundImage: isGradient || isImage ? (isImage ? `url(${displayValue})` : displayValue) : undefined,
                 backgroundSize: isImage ? 'cover' : undefined,
@@ -237,7 +240,7 @@ function BackgroundButton({
           align="start"
         >
           <div className={styles.backgroundPopoverContent}>
-            <Tabs.Root 
+            <Tabs.Root
               value={backgroundType}
               onValueChange={(value) => onTypeChange(value as 'solid' | 'gradient' | 'image')}
             >
@@ -258,23 +261,34 @@ function BackgroundButton({
               <Tabs.Content value={backgroundType} className={styles.backgroundTabContent}>
                 {backgroundType === 'image' ? (
                   <div className={styles.imageUpload}>
-                    <input
-                      type="url"
-                      placeholder="Image URL"
-                      value={backgroundImage || ''}
-                      onChange={(e) => {
-                        onImageChange?.(e.target.value);
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <input
+                        type="url"
+                        placeholder="Image URL"
+                        value={backgroundImage || ''}
+                        onChange={(e) => {
+                          onImageChange?.(e.target.value);
+                        }}
+                        className={styles.urlInput}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMediaLibraryOpen(true)}
+                        className={styles.colorButton}
+                        style={{ width: 'auto', padding: '0 0.5rem' }}
+                        title="Choose from Library"
+                      >
+                        <Images size={16} weight="regular" />
+                      </button>
+                    </div>
+                    <MediaLibraryModal
+                      open={mediaLibraryOpen}
+                      onClose={() => setMediaLibraryOpen(false)}
+                      onSelect={(item: MediaItem) => {
+                        onImageChange?.(item.file_url);
+                        setMediaLibraryOpen(false);
                       }}
-                      className={styles.urlInput}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) onImageUpload?.(file);
-                      }}
-                      className={styles.fileInput}
                     />
                   </div>
                 ) : (
@@ -300,7 +314,7 @@ export function PageColorsToolbar({ tokens, tokenValues, onTokenChange }: PageCo
   const pageHeadingText = useMemo(() => extractColorValue(tokens, 'semantic.text.primary'), [tokens]);
   const pageBodyText = useMemo(() => extractColorValue(tokens, 'semantic.text.secondary'), [tokens]);
   const pageBackground = useMemo(() => extractColorValue(tokens, 'semantic.surface.canvas'), [tokens]);
-  
+
   const headingFont = useMemo(() => {
     const font = tokens.core?.typography?.font?.heading;
     return typeof font === 'string' ? font.split(',')[0].trim() : 'Inter';
@@ -353,7 +367,7 @@ export function PageColorsToolbar({ tokens, tokenValues, onTokenChange }: PageCo
             value={pageHeadingText}
             onChange={(value) => handleColorChange('semantic.text.primary', value)}
           />
-          <select 
+          <select
             className={styles.toolbarSelect}
             value={headingFont}
             onChange={(e) => handleFontChange('core.typography.font.heading', e.target.value)}
@@ -379,7 +393,7 @@ export function PageColorsToolbar({ tokens, tokenValues, onTokenChange }: PageCo
             value={pageBodyText}
             onChange={(value) => handleColorChange('semantic.text.secondary', value)}
           />
-          <select 
+          <select
             className={styles.toolbarSelect}
             value={bodyFont}
             onChange={(e) => handleFontChange('core.typography.font.body', e.target.value)}

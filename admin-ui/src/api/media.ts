@@ -6,20 +6,27 @@ const MEDIA_ENDPOINT = '/api/media.php';
 
 export interface MediaItem {
   id: number;
-  user_id: number;
-  filename: string;
-  file_path: string;
+  user_id?: number;
+  filename?: string; // Optional for stock
+  file_path?: string; // Optional for stock
   file_url: string;
   file_size: number;
-  mime_type: string;
-  uploaded_at: string;
-  created_at: string;
-  updated_at: string;
+  mime_type?: string;
+  uploaded_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  // Stock Photo Props
+  url?: string;
+  thumbnail?: string;
+  author?: string;
+  author_url?: string;
+  provider?: 'unsplash' | 'pexels';
 }
 
 export interface MediaLibraryResponse {
   success: boolean;
   media?: MediaItem[];
+  results?: MediaItem[]; // For stock search
   total?: number;
   page?: number;
   per_page?: number;
@@ -51,7 +58,7 @@ export interface MediaListOptions {
  */
 export async function fetchMediaLibrary(options: MediaListOptions = {}): Promise<MediaLibraryResponse> {
   const params = new URLSearchParams();
-  
+
   if (options.page) {
     params.append('page', String(options.page));
   }
@@ -61,19 +68,19 @@ export async function fetchMediaLibrary(options: MediaListOptions = {}): Promise
   if (options.search) {
     params.append('search', options.search);
   }
-  
+
   const url = params.toString() ? `${MEDIA_ENDPOINT}?${params.toString()}` : MEDIA_ENDPOINT;
-  
+
   const response = await fetch(url, {
     credentials: 'include'
   });
-  
+
   const data = (await response.json()) as MediaLibraryResponse;
-  
+
   if (!response.ok || !data.success) {
     throw new Error(data.error ?? 'Failed to load media library');
   }
-  
+
   return data;
 }
 
@@ -97,13 +104,13 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
   if (file.size > maxSize) {
     throw new Error(`File size (${(file.size / 1024 / 1024).toFixed(2)}MB) exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
   }
-  
+
   // Validate file type
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   if (!allowedTypes.includes(file.type)) {
     throw new Error('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
   }
-  
+
   // Ensure we have a valid CSRF token
   let csrfToken = getCsrfToken();
   if (!csrfToken) {
@@ -113,19 +120,19 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
       throw new Error('Failed to get CSRF token. Please refresh the page and try again.');
     }
   }
-  
+
   const formData = new FormData();
   formData.append('csrf_token', csrfToken);
   formData.append('image', file);
-  
+
   const response = await fetch(MEDIA_ENDPOINT, {
     method: 'POST',
     body: formData,
     credentials: 'include'
   });
-  
+
   const payload = (await response.json()) as MediaUploadResponse;
-  
+
   // If CSRF token error, try refreshing and retrying once
   if ((!response.ok || !payload.success) && (payload.error?.includes('CSRF') || payload.error?.includes('Invalid CSRF') || response.status === 403)) {
     try {
@@ -133,15 +140,15 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
       const retryFormData = new FormData();
       retryFormData.append('csrf_token', newCsrfToken);
       retryFormData.append('image', file);
-      
+
       const retryResponse = await fetch(MEDIA_ENDPOINT, {
         method: 'POST',
         body: retryFormData,
         credentials: 'include'
       });
-      
+
       const retryPayload = (await retryResponse.json()) as MediaUploadResponse;
-      
+
       if (!retryResponse.ok || !retryPayload.success) {
         let errorMessage = retryPayload.error ?? 'Failed to upload image';
         if (errorMessage.includes('File size exceeds')) {
@@ -149,7 +156,7 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
         }
         throw new Error(errorMessage);
       }
-      
+
       return retryPayload;
     } catch (retryErr) {
       // If retry also fails, throw the original error
@@ -160,7 +167,7 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
       throw new Error(errorMessage);
     }
   }
-  
+
   if (!response.ok || !payload.success) {
     let errorMessage = payload.error ?? 'Failed to upload image';
     if (errorMessage.includes('File size exceeds')) {
@@ -168,7 +175,7 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
     }
     throw new Error(errorMessage);
   }
-  
+
   return payload;
 }
 
@@ -177,7 +184,7 @@ export async function uploadToMediaLibrary(file: File): Promise<MediaUploadRespo
  */
 export async function deleteMediaItem(mediaId: number): Promise<{ success: boolean; message?: string; error?: string }> {
   const csrfToken = getCsrfToken();
-  
+
   const response = await fetch(`${MEDIA_ENDPOINT}?id=${mediaId}&csrf_token=${encodeURIComponent(csrfToken)}`, {
     method: 'DELETE',
     headers: {
@@ -185,13 +192,13 @@ export async function deleteMediaItem(mediaId: number): Promise<{ success: boole
     },
     credentials: 'include'
   });
-  
+
   const payload = (await response.json()) as { success: boolean; message?: string; error?: string };
-  
+
   if (!response.ok || !payload.success) {
     throw new Error(payload.error ?? 'Failed to delete media item');
   }
-  
+
   return payload;
 }
 
@@ -200,7 +207,7 @@ export async function deleteMediaItem(mediaId: number): Promise<{ success: boole
  */
 export function useUploadToMediaLibraryMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (file: File) => uploadToMediaLibrary(file),
     onSuccess: () => {
@@ -215,7 +222,7 @@ export function useUploadToMediaLibraryMutation() {
  */
 export function useDeleteMediaItemMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (mediaId: number) => deleteMediaItem(mediaId),
     onSuccess: () => {
@@ -225,3 +232,108 @@ export function useDeleteMediaItemMutation() {
   });
 }
 
+
+
+/**
+ * Update media item (e.g. rename)
+ */
+export async function updateMediaItem(mediaId: number, data: { filename?: string }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const csrfToken = getCsrfToken();
+
+  const response = await fetch(MEDIA_ENDPOINT, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    },
+    body: JSON.stringify({
+      id: mediaId,
+      csrf_token: csrfToken,
+      ...data
+    }),
+    credentials: 'include'
+  });
+
+  const payload = (await response.json()) as { success: boolean; message?: string; error?: string };
+
+  if (!response.ok || !payload.success) {
+    throw new Error(payload.error ?? 'Failed to update media item');
+  }
+
+  return payload;
+}
+
+/**
+ * React Query mutation for updating media item
+ */
+export function useUpdateMediaItemMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: { id: number; data: { filename?: string } }) => updateMediaItem(vars.id, vars.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['media'] });
+    }
+  });
+}
+
+/**
+ * Search stock photos via proxy
+ */
+export async function searchStockPhotos(provider: 'unsplash' | 'pexels' | 'all', query: string, page: number = 1): Promise<MediaLibraryResponse> {
+  const params = new URLSearchParams({
+    provider,
+    query,
+    page: String(page)
+  });
+
+  const response = await fetch(`/api/stock-photos.php?${params.toString()}`, {
+    credentials: 'include'
+  });
+
+  const data = (await response.json()) as MediaLibraryResponse;
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error ?? 'Failed to search stock photos');
+  }
+
+  return data;
+}
+
+/**
+ * Import stock photo to local library
+ */
+export async function importStockPhoto(url: string, provider: string, author: string): Promise<MediaUploadResponse> {
+  const response = await fetch('/api/stock-photos.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url,
+      provider,
+      author
+    }),
+    credentials: 'include'
+  });
+
+  const data = (await response.json()) as MediaUploadResponse;
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error ?? 'Failed to import stock photo');
+  }
+
+  return data;
+}
+
+/**
+ * React Query hook for stock photo search
+ */
+export function useStockPhotosQuery(provider: 'unsplash' | 'pexels' | 'all', query: string, page: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['stock-photos', provider, query, page],
+    queryFn: () => searchStockPhotos(provider, query, page),
+    enabled: enabled && !!query,
+    staleTime: 60 * 1000 // 1 minute
+  });
+}

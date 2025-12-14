@@ -175,3 +175,18 @@ echo "💡 To stop: run ./dev-stop.sh or ./dev-session.sh stop"
 echo "📝 View logs: tail -f /tmp/podabio-php-server.log or tail -f /tmp/podabio-vite-server.log"
 echo ""
 
+
+# Step 7: Show Status Guide
+if [ -f "CURRENT_STATUS.md" ]; then
+    echo ""
+    echo "📘 Current Project Status:"
+    echo "------------------------"
+    # Use glow if available for markdown rendering, otherwise cat
+    if command -v glow >/dev/null 2>&1; then
+        glow CURRENT_STATUS.md
+    else
+        cat CURRENT_STATUS.md
+    fi
+    echo ""
+    echo "------------------------"
+fi

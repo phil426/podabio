@@ -7,7 +7,9 @@ import {
   ArrowSquareOut,
   SignOut,
   Layout,
-  User
+  User,
+  Images,
+  LockKey
 } from '@phosphor-icons/react';
 
 import { normalizeImageUrl } from '../../api/utils';
@@ -103,9 +105,9 @@ export function TopBar(): JSX.Element {
       <div className={styles.projectMeta} role="status">
         <div className={styles.metaColumn}>
           {previewUrl ? (
-            <a 
-              href={previewUrl} 
-              target="_blank" 
+            <a
+              href={previewUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className={styles.pageTitle}
               onClick={(e) => {
@@ -119,9 +121,9 @@ export function TopBar(): JSX.Element {
             <p className={styles.pageTitle}>/{username}</p>
           )}
           {previewUrl ? (
-            <a 
-              href={previewUrl} 
-              target="_blank" 
+            <a
+              href={previewUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className={styles.pageSubline}
               onClick={(e) => {
@@ -202,48 +204,50 @@ export function TopBar(): JSX.Element {
                 <p className={styles.menuEmail}>{email}</p>
               </div>
               <div className={styles.menuBody}>
-                {accountWorkspaceEnabled ? (
-                  <>
-                    <button
-                      type="button"
-                      className={styles.menuLink}
-                      role="menuitem"
-                      onClick={() => handleNavigate('/account/profile')}
-                    >
-                      <span className={styles.menuIcon} aria-hidden="true">
-                        <User size={16} weight="regular" />
-                      </span>
-                      Profile &amp; security
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.menuLink}
-                      role="menuitem"
-                      onClick={() => handleNavigate('/account/billing')}
-                    >
-                      <span className={styles.menuIcon} aria-hidden="true">
-                        <CreditCard size={16} weight="regular" />
-                      </span>
-                      Plans &amp; billing
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.menuLink}
-                    role="menuitem"
-                    onClick={() => {
-                      trackTelemetry({ event: 'topbar.account_navigate', metadata: { destination: 'account_workspace' } });
-                      handleNavigate('/account/profile');
-                    }}
-                  >
-                    <span className={styles.menuIcon} aria-hidden="true">
-                      <User size={16} weight="regular" />
-                    </span>
-                    Manage account
-                  </button>
-                )}
-                {/* Panel switcher removed - Lefty is now the only admin panel */}
+                <button
+                  type="button"
+                  className={styles.menuLink}
+                  role="menuitem"
+                  onClick={() => handleNavigate('/account/profile')}
+                >
+                  <span className={styles.menuIcon} aria-hidden="true">
+                    <User size={16} weight="regular" />
+                  </span>
+                  Profile
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuLink}
+                  role="menuitem"
+                  onClick={() => handleNavigate('/account/media')}
+                >
+                  <span className={styles.menuIcon} aria-hidden="true">
+                    <Images size={16} weight="regular" />
+                  </span>
+                  Media Library
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuLink}
+                  role="menuitem"
+                  onClick={() => handleNavigate('/account/security')}
+                >
+                  <span className={styles.menuIcon} aria-hidden="true">
+                    <LockKey size={16} weight="regular" />
+                  </span>
+                  Security
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuLink}
+                  role="menuitem"
+                  onClick={() => handleNavigate('/account/billing')}
+                >
+                  <span className={styles.menuIcon} aria-hidden="true">
+                    <CreditCard size={16} weight="regular" />
+                  </span>
+                  Billing
+                </button>
               </div>
               <div className={styles.menuFooter}>
                 <button

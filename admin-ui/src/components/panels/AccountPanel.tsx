@@ -13,11 +13,10 @@ import {
   updateAccountProfile,
   removeAvatar
 } from '../../api/account';
-import { uploadAvatarImage as uploadAvatar } from '../../api/uploads';
+import { type MediaItem } from '../../api/media';
 import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
 import { normalizeImageUrl } from '../../api/utils';
-import { UploadSimple, Images, X } from '@phosphor-icons/react';
-import { useRef } from 'react';
+import { Images, X } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../api/utils';
 import { usePageSnapshot } from '../../api/page';
@@ -137,9 +136,9 @@ export function AccountPanel({ activeColor }: AccountPanelProps): JSX.Element {
   };
 
   return (
-    <div 
+    <div
       className={styles.panel}
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -219,9 +218,8 @@ function ProfileTab({
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarStatus, setAvatarStatus] = useState<string | null>(null);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  
+
   const { mutateAsync: updateProfile, isPending: isUpdating } = useUpdateProfileMutation();
 
   // Initialize form values when profile loads
@@ -291,51 +289,6 @@ function ProfileTab({
     }
   };
 
-  const handleChooseAvatarFile = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploadingAvatar(true);
-      setAvatarStatus(null);
-      const result = await uploadAvatar(file, true);
-      
-      console.log('Upload result:', result);
-      
-      if (!result.url) {
-        throw new Error('Upload succeeded but no URL returned');
-      }
-      
-      // Update cache immediately for instant UI update
-      if (profile) {
-        const updatedProfile = {
-          ...profile,
-          avatar_url: result.url
-        };
-        console.log('Updating cache with:', updatedProfile);
-        queryClient.setQueryData(queryKeys.accountProfile(), updatedProfile);
-      }
-      
-      // Force refetch to ensure we have the latest data from server
-      const refetched = await queryClient.refetchQueries({ queryKey: queryKeys.accountProfile() });
-      console.log('Refetched profile:', refetched);
-      
-      setAvatarStatus('Avatar updated successfully');
-      trackTelemetry({ event: 'account.avatar_uploaded', metadata: {} });
-    } catch (err) {
-      console.error('Avatar upload error:', err);
-      setAvatarStatus(err instanceof Error ? err.message : 'Upload failed. Please try again.');
-    } finally {
-      setIsUploadingAvatar(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
 
   const handleRemoveAvatar = async () => {
     try {
@@ -352,7 +305,7 @@ function ProfileTab({
     }
   };
 
-  const handleSelectAvatarFromLibrary = async (mediaItem: { file_url: string; id: number; filename: string }) => {
+  const handleSelectAvatarFromLibrary = async (mediaItem: MediaItem) => {
     try {
       setIsUploadingAvatar(true);
       setAvatarStatus(null);
@@ -370,7 +323,7 @@ function ProfileTab({
   };
 
   const avatarUrl = profile?.avatar_url ?? null;
-  
+
   // Debug logging (remove in production)
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -378,7 +331,7 @@ function ProfileTab({
       console.log('Avatar URL:', avatarUrl);
     }
   }, [profile, avatarUrl]);
-  
+
   const initials = (profile?.name ?? profile?.email ?? '')
     .split(' ')
     .filter(Boolean)
@@ -491,13 +444,13 @@ function ProfileTab({
           <div className={styles.fieldRow}>
             <label className={styles.fieldLabel}>Avatar</label>
             <div className={styles.avatarUploadContainer}>
-              <div 
-                className={styles.avatarPreview} 
+              <div
+                className={styles.avatarPreview}
                 data-has-avatar={avatarUrl ? 'true' : 'false'}
               >
                 {avatarUrl ? (
-                  <img 
-                    src={normalizeImageUrl(avatarUrl)} 
+                  <img
+                    src={normalizeImageUrl(avatarUrl)}
                     alt="Avatar"
                     className={styles.avatarImage}
                     onError={(e) => {
@@ -524,18 +477,7 @@ function ProfileTab({
                     <button
                       type="button"
                       className={styles.segmentedButton}
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploadingAvatar}
-                      title={isUploadingAvatar ? 'Uploading…' : avatarUrl ? 'Replace avatar' : 'Upload avatar'}
-                    >
-                      <UploadSimple size={16} weight="regular" aria-hidden="true" />
-                    </button>
-                    <div className={styles.segmentedDivider} />
-                    <button
-                      type="button"
-                      className={styles.segmentedButton}
                       onClick={() => setMediaLibraryOpen(true)}
-                      disabled={isUploadingAvatar}
                       title="Choose from library"
                     >
                       <Images size={16} weight="regular" aria-hidden="true" />
@@ -557,14 +499,6 @@ function ProfileTab({
                   </div>
                 </div>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarFileChange}
-                style={{ display: 'none' }}
-                aria-label="Upload avatar image"
-              />
             </div>
           </div>
         </div>
@@ -711,8 +645,8 @@ function SecurityTab(): JSX.Element {
     drawerAction === 'unlink_google'
       ? parseError(unlinkError)
       : drawerAction === 'remove_password'
-      ? parseError(removeError)
-      : null;
+        ? parseError(removeError)
+        : null;
   const drawerProcessing = drawerAction === 'unlink_google' ? unlinkPending : drawerAction === 'remove_password' ? removePending : false;
 
   return (

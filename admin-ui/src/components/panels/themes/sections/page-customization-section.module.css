@@ -12,7 +12,8 @@
   border-radius: 8px;
   /* Transparent to let glass drawer show */
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Removed border based on user request */
+  border: none;
 }
 
 .subsectionTitle {
@@ -111,8 +112,10 @@
 
 .imagePreview {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  /* Reduced width for 9:16 aspect ratio relative to typical height */
+  height: auto;
+  aspect-ratio: 9/20;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -171,10 +174,11 @@
 .segmentedBar {
   display: flex;
   align-items: stretch;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
   min-height: 32px;
@@ -380,4 +384,14 @@
   transition: all 0.2s ease;
   text-align: center;
   line-height: 1.2;
+}
+
+.controlsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }

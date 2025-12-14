@@ -4,6 +4,7 @@
  */
 
 import { X } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
@@ -45,6 +46,12 @@ export function ThemePropertyDrawer({
 }: ThemePropertyDrawerProps): JSX.Element {
   const section = sectionId ? sectionRegistry.get(sectionId) : null;
   const palette = getThemeColors(uiState);
+  const [previewVisible, setPreviewVisible] = useState(true);
+
+  // Reset preview visibility when section changes
+  useEffect(() => {
+    setPreviewVisible(true);
+  }, [sectionId]);
 
   if (!section) {
     return <></>;
@@ -119,6 +126,7 @@ export function ThemePropertyDrawer({
                 sectionId={sectionId}
                 theme={theme}
                 uiState={uiState}
+                hidden={!previewVisible}
               />
             </div>
             <Dialog.Close asChild>
@@ -139,6 +147,7 @@ export function ThemePropertyDrawer({
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
                 palette={palette}
+                onPreviewVisibilityChange={setPreviewVisible}
               />
             )}
             {sectionId === 'profile-image' && (

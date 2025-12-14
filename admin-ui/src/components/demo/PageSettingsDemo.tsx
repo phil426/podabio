@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Popover from '@radix-ui/react-popover';
-import { X, Palette, TextT, Square, Sparkle, Image as ImageIcon } from '@phosphor-icons/react';
+import { X, Palette, TextT, Square, Sparkle, Image as ImageIcon, Images } from '@phosphor-icons/react';
 import { HexColorPicker } from 'react-colorful';
 import { PageBackgroundPicker } from '../controls/PageBackgroundPicker';
+import { MediaLibraryModal } from '../overlays/MediaLibraryModal';
+import type { MediaItem } from '../../api/media';
 import styles from './page-settings-demo.module.css';
 
 const availableFonts = ['Inter', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway', 'Source Sans Pro'];
@@ -42,9 +44,9 @@ function ColorSwatch({ value, onChange, label }: ColorSwatchProps): JSX.Element 
           title={label}
           aria-label={label}
         >
-          <div 
+          <div
             className={styles.swatch}
-            style={{ 
+            style={{
               backgroundColor: hexColor,
               backgroundImage: isGradient ? value : undefined
             }}
@@ -95,16 +97,17 @@ interface BackgroundSwatchProps {
   label: string;
 }
 
-function BackgroundSwatch({ 
-  value, 
+function BackgroundSwatch({
+  value,
   backgroundType,
   backgroundImage,
-  onChange, 
+  onChange,
   onTypeChange,
   onImageChange,
   label
 }: BackgroundSwatchProps): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
   const getDisplayValue = (): string => {
     if (backgroundType === 'image' && backgroundImage) {
@@ -133,9 +136,9 @@ function BackgroundSwatch({
           title={label}
           aria-label={label}
         >
-          <div 
+          <div
             className={styles.swatch}
-            style={{ 
+            style={{
               backgroundColor: isImage ? 'transparent' : (isGradient ? 'transparent' : displayValue),
               backgroundImage: isGradient || isImage ? (isImage ? `url(${displayValue})` : displayValue) : undefined,
               backgroundSize: isImage ? 'cover' : undefined,
@@ -151,7 +154,7 @@ function BackgroundSwatch({
           align="end"
         >
           <div className={styles.backgroundPopoverContent}>
-            <Tabs.Root 
+            <Tabs.Root
               value={backgroundType}
               onValueChange={(value) => onTypeChange(value as 'solid' | 'gradient' | 'image')}
             >
@@ -172,30 +175,34 @@ function BackgroundSwatch({
               <Tabs.Content value={backgroundType} className={styles.backgroundTabContent}>
                 {backgroundType === 'image' ? (
                   <div className={styles.imageUpload}>
-                    <input
-                      type="url"
-                      placeholder="Image URL"
-                      value={backgroundImage || ''}
-                      onChange={(e) => {
-                        onImageChange?.(e.target.value);
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <input
+                        type="url"
+                        placeholder="Image URL"
+                        value={backgroundImage || ''}
+                        onChange={(e) => {
+                          onImageChange?.(e.target.value);
+                        }}
+                        className={styles.urlInput}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMediaLibraryOpen(true)}
+                        className={styles.swatchButton}
+                        style={{ width: 'auto', padding: '0 0.5rem' }}
+                        title="Choose from Library"
+                      >
+                        <Images size={16} weight="regular" />
+                      </button>
+                    </div>
+                    <MediaLibraryModal
+                      open={mediaLibraryOpen}
+                      onClose={() => setMediaLibraryOpen(false)}
+                      onSelect={(item: MediaItem) => {
+                        onImageChange?.(item.file_url);
+                        setMediaLibraryOpen(false);
                       }}
-                      className={styles.urlInput}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            const dataUrl = event.target?.result as string;
-                            onImageChange?.(dataUrl);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className={styles.fileInput}
                     />
                   </div>
                 ) : (
@@ -344,7 +351,7 @@ export function PageSettingsDemo(): JSX.Element {
                       </Popover.Trigger>
                       <Popover.Portal>
                         <Popover.Content className={styles.fontPopover} sideOffset={5}>
-                          <select 
+                          <select
                             className={styles.fontSelect}
                             value={textFont}
                             onChange={(e) => setTextFont(e.target.value)}
