@@ -13,12 +13,14 @@ interface WidgetTextSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function WidgetTextSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: WidgetTextSectionProps): JSX.Element {
   // Heading values
   const widgetHeadingColor = (uiState['widget-heading-color'] as string) ?? '#0f172a';
@@ -40,13 +42,14 @@ export function WidgetTextSection({
         {/* Heading Column */}
         <div className={styles.column}>
           <h4 className={styles.columnTitle}>Heading Text</h4>
-          
+
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Color</label>
             <BackgroundColorSwatch
               value={widgetHeadingColor}
               onChange={(value) => onFieldChange('widget-heading-color', value)}
               label="Widget heading color"
+              palette={palette}
             />
           </div>
 
@@ -105,13 +108,14 @@ export function WidgetTextSection({
         {/* Body Column */}
         <div className={styles.column}>
           <h4 className={styles.columnTitle}>Body Text</h4>
-          
+
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Color</label>
             <BackgroundColorSwatch
               value={widgetBodyColor}
               onChange={(value) => onFieldChange('widget-body-color', value)}
               label="Widget body color"
+              palette={palette}
             />
           </div>
 

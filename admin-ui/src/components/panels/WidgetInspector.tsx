@@ -36,7 +36,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   const { data: availableWidgets } = useAvailableWidgetsQuery();
   const selectedWidgetIdFromState = useWidgetSelection((state) => state.selectedWidgetId);
   const selectWidget = useWidgetSelection((state) => state.selectWidget);
-  
+
   // Use prop if provided, otherwise fall back to global selection
   const selectedWidgetId = widgetIdProp !== undefined ? widgetIdProp : selectedWidgetIdFromState;
   const { mutateAsync: updateWidget, isPending: isSaving } = useUpdateWidgetMutation();
@@ -53,7 +53,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
       const key = (item.widget_id ?? item.type ?? item.name ?? '').toString();
       return key === widgetType;
     });
-    
+
     // Debug: Log if widget not found
     if (!found && widgetType) {
       console.warn('Widget not found in registry:', {
@@ -61,7 +61,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
         availableWidgetIds: availableWidgets.map((w) => w.widget_id ?? w.type ?? w.name)
       });
     }
-    
+
     return found;
   }, [availableWidgets, selectedWidget]);
 
@@ -166,12 +166,12 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
     setFormState((prev) =>
       prev
         ? {
-            ...prev,
-            config: {
-              ...prev.config,
-              [field]: value
-            }
+          ...prev,
+          config: {
+            ...prev.config,
+            [field]: value
           }
+        }
         : prev
     );
     setSaveStatus('idle');
@@ -297,12 +297,12 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
 
   const handleSelectThumbnailFromLibrary = async (mediaItem: MediaItem) => {
     if (!selectedWidget) return;
-    
+
     try {
       setUploadingThumbnail(true);
       handleInputChange('thumbnail_image', mediaItem.file_url);
       setMediaLibraryOpen(false);
-      
+
       // Auto-save the widget after thumbnail selection
       if (formState) {
         await updateWidget({
@@ -364,10 +364,10 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
   };
 
   return (
-    <section 
-      className={styles.wrapper} 
+    <section
+      className={styles.wrapper}
       aria-label="Widget inspector"
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -420,7 +420,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
               />
             );
           }
-          
+
           // Special handling for rolodex items field with CSV import (legacy)
           if (widgetType === 'rolodex' && field === 'items') {
             return (
@@ -433,9 +433,9 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
               />
             );
           }
-          
-          // Special handling for profile_carousel images field with media gallery
-          if (widgetType === 'profile_carousel' && field === 'images' && fieldDef.type === 'media_gallery') {
+
+          // General handling for media_gallery fields (used by profile_carousel and image_gallery)
+          if (fieldDef.type === 'media_gallery') {
             return (
               <ProfileCarouselImagesField
                 key={field}
@@ -447,7 +447,7 @@ export function WidgetInspector({ activeColor, widgetId: widgetIdProp }: WidgetI
               />
             );
           }
-          
+
           return (
             <WidgetField
               key={field}
@@ -781,7 +781,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
     if (!searchQuery.trim()) {
       return fetchedContacts.map((contact, index) => ({ contact, index }));
     }
-    
+
     const query = searchQuery.toLowerCase().trim();
     return fetchedContacts
       .map((contact, index) => ({ contact, index }))
@@ -796,7 +796,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
           .filter(Boolean)
           .join(' ')
           .toLowerCase();
-        
+
         return searchableText.includes(query);
       });
   };
@@ -811,7 +811,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
     try {
       const text = await file.text();
       const importedContacts = parseCSVToPeopleContacts(text);
-      
+
       if (importedContacts.length === 0) {
         setParseError('No valid contacts found in CSV file. Expected format: name,email,phone,company,title,address,website,notes,photo (header row optional)');
         return;
@@ -856,7 +856,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
         const height = 600;
         const left = window.screenX + (window.outerWidth - width) / 2;
         const top = window.screenY + (window.outerHeight - height) / 2;
-        
+
         const popup = window.open(
           data.authUrl,
           'Google Contacts',
@@ -866,17 +866,17 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
         // Listen for message from popup
         const messageListener = (event: MessageEvent) => {
           // Validate origin - check if it matches our origin or if origin is provided in data
-          const isValidOrigin = 
-            event.origin === window.location.origin || 
+          const isValidOrigin =
+            event.origin === window.location.origin ||
             (event.data.origin && event.data.origin === window.location.origin) ||
-            event.origin.startsWith('http://localhost') || 
+            event.origin.startsWith('http://localhost') ||
             event.origin.startsWith('https://poda.bio');
-          
+
           if (!isValidOrigin) {
             console.warn('Ignoring message from invalid origin:', event.origin);
             return;
           }
-          
+
           if (event.data.type === 'GOOGLE_CONTACTS_IMPORTED') {
             const contacts = event.data.contacts || [];
             const groups = event.data.groupNames || {};
@@ -894,7 +894,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
             }
             window.removeEventListener('message', messageListener);
             try {
-            popup?.close();
+              popup?.close();
             } catch (e) {
               // Ignore COOP errors when closing
             }
@@ -903,7 +903,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
             setIsLoadingGoogle(false);
             window.removeEventListener('message', messageListener);
             try {
-            popup?.close();
+              popup?.close();
             } catch (e) {
               // Ignore COOP errors when closing
             }
@@ -1085,7 +1085,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
                   <X size={20} weight="bold" />
                 </button>
               </div>
-              
+
               {/* Search field */}
               <div style={{ marginBottom: '1rem' }}>
                 <input
@@ -1115,10 +1115,10 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
                         .map((contact, idx) => ({ contact, idx }))
                         .filter(({ contact }) => contact.groups?.includes(groupId))
                         .map(({ idx }) => idx);
-                      
-                      const allSelected = groupContacts.length > 0 && 
+
+                      const allSelected = groupContacts.length > 0 &&
                         groupContacts.every(idx => selectedContactIndices.has(idx));
-                      
+
                       return (
                         <button
                           key={groupId}
@@ -1219,7 +1219,7 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
               }}>
                 {(() => {
                   const filtered = getFilteredContacts();
-                  
+
                   if (filtered.length === 0) {
                     return (
                       <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
@@ -1227,101 +1227,101 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
                       </div>
                     );
                   }
-                  
+
                   return filtered.map(({ contact, index }) => {
-                  const isSelected = selectedContactIndices.has(index);
-                  const contactGroups = (contact.groups || [])
-                    .map((groupId: string) => groupNames[groupId])
-                    .filter(Boolean);
-                  
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => {
-                        const newSelected = new Set(selectedContactIndices);
-                        if (isSelected) {
-                          newSelected.delete(index);
-                        } else {
-                          newSelected.add(index);
-                        }
-                        setSelectedContactIndices(newSelected);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '0.75rem',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        background: isSelected ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
-                        border: isSelected ? '1px solid rgba(0, 123, 255, 0.3)' : '1px solid transparent',
-                        marginBottom: '0.5rem',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '24px' }}>
-                        {isSelected ? (
-                          <CheckSquare size={20} weight="fill" style={{ color: '#007bff' }} />
-                        ) : (
-                          <Square size={20} weight="regular" style={{ color: '#666' }} />
+                    const isSelected = selectedContactIndices.has(index);
+                    const contactGroups = (contact.groups || [])
+                      .map((groupId: string) => groupNames[groupId])
+                      .filter(Boolean);
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          const newSelected = new Set(selectedContactIndices);
+                          if (isSelected) {
+                            newSelected.delete(index);
+                          } else {
+                            newSelected.add(index);
+                          }
+                          setSelectedContactIndices(newSelected);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          padding: '0.75rem',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          background: isSelected ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
+                          border: isSelected ? '1px solid rgba(0, 123, 255, 0.3)' : '1px solid transparent',
+                          marginBottom: '0.5rem',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '24px' }}>
+                          {isSelected ? (
+                            <CheckSquare size={20} weight="fill" style={{ color: '#007bff' }} />
+                          ) : (
+                            <Square size={20} weight="regular" style={{ color: '#666' }} />
+                          )}
+                        </div>
+                        {contact.photo && (
+                          <img
+                            src={contact.photo}
+                            alt={contact.name}
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              objectFit: 'cover'
+                            }}
+                          />
                         )}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{contact.name}</div>
+                          {contact.email && (
+                            <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.25rem' }}>
+                              {contact.email}
+                            </div>
+                          )}
+                          {contact.company && (
+                            <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                              {contact.company}{contact.title && ` • ${contact.title}`}
+                            </div>
+                          )}
+                          {contact.phone && (
+                            <div style={{ fontSize: '0.875rem', color: '#666' }}>
+                              {contact.phone}
+                            </div>
+                          )}
+                          {contactGroups.length > 0 && (
+                            <div style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: '0.25rem',
+                              marginTop: '0.25rem'
+                            }}>
+                              {contactGroups.map((groupName: string) => (
+                                <span
+                                  key={groupName}
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    padding: '0.125rem 0.375rem',
+                                    background: 'rgba(0, 123, 255, 0.1)',
+                                    color: '#007bff',
+                                    borderRadius: '4px'
+                                  }}
+                                >
+                                  {groupName}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {contact.photo && (
-                        <img
-                          src={contact.photo}
-                          alt={contact.name}
-                          style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            objectFit: 'cover'
-                          }}
-                        />
-                      )}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{contact.name}</div>
-                        {contact.email && (
-                          <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.25rem' }}>
-                            {contact.email}
-                          </div>
-                        )}
-                        {contact.company && (
-                          <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                            {contact.company}{contact.title && ` • ${contact.title}`}
-                          </div>
-                        )}
-                        {contact.phone && (
-                          <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                            {contact.phone}
-                          </div>
-                        )}
-                        {contactGroups.length > 0 && (
-                          <div style={{ 
-                            display: 'flex', 
-                            flexWrap: 'wrap', 
-                            gap: '0.25rem', 
-                            marginTop: '0.25rem' 
-                          }}>
-                            {contactGroups.map((groupName: string) => (
-                              <span
-                                key={groupName}
-                                style={{
-                                  fontSize: '0.75rem',
-                                  padding: '0.125rem 0.375rem',
-                                  background: 'rgba(0, 123, 255, 0.1)',
-                                  color: '#007bff',
-                                  borderRadius: '4px'
-                                }}
-                              >
-                                {groupName}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                });
+                    );
+                  });
                 })()}
               </div>
 
@@ -1352,12 +1352,12 @@ function PeopleContactsField({ field, definition, value, onChange }: PeopleConta
                     const selectedContacts = Array.from(selectedContactIndices)
                       .map(index => fetchedContacts[index])
                       .filter(Boolean);
-                    
+
                     if (selectedContacts.length > 0) {
                       const mergedContacts = [...currentContacts, ...selectedContacts];
                       updateContacts(mergedContacts);
                     }
-                    
+
                     setShowContactSelection(false);
                     setFetchedContacts([]);
                     setGroupNames({});
@@ -1649,7 +1649,7 @@ function parseCSVToPeopleContacts(csvText: string): Array<{
 
     // Parse CSV line (handles quoted fields)
     const fields = parseCSVLine(line);
-    
+
     if (fields.length === 0) continue;
 
     const contact: {
@@ -1720,7 +1720,7 @@ function RolodexItemsField({ field, definition, value, onChange }: RolodexItemsF
     try {
       const text = await file.text();
       const items = parseCSVToRolodexItems(text);
-      
+
       if (items.length === 0) {
         setParseError('No valid items found in CSV file. Expected format: title,description,url (header row optional)');
         return;
@@ -1805,7 +1805,7 @@ function parseCSVToRolodexItems(csvText: string): Array<{ title: string; descrip
 
     // Parse CSV line (handles quoted fields)
     const fields = parseCSVLine(line);
-    
+
     if (fields.length === 0) continue;
 
     const item: { title: string; description?: string; url?: string } = {
@@ -1879,7 +1879,7 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadMutation = useUploadToMediaLibraryMutation();
-  
+
   // Parse images array from value
   const images = useMemo(() => {
     if (!value) return [];
@@ -1894,33 +1894,33 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
     }
     return [];
   }, [value]);
-  
+
   const handleAddImage = (imageUrl: string) => {
     const newImages = [...images, imageUrl];
     onChange(field, newImages);
   };
-  
+
   const handleRemoveImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);
     onChange(field, newImages);
   };
-  
+
   const handleReorder = (fromIndex: number, toIndex: number) => {
     const newImages = [...images];
     const [removed] = newImages.splice(fromIndex, 1);
     newImages.splice(toIndex, 0, removed);
     onChange(field, newImages);
   };
-  
+
   const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
     handleAddImage(mediaItem.file_url);
     setMediaLibraryOpen(false);
   };
-  
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     try {
       setIsUploading(true);
       const result = await uploadMutation.mutateAsync(file);
@@ -1936,7 +1936,7 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
       }
     }
   };
-  
+
   return (
     <div className={styles.control}>
       <span>
@@ -1944,7 +1944,7 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
         {required && <span className={styles.required}>*</span>}
       </span>
       {help && <p className={styles.help}>{help}</p>}
-      
+
       <div className={styles.carouselImagesGrid}>
         {images.map((imageUrl, index) => (
           <div key={index} className={styles.carouselImageItem}>
@@ -1980,7 +1980,7 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
           </div>
         ))}
       </div>
-      
+
       <div className={styles.carouselImageActions}>
         <button
           type="button"
@@ -2001,7 +2001,7 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
           Upload Image
         </button>
       </div>
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -2009,13 +2009,13 @@ function ProfileCarouselImagesField({ field, definition, value, onChange, active
         className={styles.hiddenInput}
         onChange={handleFileUpload}
       />
-      
+
       <MediaLibraryDrawer
         open={mediaLibraryOpen}
         onClose={() => setMediaLibraryOpen(false)}
         onSelect={handleSelectFromLibrary}
       />
-      
+
       {images.length === 0 && (
         <p className={styles.help} style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>
           No images added yet. Add at least one image to display the carousel.

@@ -67,7 +67,7 @@ export interface PageSnapshot {
 }
 
 export interface WidgetConfig {
-  [key: string]: string | number | boolean | null | WidgetConfig | WidgetConfig[];
+  [key: string]: string | number | boolean | null | undefined | WidgetConfig | WidgetConfig[] | number[];
 }
 
 export interface WidgetRecord {
@@ -82,6 +82,19 @@ export interface WidgetRecord {
   featured_effect?: string | null;
   created_at: string;
   updated_at: string;
+  // Client-side only property for grouped widgets
+  is_group?: boolean;
+}
+
+export interface GroupWidgetConfig extends WidgetConfig {
+  children_ids: number[];
+  group_title?: string;
+  group_style?: string;
+}
+
+export interface GroupContainerWidget extends WidgetRecord {
+  widget_type: 'group_container';
+  config_data: GroupWidgetConfig;
 }
 
 export interface WidgetListResponse extends ApiResponse {
@@ -103,6 +116,7 @@ export interface AvailableWidget {
   label?: string;
   description?: string;
   category?: string;
+  default_title?: string;
   config_fields?: Record<string, Record<string, unknown>>;
   [key: string]: unknown;
 }

@@ -19,6 +19,7 @@ import { WidgetSettingsSection } from './sections/WidgetSettingsSection';
 import { SocialIconsSection } from './sections/SocialIconsSection';
 import { sectionRegistry } from './utils/sectionRegistry';
 import { ModalPreview } from './preview/ModalPreview';
+import { getThemeColors } from './utils/colorUtils';
 import styles from './theme-property-drawer.module.css';
 
 interface ThemePropertyDrawerProps {
@@ -43,6 +44,7 @@ export function ThemePropertyDrawer({
   activeColor
 }: ThemePropertyDrawerProps): JSX.Element {
   const section = sectionId ? sectionRegistry.get(sectionId) : null;
+  const palette = getThemeColors(uiState);
 
   if (!section) {
     return <></>;
@@ -136,6 +138,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'profile-image' && (
@@ -143,6 +146,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'page-title' && (
@@ -150,6 +154,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'page-description' && (
@@ -157,6 +162,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'podcast-player-bar' && (
@@ -164,6 +170,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'page-customization' && (
@@ -171,6 +178,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'widget-settings' && (
@@ -179,6 +187,7 @@ export function ThemePropertyDrawer({
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
                 widgetId={widgetId}
+                palette={palette}
               />
             )}
             {sectionId === 'widget-buttons' && (
@@ -186,6 +195,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'widget-text' && (
@@ -193,6 +203,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
             {sectionId === 'social-icons' && (
@@ -200,6 +211,7 @@ export function ThemePropertyDrawer({
                 uiState={uiState}
                 onFieldChange={onFieldChange}
                 activeColor={activeColor}
+                palette={palette}
               />
             )}
           </div>
@@ -208,4 +220,3 @@ export function ThemePropertyDrawer({
     </Dialog.Root>
   );
 }
-

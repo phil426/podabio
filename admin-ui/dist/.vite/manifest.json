@@ -1,6 +1,6 @@
 {
-  "_Sparkle.es-BtyekMP0.js": {
-    "file": "Sparkle.es-BtyekMP0.js",
+  "_Sparkle.es-D3PJffQb.js": {
+    "file": "Sparkle.es-D3PJffQb.js",
     "name": "Sparkle.es",
     "imports": [
       "_client-BXqoWhE4.js",
@@ -34,10 +34,10 @@
       "_client-BXqoWhE4.js",
       "_index-B-F6DCQI.js",
       "_X.es-D2DRrnce.js",
-      "_Sparkle.es-BtyekMP0.js"
+      "_Sparkle.es-D3PJffQb.js"
     ],
     "css": [
-      "assets/main-PdRKQ913.css"
+      "assets/main-BLrB17Hx.css"
     ]
   },
   "src/marketing-icons.tsx": {
@@ -48,7 +48,7 @@
     "imports": [
       "_client-BXqoWhE4.js",
       "_X.es-D2DRrnce.js",
-      "_Sparkle.es-BtyekMP0.js"
+      "_Sparkle.es-D3PJffQb.js"
     ]
   },
   "src/marketing-nav.tsx": {

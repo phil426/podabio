@@ -19,13 +19,15 @@ interface WidgetSettingsSectionProps {
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
   widgetId?: string | null;
+  palette?: string[];
 }
 
 export function WidgetSettingsSection({
   uiState,
   onFieldChange,
   activeColor,
-  widgetId
+  widgetId,
+  palette
 }: WidgetSettingsSectionProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const widgets = snapshot?.widgets || [];
@@ -38,7 +40,7 @@ export function WidgetSettingsSection({
   const isFeatured = widget?.is_featured === 1;
   const updateWidgetMutation = useUpdateWidgetMutation();
   const queryClient = useQueryClient();
-  
+
   // Widget background/border/shadow/glow values
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';
@@ -51,10 +53,10 @@ export function WidgetSettingsSection({
   const widgetGlowWidth = (uiState['widget-glow-width'] as number) ?? 2;
   const widgetGlowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
   const widgetGlowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
-  
+
   // Featured widget effect
   const featuredEffect = widget?.featured_effect ?? 'jiggle';
-  
+
   const handleFeaturedEffectChange = (effect: string) => {
     if (widgetId) {
       updateWidgetMutation.mutate(
@@ -73,13 +75,14 @@ export function WidgetSettingsSection({
       {/* Widget Background & Border */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Background & Border</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Background</label>
           <BackgroundColorSwatch
             value={widgetBackground}
             onChange={(value) => onFieldChange('widget-background', value)}
             label="Widget background"
+            palette={palette}
           />
         </div>
 
@@ -89,6 +92,7 @@ export function WidgetSettingsSection({
             value={widgetBorderColor}
             onChange={(value) => onFieldChange('widget-border-color', value)}
             label="Widget border color"
+            palette={palette}
           />
         </div>
 
@@ -120,7 +124,7 @@ export function WidgetSettingsSection({
       {/* Shadow/Glow Effects */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Shadow & Glow</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Effect Type</label>
           <WidgetBorderEffectSelect
@@ -148,6 +152,7 @@ export function WidgetSettingsSection({
                 value={widgetShadowColor}
                 onChange={(value) => onFieldChange('widget-shadow-color', value)}
                 label="Shadow color"
+                palette={palette}
               />
             </div>
 
@@ -184,6 +189,7 @@ export function WidgetSettingsSection({
                 value={widgetGlowColor}
                 onChange={(value) => onFieldChange('widget-glow-color', value)}
                 label="Glow color"
+                palette={palette}
               />
             </div>
 
@@ -200,12 +206,12 @@ export function WidgetSettingsSection({
           </>
         )}
       </div>
-      
+
       {/* Featured Widget Properties - Only show if widget is featured */}
       {isFeatured && (
         <div className={styles.subsection}>
           <h4 className={styles.subsectionTitle}>Featured Widget</h4>
-          
+
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Featured Effect</label>
             <select

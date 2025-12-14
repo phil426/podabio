@@ -14,13 +14,19 @@ import { getPlatformIcon } from './social-icons';
 
 interface SocialIconInspectorProps {
   activeColor: TabColorTheme;
+  selectedId?: string | null;
+  onSelect?: (id: string | null) => void;
 }
 
-export function SocialIconInspector({ activeColor }: SocialIconInspectorProps): JSX.Element {
+export function SocialIconInspector({ activeColor, selectedId, onSelect }: SocialIconInspectorProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
-  const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
-  const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
+  const globalSelectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
+  const globalSelectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
+
+  // Use props if provided (controlled mode), otherwise fall back to global state
+  const selectedSocialIconId = selectedId !== undefined ? selectedId : globalSelectedSocialIconId;
+  const selectSocialIcon = onSelect || globalSelectSocialIcon;
 
   const selectedIcon = useMemo(() => {
     if (!selectedSocialIconId || selectedSocialIconId.startsWith('new:')) return undefined;

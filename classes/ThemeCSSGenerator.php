@@ -8,7 +8,8 @@
 require_once __DIR__ . '/Theme.php';
 require_once __DIR__ . '/../includes/theme-helpers.php';
 
-class ThemeCSSGenerator {
+class ThemeCSSGenerator
+{
     private $page;
     private $theme;
     private $themeObj;
@@ -36,18 +37,19 @@ class ThemeCSSGenerator {
     private $resolvedWidgetBorderColor = null;
     private $resolvedBorderWidth = null;
     private $resolvedBorderRadius = null;
-    
-    public function __construct($page, $theme = null) {
+
+    public function __construct($page, $theme = null)
+    {
         $this->page = $page;
         $this->theme = $theme;
         $this->themeObj = new Theme();
-        
+
         // Load all theme data
         // REMOVED: Legacy colors and fonts - not needed
         $this->pageFonts = $this->themeObj->getPageFonts($page, $theme);
         $this->widgetFonts = $this->themeObj->getWidgetFonts($page, $theme);
         $this->pageBackground = $this->themeObj->getPageBackground($page, $theme);
-        $this->pageBackgroundAnimate = isset($page['page_background_animate']) ? (bool)$page['page_background_animate'] : false;
+        $this->pageBackgroundAnimate = isset($page['page_background_animate']) ? (bool) $page['page_background_animate'] : false;
         $this->widgetBackground = $this->themeObj->getWidgetBackground($page, $theme);
         $this->widgetBorderColor = $this->themeObj->getWidgetBorderColor($page, $theme);
         $this->widgetStyles = $this->themeObj->getWidgetStyles($page, $theme);
@@ -64,85 +66,88 @@ class ThemeCSSGenerator {
 
         // REMOVED: Legacy color overrides - no longer needed
     }
-    
+
     /**
      * Calculate relative luminance of a color (for contrast calculation)
      * @param string $color Hex color (#RGB or #RRGGBB)
      * @return float Luminance value between 0 and 1
      */
-    private function getLuminance($color) {
+    private function getLuminance($color)
+    {
         // Validate that this is actually a hex color
         // If it's not a hex color (e.g., a gradient), return a default luminance
         if (!is_string($color) || !preg_match('/^#?[0-9a-fA-F]{3,6}$/', $color)) {
             // Return a neutral luminance (0.5) for non-hex colors
             return 0.5;
         }
-        
+
         // Remove # if present
         $color = ltrim($color, '#');
-        
+
         // Handle 3-digit hex
         if (strlen($color) === 3) {
             $color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
         }
-        
+
         // Ensure we have exactly 6 hex digits and validate format
         // This prevents PHP 8.1+ deprecation warnings from hexdec()
         if (strlen($color) !== 6 || !preg_match('/^[0-9a-fA-F]{6}$/', $color)) {
             return 0.5; // Default neutral luminance
         }
-        
+
         // Extract hex components - safe now that we've validated
         $rHex = substr($color, 0, 2);
         $gHex = substr($color, 2, 2);
         $bHex = substr($color, 4, 2);
-        
+
         // Convert to RGB
         $r = hexdec($rHex);
         $g = hexdec($gHex);
         $b = hexdec($bHex);
-        
+
         // Normalize to 0-1
         $r = $r / 255;
         $g = $g / 255;
         $b = $b / 255;
-        
+
         // Apply gamma correction
         $r = $r <= 0.03928 ? $r / 12.92 : pow(($r + 0.055) / 1.055, 2.4);
         $g = $g <= 0.03928 ? $g / 12.92 : pow(($g + 0.055) / 1.055, 2.4);
         $b = $b <= 0.03928 ? $b / 12.92 : pow(($b + 0.055) / 1.055, 2.4);
-        
+
         // Calculate luminance
         return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
     }
-    
+
     /**
      * Calculate contrast ratio between two colors
      * @param string $color1 First color
      * @param string $color2 Second color
      * @return float Contrast ratio (1 to 21)
      */
-    private function getContrastRatio($color1, $color2) {
+    private function getContrastRatio($color1, $color2)
+    {
         $lum1 = $this->getLuminance($color1);
         $lum2 = $this->getLuminance($color2);
-        
+
         $lighter = max($lum1, $lum2);
         $darker = min($lum1, $lum2);
-        
+
         return ($lighter + 0.05) / ($darker + 0.05);
     }
-    
+
     /**
      * Get the dominant color from a gradient background
      * @param string $background Background value (color or gradient)
      * @return string Hex color of dominant/middle gradient color
      */
-    private function getDominantBackgroundColor($background) {
+    private function getDominantBackgroundColor($background)
+    {
         // If it's a solid color, return it
         if (preg_match('/^#[0-9a-fA-F]{3,6}$/', $background)) {
             return $background;
         }
-        
+
         // If it's a gradient, extract colors
         // Match format: linear-gradient(356deg, #dc5555 0%, #991B1B 100%)
         // Also match: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)
@@ -151,47 +156,48 @@ class ThemeCSSGenerator {
             // For simplicity, we'll use the lighter color as dominant
             $color1 = $matches[1];
             $color2 = $matches[2];
-            
+
             // Normalize hex colors to 6 digits
             $color1 = $this->normalizeHexColor($color1) ?? $color1;
             $color2 = $this->normalizeHexColor($color2) ?? $color2;
-            
+
             // Only calculate luminance if both are valid hex colors
             if ($color1 && $color2 && preg_match('/^#[0-9a-fA-F]{6}$/', $color1) && preg_match('/^#[0-9a-fA-F]{6}$/', $color2)) {
                 $lum1 = $this->getLuminance($color1);
                 $lum2 = $this->getLuminance($color2);
-                
+
                 // Return the lighter color as it's more likely to be the "background"
                 return $lum1 > $lum2 ? $color1 : $color2;
             }
-            
+
             // If normalization failed, return the first color
             return $color1 ?: $color2 ?: '#ffffff';
         }
-        
+
         // Fallback to white if we can't parse
         return '#ffffff';
     }
-    
+
     /**
      * Get optimal text color for good contrast against background
      * @param string $backgroundColor Background color
      * @param string $defaultColor Default/primary color to use if contrast is good
      * @return string Hex color that ensures good contrast
      */
-    private function getOptimalTextColor($backgroundColor, $defaultColor) {
+    private function getOptimalTextColor($backgroundColor, $defaultColor)
+    {
         $bgColor = $this->getDominantBackgroundColor($backgroundColor);
         $bgLum = $this->getLuminance($bgColor);
-        
+
         // Check contrast with default color
         $contrast = $this->getContrastRatio($defaultColor, $bgColor);
-        
+
         // WCAG AA requires 4.5:1 for normal text, 3:1 for large text
         // We'll use 4:1 as a reasonable threshold
         if ($contrast >= 4.0) {
             return $defaultColor;
         }
-        
+
         // If contrast is poor, choose white or black based on background
         // If background is dark (luminance < 0.5), use white text
         // If background is light (luminance >= 0.5), use black/dark text
@@ -214,18 +220,19 @@ class ThemeCSSGenerator {
             return '#1a1a1a';
         }
     }
-    
+
     /**
      * Generate CSS variables block
      * @return string CSS :root block with all variables
      */
-    public function generateCSSVariables() {
+    public function generateCSSVariables()
+    {
         // CRITICAL: Read from shape_tokens and spacing_tokens, NOT legacy widget_styles
         // Shape tokens structure: { corner: { md: '0.9rem' }, border_width: { regular: '2px' }, shadow: { level_1: '...' } }
-        
+
         // Get border width - check widget_styles.border_width first (what the UI saves to), then shape_tokens
         $borderWidthValue = null;
-        
+
         // Priority 1: widget_styles.border_width (what the themes UI saves to)
         if (!empty($this->widgetStyles['border_width'])) {
             $borderWidthValue = $this->widgetStyles['border_width'];
@@ -234,7 +241,7 @@ class ThemeCSSGenerator {
                 $borderWidthValue = $borderWidthValue . 'px';
             }
         }
-        
+
         // Priority 2: shape_tokens.border_width (legacy/fallback)
         if (empty($borderWidthValue) && !empty($this->shapeTokens['border_width']) && is_array($this->shapeTokens['border_width'])) {
             // Priority: regular (thick) > hairline (thin) > bold
@@ -254,10 +261,10 @@ class ThemeCSSGenerator {
                 }
             }
         }
-        
+
         $this->resolvedBorderWidth = $borderWidthValue ?: '0px';
         $borderWidth = $this->resolvedBorderWidth; // For CSS variable output
-        
+
         // Get spacing from spacing_tokens.density
         $spacing = '1.5rem'; // Default
         if (!empty($this->spacingValues['lg'])) {
@@ -274,11 +281,11 @@ class ThemeCSSGenerator {
             $multiplier = $multipliers[$density] ?? 1.0;
             $spacing = (floatval($baseSpacing) * $multiplier) . 'rem';
         }
-        
+
         // Get border radius from shape_tokens.corner.radius (widget-rounding field) or shape_tokens.corner
         // Priority: shape_tokens.corner.radius (from widget-rounding field) > shape_tokens.corner (legacy)
         $borderRadiusValue = '0.75rem'; // Default rounded (md)
-        
+
         // Priority 1: Check for shape_tokens.corner.radius (from widget-rounding field)
         if (!empty($this->shapeTokens['corner']['radius'])) {
             $radiusValue = $this->shapeTokens['corner']['radius'];
@@ -295,7 +302,7 @@ class ThemeCSSGenerator {
             // So we need to check which corner value was explicitly set by the theme
             $cornerKeys = array_keys($this->shapeTokens['corner']);
             $cornerValues = array_values($this->shapeTokens['corner']);
-            
+
             if (count($cornerValues) === 1) {
                 // Theme has corner - only one value exists, use it
                 $borderRadiusValue = $cornerValues[0];
@@ -315,7 +322,7 @@ class ThemeCSSGenerator {
         // NO LEGACY FALLBACKS - use only shape_tokens
         $this->resolvedBorderRadius = $borderRadiusValue;
         $borderRadius = $this->resolvedBorderRadius; // For CSS variable output
-        
+
         // Get button corner radius from shape_tokens.button_corner (for page-level buttons)
         $buttonCornerRadius = '0.75rem'; // Default rounded
         if (!empty($this->shapeTokens['button_corner']) && is_array($this->shapeTokens['button_corner'])) {
@@ -334,29 +341,29 @@ class ThemeCSSGenerator {
                 }
             }
         }
-        
+
         // Get border effect from widget_styles
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
-        
+
         // NO LEGACY FALLBACKS - use only colorTokens
         $textPrimary = $this->colorTokens['text']['primary'] ?? '#0f172a';
         $textSecondary = $this->colorTokens['text']['secondary'] ?? '#64748b';
         $textInverse = $this->colorTokens['text']['inverse'] ?? '#ffffff';
         $accentPrimary = $this->colorTokens['accent']['primary'] ?? '#2563eb';
         $accentMuted = $this->colorTokens['accent']['muted'] ?? '#e0edff';
-        
+
         // CRITICAL: Use ONLY theme.page_background - no fallbacks, no legacy, just the theme value
         $pageBackgroundValue = $this->pageBackground;
-        
+
         // NO FALLBACKS - if theme doesn't have page_background, that's an error
         if (empty($pageBackgroundValue) || $pageBackgroundValue === null || $pageBackgroundValue === '') {
             // Still output something to prevent broken CSS, but log the error
             $pageBackgroundValue = '#ffffff';
         }
-        
+
         $this->resolvedPageBackgroundValue = $pageBackgroundValue; // Store for use in generateCompleteStyleBlock
         $backgroundBase = $pageBackgroundValue; // Use the resolved page background as base
-        
+
         // NO LEGACY FALLBACKS - use only colorTokens
         $backgroundSurface = $this->colorTokens['background']['surface'] ?? '#f8fafc';
         $backgroundSurfaceRaised = $this->colorTokens['background']['surface_raised'] ?? $backgroundSurface;
@@ -365,23 +372,23 @@ class ThemeCSSGenerator {
         $borderFocusColor = $this->colorTokens['border']['focus'] ?? $accentPrimary;
         $shadowAmbient = $this->colorTokens['shadow']['ambient'] ?? 'rgba(15, 23, 42, 0.12)';
         $shadowFocus = $this->colorTokens['shadow']['focus'] ?? 'rgba(37, 99, 235, 0.35)';
-        
+
         $stateColors = $this->colorTokens['state'] ?? [];
         $stateTextColors = $this->colorTokens['text_state'] ?? [];
         $gradientTokens = $this->colorTokens['gradient'] ?? [];
         $glowTokens = $this->colorTokens['glow'] ?? [];
-        
+
         // CRITICAL: Use ONLY theme.widget_border_color - no fallbacks
         $this->resolvedWidgetBorderColor = $this->widgetBorderColor;
         if (empty($this->resolvedWidgetBorderColor) || $this->resolvedWidgetBorderColor === null || $this->resolvedWidgetBorderColor === '') {
             $this->resolvedWidgetBorderColor = '#e2e8f0'; // Only to prevent broken CSS
         }
-        
+
         // CRITICAL: Use ONLY theme.widget_background - no fallbacks
         // Priority: theme.widget_background column > colorTokens.background.surface
-        
+
         $this->resolvedWidgetBackgroundValue = $this->widgetBackground;
-        
+
         // If widget_background is empty, try colorTokens.background.surface (this is synced with widget_background in ThemeEditorPanel)
         if (empty($this->resolvedWidgetBackgroundValue) || $this->resolvedWidgetBackgroundValue === null || $this->resolvedWidgetBackgroundValue === '') {
             $surfaceColor = $this->colorTokens['background']['surface'] ?? null;
@@ -392,12 +399,12 @@ class ThemeCSSGenerator {
             }
         } else {
         }
-        
-        
+
+
         // CRITICAL: Page title and description colors should use typography_tokens.color.heading/body
         // (what the Edit Theme Panel saves), not color_tokens.text.primary/secondary
         // Priority: typography_tokens.color.heading/body > token overrides > calculated optimal color
-        
+
         // Check typography_tokens first (this is what Edit Theme Panel saves to)
         $pageTitleColorFromTypography = null;
         $pageDescriptionColorFromTypography = null;
@@ -407,7 +414,7 @@ class ThemeCSSGenerator {
         if (!empty($this->typographyTokens['color']['body'] ?? null)) {
             $pageDescriptionColorFromTypography = $this->typographyTokens['color']['body'];
         }
-        
+
         // Check for page-title-color override in token_overrides (fallback)
         // Check multiple possible paths: semantic.text.title, colors.text.title, or direct page-title-color
         $pageTitleColorOverride = null;
@@ -419,23 +426,23 @@ class ThemeCSSGenerator {
             // Direct override for CSS variable name
             $pageTitleColorOverride = $this->tokens['page-title-color'];
         }
-        
+
         // Use typography_tokens color if present, otherwise use override, otherwise calculate optimal color
-        $pageTitleColor = (!empty($pageTitleColorFromTypography) && $pageTitleColorFromTypography !== '') 
-            ? $pageTitleColorFromTypography 
+        $pageTitleColor = (!empty($pageTitleColorFromTypography) && $pageTitleColorFromTypography !== '')
+            ? $pageTitleColorFromTypography
             : ($pageTitleColorOverride ?: $this->getOptimalTextColor($pageBackgroundValue, $textPrimary));
-        $pageDescriptionColor = (!empty($pageDescriptionColorFromTypography) && $pageDescriptionColorFromTypography !== '') 
-            ? $pageDescriptionColorFromTypography 
+        $pageDescriptionColor = (!empty($pageDescriptionColorFromTypography) && $pageDescriptionColorFromTypography !== '')
+            ? $pageDescriptionColorFromTypography
             : $this->getOptimalTextColor($pageBackgroundValue, $textSecondary);
-        
+
         $socialIconColor = $this->getOptimalTextColor($pageBackgroundValue, $accentPrimary);
         $onBackground = $this->getOptimalTextColor($pageBackgroundValue, $textPrimary);
         $onSurface = $this->getOptimalTextColor($backgroundSurface, $textPrimary);
         $onSurfaceRaised = $this->getOptimalTextColor($backgroundSurfaceRaised, $textPrimary);
         $onAccent = $this->getOptimalTextColor($accentPrimary, $textInverse);
-        
+
         $css = ":root {\n";
-        
+
         // Tokenized color variables
         $css .= "    --color-background-base: " . h($backgroundBase) . ";\n";
         $css .= "    --color-background-surface: " . h($backgroundSurface) . ";\n";
@@ -475,32 +482,42 @@ class ThemeCSSGenerator {
             $shellBackground = '#f5f7fa';
         }
         $css .= "    --shell-background: " . h($shellBackground) . ";\n";
-        
+
         // Tokenized spacing values (page spacing)
         foreach ($this->spacingValues as $token => $value) {
             $css .= "    --space-" . h($token) . ": " . h($value) . ";\n";
         }
         $css .= "    --layout-density: " . h($this->layoutDensity) . ";\n";
-        
+
         // Widget spacing values (use same density as page spacing)
         // Widgets use the same spacing density as the page
         $baseScale = $this->spacingTokens['base_scale'] ?? [
-            '2xs' => 0.25, 'xs' => 0.5, 'sm' => 0.75, 'md' => 1.0,
-            'lg' => 1.5, 'xl' => 2.0, '2xl' => 3.0
+            '2xs' => 0.25,
+            'xs' => 0.5,
+            'sm' => 0.75,
+            'md' => 1.0,
+            'lg' => 1.5,
+            'xl' => 2.0,
+            '2xl' => 3.0
         ];
         $density = $this->spacingTokens['density'] ?? 'cozy';
         $densityMultipliers = $this->spacingTokens['density_multipliers'][$density] ?? [
-            '2xs' => 0.85, 'xs' => 0.9, 'sm' => 0.95, 'md' => 1.0,
-            'lg' => 1.0, 'xl' => 1.05, '2xl' => 1.1
+            '2xs' => 0.85,
+            'xs' => 0.9,
+            'sm' => 0.95,
+            'md' => 1.0,
+            'lg' => 1.0,
+            'xl' => 1.05,
+            '2xl' => 1.1
         ];
-        
+
         // Calculate widget spacing values (same as page spacing)
         foreach ($baseScale as $token => $base) {
-            $multiplier = isset($densityMultipliers[$token]) ? (float)$densityMultipliers[$token] : 1.0;
+            $multiplier = isset($densityMultipliers[$token]) ? (float) $densityMultipliers[$token] : 1.0;
             $widgetValue = $base * $multiplier;
             $css .= "    --widget-space-" . h($token) . ": " . h($widgetValue) . "rem;\n";
         }
-        
+
         // Shape tokens
         foreach ($this->shapeTokens['corner'] ?? [] as $name => $value) {
             $css .= "    --shape-corner-" . h(str_replace('_', '-', $name)) . ": " . h($value) . ";\n";
@@ -511,17 +528,17 @@ class ThemeCSSGenerator {
         foreach ($this->shapeTokens['shadow'] ?? [] as $name => $value) {
             $css .= "    --shadow-" . h(str_replace('_', '-', $name)) . ": " . h($value) . ";\n";
         }
-        
+
         // Typography tokens
         $headingFont = $this->typographyTokens['font']['heading'] ?? $this->pageFonts['page_primary_font'];
         $bodyFont = $this->typographyTokens['font']['body'] ?? $this->pageFonts['page_secondary_font'];
         $metaFont = $this->typographyTokens['font']['metatext'] ?? $bodyFont;
-        
+
         // Typography colors - read from typography_tokens (saved by Edit Theme Panel)
         // Priority: typography_tokens.color.heading/body (from Edit Theme Panel) > token_overrides > defaults
         $headingColor = null;
         $bodyColor = null;
-        
+
         // Check typography_tokens first (this is what Edit Theme Panel saves to)
         if (!empty($this->typographyTokens['color']['heading'] ?? null)) {
             $headingColor = $this->typographyTokens['color']['heading'];
@@ -529,7 +546,7 @@ class ThemeCSSGenerator {
         if (!empty($this->typographyTokens['color']['body'] ?? null)) {
             $bodyColor = $this->typographyTokens['color']['body'];
         }
-        
+
         // Fallback to token_overrides if typography_tokens don't have colors
         if (!$headingColor && !empty($this->tokens['typography']['color']['heading'] ?? null)) {
             $headingColor = $this->tokens['typography']['color']['heading'];
@@ -541,11 +558,11 @@ class ThemeCSSGenerator {
         } elseif (!$bodyColor && !empty($this->tokens['core']['typography']['color']['body'] ?? null)) {
             $bodyColor = $this->tokens['core']['typography']['color']['body'];
         }
-        
+
         // Widget typography colors (separate from page typography)
         $widgetHeadingColor = null;
         $widgetBodyColor = null;
-        
+
         // Check widget typography colors first (this is what Edit Theme Panel saves for widgets)
         if (!empty($this->typographyTokens['color']['widget_heading'] ?? null)) {
             $widgetHeadingColor = $this->typographyTokens['color']['widget_heading'];
@@ -553,7 +570,7 @@ class ThemeCSSGenerator {
         if (!empty($this->typographyTokens['color']['widget_body'] ?? null)) {
             $widgetBodyColor = $this->typographyTokens['color']['widget_body'];
         }
-        
+
         // Fallback to page typography colors if widget colors not set
         if (!$widgetHeadingColor) {
             $widgetHeadingColor = $headingColor;
@@ -561,26 +578,26 @@ class ThemeCSSGenerator {
         if (!$widgetBodyColor) {
             $widgetBodyColor = $bodyColor;
         }
-        
+
         $css .= "    --font-family-heading: '" . h($headingFont) . "', sans-serif;\n";
         $css .= "    --font-family-body: '" . h($bodyFont) . "', sans-serif;\n";
         $css .= "    --font-family-meta: '" . h($metaFont) . "', sans-serif;\n";
-        
+
         // Font variables for preview compatibility
         $css .= "    --page-title-font: '" . h($headingFont) . "', sans-serif;\n";
         $css .= "    --page-description-font: '" . h($bodyFont) . "', sans-serif;\n";
-        
+
         // Widget fonts
         $widgetHeadingFont = $this->typographyTokens['font']['widget_heading'] ?? $headingFont;
         $widgetBodyFont = $this->typographyTokens['font']['widget_body'] ?? $bodyFont;
         $css .= "    --widget-heading-font: '" . h($widgetHeadingFont) . "', sans-serif;\n";
         $css .= "    --widget-body-font: '" . h($widgetBodyFont) . "', sans-serif;\n";
-        
+
         // Typography color variables (for page typography)
         // Check if colors are gradients and handle accordingly
         $isHeadingGradient = $headingColor && (strpos($headingColor, 'gradient') !== false || strpos($headingColor, 'linear-gradient') !== false || strpos($headingColor, 'radial-gradient') !== false);
         $isBodyGradient = $bodyColor && (strpos($bodyColor, 'gradient') !== false || strpos($bodyColor, 'linear-gradient') !== false || strpos($bodyColor, 'radial-gradient') !== false);
-        
+
         if ($headingColor) {
             $css .= "    --heading-font-color: " . h($headingColor) . ";\n";
             if ($isHeadingGradient) {
@@ -593,11 +610,11 @@ class ThemeCSSGenerator {
                 $css .= "    --body-font-gradient: " . h($bodyColor) . ";\n";
             }
         }
-        
+
         // Widget typography color variables (separate from page typography)
         $isWidgetHeadingGradient = $widgetHeadingColor && (strpos($widgetHeadingColor, 'gradient') !== false || strpos($widgetHeadingColor, 'linear-gradient') !== false || strpos($widgetHeadingColor, 'radial-gradient') !== false);
         $isWidgetBodyGradient = $widgetBodyColor && (strpos($widgetBodyColor, 'gradient') !== false || strpos($widgetBodyColor, 'linear-gradient') !== false || strpos($widgetBodyColor, 'radial-gradient') !== false);
-        
+
         if ($widgetHeadingColor) {
             $css .= "    --widget-heading-font-color: " . h($widgetHeadingColor) . ";\n";
             if ($isWidgetHeadingGradient) {
@@ -616,7 +633,17 @@ class ThemeCSSGenerator {
             // Fallback to page body color if widget color not set
             $css .= "    --widget-body-font-color: var(--body-font-color, var(--color-text-secondary, #64748b));\n";
         }
-        
+
+        // Widget Typography Properties (Size, Weight) for Preview Compatibility
+        // Default values mimicking standard tailwind rendering if tokens missing
+        $css .= "    --widget-heading-size: " . h($this->typographyTokens['size']['widget_heading'] ?? '16px') . ";\n";
+        $css .= "    --widget-heading-weight: " . h($this->typographyTokens['weight']['widget_heading'] ?? '600') . ";\n";
+        // Widget heading text color alias
+        $css .= "    --widget-heading-color: var(--widget-heading-font-color);\n";
+
+        $css .= "    --widget-body-size: " . h($this->typographyTokens['size']['widget_body'] ?? '14px') . ";\n";
+        $css .= "    --widget-body-weight: " . h($this->typographyTokens['weight']['widget_body'] ?? '400') . ";\n";
+
         // Generate type scale CSS variables
         $scaleTokens = $this->typographyTokens['scale'] ?? [];
         if (!empty($scaleTokens)) {
@@ -625,7 +652,7 @@ class ThemeCSSGenerator {
             }
         } else {
         }
-        
+
         // Generate typography size CSS variables (direct font sizes from typography_tokens.size)
         $sizeTokens = $this->typographyTokens['size'] ?? [];
         if (!empty($sizeTokens['heading'])) {
@@ -634,7 +661,7 @@ class ThemeCSSGenerator {
         if (!empty($sizeTokens['body'])) {
             $css .= "    --page-body-size: " . h($sizeTokens['body']) . "px;\n";
         }
-        
+
         foreach ($this->typographyTokens['line_height'] ?? [] as $name => $value) {
             $css .= "    --type-line-height-" . h($name) . ": " . h($value) . ";\n";
         }
@@ -643,7 +670,7 @@ class ThemeCSSGenerator {
             if (is_array($value) || is_object($value)) {
                 $weightValue = 'normal';
                 $styleValue = 'normal';
-                $weightObj = (array)$value;
+                $weightObj = (array) $value;
                 if (isset($weightObj['bold']) && $weightObj['bold']) {
                     $weightValue = 'bold';
                 }
@@ -656,7 +683,7 @@ class ThemeCSSGenerator {
                 $css .= "    --type-weight-" . h($name) . ": " . h($value) . ";\n";
             }
         }
-        
+
         // Motion tokens
         foreach ($this->motionTokens['duration'] ?? [] as $name => $value) {
             $css .= "    --motion-duration-" . h($name) . ": " . h($value) . ";\n";
@@ -667,94 +694,118 @@ class ThemeCSSGenerator {
         $css .= "    --focus-ring-width: " . h($this->motionTokens['focus']['ring_width'] ?? '3px') . ";\n";
         $css .= "    --focus-ring-offset: " . h($this->motionTokens['focus']['ring_offset'] ?? '2px') . ";\n";
         $css .= "    --focus-ring-color: " . h($borderFocusColor) . ";\n";
-        
+
         // REMOVED: Legacy color variables - no longer needed
-        
+
         // Text colors with guaranteed contrast
         $css .= "    --page-title-color: " . h($pageTitleColor) . ";\n";
         $css .= "    --page-description-color: " . h($pageDescriptionColor) . ";\n";
-        
+
         // Page description/bio size from typography_tokens.scale.body
         if (!empty($this->typographyTokens['scale']['body'])) {
             $css .= "    --page-description-size: " . h($this->typographyTokens['scale']['body']) . "px;\n";
         }
-        
+
         // Page description/bio spacing - now handled by unified --page-spacing variable
         // Legacy --page-bio-spacing removed - use --page-spacing instead
         $css .= "    --social-icon-color: " . h($socialIconColor) . ";\n";
-        
+
         // Iconography tokens - Always generate variables (use fallbacks if not set)
         $iconSizeRaw = $this->iconographyTokens['size'] ?? '48px';
         $iconColor = $this->iconographyTokens['color'] ?? '';
         $iconSpacingRaw = $this->iconographyTokens['spacing'] ?? '0.75rem';
-        
+
         // Format size: if numeric, add 'px', otherwise use as-is
         $iconSize = is_numeric($iconSizeRaw) ? $iconSizeRaw . 'px' : $iconSizeRaw;
         // Format spacing: if numeric, add 'rem', otherwise use as-is
         $iconSpacing = is_numeric($iconSpacingRaw) ? $iconSpacingRaw . 'rem' : $iconSpacingRaw;
-        
+
         $css .= "    --icon-size: " . h($iconSize) . ";\n";
         $css .= "    --icon-spacing: " . h($iconSpacing) . ";\n";
         // Generate --icon-color if it's set and not empty
         if (isset($this->iconographyTokens['color']) && $this->iconographyTokens['color'] !== null && $this->iconographyTokens['color'] !== '') {
             $css .= "    --icon-color: " . h($iconColor) . ";\n";
         }
-        
+
         // Legacy font variables for backward compatibility
         // REMOVED: Legacy font variables - no longer needed
-        
+
         // Page font variables
         $css .= "    --page-primary-font: '" . h($this->pageFonts['page_primary_font']) . "';\n";
         $css .= "    --page-secondary-font: '" . h($this->pageFonts['page_secondary_font']) . "';\n";
-        
+
         // Widget font variables (default to page fonts if not set)
         $css .= "    --widget-primary-font: '" . h($this->widgetFonts['widget_primary_font']) . "';\n";
         $css .= "    --widget-secondary-font: '" . h($this->widgetFonts['widget_secondary_font']) . "';\n";
-        
+
         // NO FALLBACKS - use only the theme background value
         $css .= "    --page-background: " . h($pageBackgroundValue) . ";\n";
-        
+
         // Generate darker version of page background for desktop/tablet mode
         $pageBackgroundDark = $this->darkenBackground($pageBackgroundValue, 0.15); // 15% darker
         $css .= "    --page-background-dark: " . h($pageBackgroundDark) . ";\n";
-        
+
         // Page background animation flag (for gradient animation)
         $css .= "    --page-background-animate: " . ($this->pageBackgroundAnimate ? 'true' : 'false') . ";\n";
-        
-        // REMOVED: --widget-background CSS variable - using direct value in .widget-item instead
-        // $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
+
+        // Widget Background - synced with Live Preview
+        $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
+
+
         $css .= "    --widget-border-width: " . h($this->resolvedBorderWidth) . ";\n";
         $css .= "    --widget-border-color: " . h($this->resolvedWidgetBorderColor) . ";\n";
+        $spacing = isset($spacing) ? $spacing : '1.5rem';
         $css .= "    --widget-spacing: {$spacing};\n";
         $css .= "    --widget-border-radius: " . h($this->resolvedBorderRadius) . ";\n";
+
+        // Widget Shadow Depth - Match UIStatePagePreview
+        // Default to none if not set
+        $shadowDepth = 'none';
+        if (!empty($this->widgetStyles['shadow']) && $this->widgetStyles['shadow'] !== 'none') {
+            // Map shadow names to values if needed, or use token values
+            $shadowKey = $this->widgetStyles['shadow'];
+            if (!empty($this->shapeTokens['shadow'][$shadowKey])) {
+                $shadowDepth = $this->shapeTokens['shadow'][$shadowKey];
+            } else {
+                // Fallback/Legacy mapping
+                $shadowMap = [
+                    'sm' => '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    'md' => '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    'lg' => '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    'xl' => '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                ];
+                $shadowDepth = $shadowMap[$shadowKey] ?? $shadowDepth;
+            }
+        }
+        $css .= "    --widget-shadow-depth: " . h($shadowDepth) . ";\n";
         // Widget width as percentage (default 100%)
-        $widgetWidth = isset($this->widgetStyles['width']) ? (int)$this->widgetStyles['width'] : 100;
+        $widgetWidth = isset($this->widgetStyles['width']) ? (int) $this->widgetStyles['width'] : 100;
         $css .= "    --widget-width: {$widgetWidth}%;\n";
         $css .= "    --text-color: var(--color-text-primary);\n";
-        
+
         // Page-level spacing based on density
         // Page padding (left and right sides of page) - use lg spacing token with page_multiplier
         // spacingValues already has density multipliers applied from Theme.php::getSpacingTokens()
         $basePagePadding = $this->spacingValues['lg'] ?? '1.5rem';
-        
+
         // Apply page_multiplier if set (allows fine-tuning page spacing independently of density)
         $pageMultiplier = $this->spacingTokens['page_multiplier'] ?? 1.0;
         if (is_numeric($pageMultiplier) && $pageMultiplier > 0) {
             // Convert base padding to numeric value, apply multiplier, then convert back
-            $baseNumeric = (float)preg_replace('/[^0-9.]/', '', $basePagePadding);
+            $baseNumeric = (float) preg_replace('/[^0-9.]/', '', $basePagePadding);
             $unit = preg_replace('/[0-9.]/', '', $basePagePadding) ?: 'rem';
-            $adjustedPadding = ($baseNumeric * (float)$pageMultiplier) . $unit;
+            $adjustedPadding = ($baseNumeric * (float) $pageMultiplier) . $unit;
             $pagePadding = $adjustedPadding;
         } else {
             $pagePadding = $basePagePadding;
         }
-        
+
         $css .= "    --page-padding: " . h($pagePadding) . ";\n";
-        
+
         // Widget gap (spacing between blocks) - also uses lg spacing token
         $widgetGap = $this->spacingValues['lg'] ?? '1.5rem';
         $css .= "    --widget-gap: " . h($widgetGap) . ";\n";
-        
+
         // Unified page spacing (spacing between all page elements) - from spacing_tokens.page_spacing
         $pageSpacing = '16px'; // Default
         $pageSpacingValue = '16'; // Default numeric value
@@ -773,14 +824,14 @@ class ThemeCSSGenerator {
         }
         $css .= "    --page-spacing: " . h($pageSpacing) . ";\n";
         $css .= "    --page-element-spacing: " . h($pageSpacing) . ";\n";
-        
+
         // Profile image spacing - use unified spacing with small offset for top (accounting for podcast bar)
         $spacingNum = is_numeric($pageSpacingValue) ? floatval($pageSpacingValue) : 16;
         $profileImageSpacingTop = ($spacingNum + 12) . 'px';
         $profileImageSpacingBottom = $spacingNum . 'px';
         $css .= "    --profile-image-spacing-top: " . h($profileImageSpacingTop) . ";\n";
         $css .= "    --profile-image-spacing-bottom: " . h($profileImageSpacingBottom) . ";\n";
-        
+
         // Profile image styling (from page data)
         $profileImageSize = $this->page['profile_image_size'] ?? 120;
         if (is_numeric($profileImageSize)) {
@@ -790,52 +841,52 @@ class ThemeCSSGenerator {
             $sizeMap = ['small' => 80, 'medium' => 120, 'large' => 180];
             $css .= "    --profile-image-size: " . h($sizeMap[$profileImageSize] ?? 120) . "px;\n";
         }
-        
+
         $profileImageRadius = $this->page['profile_image_radius'] ?? 16;
         $css .= "    --profile-image-radius: " . h($profileImageRadius) . "%;\n";
-        
+
         $profileImageBorderWidth = $this->page['profile_image_border_width'] ?? 0;
         $css .= "    --profile-image-border-width: " . h($profileImageBorderWidth) . "px;\n";
-        
+
         $profileImageBorderColor = $this->page['profile_image_border_color'] ?? '#000000';
         $css .= "    --profile-image-border-color: " . h($profileImageBorderColor) . ";\n";
-        
+
         // Profile image effects (shadow/glow)
         // Note: Border is handled separately via CSS border properties, not box-shadow
         $profileImageEffect = $this->page['profile_image_effect'] ?? 'none';
         $profileImageShadows = [];
-        
+
         if ($profileImageEffect === 'shadow') {
             $shadowColor = $this->page['profile_image_shadow_color'] ?? '#000000';
             $shadowIntensity = $this->page['profile_image_shadow_intensity'] ?? 0.5;
             $shadowDepth = $this->page['profile_image_shadow_depth'] ?? 4;
             $shadowBlur = $this->page['profile_image_shadow_blur'] ?? 8;
-            
+
             // Convert hex to rgba
             $rgbaColor = $this->hexToRgba($shadowColor, floatval($shadowIntensity));
             $profileImageShadows[] = "{$shadowDepth}px {$shadowDepth}px {$shadowBlur}px {$rgbaColor}";
         } elseif ($profileImageEffect === 'glow') {
             $glowColor = $this->page['profile_image_glow_color'] ?? '#2563eb';
             $glowWidth = $this->page['profile_image_glow_width'] ?? 10;
-            
+
             $glowColorRgba = $this->hexToRgba($glowColor, 0.8);
             $profileImageShadows[] = "0 0 {$glowWidth}px {$glowColorRgba}";
             $profileImageShadows[] = "0 0 " . ($glowWidth * 1.5) . "px {$glowColorRgba}";
             $profileImageShadows[] = "0 0 " . ($glowWidth * 2) . "px {$glowColorRgba}";
         }
-        
+
         // Border is NOT added to box-shadow - it's handled via CSS border properties
         // This prevents double borders
-        
+
         if (count($profileImageShadows) > 0) {
             $css .= "    --profile-image-box-shadow: " . h(implode(', ', $profileImageShadows)) . ";\n";
         } else {
             $css .= "    --profile-image-box-shadow: none;\n";
         }
-        
+
         // Button corner radius (for page-level buttons)
         $css .= "    --button-corner-radius: " . h($buttonCornerRadius) . ";\n";
-        
+
         // Add shadow or glow variables based on border effect
         if ($borderEffect === 'shadow') {
             $shadowIntensity = convertEnumToCSS($this->widgetStyles['border_shadow_intensity'] ?? 'subtle', 'shadow');
@@ -849,19 +900,20 @@ class ThemeCSSGenerator {
             $css .= "    --widget-glow-blur: {$glowBlur};\n";
             $css .= "    --widget-glow-opacity: {$glowOpacity};\n";
         }
-        
+
         $css .= "}\n";
-        
+
         return $css;
     }
-    
+
     /**
      * Generate spatial effect CSS classes
      * @return string CSS for spatial effects
      */
-    public function generateSpatialEffectCSS() {
+    public function generateSpatialEffectCSS()
+    {
         $css = "";
-        
+
         if ($this->spatialEffect === 'glass') {
             $css .= "body.spatial-glass {\n";
             $css .= "    background: var(--page-background);\n";
@@ -906,49 +958,51 @@ class ThemeCSSGenerator {
             $css .= "    transform-style: preserve-3d;\n";
             $css .= "}\n\n";
         }
-        
+
         return $css;
     }
-    
+
     /**
      * Generate glow animation CSS
      * @return string CSS keyframes and rules for glow effect
      */
-    public function generateGlowAnimationCSS() {
+    public function generateGlowAnimationCSS()
+    {
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
-        
+
         if ($borderEffect !== 'glow') {
             return "";
         }
-        
+
         $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'subtle';
         // No need to check for 'none' - glow intensity is always 'subtle' or 'pronounced'
-        
+
         $css = "@keyframes glow-pulse {\n";
         $css .= "    0%, 100% { opacity: 0.8; }\n";
         $css .= "    50% { opacity: 1; }\n";
         $css .= "}\n\n";
-        
+
         $css .= "@keyframes glow-rotate {\n";
         $css .= "    0% { filter: blur(var(--widget-glow-blur)) hue-rotate(0deg); }\n";
         $css .= "    100% { filter: blur(var(--widget-glow-blur)) hue-rotate(360deg); }\n";
         $css .= "}\n\n";
-        
+
         return $css;
     }
-    
+
     /**
      * Generate complete style block
      * @return string Complete <style> block ready for page.php
      */
-    public function generateCompleteStyleBlock() {
+    public function generateCompleteStyleBlock()
+    {
         $css = "<style>\n";
         $css .= $this->generateCSSVariables();
-        
+
         // Re-read page typography colors for page-level CSS rules
         $headingColor = null;
         $bodyColor = null;
-        
+
         // Check typography_tokens first (this is what Edit Theme Panel saves to)
         if (!empty($this->typographyTokens['color']['heading'] ?? null)) {
             $headingColor = $this->typographyTokens['color']['heading'];
@@ -956,7 +1010,7 @@ class ThemeCSSGenerator {
         if (!empty($this->typographyTokens['color']['body'] ?? null)) {
             $bodyColor = $this->typographyTokens['color']['body'];
         }
-        
+
         // Fallback to token_overrides if typography_tokens don't have colors
         if (!$headingColor && !empty($this->tokens['typography']['color']['heading'] ?? null)) {
             $headingColor = $this->tokens['typography']['color']['heading'];
@@ -968,17 +1022,17 @@ class ThemeCSSGenerator {
         } elseif (!$bodyColor && !empty($this->tokens['core']['typography']['color']['body'] ?? null)) {
             $bodyColor = $this->tokens['core']['typography']['color']['body'];
         }
-        
+
         // Check if page colors are gradients
         $isHeadingGradient = $headingColor && (strpos($headingColor, 'gradient') !== false || strpos($headingColor, 'linear-gradient') !== false || strpos($headingColor, 'radial-gradient') !== false);
         $isBodyGradient = $bodyColor && (strpos($bodyColor, 'gradient') !== false || strpos($bodyColor, 'linear-gradient') !== false || strpos($bodyColor, 'radial-gradient') !== false);
-        
+
         // Widget typography colors are now set as CSS variables in generateCSSVariables()
         // We just need to check if they're gradients for the widget CSS rules
         // Read widget colors to check for gradients
         $widgetHeadingColor = null;
         $widgetBodyColor = null;
-        
+
         // Check widget typography colors first (this is what Edit Theme Panel saves for widgets)
         if (!empty($this->typographyTokens['color']['widget_heading'] ?? null)) {
             $widgetHeadingColor = $this->typographyTokens['color']['widget_heading'];
@@ -986,7 +1040,7 @@ class ThemeCSSGenerator {
         if (!empty($this->typographyTokens['color']['widget_body'] ?? null)) {
             $widgetBodyColor = $this->typographyTokens['color']['widget_body'];
         }
-        
+
         // Fallback to page typography colors if widget colors not set
         if (!$widgetHeadingColor) {
             if (!empty($this->typographyTokens['color']['heading'] ?? null)) {
@@ -998,29 +1052,29 @@ class ThemeCSSGenerator {
                 $widgetBodyColor = $this->typographyTokens['color']['body'];
             }
         }
-        
+
         // Check if widget colors are gradients
         $isWidgetHeadingGradient = $widgetHeadingColor && (strpos($widgetHeadingColor, 'gradient') !== false || strpos($widgetHeadingColor, 'linear-gradient') !== false || strpos($widgetHeadingColor, 'radial-gradient') !== false);
         $isWidgetBodyGradient = $widgetBodyColor && (strpos($widgetBodyColor, 'gradient') !== false || strpos($widgetBodyColor, 'linear-gradient') !== false || strpos($widgetBodyColor, 'radial-gradient') !== false);
-        
+
         // Get the resolved page background value (calculated in generateCSSVariables)
         // NO FALLBACKS - use only resolved value
         $pageBackgroundValue = $this->resolvedPageBackgroundValue ?? $this->pageBackground;
-        
+
         if (empty($pageBackgroundValue) || $pageBackgroundValue === null || $pageBackgroundValue === '') {
             $pageBackgroundValue = '#ffffff'; // Only to prevent broken CSS
         }
-        
+
         // Check if background is a gradient - use the resolved pageBackgroundValue, not this->pageBackground
         // This ensures we check the actual value being used, not the raw database value
         $isGradient = strpos($pageBackgroundValue, 'gradient') !== false || strpos($pageBackgroundValue, 'linear-gradient') !== false || strpos($pageBackgroundValue, 'radial-gradient') !== false;
-        
+
         // Check if background is a Vanta.js effect
         $isVanta = strpos($pageBackgroundValue, 'vanta:') === 0;
-        
+
         // Check if gradient animation is enabled (only applies to gradients)
         $shouldAnimate = $isGradient && $this->pageBackgroundAnimate;
-        
+
         // Base body styles
         // CRITICAL: Use the resolved pageBackgroundValue directly (not CSS variable) to ensure it's applied
         // Use !important to override any other styles that might interfere
@@ -1047,7 +1101,7 @@ class ThemeCSSGenerator {
         $css .= "    margin: 0;\n";
         $css .= "    padding: 0;\n";
         $css .= "}\n\n";
-        
+
         // Ensure html element also has background for full coverage
         $css .= "html {\n";
         if (!$isVanta) {
@@ -1061,7 +1115,7 @@ class ThemeCSSGenerator {
         }
         $css .= "    min-height: 100%;\n";
         $css .= "}\n\n";
-        
+
         // Add gradient animation keyframes if animation is enabled
         if ($shouldAnimate) {
             $css .= "@keyframes gradientShift {\n";
@@ -1070,7 +1124,7 @@ class ThemeCSSGenerator {
             $css .= "    100% { background-position: 0% 50%; }\n";
             $css .= "}\n\n";
         }
-        
+
         // Vanta.js container styles
         if ($isVanta) {
             $css .= "#vanta-background {\n";
@@ -1083,7 +1137,7 @@ class ThemeCSSGenerator {
             $css .= "    pointer-events: none;\n";
             $css .= "}\n\n";
         }
-        
+
         // Typography - page fonts
         $css .= "h1, h2, h3, .page-title {\n";
         $css .= "    font-family: var(--page-primary-font), var(--heading-font), sans-serif;\n";
@@ -1095,11 +1149,11 @@ class ThemeCSSGenerator {
                 $css .= "    background-clip: text;\n";
                 $css .= "    color: transparent;\n";
             } else {
-            $css .= "    color: var(--heading-font-color);\n";
+                $css .= "    color: var(--heading-font-color);\n";
             }
         }
         $css .= "}\n\n";
-        
+
         // Body text color
         if ($bodyColor) {
             $css .= "body, p, .page-description, .widget-description {\n";
@@ -1110,21 +1164,21 @@ class ThemeCSSGenerator {
                 $css .= "    background-clip: text;\n";
                 $css .= "    color: transparent;\n";
             } else {
-            $css .= "    color: var(--body-font-color);\n";
+                $css .= "    color: var(--body-font-color);\n";
             }
             $css .= "}\n\n";
         }
-        
+
         // Widget container
         $css .= ".widgets-container {\n";
         $css .= "    gap: var(--widget-spacing);\n";
         $css .= "}\n\n";
-        
+
         // ============================================
         // WIDGET STYLING - Complete rebuild
         // All widget styling comes from here only
         // ============================================
-        
+
         // Widget items - base styling
         // CRITICAL: Use direct values with !important (like page background) to ensure they're applied
         // Ensure resolvedWidgetBackgroundValue is set (should be set by generateCSSVariables, but double-check)
@@ -1153,17 +1207,17 @@ class ThemeCSSGenerator {
         $css .= "    background: " . h($this->resolvedWidgetBackgroundValue) . " !important;\n";
         $css .= "    border: " . h($this->resolvedBorderWidth) . " solid " . h($this->resolvedWidgetBorderColor) . " !important;\n";
         $css .= "    border-radius: " . h($this->resolvedBorderRadius) . " !important;\n";
-        
+
         // Get border effect from widget_styles
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
-        
+
         // Apply shadow or glow based on border effect
         // CRITICAL: For glow, don't set box-shadow here - it will be set later after background
         // For shadow, set it here in the base rule
         if ($borderEffect === 'shadow') {
             // Get shadow intensity from widget_styles to determine which level to use
             $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
-            
+
             // Map shadow intensity to shadow level
             // 'subtle' → level_1, 'pronounced' → level_2, 'none' → no shadow
             $shadowValue = null;
@@ -1176,7 +1230,7 @@ class ThemeCSSGenerator {
                 // Default to level_1 for subtle or any other value
                 $shadowValue = $this->shapeTokens['shadow']['level_1'] ?? null;
             }
-            
+
             // Apply shadow - if none, use 'none', otherwise use the value
             if ($shadowValue) {
                 $css .= "    box-shadow: " . h($shadowValue) . " !important;\n";
@@ -1199,23 +1253,23 @@ class ThemeCSSGenerator {
         $css .= "    color: var(--heading-font-color, var(--color-text-primary, #0f172a));\n";
         $css .= "    transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1)), box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));\n";
         $css .= "}\n\n";
-        
+
         // Widgets without thumbnails/icons - center text
         $css .= ".widget-link-simple {\n";
         $css .= "    justify-content: center;\n";
         $css .= "    text-align: center;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-link-simple .widget-content {\n";
         $css .= "    padding: 0 !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-link-simple .widget-title {\n";
         $css .= "    margin: 0 !important;\n";
         $css .= "    font-size: var(--type-scale-md, 1.333rem);\n";
         $css .= "    font-weight: var(--type-weight-medium, 500);\n";
         $css .= "}\n\n";
-        
+
         // Thumbnail wrapper for consistent sizing
         $css .= ".widget-thumbnail-wrapper {\n";
         $css .= "    flex-shrink: 0;\n";
@@ -1227,7 +1281,7 @@ class ThemeCSSGenerator {
         $css .= "    border-radius: var(--shape-corner-md, 0.75rem);\n";
         $css .= "    overflow: hidden;\n";
         $css .= "}\n\n";
-        
+
         // Icon wrapper for consistent sizing
         $css .= ".widget-icon-wrapper {\n";
         $css .= "    flex-shrink: 0;\n";
@@ -1237,7 +1291,7 @@ class ThemeCSSGenerator {
         $css .= "    align-items: center;\n";
         $css .= "    justify-content: center;\n";
         $css .= "}\n\n";
-        
+
         // Thumbnail image
         $css .= ".widget-thumbnail {\n";
         $css .= "    width: 100%;\n";
@@ -1246,7 +1300,7 @@ class ThemeCSSGenerator {
         $css .= "    object-fit: cover;\n";
         $css .= "    flex-shrink: 0;\n";
         $css .= "}\n\n";
-        
+
         // Thumbnail fallback (display controlled by JavaScript)
         $css .= ".widget-thumbnail-fallback {\n";
         $css .= "    display: flex;\n";
@@ -1259,7 +1313,7 @@ class ThemeCSSGenerator {
         $css .= "    color: rgba(0, 0, 0, 0.3);\n";
         $css .= "    font-size: 1.5rem;\n";
         $css .= "}\n\n";
-        
+
         // Icon
         $css .= ".widget-icon {\n";
         $css .= "    font-size: 1.5rem;\n";
@@ -1268,7 +1322,7 @@ class ThemeCSSGenerator {
         $css .= "    align-items: center;\n";
         $css .= "    justify-content: center;\n";
         $css .= "}\n\n";
-        
+
         // Widget content container
         $css .= ".widget-content {\n";
         $css .= "    flex: 1;\n";
@@ -1277,7 +1331,7 @@ class ThemeCSSGenerator {
         $css .= "    font-size: var(--type-scale-sm, 1rem);\n";
         $css .= "    line-height: var(--type-line-height-normal, 1.5);\n";
         $css .= "}\n\n";
-        
+
         // Widget title
         $css .= ".widget-title {\n";
         $css .= "    font-weight: var(--type-weight-medium, 500);\n";
@@ -1298,7 +1352,7 @@ class ThemeCSSGenerator {
         }
         $css .= "    font-size: var(--type-scale-md, 1.333rem);\n";
         $css .= "}\n\n";
-        
+
         // Widget description
         $css .= ".widget-description {\n";
         $css .= "    font-size: var(--type-scale-sm, 1rem);\n";
@@ -1320,7 +1374,7 @@ class ThemeCSSGenerator {
         $css .= "    font-family: var(--widget-secondary-font, var(--page-secondary-font), sans-serif);\n";
         $css .= "    min-width: 0; /* Allow text to be constrained in flex container */\n";
         $css .= "}\n\n";
-        
+
         // Marquee animation for Custom Link widget descriptions
         $css .= ".widget-item .widget-description.marquee {\n";
         $css .= "    overflow: hidden;\n";
@@ -1329,7 +1383,7 @@ class ThemeCSSGenerator {
         $css .= "    width: 100%;\n";
         $css .= "    max-width: 100%;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-item .widget-description .marquee-content {\n";
         $css .= "    display: inline-flex;\n";
         $css .= "    white-space: nowrap;\n";
@@ -1337,13 +1391,13 @@ class ThemeCSSGenerator {
         $css .= "    animation-duration: var(--marquee-duration, 12s);\n";
         $css .= "    will-change: transform; /* Optimize animation performance */\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-item .widget-description .marquee-content .marquee-text {\n";
         $css .= "    display: inline-block;\n";
         $css .= "    white-space: nowrap;\n";
         $css .= "    padding-right: 2em; /* Space between duplicates for better visual separation */\n";
         $css .= "}\n\n";
-        
+
         // Marquee animation for People widget paragraphs
         $css .= ".widget-item .people-widget-paragraph.marquee {\n";
         $css .= "    overflow: hidden;\n";
@@ -1352,7 +1406,7 @@ class ThemeCSSGenerator {
         $css .= "    width: 100%;\n";
         $css .= "    max-width: 100%;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-item .people-widget-paragraph .marquee-content {\n";
         $css .= "    display: inline-flex;\n";
         $css .= "    white-space: nowrap;\n";
@@ -1360,13 +1414,13 @@ class ThemeCSSGenerator {
         $css .= "    animation-duration: var(--marquee-duration, 12s);\n";
         $css .= "    will-change: transform; /* Optimize animation performance */\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-item .people-widget-paragraph .marquee-content .marquee-text {\n";
         $css .= "    display: inline-block;\n";
         $css .= "    white-space: nowrap;\n";
         $css .= "    padding-right: 2em; /* Space between duplicates for better visual separation */\n";
         $css .= "}\n\n";
-        
+
         // People widget paragraph - match widget-description styling
         $css .= ".people-widget-paragraph {\n";
         $css .= "    font-size: var(--type-scale-sm, 1rem);\n";
@@ -1389,7 +1443,7 @@ class ThemeCSSGenerator {
         $css .= "    min-width: 0; /* Allow text to be constrained in flex container */\n";
         $css .= "    line-height: 1.6;\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Video
         $css .= ".widget-video {\n";
         $css .= "    padding: 0;\n";
@@ -1397,19 +1451,19 @@ class ThemeCSSGenerator {
         $css .= "    background: transparent;\n";
         $css .= "    width: 100%;\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Text/HTML
         $css .= ".widget-text {\n";
         $css .= "    text-align: left;\n";
         $css .= "    width: 100%;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-text-content {\n";
         $css .= "    padding: 1rem;\n";
         $css .= "    color: var(--body-font-color, var(--color-text-primary, #0f172a));\n";
         $css .= "    line-height: 1.6;\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Image
         $css .= ".widget-image {\n";
         $css .= "    padding: 0;\n";
@@ -1418,21 +1472,21 @@ class ThemeCSSGenerator {
         $css .= "    display: block;\n";
         $css .= "    width: 100%;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-image-content {\n";
         $css .= "    width: 100%;\n";
         $css .= "    height: auto;\n";
         $css .= "    border-radius: var(--widget-border-radius, var(--shape-corner-md, 0.75rem));\n";
         $css .= "    display: block;\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Heading
         $css .= ".widget-heading {\n";
         $css .= "    width: 100%;\n";
         $css .= "    padding: var(--widget-space-sm, 0.75rem) var(--widget-space-md, 1rem);\n";
         $css .= "    text-align: center;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-heading-text {\n";
         $css .= "    margin: 0;\n";
         $css .= "    font-family: var(--widget-primary-font, var(--page-primary-font), sans-serif);\n";
@@ -1450,22 +1504,22 @@ class ThemeCSSGenerator {
             $css .= "    color: var(--widget-heading-font-color, var(--color-text-primary, #0f172a));\n";
         }
         $css .= "}\n\n";
-        
+
         $css .= ".widget-heading-h1 .widget-heading-text {\n";
         $css .= "    font-size: clamp(2rem, 4vw, 2.75rem);\n";
         $css .= "    font-weight: var(--type-weight-bold, 700);\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-heading-h2 .widget-heading-text {\n";
         $css .= "    font-size: clamp(1.6rem, 3.25vw, 2.2rem);\n";
         $css .= "    font-weight: var(--type-weight-semibold, 600);\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-heading-h3 .widget-heading-text {\n";
         $css .= "    font-size: clamp(1.3rem, 2.75vw, 1.8rem);\n";
         $css .= "    font-weight: var(--type-weight-medium, 500);\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Text Note
         $css .= ".widget-text-note {\n";
         $css .= "    width: 100%;\n";
@@ -1487,17 +1541,17 @@ class ThemeCSSGenerator {
         }
         $css .= "    text-align: center;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-text-note p {\n";
         $css .= "    margin: 0;\n";
         $css .= "}\n\n";
-        
+
         // Widget type-specific: Divider
         $css .= ".widget-divider {\n";
         $css .= "    width: 100%;\n";
         $css .= "    padding: var(--widget-space-xs, 0.5rem) var(--widget-space-md, 1rem);\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-divider-line {\n";
         $css .= "    border: none;\n";
         $css .= "    height: 3px;\n";
@@ -1505,16 +1559,16 @@ class ThemeCSSGenerator {
         $css .= "    border-radius: 999px;\n";
         $css .= "    background: rgba(148, 163, 184, 0.45);\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-divider-line-shadow {\n";
         $css .= "    background: rgba(71, 85, 105, 0.6);\n";
         $css .= "    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-divider-line-gradient {\n";
         $css .= "    background: linear-gradient(90deg, rgba(37, 99, 235, 0.85), rgba(124, 58, 237, 0.85));\n";
         $css .= "}\n\n";
-        
+
         // Widget hover states
         // Get border effect from widget_styles or default to shadow
         // Exclude video widgets from hover effects
@@ -1523,7 +1577,7 @@ class ThemeCSSGenerator {
         if ($borderEffect === 'shadow') {
             // Enhanced shadow on hover - use the same shadow intensity logic
             $shadowIntensity = $this->widgetStyles['border_shadow_intensity'] ?? 'subtle';
-            
+
             // Get base shadow value using the same mapping as the base state
             $baseShadowValue = null;
             if ($shadowIntensity === 'none') {
@@ -1533,7 +1587,7 @@ class ThemeCSSGenerator {
             } else {
                 $baseShadowValue = $this->shapeTokens['shadow']['level_1'] ?? null;
             }
-            
+
             if ($baseShadowValue) {
                 // Increase shadow intensity on hover - use a more pronounced shadow
                 // For subtle, use level_2 on hover; for pronounced, use an even stronger shadow
@@ -1562,7 +1616,7 @@ class ThemeCSSGenerator {
         // Only apply button-like transform to non-video widgets
         $css .= "    transform: translateY(calc(var(--widget-space-2xs, 0.25rem) * -1));\n";
         $css .= "}\n\n";
-        
+
         // Exclude video widgets from all styling (no border, shadow, glow, background, or button effects)
         $css .= ".widget-item.widget-video {\n";
         $css .= "    cursor: default !important;\n";
@@ -1572,39 +1626,39 @@ class ThemeCSSGenerator {
         $css .= "    box-shadow: none !important;\n";
         $css .= "    padding: 0 !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".widget-item.widget-video:hover {\n";
         $css .= "    transform: none !important;\n";
         $css .= "    box-shadow: none !important;\n";
         $css .= "}\n\n";
-        
+
         // Add spatial effect CSS (before widget-item so widget-item can override if needed)
         $css .= $this->generateSpatialEffectCSS();
-        
+
         // Add glow animation CSS and styles if glow effect is enabled
         $css .= $this->generateGlowAnimationCSS();
-        
+
         // CRITICAL: Re-apply widget-item background and border-radius AFTER spatial effects to ensure it's not overridden
         // This ensures the theme widget background and border-radius always take precedence
         $css .= ".widget-item {\n";
         $css .= "    background: " . h($this->resolvedWidgetBackgroundValue) . " !important;\n";
         $css .= "    border-radius: " . h($this->resolvedBorderRadius) . " !important;\n";
         $css .= "}\n\n";
-        
+
         // CRITICAL: Re-apply shadow effect styles AFTER background (similar to glow)
         // This ensures shadows always appear and aren't overridden by background re-application
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         if ($borderEffect === 'shadow') {
             // Use new shadow fields: shadow_depth, shadow_color, shadow_intensity
             // Fall back to old enum-based border_shadow_intensity for backward compatibility
-            $shadowDepth = isset($this->widgetStyles['shadow_depth']) 
-                ? floatval($this->widgetStyles['shadow_depth']) 
+            $shadowDepth = isset($this->widgetStyles['shadow_depth'])
+                ? floatval($this->widgetStyles['shadow_depth'])
                 : (isset($this->widgetStyles['border_shadow_intensity']) && $this->widgetStyles['border_shadow_intensity'] === 'pronounced' ? 5 : 1);
             $shadowColor = $this->widgetStyles['shadow_color'] ?? 'rgba(15, 23, 42, 0.12)';
-            $shadowIntensity = isset($this->widgetStyles['shadow_intensity']) 
-                ? floatval($this->widgetStyles['shadow_intensity']) 
+            $shadowIntensity = isset($this->widgetStyles['shadow_intensity'])
+                ? floatval($this->widgetStyles['shadow_intensity'])
                 : 1.0;
-            
+
             // Only apply shadow if depth > 0
             if ($shadowDepth > 0) {
                 // Calculate shadow blur based on depth (0-10)
@@ -1612,7 +1666,7 @@ class ThemeCSSGenerator {
                 // Profile image uses: depth depth blur color (e.g., 4px 4px 8px rgba(...))
                 // For widgets, scale blur relative to depth: depth 1 = 2px blur, depth 10 = 20px blur
                 $shadowBlur = $shadowDepth * 2; // 0-20px (similar to profile image's 8px default for depth 4)
-                
+
                 // Convert shadow color to rgba if needed (same as profile image)
                 $shadowColorRgba = $shadowColor;
                 if (is_string($shadowColor) && preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i', $shadowColor)) {
@@ -1636,11 +1690,11 @@ class ThemeCSSGenerator {
                         }
                     }
                 }
-                
+
                 // Generate drop shadow like profile image: offset-x offset-y blur-radius color
                 // Both x and y offsets use depth for diagonal drop shadow effect
                 $shadowValue = h($shadowDepth) . "px " . h($shadowDepth) . "px " . h($shadowBlur) . "px " . h($shadowColorRgba);
-                
+
                 // Re-apply shadow with higher specificity to ensure it's always visible
                 // Exclude video widgets from shadow effects
                 $css .= "body .widget-item:not(.widget-video),\n";
@@ -1649,22 +1703,22 @@ class ThemeCSSGenerator {
                 $css .= "}\n\n";
             }
         }
-        
+
         // Apply glow effect styles to widget items AFTER background (apply to all widgets if glow is enabled)
         if ($borderEffect === 'glow') {
             $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'subtle';
             $glowColor = $this->widgetStyles['glow_color'] ?? '#ff00ff';
-            
+
             $glowBlur = convertEnumToCSS($glowIntensity, 'glow_blur');
             $glowOpacity = convertEnumToCSS($glowIntensity, 'glow_opacity');
-            
+
             // Convert hex color to RGBA for better glow visibility
             // Parse hex color and convert to rgba with opacity
             $glowColorRgba = $this->hexToRgba($glowColor, $glowOpacity);
-            
+
             // Calculate spread radius based on intensity (makes glow more visible)
             $glowSpread = $glowIntensity === 'subtle' ? '4px' : '8px';
-            
+
             // Apply glow effect using box-shadow with spread radius for better visibility
             // Format: box-shadow: offset-x offset-y blur-radius spread-radius color
             // CRITICAL: Use higher specificity to ensure glow overrides any other box-shadow rules
@@ -1674,12 +1728,12 @@ class ThemeCSSGenerator {
             $css .= "    box-shadow: 0 0 " . h($glowBlur) . " " . h($glowSpread) . " " . h($glowColorRgba) . " !important;\n";
             $css .= "}\n\n";
         }
-        
+
         // Profile elements
         $css .= ".profile-image {\n";
         $css .= "    border: 3px solid var(--primary-color);\n";
         $css .= "}\n\n";
-        
+
         // Base .page-title styles (always applied)
         $css .= ".page-title {\n";
         $css .= "    color: var(--page-title-color);\n";
@@ -1688,68 +1742,68 @@ class ThemeCSSGenerator {
             $css .= "    font-size: var(--page-title-size, " . h($this->typographyTokens['size']['heading']) . "px) !important;\n";
         }
         $css .= "}\n\n";
-        
+
         // Check page-level effect first (new system), then fall back to theme-level (legacy)
         $effectType = $this->page['page_name_effect'] ?? $this->typographyTokens['effect']['heading'] ?? 'none';
         // Skip if effect is 'none' or empty
         if ($effectType === 'none' || $effectType === '' || empty($effectType)) {
             $effectType = 'none';
         }
-        
+
         // Only generate effect CSS if an effect is selected
         if ($effectType !== 'none') {
             // Generate CSS for the specific effect class (e.g., .page-title-effect-anaglyphic)
             // Use higher specificity to ensure it overrides base .page-title styles
             $effectClass = '.page-title.page-title-effect-' . h($effectType);
             $css .= $effectClass . " {\n";
-            
+
             // Get page background for effects that need it
             $pageBgValue = $this->resolvedPageBackgroundValue ?? '#f1f1f1';
-            $bgColor = (is_string($pageBgValue) && (strpos($pageBgValue, 'gradient') !== false)) 
+            $bgColor = (is_string($pageBgValue) && (strpos($pageBgValue, 'gradient') !== false))
                 ? '#f1f1f1' // Default for gradients
                 : (is_string($pageBgValue) ? $pageBgValue : '#f1f1f1');
-            
+
             // Set default color (will be overridden by effects that need specific colors)
             $effectColorOverride = null;
-        
-        // Build text-shadow layers: border first (renders on top), then effect (renders behind)
-        // In CSS text-shadow, first shadows render on top, so border should be first
-        $textShadows = [];
-        
-        // Apply font border (outside border using text-shadow) if set
-        $borderColor = $this->typographyTokens['effect']['border']['color'] ?? '#000000';
-        $borderWidth = floatval($this->typographyTokens['effect']['border']['width'] ?? 0);
-        if ($borderWidth > 0) {
-            // Create outside border using multiple text-shadows positioned around the text
-            // This creates a border effect that doesn't cut into the text
-            // Generate shadows in a circle around the text for smooth border (every 15 degrees)
-            for ($angle = 0; $angle < 360; $angle += 15) {
-                $rad = deg2rad($angle);
-                $x = round(cos($rad) * $borderWidth, 2);
-                $y = round(sin($rad) * $borderWidth, 2);
-                $textShadows[] = h($x) . "px " . h($y) . "px 0 " . h($borderColor);
+
+            // Build text-shadow layers: border first (renders on top), then effect (renders behind)
+            // In CSS text-shadow, first shadows render on top, so border should be first
+            $textShadows = [];
+
+            // Apply font border (outside border using text-shadow) if set
+            $borderColor = $this->typographyTokens['effect']['border']['color'] ?? '#000000';
+            $borderWidth = floatval($this->typographyTokens['effect']['border']['width'] ?? 0);
+            if ($borderWidth > 0) {
+                // Create outside border using multiple text-shadows positioned around the text
+                // This creates a border effect that doesn't cut into the text
+                // Generate shadows in a circle around the text for smooth border (every 15 degrees)
+                for ($angle = 0; $angle < 360; $angle += 15) {
+                    $rad = deg2rad($angle);
+                    $x = round(cos($rad) * $borderWidth, 2);
+                    $y = round(sin($rad) * $borderWidth, 2);
+                    $textShadows[] = h($x) . "px " . h($y) . "px 0 " . h($borderColor);
+                }
             }
-        }
-        
+
             // Apply text-shadow for all effects that need it
-        if ($effectType === 'shadow') {
-            $shadowColor = $this->typographyTokens['effect']['shadow']['color'] ?? '#000000';
-            $shadowIntensity = floatval($this->typographyTokens['effect']['shadow']['intensity'] ?? 0.5);
-            $shadowDepth = intval($this->typographyTokens['effect']['shadow']['depth'] ?? 4);
-            $shadowBlur = intval($this->typographyTokens['effect']['shadow']['blur'] ?? 8);
-            
-            // Convert hex to rgba
-            $rgbaColor = $this->hexToRgba($shadowColor, $shadowIntensity);
-            $textShadows[] = h($shadowDepth) . "px " . h($shadowDepth) . "px " . h($shadowBlur) . "px " . h($rgbaColor);
-        } elseif ($effectType === 'glow') {
-            $glowColor = $this->typographyTokens['effect']['glow']['color'] ?? '#2563eb';
-            $glowWidth = intval($this->typographyTokens['effect']['glow']['width'] ?? 10);
-            
-            // Convert hex to rgba for glow
-            $glowColorRgba = $this->hexToRgba($glowColor, 0.8);
-            $textShadows[] = "0 0 " . h($glowWidth) . "px " . h($glowColorRgba);
-            $textShadows[] = "0 0 " . h($glowWidth * 1.5) . "px " . h($glowColorRgba);
-            $textShadows[] = "0 0 " . h($glowWidth * 2) . "px " . h($glowColorRgba);
+            if ($effectType === 'shadow') {
+                $shadowColor = $this->typographyTokens['effect']['shadow']['color'] ?? '#000000';
+                $shadowIntensity = floatval($this->typographyTokens['effect']['shadow']['intensity'] ?? 0.5);
+                $shadowDepth = intval($this->typographyTokens['effect']['shadow']['depth'] ?? 4);
+                $shadowBlur = intval($this->typographyTokens['effect']['shadow']['blur'] ?? 8);
+
+                // Convert hex to rgba
+                $rgbaColor = $this->hexToRgba($shadowColor, $shadowIntensity);
+                $textShadows[] = h($shadowDepth) . "px " . h($shadowDepth) . "px " . h($shadowBlur) . "px " . h($rgbaColor);
+            } elseif ($effectType === 'glow') {
+                $glowColor = $this->typographyTokens['effect']['glow']['color'] ?? '#2563eb';
+                $glowWidth = intval($this->typographyTokens['effect']['glow']['width'] ?? 10);
+
+                // Convert hex to rgba for glow
+                $glowColorRgba = $this->hexToRgba($glowColor, 0.8);
+                $textShadows[] = "0 0 " . h($glowWidth) . "px " . h($glowColorRgba);
+                $textShadows[] = "0 0 " . h($glowWidth * 1.5) . "px " . h($glowColorRgba);
+                $textShadows[] = "0 0 " . h($glowWidth * 2) . "px " . h($glowColorRgba);
                 $textShadows[] = "0 0 " . h($glowWidth * 3) . "px " . h($glowColorRgba);
                 $textShadows[] = "0 0 " . h($glowWidth * 4) . "px " . h($glowColorRgba);
             } elseif ($effectType === 'retro') {
@@ -1814,42 +1868,42 @@ class ThemeCSSGenerator {
                 // Party Time - multiple colorful shadows
                 // Text color should be white
                 $effectColorOverride = '#ffffff';
-                
+
                 // Get page title color to generate variations
                 $pageTitleColor = $this->typographyTokens['color']['heading'] ?? '#ffffff';
                 $baseColor = is_string($pageTitleColor) ? $pageTitleColor : '#ffffff';
-                
+
                 // Generate color variations from base color
                 $partyColors = $this->generatePartyColors($baseColor);
-                
+
                 // Get font size to calculate shadow offsets
                 $fontSize = $this->typographyTokens['scale']['heading'] ?? 24;
                 $fontSizeNum = is_numeric($fontSize) ? intval($fontSize) : 24;
-                
+
                 // Create shadows with increasing offsets
                 $baseOffset = max(2, $fontSizeNum * 0.05); // 5% of font size, min 2px
                 $offsets = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5];
-                
+
                 foreach ($offsets as $index => $multiplier) {
                     $offset = $baseOffset * $multiplier;
                     $color = $partyColors[$index] ?? $partyColors[count($partyColors) - 1];
                     $textShadows[] = round($offset) . "px " . round($offset) . "px 0px " . h($color);
                 }
             }
-            
+
             // Apply color override if effect requires it
             if ($effectColorOverride !== null) {
                 $css .= "    color: " . h($effectColorOverride) . " !important;\n";
             }
-            
+
             // Output combined text-shadow if any shadows exist
             if (!empty($textShadows)) {
                 $css .= "    text-shadow: " . implode(", ", $textShadows) . ";\n";
             }
-            
+
             $css .= "}\n\n";
         }
-        
+
         $css .= ".page-description {\n";
         $css .= "    color: var(--page-description-color);\n";
         // Apply direct font size if typography_tokens.size.body is set, otherwise use scale
@@ -1861,7 +1915,7 @@ class ThemeCSSGenerator {
             $css .= "    font-size: var(--page-description-size, " . h($this->typographyTokens['scale']['body']) . "px) !important;\n";
         }
         $css .= "}\n\n";
-        
+
         // Social icons - Always apply iconography settings with higher specificity
         // Use body selector to ensure these styles override base styles in Page.php
         $css .= "body .social-icon {\n";
@@ -1878,7 +1932,7 @@ class ThemeCSSGenerator {
             $css .= "    font-size: calc(var(--icon-size) * 0.625) !important;\n"; // Icon size is typically 62.5% of container
         }
         $css .= "}\n\n";
-        
+
         $css .= "body .social-icon:hover {\n";
         // Use icon color on hover if set, otherwise use accent color
         if (isset($this->iconographyTokens['color']) && $this->iconographyTokens['color'] !== null && $this->iconographyTokens['color'] !== '') {
@@ -1888,81 +1942,84 @@ class ThemeCSSGenerator {
         }
         $css .= "    opacity: 0.8;\n";
         $css .= "}\n\n";
-        
+
         // Apply button shape to page-level buttons
         // CRITICAL: These rules must come AFTER podcast-player.css loads
         // Use matching specificity to override podcast-player.css rules
-        
+
         // Generic buttons
         $css .= "button:not(.podcast-top-drawer button):not(.podcast-top-drawer .tab-button):not(.podcast-top-drawer .control-button-large):not(.podcast-top-drawer .secondary-control-btn):not(.podcast-top-drawer .podcast-drawer-footer-button):not(.podcast-top-drawer .retry-button), .btn {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         // Podcast banner toggle (outside drawer) - needs to override podcast-player.css
         $css .= ".podcast-banner-toggle {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         // Podcast drawer buttons - MUST match podcast-player.css selector specificity exactly
         // podcast-player.css uses: .podcast-top-drawer .control-button-large { border-radius: 50%; }
         // We need to override with same specificity + !important
         $css .= ".podcast-top-drawer .tab-button {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".podcast-top-drawer .control-button-large {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".podcast-top-drawer .secondary-control-btn {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".podcast-top-drawer .podcast-drawer-footer-button {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= ".podcast-top-drawer .retry-button {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         // Other buttons
         $css .= ".drawer-close {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
         $css .= "}\n\n";
-        
+
         $css .= "</style>\n";
-        
+
         return $css;
     }
-    
+
     /**
      * Get spatial effect body class
      * @return string Body class name
      */
-    public function getSpatialEffectClass() {
+    public function getSpatialEffectClass()
+    {
         return 'spatial-' . $this->spatialEffect;
     }
-    
+
     /**
      * Get widget data attributes for border effect
      * @return string Data attributes string
      */
-    public function getWidgetEffectAttributes() {
+    public function getWidgetEffectAttributes()
+    {
         $borderEffect = $this->widgetStyles['border_effect'] ?? 'shadow';
         $attrs = 'data-border-effect="' . h($borderEffect) . '"';
-        
+
         if ($borderEffect === 'glow') {
             $glowIntensity = $this->widgetStyles['border_glow_intensity'] ?? 'none';
             $attrs .= ' data-glow-intensity="' . h($glowIntensity) . '"';
         }
-        
+
         return $attrs;
     }
 
     // REMOVED: All legacy color override methods - no longer needed
 
-    private function normalizeHexColor($color) {
+    private function normalizeHexColor($color)
+    {
         if (!is_string($color)) {
             return null;
         }
@@ -1979,7 +2036,8 @@ class ThemeCSSGenerator {
         return strtoupper($color);
     }
 
-    private function hexToRgb($hex) {
+    private function hexToRgb($hex)
+    {
         $hex = ltrim($hex, '#');
         // Handle 3-digit hex
         if (strlen($hex) === 3) {
@@ -2006,24 +2064,25 @@ class ThemeCSSGenerator {
             hexdec($bHex)
         ];
     }
-    
+
     /**
      * Convert hex color to RGBA string
      * @param string $hex Hex color (#RGB or #RRGGBB)
      * @param string $opacity Opacity value (0-1 or CSS value like "0.5")
      * @return string RGBA color string
      */
-    private function hexToRgba($hex, $opacity) {
+    private function hexToRgba($hex, $opacity)
+    {
         $rgb = $this->hexToRgb($hex);
         if (!$rgb) {
             // Fallback if hex is invalid
             return 'rgba(255, 0, 255, ' . floatval($opacity) . ')';
         }
-        
+
         // Convert opacity to float (handle both "0.5" string and 0.5 float)
         $opacityFloat = is_numeric($opacity) ? floatval($opacity) : 0.5;
         $opacityFloat = max(0, min(1, $opacityFloat)); // Clamp between 0 and 1
-        
+
         return 'rgba(' . $rgb[0] . ', ' . $rgb[1] . ', ' . $rgb[2] . ', ' . $opacityFloat . ')';
     }
 
@@ -2033,43 +2092,44 @@ class ThemeCSSGenerator {
      * @param string $baseColor Hex color
      * @return array Array of 9 hex colors
      */
-    private function generatePartyColors($baseColor) {
+    private function generatePartyColors($baseColor)
+    {
         // Parse base color
         $cleanHex = ltrim($baseColor, '#');
         $fullHex = strlen($cleanHex) === 3
             ? $cleanHex[0] . $cleanHex[0] . $cleanHex[1] . $cleanHex[1] . $cleanHex[2] . $cleanHex[2]
             : $cleanHex;
-        
+
         if (strlen($fullHex) !== 6 || !preg_match('/^[0-9a-fA-F]{6}$/', $fullHex)) {
             // Fallback colors if parsing fails
             return ['#ff00ff', '#ff0080', '#ff0040', '#ff4000', '#ff8000', '#ffc000', '#ffff00', '#80ff00', '#00ff00'];
         }
-        
+
         $r = hexdec(substr($fullHex, 0, 2));
         $g = hexdec(substr($fullHex, 2, 2));
         $b = hexdec(substr($fullHex, 4, 2));
-        
+
         // Convert RGB to HSL for easier color manipulation
         $hsl = $this->rgbToHsl($r, $g, $b);
-        
+
         // Generate 9 colors: lighter/more saturated -> darker/less saturated
         $colors = [];
         for ($i = 0; $i < 9; $i++) {
             // Adjust hue slightly for variation (rotate around color wheel)
             $hueShift = ($i * 30) % 360; // 30 degree steps
             $newHue = ($hsl['h'] + $hueShift) % 360;
-            
+
             // Start bright and saturated, gradually darken
             $saturation = max(70, 100 - ($i * 3)); // 100% -> 70%
             $lightness = max(30, 80 - ($i * 5)); // 80% -> 30%
-            
+
             $rgb = $this->hslToRgb($newHue, $saturation, $lightness);
             $colors[] = sprintf('#%02x%02x%02x', $rgb['r'], $rgb['g'], $rgb['b']);
         }
-        
+
         return $colors;
     }
-    
+
     /**
      * Convert RGB to HSL
      * @param int $r Red (0-255)
@@ -2077,31 +2137,38 @@ class ThemeCSSGenerator {
      * @param int $b Blue (0-255)
      * @return array Array with 'h', 's', 'l' keys
      */
-    private function rgbToHsl($r, $g, $b) {
+    private function rgbToHsl($r, $g, $b)
+    {
         $r /= 255;
         $g /= 255;
         $b /= 255;
-        
+
         $max = max($r, $g, $b);
         $min = min($r, $g, $b);
         $h = 0;
         $s = 0;
         $l = ($max + $min) / 2;
-        
+
         if ($max !== $min) {
             $d = $max - $min;
             $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
-            
+
             switch ($max) {
-                case $r: $h = (($g - $b) / $d + ($g < $b ? 6 : 0)) / 6; break;
-                case $g: $h = (($b - $r) / $d + 2) / 6; break;
-                case $b: $h = (($r - $g) / $d + 4) / 6; break;
+                case $r:
+                    $h = (($g - $b) / $d + ($g < $b ? 6 : 0)) / 6;
+                    break;
+                case $g:
+                    $h = (($b - $r) / $d + 2) / 6;
+                    break;
+                case $b:
+                    $h = (($r - $g) / $d + 4) / 6;
+                    break;
             }
         }
-        
+
         return ['h' => $h * 360, 's' => $s * 100, 'l' => $l * 100];
     }
-    
+
     /**
      * Convert HSL to RGB
      * @param float $h Hue (0-360)
@@ -2109,32 +2176,38 @@ class ThemeCSSGenerator {
      * @param float $l Lightness (0-100)
      * @return array Array with 'r', 'g', 'b' keys (0-255)
      */
-    private function hslToRgb($h, $s, $l) {
+    private function hslToRgb($h, $s, $l)
+    {
         $h /= 360;
         $s /= 100;
         $l /= 100;
-        
+
         $r = $l;
         $g = $l;
         $b = $l;
-        
+
         if ($s !== 0) {
-            $hue2rgb = function($p, $q, $t) {
-                if ($t < 0) $t += 1;
-                if ($t > 1) $t -= 1;
-                if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
-                if ($t < 1/2) return $q;
-                if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
+            $hue2rgb = function ($p, $q, $t) {
+                if ($t < 0)
+                    $t += 1;
+                if ($t > 1)
+                    $t -= 1;
+                if ($t < 1 / 6)
+                    return $p + ($q - $p) * 6 * $t;
+                if ($t < 1 / 2)
+                    return $q;
+                if ($t < 2 / 3)
+                    return $p + ($q - $p) * (2 / 3 - $t) * 6;
                 return $p;
             };
-            
+
             $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
             $p = 2 * $l - $q;
-            $r = $hue2rgb($p, $q, $h + 1/3);
+            $r = $hue2rgb($p, $q, $h + 1 / 3);
             $g = $hue2rgb($p, $q, $h);
-            $b = $hue2rgb($p, $q, $h - 1/3);
+            $b = $hue2rgb($p, $q, $h - 1 / 3);
         }
-        
+
         return [
             'r' => round($r * 255),
             'g' => round($g * 255),
@@ -2142,18 +2215,22 @@ class ThemeCSSGenerator {
         ];
     }
 
-    private function rgbToHex($rgb) {
+    private function rgbToHex($rgb)
+    {
         if (!is_array($rgb) || count($rgb) !== 3) {
             return null;
         }
 
-        return sprintf('#%02X%02X%02X',
-            max(0, min(255, (int)round($rgb[0]))),
-            max(0, min(255, (int)round($rgb[1]))),
-            max(0, min(255, (int)round($rgb[2]))));
+        return sprintf(
+            '#%02X%02X%02X',
+            max(0, min(255, (int) round($rgb[0]))),
+            max(0, min(255, (int) round($rgb[1]))),
+            max(0, min(255, (int) round($rgb[2])))
+        );
     }
 
-    private function mixHexColors($hexA, $hexB, $ratio) {
+    private function mixHexColors($hexA, $hexB, $ratio)
+    {
         $ratio = max(0, min(1, $ratio));
         $rgbA = $this->hexToRgb($hexA);
         $rgbB = $this->hexToRgb($hexB);
@@ -2171,7 +2248,8 @@ class ThemeCSSGenerator {
         return $this->rgbToHex($mixed);
     }
 
-    private function lightenColor($hex, $amount) {
+    private function lightenColor($hex, $amount)
+    {
         $normalized = $this->normalizeHexColor($hex);
         if (!$normalized) {
             return null;
@@ -2180,7 +2258,8 @@ class ThemeCSSGenerator {
         return $this->mixHexColors($normalized, '#FFFFFF', max(0, min(1, $amount)));
     }
 
-    private function darkenColor($hex, $amount) {
+    private function darkenColor($hex, $amount)
+    {
         $normalized = $this->normalizeHexColor($hex);
         if (!$normalized) {
             return null;
@@ -2188,18 +2267,19 @@ class ThemeCSSGenerator {
 
         return $this->mixHexColors($normalized, '#000000', max(0, min(1, $amount)));
     }
-    
+
     /**
      * Darken a background (handles both solid colors and gradients)
      * @param string $background Background value (hex color or gradient)
      * @param float $amount Amount to darken (0-1, where 0.15 = 15% darker)
      * @return string Darkened background
      */
-    private function darkenBackground($background, $amount = 0.15) {
+    private function darkenBackground($background, $amount = 0.15)
+    {
         if (empty($background)) {
             return $background;
         }
-        
+
         // Check if it's a gradient
         if (strpos($background, 'gradient') !== false || strpos($background, 'linear-gradient') !== false || strpos($background, 'radial-gradient') !== false) {
             // Extract colors from gradient
@@ -2210,20 +2290,20 @@ class ThemeCSSGenerator {
                 $color2 = trim($matches[4]);
                 $stop1 = $matches[3];
                 $stop2 = $matches[5];
-                
+
                 // Darken both colors
                 $darkened1 = $this->darkenColor($color1, $amount);
                 $darkened2 = $this->darkenColor($color2, $amount);
-                
+
                 if ($darkened1 && $darkened2) {
                     return "linear-gradient({$direction}, {$darkened1} {$stop1}%, {$darkened2} {$stop2}%)";
                 }
             }
-            
+
             // If gradient parsing fails, return original (better than broken CSS)
             return $background;
         }
-        
+
         // It's a solid color - darken it
         $darkened = $this->darkenColor($background, $amount);
         return $darkened ?: $background;

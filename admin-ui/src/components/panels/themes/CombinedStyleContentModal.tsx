@@ -9,6 +9,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
 import type { ContentEditorType } from './ContentEditorModal';
+import { SegmentedControl } from '../../common/SegmentedControl';
 import { PageBackgroundSection } from './sections/PageBackgroundSection';
 import { ProfileImageSection } from './sections/ProfileImageSection';
 import { PageTitleSection } from './sections/PageTitleSection';
@@ -20,9 +21,9 @@ import { ProfileInspector } from '../ProfileInspector';
 import { PodcastPlayerInspector } from '../PodcastPlayerInspector';
 import { SocialIconInspector } from '../SocialIconInspector';
 import { WidgetInspector } from '../WidgetInspector';
-import { useSocialIconSelection } from '../../../state/socialIconSelection';
 import { usePageSnapshot } from '../../../api/page';
 import { sectionRegistry } from './utils/sectionRegistry';
+import { getThemeColors } from './utils/colorUtils';
 import styles from './combined-style-content-modal.module.css';
 
 interface CombinedStyleContentModalProps {
@@ -49,9 +50,8 @@ export function CombinedStyleContentModal({
   activeColor
 }: CombinedStyleContentModalProps): JSX.Element {
   const [activeTab, setActiveTab] = useState<TabType>('style');
+  const [localSelectedSocialIconId, setLocalSelectedSocialIconId] = useState<string | null>(null);
   const { data: snapshot } = usePageSnapshot();
-  const selectSocialIcon = useSocialIconSelection((state) => state.selectSocialIcon);
-  const selectedSocialIconId = useSocialIconSelection((state) => state.selectedSocialIconId);
 
   // Reset to style tab when modal opens
   useEffect(() => {
@@ -60,7 +60,10 @@ export function CombinedStyleContentModal({
     }
   }, [isOpen]);
 
+
   const section = sectionRegistry.get(sectionId);
+  const palette = getThemeColors(uiState);
+
   if (!section) {
     return <></>;
   }
@@ -70,7 +73,7 @@ export function CombinedStyleContentModal({
     if (widgetId) {
       return { type: 'widget', widgetId };
     }
-    
+
     switch (sectionId) {
       case 'profile-image':
         return { type: 'profile', focus: 'image' };
@@ -91,10 +94,10 @@ export function CombinedStyleContentModal({
 
   // Auto-select first social icon if opening social icons editor and none is selected
   useEffect(() => {
-    if (contentEditor?.type === 'social-icons' && !selectedSocialIconId && snapshot?.social_icons && snapshot.social_icons.length > 0) {
-      selectSocialIcon(String(snapshot.social_icons[0].id));
+    if (contentEditor?.type === 'social-icons' && !localSelectedSocialIconId && snapshot?.social_icons && snapshot.social_icons.length > 0) {
+      setLocalSelectedSocialIconId(String(snapshot.social_icons[0].id));
     }
-  }, [contentEditor?.type, selectedSocialIconId, snapshot?.social_icons, selectSocialIcon]);
+  }, [contentEditor?.type, localSelectedSocialIconId, snapshot?.social_icons]);
 
   const renderContentInspector = (): JSX.Element | null => {
     if (!contentEditor) return null;
@@ -107,7 +110,13 @@ export function CombinedStyleContentModal({
       case 'podcast-player':
         return <PodcastPlayerInspector activeColor={activeColor} />;
       case 'social-icons':
-        return <SocialIconInspector activeColor={activeColor} />;
+        return (
+          <SocialIconInspector
+            activeColor={activeColor}
+            selectedId={localSelectedSocialIconId}
+            onSelect={setLocalSelectedSocialIconId}
+          />
+        );
       default:
         return null;
     }
@@ -116,7 +125,7 @@ export function CombinedStyleContentModal({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <Dialog.Portal>
-        <Dialog.Overlay 
+        <Dialog.Overlay
           className={styles.overlay}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -124,21 +133,21 @@ export function CombinedStyleContentModal({
             }
           }}
         />
-        <Dialog.Content 
-          className={styles.modal} 
+        <Dialog.Content
+          className={`${styles.modal} glassPanel`}
           aria-label={section.title}
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement;
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]') ||
-                               target.closest('[aria-label="Media library"]') ||
-                               target.closest('._drawer_');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]') ||
+              target.closest('[aria-label="Media library"]') ||
+              target.closest('._drawer_');
+
             if (isInPopover) {
               e.preventDefault();
               return;
@@ -147,15 +156,15 @@ export function CombinedStyleContentModal({
           onInteractOutside={(e) => {
             const target = e.target as HTMLElement;
             const isInPopover = target.closest('[data-radix-popover-content]') ||
-                               target.closest('[data-radix-portal]') ||
-                               target.closest('[class*="backgroundPopover"]') ||
-                               target.closest('[class*="react-colorful"]') ||
-                               target.closest('[data-radix-slider-thumb]') ||
-                               target.closest('[data-radix-slider-track]') ||
-                               target.closest('[data-radix-slider-root]') ||
-                               target.closest('[aria-label="Media library"]') ||
-                               target.closest('._drawer_');
-            
+              target.closest('[data-radix-portal]') ||
+              target.closest('[class*="backgroundPopover"]') ||
+              target.closest('[class*="react-colorful"]') ||
+              target.closest('[data-radix-slider-thumb]') ||
+              target.closest('[data-radix-slider-track]') ||
+              target.closest('[data-radix-slider-root]') ||
+              target.closest('[aria-label="Media library"]') ||
+              target.closest('._drawer_');
+
             if (isInPopover) {
               e.preventDefault();
               return;
@@ -183,32 +192,27 @@ export function CombinedStyleContentModal({
             </Dialog.Close>
           </header>
 
-          {/* Tabs */}
-          <div className={styles.tabs}>
-            <button
-              type="button"
-              className={`${styles.tab} ${activeTab === 'style' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('style')}
-              aria-selected={activeTab === 'style'}
-            >
-              <Palette size={18} weight="regular" />
-              <span>Style</span>
-            </button>
-            {contentEditor && (
-              <button
-                type="button"
-                className={`${styles.tab} ${activeTab === 'content' ? styles.activeTab : ''}`}
-                onClick={() => setActiveTab('content')}
-                aria-selected={activeTab === 'content'}
-              >
-                <Pencil size={18} weight="regular" />
-                <span>Content</span>
-              </button>
-            )}
-          </div>
-
           {/* Tab Content */}
           <div className={styles.body}>
+            {/* Tabs */}
+            <SegmentedControl
+              options={[
+                {
+                  value: 'style',
+                  label: 'Style',
+                  icon: <Palette size={18} weight="regular" />
+                },
+                ...(contentEditor ? [{
+                  value: 'content',
+                  label: 'Content',
+                  icon: <Pencil size={18} weight="regular" />
+                }] : [])
+              ]}
+              value={activeTab}
+              onChange={(value) => setActiveTab(value as TabType)}
+              className={styles.tabs}
+            />
+
             {activeTab === 'style' ? (
               <div className={styles.stylePanel}>
                 {sectionId === 'page-background' && (
@@ -216,6 +220,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'profile-image' && (
@@ -223,6 +228,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'page-title' && (
@@ -230,6 +236,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'page-description' && (
@@ -237,6 +244,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'podcast-player-bar' && (
@@ -244,6 +252,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'widget-settings' && (
@@ -252,6 +261,7 @@ export function CombinedStyleContentModal({
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
                     widgetId={widgetId}
+                    palette={palette}
                   />
                 )}
                 {sectionId === 'social-icons' && (
@@ -259,6 +269,7 @@ export function CombinedStyleContentModal({
                     uiState={uiState}
                     onFieldChange={onFieldChange}
                     activeColor={activeColor}
+                    palette={palette}
                   />
                 )}
               </div>

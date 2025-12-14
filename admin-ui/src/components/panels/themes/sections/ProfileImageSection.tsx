@@ -22,12 +22,14 @@ interface ProfileImageSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function ProfileImageSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: ProfileImageSectionProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
@@ -268,6 +270,7 @@ export function ProfileImageSection({
                 value={(uiState['profile-image-shadow-color'] as string) ?? '#000000'}
                 onChange={(value) => onFieldChange('profile-image-shadow-color', value)}
                 label="Shadow color"
+                palette={palette}
               />
             </div>
 
@@ -317,6 +320,7 @@ export function ProfileImageSection({
                 value={(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}
                 onChange={(value) => onFieldChange('profile-image-glow-color', value)}
                 label="Glow color"
+                palette={palette}
               />
             </div>
 
@@ -341,6 +345,7 @@ export function ProfileImageSection({
             value={(uiState['profile-image-border-color'] as string) ?? '#000000'}
             onChange={(value) => onFieldChange('profile-image-border-color', value)}
             label="Border color"
+            palette={palette}
           />
         </div>
 

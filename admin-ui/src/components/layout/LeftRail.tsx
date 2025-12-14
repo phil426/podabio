@@ -48,7 +48,7 @@ import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { useThemeLibraryQuery } from '../../api/themes';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList';
-import { WidgetGalleryDrawer } from '../overlays/WidgetGalleryDrawer';
+import { WidgetGalleryModal } from '../overlays/WidgetGalleryModal';
 import type { ApiResponse } from '../../api/types';
 import { getYouTubeThumbnail } from '../../utils/media';
 import { ThemeLibraryPanel } from '../panels/ThemeLibraryPanel';
@@ -150,13 +150,13 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   const { data: snapshot } = usePageSnapshot();
   const { data: themeLibrary } = useThemeLibraryQuery();
   const page = snapshot?.page;
-  
+
   // Derive active theme - prefer user theme over system theme
   const activeTheme = useMemo(() => {
     const systemThemes = themeLibrary?.system ?? [];
     const userThemes = themeLibrary?.user ?? [];
     const themeId = page?.theme_id ?? null;
-    
+
     // Always prefer user theme if it exists
     if (userThemes.length > 0) {
       // If page points to user theme, use it; otherwise use first user theme
@@ -166,7 +166,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
       }
       return userThemes[0];
     }
-    
+
     // Fallback to system theme if no user theme exists
     if (themeId == null) {
       return systemThemes[0] ?? null;
@@ -215,15 +215,15 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
 
     // Map widgets to layers
     // Filter out inactive blog widgets
-        const widgetLayers: LayerItem[] = widgets ? widgets
-          .filter((widget) => {
-            // Hide all blog widgets (feature retired)
-            const isBlogWidget = widget.widget_type.startsWith('blog_');
-            if (isBlogWidget) {
-              return false; // Hide all blog widgets
-            }
-            return true;
-          })
+    const widgetLayers: LayerItem[] = widgets ? widgets
+      .filter((widget) => {
+        // Hide all blog widgets (feature retired)
+        const isBlogWidget = widget.widget_type.startsWith('blog_');
+        if (isBlogWidget) {
+          return false; // Hide all blog widgets
+        }
+        return true;
+      })
       .map((widget) => {
         const IconComponent = widgetIconMap[widget.widget_type] ?? fallbackWidgetIcon;
         const config =
@@ -237,8 +237,8 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
         const derivedYouTubeThumbnail =
           widget.widget_type === 'youtube_video'
             ? getYouTubeThumbnail(
-                typeof config.video_url === 'string' ? (config.video_url as string) : undefined
-              ) ?? undefined
+              typeof config.video_url === 'string' ? (config.video_url as string) : undefined
+            ) ?? undefined
             : undefined;
         const thumbnail = rawThumbnail ?? derivedYouTubeThumbnail;
 
@@ -330,7 +330,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   const handleReorder = (items: LayerItem[]) => {
     // Filter out non-widget items (like 'page:profile', 'page:footer')
     const widgetItems = items.filter((layer) => !layer.id.startsWith('page:'));
-    
+
     reorderMutation.mutate({
       widget_orders: JSON.stringify(
         widgetItems.map((layer, index) => ({
@@ -427,7 +427,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
       event.stopPropagation();
       event.preventDefault();
     }
-    
+
     const widget = widgets?.find((entry) => String(entry.id) === id);
     if (!widget) return;
 
@@ -482,10 +482,10 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
   }, [activeTab, selectWidget]);
 
   return (
-    <div 
-      className={styles.container} 
+    <div
+      className={styles.container}
       aria-label="Layers and assets panel"
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -514,199 +514,199 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
         <Tabs.Content value="structure" className={styles.tabContent}>
           <ScrollArea.Root className={styles.scrollArea}>
             <ScrollArea.Viewport className={styles.viewport}>
-          <section className={styles.section}>
-            {widgetsLoading ? (
-              <p>Loading layers…</p>
-            ) : widgetsError ? (
-              <p className={styles.errorText}>{widgetsErrorObj instanceof Error ? widgetsErrorObj.message : 'Unable to load widgets.'}</p>
-            ) : (
-              <>
-                {baseStructureItems.length > 0 && (
-                  <div className={styles.structurePrimer}>
-                    <div className={styles.staticHeader}>
-                      <h3>Static Layers</h3>
-                      <span>Always on your page.</span>
-                    </div>
-                    <ul className={styles.baseList}>
-                      {baseStructureItems.map((item) => (
-                        <li key={item.id}>
-                          <button
-                            type="button"
-                            className={styles.baseButton}
-                            data-active={selectedWidgetId === item.id ? 'true' : 'false'}
-                            onClick={() => selectWidget(item.id)}
-                          >
-                            <span className={styles.baseIcon} aria-hidden="true">
-                              <item.Icon />
-                            </span>
-                            <div>
-                              <p className={styles.baseLabel}>{item.label}</p>
-                              <p className={styles.baseDescription}>{item.description}</p>
-                            </div>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className={styles.quickAddContainer}>
-                  <button
-                    type="button"
-                    className={styles.primaryAddButton}
-                    onClick={handlePrimaryAdd}
-                    disabled={addMutation.isPending || !availableWidgets?.length}
-                    title="Add Block"
-                  >
-                    <LuPlus aria-hidden="true" />
-                    <span>Add Block</span>
-                  </button>
-                  <div className={styles.quickAddButtons}>
-                    {quickAddOptions.map((option) => {
-                      const iconMap: Record<string, JSX.Element> = {
-                        heading: <LuHeading2 aria-hidden="true" />,
-                        text: <LuType aria-hidden="true" />,
-                        line: <LuMinus aria-hidden="true" />
-                      };
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          className={styles.quickAddButton}
-                          disabled={addMutation.isPending}
-                          onClick={() => handleQuickAdd(option)}
-                          title={option.label}
-                        >
-                          {iconMap[option.id] || <LuPlus aria-hidden="true" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <DraggableLayerList
-                    items={layers}
-                    onReorder={handleReorder}
-                    startIndex={earliestOrder}
-                    onSelect={handleSelectLayer}
-                    selectedId={selectedWidgetId}
-                    renderActions={(item) => {
-                      const VisibilityIcon = item.isActive ? LuEye : LuEyeOff;
-                      const isPageItem = item.id.startsWith('page:');
-                      const isLocked = item.isLocked ?? false;
-                      const isAlwaysLocked = item.id === 'page:profile' || item.id === 'page:footer';
-                      const isPodcastPlayer = item.id === 'page:podcast-player';
-                      return (
-                      <div className={styles.layerActions}>
-                        {!isAlwaysLocked && !isPodcastPlayer && (
-                          <button
-                            type="button"
-                            className={styles.layerActionButton}
-                            onClick={() => handleToggleLock(item.id)}
-                            aria-label={isLocked ? `Unlock ${item.label}` : `Lock ${item.label}`}
-                            title={isLocked ? 'Unlock this block so it can move' : 'Lock this block to prevent accidental moves'}
-                            data-locked={isLocked ? 'true' : 'false'}
-                          >
-                            <LuLock aria-hidden="true" />
-                          </button>
-                        )}
-                        {/* Visibility icon for Profile, Footer, and widgets */}
-                        <button
-                          type="button"
-                          className={styles.layerActionButton}
-                          onClick={() => handleToggleVisibility(item.id)}
-                          aria-label={item.isActive ? `Hide ${item.label}` : `Show ${item.label}`}
-                            title={item.isActive ? 'Hide this block on your live page' : 'Show this block on your live page'}
-                          disabled={isPageItem ? pageSettingsMutation.isPending : updateMutation.isPending}
-                          data-active={item.isActive ? 'true' : 'false'}
-                        >
-                          <VisibilityIcon aria-hidden="true" />
-                        </button>
-                        {!isPageItem && (
-                          <>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={() => handleEditLayer(item.id)}
-                              aria-label={`Edit ${item.label}`}
-                              title="Open settings for this block in the right-hand panel"
-                              disabled={updateMutation.isPending}
-                            >
-                              <LuPencil aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={() => handleDeleteLayer(item.id)}
-                              aria-label={`Delete ${item.label}`}
-                              title="Delete this block from your page"
-                              disabled={deleteMutation.isPending}
-                            >
-                              <LuTrash aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                handleToggleFeatured(item.id, e);
-                              }}
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                              }}
-                              onPointerDown={(e) => {
-                                e.stopPropagation();
-                              }}
-                              aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
-                              title={item.isFeatured ? 'Stop highlighting this block on your page' : 'Highlight this block with a featured effect'}
-                              disabled={updateMutation.isPending}
-                              data-featured={item.isFeatured ? 'true' : 'false'}
-                            >
-                              <LuStar aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              aria-label="Premium tier (coming soon)"
-                              title="Premium"
-                              disabled
-                            >
-                              <LuCrown aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              aria-label="Monetization (coming soon)"
-                              title="Monetize"
-                              disabled
-                            >
-                              <LuDollarSign aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              aria-label="Optimize (coming soon)"
-                              title="Optimize"
-                              disabled
-                            >
-                              <LuPickaxe aria-hidden="true" />
-                            </button>
-                          </>
-                        )}
+              <section className={styles.section}>
+                {widgetsLoading ? (
+                  <p>Loading layers…</p>
+                ) : widgetsError ? (
+                  <p className={styles.errorText}>{widgetsErrorObj instanceof Error ? widgetsErrorObj.message : 'Unable to load widgets.'}</p>
+                ) : (
+                  <>
+                    {baseStructureItems.length > 0 && (
+                      <div className={styles.structurePrimer}>
+                        <div className={styles.staticHeader}>
+                          <h3>Static Layers</h3>
+                          <span>Always on your page.</span>
+                        </div>
+                        <ul className={styles.baseList}>
+                          {baseStructureItems.map((item) => (
+                            <li key={item.id}>
+                              <button
+                                type="button"
+                                className={styles.baseButton}
+                                data-active={selectedWidgetId === item.id ? 'true' : 'false'}
+                                onClick={() => selectWidget(item.id)}
+                              >
+                                <span className={styles.baseIcon} aria-hidden="true">
+                                  <item.Icon />
+                                </span>
+                                <div>
+                                  <p className={styles.baseLabel}>{item.label}</p>
+                                  <p className={styles.baseDescription}>{item.description}</p>
+                                </div>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                       );
-                     }}
-                  />
-              </>
-            )}
-          </section>
-        </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-          <ScrollArea.Thumb className={styles.thumb} />
-        </ScrollArea.Scrollbar>
-      </ScrollArea.Root>
+                    )}
+
+                    <div className={styles.quickAddContainer}>
+                      <button
+                        type="button"
+                        className={styles.primaryAddButton}
+                        onClick={handlePrimaryAdd}
+                        disabled={addMutation.isPending || !availableWidgets?.length}
+                        title="Add Block"
+                      >
+                        <LuPlus aria-hidden="true" />
+                        <span>Add Block</span>
+                      </button>
+                      <div className={styles.quickAddButtons}>
+                        {quickAddOptions.map((option) => {
+                          const iconMap: Record<string, JSX.Element> = {
+                            heading: <LuHeading2 aria-hidden="true" />,
+                            text: <LuType aria-hidden="true" />,
+                            line: <LuMinus aria-hidden="true" />
+                          };
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              className={styles.quickAddButton}
+                              disabled={addMutation.isPending}
+                              onClick={() => handleQuickAdd(option)}
+                              title={option.label}
+                            >
+                              {iconMap[option.id] || <LuPlus aria-hidden="true" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <DraggableLayerList
+                      items={layers}
+                      onReorder={handleReorder}
+                      startIndex={earliestOrder}
+                      onSelect={handleSelectLayer}
+                      selectedId={selectedWidgetId}
+                      renderActions={(item) => {
+                        const VisibilityIcon = item.isActive ? LuEye : LuEyeOff;
+                        const isPageItem = item.id.startsWith('page:');
+                        const isLocked = item.isLocked ?? false;
+                        const isAlwaysLocked = item.id === 'page:profile' || item.id === 'page:footer';
+                        const isPodcastPlayer = item.id === 'page:podcast-player';
+                        return (
+                          <div className={styles.layerActions}>
+                            {!isAlwaysLocked && !isPodcastPlayer && (
+                              <button
+                                type="button"
+                                className={styles.layerActionButton}
+                                onClick={() => handleToggleLock(item.id)}
+                                aria-label={isLocked ? `Unlock ${item.label}` : `Lock ${item.label}`}
+                                title={isLocked ? 'Unlock this block so it can move' : 'Lock this block to prevent accidental moves'}
+                                data-locked={isLocked ? 'true' : 'false'}
+                              >
+                                <LuLock aria-hidden="true" />
+                              </button>
+                            )}
+                            {/* Visibility icon for Profile, Footer, and widgets */}
+                            <button
+                              type="button"
+                              className={styles.layerActionButton}
+                              onClick={() => handleToggleVisibility(item.id)}
+                              aria-label={item.isActive ? `Hide ${item.label}` : `Show ${item.label}`}
+                              title={item.isActive ? 'Hide this block on your live page' : 'Show this block on your live page'}
+                              disabled={isPageItem ? pageSettingsMutation.isPending : updateMutation.isPending}
+                              data-active={item.isActive ? 'true' : 'false'}
+                            >
+                              <VisibilityIcon aria-hidden="true" />
+                            </button>
+                            {!isPageItem && (
+                              <>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  onClick={() => handleEditLayer(item.id)}
+                                  aria-label={`Edit ${item.label}`}
+                                  title="Open settings for this block in the right-hand panel"
+                                  disabled={updateMutation.isPending}
+                                >
+                                  <LuPencil aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  onClick={() => handleDeleteLayer(item.id)}
+                                  aria-label={`Delete ${item.label}`}
+                                  title="Delete this block from your page"
+                                  disabled={deleteMutation.isPending}
+                                >
+                                  <LuTrash aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    handleToggleFeatured(item.id, e);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                  }}
+                                  onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                  aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
+                                  title={item.isFeatured ? 'Stop highlighting this block on your page' : 'Highlight this block with a featured effect'}
+                                  disabled={updateMutation.isPending}
+                                  data-featured={item.isFeatured ? 'true' : 'false'}
+                                >
+                                  <LuStar aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  aria-label="Premium tier (coming soon)"
+                                  title="Premium"
+                                  disabled
+                                >
+                                  <LuCrown aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  aria-label="Monetization (coming soon)"
+                                  title="Monetize"
+                                  disabled
+                                >
+                                  <LuDollarSign aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.layerActionButton}
+                                  aria-label="Optimize (coming soon)"
+                                  title="Optimize"
+                                  disabled
+                                >
+                                  <LuPickaxe aria-hidden="true" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                  </>
+                )}
+              </section>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+              <ScrollArea.Thumb className={styles.thumb} />
+            </ScrollArea.Scrollbar>
+          </ScrollArea.Root>
         </Tabs.Content>
 
         <Tabs.Content value="design" className={styles.tabContent}>
@@ -758,7 +758,7 @@ export function LeftRail({ activeTab, onTabChange, activeColor }: LeftRailProps)
         </Tabs.Content>
       </Tabs.Root>
 
-      <WidgetGalleryDrawer
+      <WidgetGalleryModal
         open={isGalleryOpen}
         widgets={availableWidgets ?? []}
         onClose={() => setGalleryOpen(false)}

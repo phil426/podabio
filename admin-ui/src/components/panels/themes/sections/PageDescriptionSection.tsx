@@ -13,12 +13,14 @@ interface PageDescriptionSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function PageDescriptionSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: PageDescriptionSectionProps): JSX.Element {
   const pageBioColor = (uiState['page-bio-color'] as string) ?? '#4b5563';
   const pageBioFont = (uiState['page-bio-font'] as string) ?? 'Inter';
@@ -30,13 +32,14 @@ export function PageDescriptionSection({
       {/* Page Bio */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Page Description</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
           <BackgroundColorSwatch
             value={pageBioColor}
             onChange={(value) => onFieldChange('page-bio-color', value)}
             label="Page bio color"
+            palette={palette}
           />
         </div>
 

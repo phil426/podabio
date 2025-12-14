@@ -12,8 +12,7 @@ import { Pencil, Palette, Eye, EyeSlash, Trash, FolderOpen, Sparkle, Star, Lock,
 import { sectionRegistry } from '../utils/sectionRegistry';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import { ThemeLibraryModal } from './ThemeLibraryModal';
-import { PodcastThemeGeneratorModal } from '../PodcastThemeGeneratorModal';
-import { usePodcastThemePrompt } from '../../../../hooks/usePodcastThemePrompt';
+
 import styles from './theme-preview.module.css';
 
 interface DevicePreset {
@@ -83,32 +82,55 @@ export function ThemePreview({
   } | null>(null);
   const [themeLibraryModalOpen, setThemeLibraryModalOpen] = useState(false);
 
-  // Use podcast theme prompt hook to get podcast data for the generator
-  const {
-    openGenerator,
-    closeGenerator,
-    isGeneratorOpen,
-    generatorProps,
-  } = usePodcastThemePrompt();
+
 
   // Increment version when cssVars change to force iframe refresh
   // CRITICAL: Force iframe reload when CSS vars change to clear previous theme
   useEffect(() => {
     if (Object.keys(cssVars).length > 0) {
       // Only increment if we have CSS vars (not when clearing)
-      setDataVersion((prev) => prev + 1);
+      setDataVersion((prev) => prev - prev + Date.now()); // Force unique timestamp
     }
   }, [cssVars]);
+
+  // Create a signature of widget order and structure to trigger updates
+  const widgetSignature = useMemo(() => {
+    if (!widgets) return '';
+    return widgets.map(w => {
+      // Include critical fields that affect layout/grouping
+      const config = w.config_data as Record<string, unknown> | null;
+      const isSection = config?.is_section_group;
+      return `${w.id}:${w.display_order}:${w.widget_type}:${isSection}`;
+    }).join('|');
+  }, [widgets]);
+
+  // Force reload when widgets change (reorder, add, delete)
+  useEffect(() => {
+    if (widgetSignature) {
+      setDataVersion((prev) => prev + 1);
+    }
+  }, [widgetSignature]);
 
   // Listen for hotspot clicks from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Verify origin for security
-      if (event.origin !== window.location.origin) {
+      // Allow localhost:8080 for development environment
+      const allowedOrigins = [
+        window.location.origin,
+        'http://localhost:8080',
+        'http://127.0.0.1:8080',
+        'https://poda.bio',
+        'https://www.poda.bio'
+      ];
+
+      if (!allowedOrigins.includes(event.origin)) {
         return;
       }
 
+      console.log('ThemePreview: Message received', event.data);
       if (event.data?.type === 'hotspot-click' && event.data?.sectionId) {
+        console.log('ThemePreview: Hotspot click processing', event.data);
         const { sectionId, widgetId, x, y } = event.data;
 
         // Check if this hotspot only has content and style options (no other actions)
@@ -137,6 +159,12 @@ export function ThemePreview({
           // 2. Add the iframe's position in the parent window
           hotspotX = iframeRect.left + (x * PREVIEW_SCALE);
           hotspotY = iframeRect.top + (y * PREVIEW_SCALE);
+        }
+
+        // Special case: Page Background should go straight to inspector (no context menu)
+        if (sectionId === 'page-background') {
+          onHotspotClick?.(sectionId);
+          return;
         }
 
         // Show context menu for all other hotspots
@@ -285,7 +313,8 @@ html {
   margin: 0 !important;
   padding: 0 !important;
   height: 100% !important;
-  overflow: hidden !important;
+  overflow-y: auto !important; /* Allow vertical scrolling */
+  overflow-x: hidden !important;
 }
 body {
   background: var(--page-background) !important;
@@ -312,10 +341,12 @@ body > .mobile-page-container > *:first-child,
 .page-title {
   color: var(--page-title-color, var(--heading-font-color, var(--color-text-primary))) !important;
   font-family: var(--page-title-font, var(--font-family-heading)) !important;
+  text-shadow: var(--page-title-text-shadow, none) !important;
 }
 .page-description {
   color: var(--page-description-color, var(--body-font-color, var(--color-text-secondary))) !important;
   font-family: var(--page-description-font, var(--font-family-body)) !important;
+  text-shadow: var(--page-description-text-shadow, none) !important;
 }
 .widget-item {
   background: var(--widget-background) !important;
@@ -330,12 +361,36 @@ body > .mobile-page-container > *:first-child,
   color: var(--widget-body-color, var(--widget-body-font-color, var(--color-text-secondary))) !important;
   font-family: var(--widget-body-font, var(--widget-secondary-font)) !important;
 }
+.widget-content, .widget-body, .widget-item p, .widget-item .widget-text, .widget-description, .people-widget-paragraph {
+  color: var(--widget-body-color, var(--widget-body-font-color, var(--color-text-secondary))) !important;
+  font-family: var(--widget-body-font, var(--widget-secondary-font)) !important;
+}
+${/* Handle Social Icon Gradients & Shadows dynamically */ ''}
 .social-icons a, .social-icons svg, .social-icons a svg {
-  color: var(--icon-color, var(--social-icon-color)) !important;
-  fill: var(--icon-color, var(--social-icon-color)) !important;
+  ${typeof cssVars['--social-icon-color'] === 'string' && cssVars['--social-icon-color'].includes('gradient')
+            ? `
+      background: var(--social-icon-color) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important; 
+      color: transparent !important;
+      /* Ensure SVGs inherit the transparent color so background shows through if supported, 
+         or at least don't block it with a solid fill */
+      fill: currentColor !important;
+    `
+            : `
+      color: var(--icon-color, var(--social-icon-color)) !important;
+      fill: var(--icon-color, var(--social-icon-color)) !important;
+    `}
+  filter: var(--social-icon-filter, none) !important;
+  transition: all 0.2s ease !important;
+}
+.social-icons a:hover {
+  transform: scale(1.1) !important;
+  filter: var(--social-icon-filter, none) brightness(1.2) !important;
 }
 .profile-image-container img {
   border-radius: var(--profile-image-radius) !important;
+  box-shadow: var(--profile-image-box-shadow, none) !important;
 }`;
 
         style.textContent = `:root {\n${cssVarEntries.join('\n')}\n}${overrideCSS}`;
@@ -405,6 +460,65 @@ body > .mobile-page-container > *:first-child,
           existingHotspotStyle.remove();
         }
 
+        // Advanced Background Logic
+        const existingAdvancedBgStyle = iframeDoc.getElementById('advanced-background-style');
+        if (existingAdvancedBgStyle) {
+          existingAdvancedBgStyle.remove();
+        }
+
+        // If we have an advanced background image set up
+        if (cssVars['--page-background-image-url']) {
+          const bgUrl = cssVars['--page-background-image-url'];
+          const bgScale = cssVars['--page-background-image-scale'] || '1';
+          const bgFocalX = cssVars['--page-background-image-focal-x'] || '50%';
+          const bgFocalY = cssVars['--page-background-image-focal-y'] || '50%';
+          const bgBlur = cssVars['--page-background-image-blur'] || '0px';
+
+          // Add advanced background style
+          const advancedBgStyle = iframeDoc.createElement('style');
+          advancedBgStyle.id = 'advanced-background-style';
+
+          // We use html::before instead of body::before to avoid scrolling issues
+          // html is the root, so fixed position works reliably relative to viewport
+          // z-index: -1 places it behind the body content
+          // body background is transparent, so this shows through
+          advancedBgStyle.textContent = `
+            body {
+              /* Hide the standard background image so we don't duplicate it */
+              background-image: none !important;
+              background-color: transparent !important;
+              /* Ensure body is full height */
+              min-height: 100vh;
+              position: relative;
+              z-index: 1;
+            }
+            html {
+              /* Ensure html is full height */
+              min-height: 100%;
+              /* Create stacking context if needed, but usually not required for html::before */
+            }
+            html::before {
+              content: "";
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: -1;
+              background-image: 
+                linear-gradient(var(--page-background-image-overlay, transparent), var(--page-background-image-overlay, transparent)),
+                ${bgUrl};
+              background-size: cover;
+              background-position: ${bgFocalX} ${bgFocalY};
+              background-repeat: no-repeat;
+              transform: scale(${bgScale});
+              filter: blur(${bgBlur});
+              pointer-events: none;
+            }
+          `;
+          iframeDoc.head.appendChild(advancedBgStyle);
+        }
+
         if (!hotspotsVisible) {
           // Hide ONLY the hotspot glow indicators (::after pseudo-elements)
           // Do NOT affect any other styling, positioning, or interactions
@@ -413,7 +527,6 @@ body > .mobile-page-container > *:first-child,
           hotspotStyle.textContent = `
             /* Hide ONLY the hotspot glow indicators - nothing else */
             body.preview-mode [data-hotspot]::after,
-            body.preview-mode [data-hotspot-text]::after,
             body.preview-mode .page-background-hotspot::after,
             body.preview-mode .profile-image-container[data-hotspot]::after,
             body.preview-mode .page-title[data-hotspot]::after,
@@ -450,6 +563,17 @@ body > .mobile-page-container > *:first-child,
           el.style.backgroundColor = '';
           el.style.borderColor = '';
           el.style.color = '';
+
+          // Remove duplicate widget hotspot (container level)
+          if (el.getAttribute('data-hotspot') === 'widget') {
+            el.removeAttribute('data-hotspot');
+          }
+        });
+
+        // Remove widget text hotspots
+        const widgetTextHotspots = iframeDoc.querySelectorAll('[data-hotspot-text="widget-text"]');
+        widgetTextHotspots.forEach((el) => {
+          el.removeAttribute('data-hotspot-text');
         });
 
         // CRITICAL: Remove page title effect class when CSS variable is empty (effect set to 'none')
@@ -530,15 +654,122 @@ body > .mobile-page-container > *:first-child,
             }
           });
         }
+
+        // Sync Layout Class
+        // We get the current layout from the page snapshot prop/hook
+        const currentLayout = page?.layout_option || 'standard';
+
+        // Remove any existing layout classes
+        iframeDoc.body.classList.forEach(cls => {
+          if (cls.startsWith('layout-') && cls !== `layout-${currentLayout}`) {
+            iframeDoc.body.classList.remove(cls);
+          }
+        });
+
+        // Add current layout class if missing
+        const layoutClass = `layout-${currentLayout}`;
+        if (!iframeDoc.body.classList.contains(layoutClass)) {
+          iframeDoc.body.classList.add(layoutClass);
+        }
+      };
+
+      const syncSocialIcons = () => {
+        // Inject Gradient Defs into Body
+        const gradientData = getGradientData();
+        const existingDefs = iframeDoc.getElementById('preview-social-gradient-defs');
+
+        if (gradientData) {
+          // CSS Angle to SVG Angle (0deg=Top -> 0deg=Right offset -90)
+          const svgRotation = gradientData.angle - 90;
+          const defsContent = `
+            <defs>
+              <linearGradient 
+                id="social-icon-gradient" 
+                x1="0%" y1="0%" x2="100%" y2="0%" 
+                gradientTransform="rotate(${svgRotation}, 0.5, 0.5)"
+              >
+                <stop offset="0%" stop-color="${gradientData.color1}" />
+                <stop offset="100%" stop-color="${gradientData.color2}" />
+              </linearGradient>
+            </defs>
+          `;
+
+          if (existingDefs) {
+            if (existingDefs.innerHTML !== defsContent) {
+              existingDefs.innerHTML = defsContent;
+            }
+          } else {
+            const svg = iframeDoc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = 'preview-social-gradient-defs';
+            svg.setAttribute('style', 'width:0;height:0;position:absolute;opacity:0;pointer-events:none;');
+            svg.innerHTML = defsContent;
+            iframeDoc.body.appendChild(svg);
+          }
+        } else if (existingDefs) {
+          existingDefs.remove();
+        }
+
+        // Sync Custom SVGs
+        // We look for links with specific titles or hrefs identifying the platform
+        // Since page.php might render them as font-awesome icons that don't exist, we replace content
+        const fillStyle = gradientData ? 'url(#social-icon-gradient)' : 'currentColor';
+        // Always use low opacity for the background circle so the path stands out
+        const opacity = '0.2';
+
+        // Define Custom SVGs
+        const customIcons: Record<string, string> = {
+          'pocket_casts': `<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:block;width:1em;height:1em"><circle cx="16" cy="15" r="15" fill="${fillStyle}" opacity="${opacity}" /><path fill-rule="evenodd" clip-rule="evenodd" fill="${fillStyle}" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z" /></svg>`,
+          'castro': `<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:block;width:1em;height:1em"><path fill="${fillStyle}" d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z" /></svg>`,
+          'overcast': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" style="display:block;width:1em;height:1em"><path fill="${fillStyle}" fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clip-rule="evenodd" /></svg>`
+        };
+
+        const socialLinks = iframeDoc.querySelectorAll('.social-icons a');
+        socialLinks.forEach((link) => {
+          const title = link.getAttribute('title')?.toLowerCase() || '';
+          const href = link.getAttribute('href')?.toLowerCase() || '';
+
+          let platformKey = '';
+          if (title.includes('pocket casts') || href.includes('pca.st') || href.includes('pocketcasts.com')) platformKey = 'pocket_casts';
+          else if (title.includes('castro') || href.includes('castro.fm')) platformKey = 'castro';
+          else if (title.includes('overcast') || href.includes('overcast.fm')) platformKey = 'overcast';
+
+          if (platformKey && customIcons[platformKey]) {
+            // Check if already replaced
+            // Use a data attribute to avoid redundant updates and infinite loops
+            const currentSig = link.getAttribute('data-svg-signature');
+            const newSig = `${platformKey}-${fillStyle}`; // Signature depends on platform and gradient (so we update when gradient changes)
+
+            if (currentSig !== newSig) {
+              link.innerHTML = customIcons[platformKey];
+              link.setAttribute('data-svg-signature', newSig);
+            }
+          }
+        });
       };
 
       // Run immediately
       syncContent();
+      syncSocialIcons();
 
       // Run continuously on any DOM change
       const observer = new MutationObserver((mutations) => {
-        // Check if we need to re-sync (avoid infinite loops by checking if values match first inside syncContent)
-        syncContent();
+        // Disconnect immediately to prevent infinite loop
+        observer.disconnect();
+
+        try {
+          // Check if we need to re-sync
+          syncContent();
+          syncSocialIcons();
+        } finally {
+          // Re-observe
+          observer.observe(iframeDoc.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true,
+            attributeFilter: ['src', 'style', 'class']
+          });
+        }
       });
 
       observer.observe(iframeDoc.body, {
@@ -549,12 +780,12 @@ body > .mobile-page-container > *:first-child,
         attributeFilter: ['src', 'style', 'class']
       });
 
+      syncContent(); // Sync immediately on effect run
       return () => observer.disconnect();
-
     } catch (e) {
       console.warn('Unable to setup sync observer:', e);
     }
-  }, [iframeLoading, cssVars]); // Re-run when loading finishes or vars change
+  }, [iframeLoading, cssVars, page?.layout_option]); // Re-run when loading finishes, vars change, or layout changes
 
   // Inject CSS vars when they change (after iframe loads)
   useEffect(() => {
@@ -570,58 +801,109 @@ body > .mobile-page-container > *:first-child,
     return textarea.value;
   };
 
+
+  // Helper to parse gradient for SVG use
+  const getGradientData = () => {
+    const colorVal = cssVars['--social-icon-color'];
+    if (!colorVal || !colorVal.includes('gradient')) return null;
+
+    // Parse format: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)
+    const match = colorVal.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-fA-F]{6}|rgba?\(.*?\))\s*0%,\s*(#[0-9a-fA-F]{6}|rgba?\(.*?\))\s*100%\)/i);
+    if (!match) return null;
+
+    return {
+      angle: parseInt(match[1], 10),
+      color1: match[2],
+      color2: match[3]
+    };
+  };
+
+  const gradientData = getGradientData();
+
+  // Render SVG gradient defs if needed
+  const renderGradientDefs = () => {
+    if (!gradientData) return null;
+
+    // Convert CSS angle (0=Up, 90=Right) to SVG angle (0=Right)
+    // CSS: 0deg = Top. SVG Rotation 0 = Right.
+    // We start with a Left-to-Right gradient (x1=0, y1=0, x2=1, y2=0) which is 0deg in SVG.
+    // CSS 90deg should match this. So offset is -90.
+    const svgRotation = gradientData.angle - 90;
+
+    return (
+      <svg style={{ width: 0, height: 0, position: 'absolute', opacity: 0, pointerEvents: 'none' }}>
+        <defs>
+          <linearGradient
+            id="social-icon-gradient"
+            x1="0%" y1="0%" x2="100%" y2="0%"
+            gradientTransform={`rotate(${svgRotation}, 0.5, 0.5)`}
+          >
+            <stop offset="0%" stopColor={gradientData.color1} />
+            <stop offset="100%" stopColor={gradientData.color2} />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  };
+
+  // Font Awesome icons for other platforms
+  const platformIcons: Record<string, string> = {
+    // Podcast Platforms
+    'apple_podcasts': 'fas fa-podcast',
+    'spotify': 'fab fa-spotify',
+    'youtube_music': 'fab fa-youtube',
+    'iheart_radio': 'fas fa-heart',
+    'amazon_music': 'fab fa-amazon',
+    // Social Media Platforms
+    'facebook': 'fab fa-facebook',
+    'twitter': 'fab fa-twitter',
+    'instagram': 'fab fa-instagram',
+    'linkedin': 'fab fa-linkedin',
+    'youtube': 'fab fa-youtube',
+    'tiktok': 'fab fa-tiktok',
+    'snapchat': 'fab fa-snapchat',
+    'pinterest': 'fab fa-pinterest',
+    'reddit': 'fab fa-reddit',
+    'discord': 'fab fa-discord',
+    'threads': 'fab fa-threads',
+    'bluesky': 'fab fa-bluesky',
+    'whatsapp': 'fab fa-whatsapp',
+    'telegram': 'fab fa-telegram',
+    'twitch': 'fab fa-twitch',
+    'github': 'fab fa-github',
+    'behance': 'fab fa-behance',
+    'dribbble': 'fab fa-dribbble',
+    'medium': 'fab fa-medium',
+    'substack': 'fas fa-newspaper'
+  };
+
   // Get icon HTML for a platform (matches page.php logic)
   const getPlatformIcon = (platformName: string): JSX.Element => {
     const platform = platformName.toLowerCase();
+    // Use gradient fill if available, otherwise currentColor inherits from parent
+    const fillStyle = gradientData ? 'url(#social-icon-gradient)' : 'currentColor';
 
     // Custom SVG icons for podcast platforms
     if (platform === 'pocket_casts') {
       return (
         <svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '1em', height: '1em' }}>
-          <circle cx="16" cy="15" r="15" fill="currentColor" opacity="0.1" />
-          <path fillRule="evenodd" clipRule="evenodd" fill="currentColor" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z" />
+          <circle cx="16" cy="15" r="15" fill={fillStyle} opacity={0.2} />
+          <path fillRule="evenodd" clipRule="evenodd" fill={fillStyle} d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z" />
         </svg>
       );
     } else if (platform === 'castro') {
       return (
         <svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '1em', height: '1em' }}>
-          <path fill="currentColor" d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z" />
+          <path fill={fillStyle} d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z" />
         </svg>
       );
     } else if (platform === 'overcast') {
       return (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" style={{ display: 'block', width: '1em', height: '1em' }}>
-          <path fill="currentColor" fillRule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clipRule="evenodd" />
+          <path fill={fillStyle} fillRule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clipRule="evenodd" />
         </svg>
       );
     }
-
-    // Font Awesome icons for other platforms
-    const platformIcons: Record<string, string> = {
-      // Podcast Platforms
-      'apple_podcasts': 'fas fa-podcast',
-      'spotify': 'fab fa-spotify',
-      'youtube_music': 'fab fa-youtube',
-      'iheart_radio': 'fas fa-heart',
-      'amazon_music': 'fab fa-amazon',
-      // Social Media Platforms
-      'facebook': 'fab fa-facebook',
-      'twitter': 'fab fa-twitter',
-      'instagram': 'fab fa-instagram',
-      'linkedin': 'fab fa-linkedin',
-      'youtube': 'fab fa-youtube',
-      'tiktok': 'fab fa-tiktok',
-      'snapchat': 'fab fa-snapchat',
-      'pinterest': 'fab fa-pinterest',
-      'reddit': 'fab fa-reddit',
-      'discord': 'fab fa-discord',
-      'twitch': 'fab fa-twitch',
-      'github': 'fab fa-github',
-      'behance': 'fab fa-behance',
-      'dribbble': 'fab fa-dribbble',
-      'medium': 'fab fa-medium',
-      'substack': 'fas fa-newspaper'
-    };
 
     const iconClass = platformIcons[platform] || 'fas fa-link';
     return <i className={iconClass} />;
@@ -638,8 +920,8 @@ body > .mobile-page-container > *:first-child,
     // Load Font Awesome
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-    link.integrity = 'sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css';
+    link.integrity = 'sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==';
     link.crossOrigin = 'anonymous';
     link.setAttribute('referrerpolicy', 'no-referrer');
     document.head.appendChild(link);
@@ -748,6 +1030,7 @@ body > .mobile-page-container > *:first-child,
 
   return (
     <div className={styles.previewContainer}>
+      {renderGradientDefs()}
       <div className={styles.previewWrapper} ref={previewWrapperRef}>
         <div
           className={styles.previewPhone}
@@ -1001,7 +1284,7 @@ body > .mobile-page-container > *:first-child,
                       : '');
                   return (
                     <h1
-                      className={`${styles.pageTitle} ${effectClass} ${hotspotsVisible ? styles.hotspot : ''}`}
+                      className={`${styles.pageTitle} page-title ${effectClass} ${hotspotsVisible ? styles.hotspot : ''}`}
                       data-hotspot="page-title"
                       onClick={() => hotspotsVisible && onHotspotClick?.('page-title')}
                       title={hotspotsVisible ? "Page Title - Edit page title settings" : undefined}
@@ -1047,7 +1330,7 @@ body > .mobile-page-container > *:first-child,
 
                   return (
                     <p
-                      className={`${styles.pageBio} ${hotspotsVisible ? styles.hotspot : ''}`}
+                      className={`${styles.pageBio} page-description ${hotspotsVisible ? styles.hotspot : ''}`}
                       data-hotspot="page-bio"
                       onClick={(e) => {
                         e.preventDefault();
@@ -1139,25 +1422,15 @@ body > .mobile-page-container > *:first-child,
                 <div className={styles.widgetsContainer}>
                   <div
                     className={styles.widget}
-                    data-hotspot="widget"
                   >
                     {/* Widget Styling Hotspot - positioned on the right */}
-                    {hotspotsVisible && (
-                      <div
-                        className={`${styles.widgetStylingHotspot} ${styles.hotspot}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onHotspotClick?.('widget-settings');
-                        }}
-                        title="Widget Settings - Edit widget background, border, radius, shadow, and glow"
-                      />
-                    )}
+
                     <h3
                       className={`${styles.widgetHeading} ${hotspotsVisible ? styles.hotspot : ''}`}
                       onClick={(e) => {
                         if (!hotspotsVisible) return;
                         e.stopPropagation();
-                        onHotspotClick?.('widget-text');
+                        onHotspotClick?.('widget-settings');
                       }}
                       title={hotspotsVisible ? "Widgets & Blocks Text Settings - Edit widget heading text" : undefined}
                     >
@@ -1275,14 +1548,7 @@ body > .mobile-page-container > *:first-child,
                     setThemeLibraryModalOpen(true);
                   }
                 });
-                options.push({
-                  label: 'Theme Wizard',
-                  icon: <Sparkle size={16} weight="regular" />,
-                  ariaLabel: 'Open Theme Wizard to generate a theme from your podcast cover art',
-                  action: () => {
-                    openGenerator();
-                  }
-                });
+
               }
 
               // Add content editing if available
@@ -1306,7 +1572,7 @@ body > .mobile-page-container > *:first-child,
                 ariaLabel: `Edit style for ${sectionTitle}`,
                 action: () => {
                   if (onEditStyle) {
-                    onEditStyle(contextMenu.sectionId);
+                    onEditStyle(contextMenu.sectionId, contextMenu.widgetId);
                   } else if (onHotspotClick) {
                     onHotspotClick(contextMenu.sectionId, null);
                   }
@@ -1327,12 +1593,21 @@ body > .mobile-page-container > *:first-child,
         activeColor={activeColor}
       />
 
-      {/* Podcast Theme Generator Modal */}
-      <PodcastThemeGeneratorModal
-        coverImageUrl={generatorProps.coverImageUrl}
-        isOpen={isGeneratorOpen}
-        onClose={closeGenerator}
+
+
+      {/* Interactive DnD Overlay - DISABLED upon user request to move DnD to Reorder Modal 
+      <PreviewOverlay 
+        iframeRef={iframeRef}
+        widgets={widgets}
+        onReorder={(newWidgets) => {
+            console.log('Reorder requested:', newWidgets);
+            // TODO: call mutation
+        }}
+        onEdit={(widgetId) => {
+            onEditContent?.('widget', widgetId);
+        }}
       />
+      */}
     </div>
   );
 }

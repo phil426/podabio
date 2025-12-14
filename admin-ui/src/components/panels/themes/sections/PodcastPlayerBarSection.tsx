@@ -14,12 +14,14 @@ interface PodcastPlayerBarSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function PodcastPlayerBarSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: PodcastPlayerBarSectionProps): JSX.Element {
   const playerBackground = (uiState['podcast-player-background'] as string) ?? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
   const playerBorderColor = (uiState['podcast-player-border-color'] as string) ?? 'rgba(255, 255, 255, 0.2)';
@@ -33,13 +35,14 @@ export function PodcastPlayerBarSection({
       {/* Background */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Background</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Background</label>
           <BackgroundColorSwatch
             value={playerBackground}
             onChange={(value) => onFieldChange('podcast-player-background', value)}
             label="Podcast player background"
+            palette={palette}
           />
         </div>
       </div>
@@ -47,13 +50,14 @@ export function PodcastPlayerBarSection({
       {/* Border */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Border</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Border Color</label>
           <PodaColorPicker
             value={playerBorderColor}
             onChange={(value) => onFieldChange('podcast-player-border-color', value)}
             solidOnly
+            palette={palette}
           />
         </div>
 
@@ -73,7 +77,7 @@ export function PodcastPlayerBarSection({
       {/* Shadow */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Shadow</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Enable Shadow</label>
           <div className={styles.toggleGroup}>
@@ -105,13 +109,14 @@ export function PodcastPlayerBarSection({
       {/* Text Color */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Text</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Text Color</label>
           <PodaColorPicker
             value={playerTextColor}
             onChange={(value) => onFieldChange('podcast-player-text-color', value)}
             solidOnly
+            palette={palette}
           />
         </div>
       </div>

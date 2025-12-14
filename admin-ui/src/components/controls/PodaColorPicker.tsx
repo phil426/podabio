@@ -26,6 +26,7 @@ import styles from './poda-color-picker.module.css';
 
 interface PodaColorPickerProps {
   value?: string;
+  palette?: string[];
   onChange?: (value: string) => void;
   onTypeChange?: (type: 'solid' | 'gradient') => void; // Callback when mode changes
   solidOnly?: boolean; // If true, only show solid color mode (hide gradient tab)
@@ -53,6 +54,7 @@ function buildGradient(direction: number, color1: string, color2: string): strin
 
 export function PodaColorPicker({
   value = 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  palette = ['#2563EB', '#7C3AED', '#F97316', '#0EA5E9', '#22C55E', '#111827', '#EF4444', '#EAB308'],
   onChange,
   onTypeChange,
   solidOnly = false
@@ -381,6 +383,24 @@ export function PodaColorPicker({
                 )}
               </div>
             </div>
+            {palette && palette.length > 0 && (
+              <div className={styles.paletteGroup}>
+                <p className={styles.paletteLabel}>Preset Colors</p>
+                <div className={styles.swatchRow}>
+                  {palette.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={styles.paletteSwatch}
+                      style={{ backgroundColor: color }}
+                      onClick={() => handleSolidChange(color)}
+                      aria-label={`Select color ${color}`}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <>

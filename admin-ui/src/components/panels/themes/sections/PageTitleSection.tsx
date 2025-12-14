@@ -10,18 +10,21 @@ import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
 import { usePageSnapshot } from '../../../../api/page';
 import type { TabColorTheme } from '../../../layout/tab-colors';
+import { getThemeColors } from '../utils/colorUtils';
 import styles from './page-customization-section.module.css';
 
 interface PageTitleSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function PageTitleSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: PageTitleSectionProps): JSX.Element {
   // Map effect values to display names
   const { data: snapshot } = usePageSnapshot();
@@ -68,7 +71,7 @@ export function PageTitleSection({
   }
 
   // Shadow properties
-  const shadowColor = (uiState['page-title-shadow-color'] as string) ?? '#000000';
+  const shadowColor = '#000000';
   const shadowIntensity = (uiState['page-title-shadow-intensity'] as number) ?? 0.5;
   const shadowDepth = (uiState['page-title-shadow-depth'] as number) ?? 4;
   const shadowBlur = (uiState['page-title-shadow-blur'] as number) ?? 8;
@@ -128,18 +131,9 @@ export function PageTitleSection({
           />
         </div>
 
-        {/* Shadow Controls - Only show when shadow is selected */}
+        {/* Shadow Controls - Color is automated based on background */}
         {pageTitleEffectValue === 'shadow' && (
           <>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Shadow Color</label>
-              <PodaColorPicker
-                value={shadowColor}
-                onChange={(value) => onFieldChange('page-title-shadow-color', value)}
-                solidOnly
-              />
-            </div>
-
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Shadow Intensity</label>
               <SliderInput
@@ -186,6 +180,7 @@ export function PageTitleSection({
                 value={glowColor}
                 onChange={(value) => onFieldChange('page-title-glow-color', value)}
                 solidOnly
+                palette={palette}
               />
             </div>
 
@@ -211,6 +206,7 @@ export function PageTitleSection({
             onChange={(value) => onFieldChange('page-title-color', value)}
             label="Page title color"
             solidOnly={true}
+            palette={palette}
           />
         </div>
 
@@ -221,6 +217,7 @@ export function PageTitleSection({
             value={borderColor}
             onChange={(value) => onFieldChange('page-title-border-color', value)}
             label="Font border color"
+            palette={palette}
           />
         </div>
 
@@ -287,7 +284,7 @@ export function PageTitleSection({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

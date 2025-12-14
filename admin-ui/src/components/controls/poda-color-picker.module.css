@@ -231,3 +231,50 @@
   position: relative;
   pointer-events: auto;
 }
+
+/* Palette Styles */
+.paletteGroup {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.paletteLabel {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--admin-font-mono, 'Space Mono', monospace);
+}
+
+.swatchRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.paletteSwatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-clip: padding-box;
+  cursor: pointer;
+  transition: all 150ms ease;
+  padding: 0;
+}
+
+.paletteSwatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 255, 127, 0.5);
+  z-index: 10;
+}
+
+.paletteSwatch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 255, 127, 0.4);
+  border-color: #00FF7F;
+}

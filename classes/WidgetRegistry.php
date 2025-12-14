@@ -4,13 +4,15 @@
  * Defines all available widgets in the system with their metadata and configuration
  */
 
-class WidgetRegistry {
-    
+class WidgetRegistry
+{
+
     /**
      * Get all available widgets
      * @return array
      */
-    public static function getAllWidgets() {
+    public static function getAllWidgets()
+    {
         return [
             // Phase 1: Simple Widgets
             'custom_link' => [
@@ -27,7 +29,7 @@ class WidgetRegistry {
                     'icon' => ['type' => 'select', 'label' => 'Icon', 'required' => false, 'options' => 'fontawesome_icons']
                 ]
             ],
-            
+
             'youtube_video' => [
                 'widget_id' => 'youtube_video',
                 'name' => 'YouTube Video',
@@ -41,7 +43,7 @@ class WidgetRegistry {
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Thumbnail Image URL', 'required' => false]
                 ]
             ],
-            
+
             'text_html' => [
                 'widget_id' => 'text_html',
                 'name' => 'Text/HTML Block',
@@ -77,58 +79,6 @@ class WidgetRegistry {
                 ]
             ],
 
-            'text_note' => [
-                'widget_id' => 'text_note',
-                'name' => 'Italic Text',
-                'description' => 'Add a small italic note for emphasis.',
-                'thumbnail' => '/assets/widget-thumbnails/text_note.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'text' => ['type' => 'text', 'label' => 'Note text', 'required' => true, 'default' => 'Start writing your story…']
-                ]
-            ],
-
-            'profile_carousel' => [
-                'widget_id' => 'profile_carousel',
-                'name' => 'Profile Carousel',
-                'description' => 'Display multiple profile-oriented images in a swipeable carousel',
-                'thumbnail' => '/assets/widget-thumbnails/profile_carousel.png',
-                'category' => 'media',
-                'requires_api' => false,
-                'config_fields' => [
-                    'images' => [
-                        'type' => 'media_gallery',
-                        'label' => 'Images',
-                        'required' => true,
-                        'help' => 'Select or upload images from the media library. Images will be displayed in profile orientation (portrait).',
-                        'multiple' => true
-                    ]
-                ]
-            ],
-            
-            'divider_rule' => [
-                'widget_id' => 'divider_rule',
-                'name' => 'Divider',
-                'description' => 'Insert a horizontal rule to separate sections.',
-                'thumbnail' => '/assets/widget-thumbnails/divider_rule.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'style' => [
-                        'type' => 'select',
-                        'label' => 'Style',
-                        'required' => false,
-                        'default' => 'flat',
-                        'options' => [
-                            'flat' => 'Flat',
-                            'shadow' => 'Shadow',
-                            'gradient' => 'Gradient'
-                        ]
-                    ]
-                ]
-            ],
-            
             'image' => [
                 'widget_id' => 'image',
                 'name' => 'Image',
@@ -142,7 +92,7 @@ class WidgetRegistry {
                     'link_url' => ['type' => 'url', 'label' => 'Link URL (optional)', 'required' => false]
                 ]
             ],
-            
+
             // PodNBio Player - Custom compact podcast widget
             'podcast_player_custom' => [
                 'widget_id' => 'podcast_player_custom',
@@ -157,66 +107,79 @@ class WidgetRegistry {
                 ],
                 'auto_populate_from_rss' => true
             ],
-            
-            'email_subscription' => [
-                'widget_id' => 'email_subscription',
-                'name' => 'Email Subscription',
-                'description' => 'Collect email subscriptions from visitors',
-                'thumbnail' => '/assets/widget-thumbnails/email_subscription.png',
+
+
+
+            'contact_form' => [
+                'widget_id' => 'contact_form',
+                'name' => 'Contact Form',
+                'description' => 'Allow visitors to send you a message directly',
+                'thumbnail' => '/assets/widget-thumbnails/contact_form.png',
                 'category' => 'forms',
                 'requires_api' => false,
+                'default_title' => 'Contact Me', // Placeholder title
                 'config_fields' => [
-                    // Uses page-level email service settings, no additional config needed
+                    'email_to' => ['type' => 'text', 'label' => 'Send to Email (Optional)', 'required' => false, 'help' => 'Leave blank to use your account email', 'placeholder' => 'you@example.com'],
+                    'subject_prefix' => ['type' => 'text', 'label' => 'Subject Prefix', 'required' => false, 'default' => 'New Contact from PodaBio', 'help' => 'Prefix for the email subject line'],
+                    'button_text' => ['type' => 'text', 'label' => 'Button Text', 'required' => false, 'default' => 'Contact Me'],
+                    'description' => ['type' => 'text', 'label' => 'Description', 'required' => false, 'default' => 'Get in touch with me!'],
+                    'success_message' => ['type' => 'text', 'label' => 'Success Message', 'required' => false, 'default' => 'Message sent! We\'ll get back to you soon.']
                 ]
             ],
-            
-            
+
+            'embed_code' => [
+                'widget_id' => 'embed_code',
+                'name' => 'Embed Code',
+                'description' => 'Embed HTML, scripts, or iframes from other sites',
+                'thumbnail' => '/assets/widget-thumbnails/embed_code.png',
+                'category' => 'advanced',
+                'requires_api' => false,
+                'default_title' => 'My Embed',
+                'config_fields' => [
+                    'code_content' => ['type' => 'textarea', 'label' => 'Embed Code', 'required' => true, 'help' => 'Paste your HTML code here (iframe, script, etc.)', 'rows' => 6],
+                    'display_mode' => [
+                        'type' => 'select',
+                        'label' => 'Display Mode',
+                        'required' => true,
+                        'default' => 'inline',
+                        'options' => [
+                            'inline' => 'Inline (Directly on page)',
+                            'modal' => 'Popup (Opens in modal)'
+                        ]
+                    ],
+                    'button_label' => ['type' => 'text', 'label' => 'Button Label (for Popup mode)', 'required' => false, 'default' => 'View Content'],
+                    'description' => ['type' => 'text', 'label' => 'Description (Optional)', 'required' => false, 'default' => '']
+                ]
+            ],
+
+            'image_gallery' => [
+                'widget_id' => 'image_gallery',
+                'name' => 'Photo Gallery',
+                'description' => 'Grid of photos that open in a swipeable full-screen view',
+                'thumbnail' => '/assets/widget-thumbnails/image_gallery.png',
+                'category' => 'media',
+                'requires_api' => false,
+                'default_title' => 'My Photos',
+                'config_fields' => [
+                    'images' => ['type' => 'media_gallery', 'label' => 'Photos', 'required' => true, 'help' => 'Upload multiple photos'],
+                    'grid_columns' => [
+                        'type' => 'select',
+                        'label' => 'Grid Columns',
+                        'required' => true,
+                        'default' => '3',
+                        'options' => [
+                            '2' => '2 Columns',
+                            '3' => '3 Columns'
+                        ]
+                    ],
+                    'description' => ['type' => 'text', 'label' => 'Description (Optional)', 'required' => false, 'default' => 'Check out my latest photos']
+                ]
+            ],
+
+
             // Shopify E-commerce Widgets
-            'shopify_product' => [
-                'widget_id' => 'shopify_product',
-                'name' => 'Shopify Product',
-                'description' => 'Display a single product from your Shopify store',
-                'thumbnail' => '/assets/widget-thumbnails/shopify_product.png',
-                'category' => 'ecommerce',
-                'requires_api' => true,
-                'config_fields' => [
-                    'product_handle' => ['type' => 'text', 'label' => 'Product Handle', 'required' => true, 'help' => 'The product handle/slug from your Shopify store (e.g., "my-awesome-product")', 'placeholder' => 'my-awesome-product'],
-                    'show_description' => ['type' => 'checkbox', 'label' => 'Show Description', 'required' => false, 'default' => true],
-                    'button_text' => ['type' => 'text', 'label' => 'Button Text', 'required' => false, 'default' => 'Buy Now', 'help' => 'Text for the purchase button']
-                ]
-            ],
-            
-            'shopify_product_list' => [
-                'widget_id' => 'shopify_product_list',
-                'name' => 'Shopify Product List',
-                'description' => 'Display a list of products from your Shopify store',
-                'thumbnail' => '/assets/widget-thumbnails/shopify_product_list.png',
-                'category' => 'ecommerce',
-                'requires_api' => true,
-                'config_fields' => [
-                    'product_count' => ['type' => 'text', 'label' => 'Number of Products', 'required' => false, 'default' => '10', 'help' => 'How many products to display (1-50)'],
-                    'search_query' => ['type' => 'text', 'label' => 'Search Query (optional)', 'required' => false, 'help' => 'Filter products by search term (e.g., "shoes", "tag:featured")'],
-                    'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['list' => 'List', 'grid' => 'Grid'], 'default' => 'list'],
-                    'show_prices' => ['type' => 'checkbox', 'label' => 'Show Prices', 'required' => false, 'default' => true]
-                ]
-            ],
-            
-            'shopify_collection' => [
-                'widget_id' => 'shopify_collection',
-                'name' => 'Shopify Collection',
-                'description' => 'Display products from a Shopify collection',
-                'thumbnail' => '/assets/widget-thumbnails/shopify_collection.png',
-                'category' => 'ecommerce',
-                'requires_api' => true,
-                'config_fields' => [
-                    'collection_handle' => ['type' => 'text', 'label' => 'Collection Handle', 'required' => true, 'help' => 'The collection handle/slug from your Shopify store (e.g., "featured-products")', 'placeholder' => 'featured-products'],
-                    'product_count' => ['type' => 'text', 'label' => 'Number of Products', 'required' => false, 'default' => '10', 'help' => 'How many products to display (1-50)'],
-                    'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['list' => 'List', 'grid' => 'Grid'], 'default' => 'list'],
-                    'show_collection_title' => ['type' => 'checkbox', 'label' => 'Show Collection Title', 'required' => false, 'default' => true],
-                    'show_prices' => ['type' => 'checkbox', 'label' => 'Show Prices', 'required' => false, 'default' => true]
-                ]
-            ],
-            
+
+
             // Instagram widgets removed
             //     'widget_id' => 'instagram_post',
             //     'name' => 'Instagram Post',
@@ -230,7 +193,7 @@ class WidgetRegistry {
             //         'show_timestamp' => ['type' => 'checkbox', 'label' => 'Show Timestamp', 'required' => false, 'default' => true]
             //     ]
             // ],
-            
+
             // 'instagram_feed' => [
             //     'widget_id' => 'instagram_feed',
             //     'name' => 'Instagram Feed',
@@ -245,7 +208,7 @@ class WidgetRegistry {
             //         'columns' => ['type' => 'text', 'label' => 'Grid Columns', 'required' => false, 'default' => '3', 'help' => 'Number of columns for grid layout (1-6)']
             //     ]
             // ],
-            
+
             // 'instagram_gallery' => [
             //     'widget_id' => 'instagram_gallery',
             //     'name' => 'Instagram Gallery',
@@ -259,100 +222,46 @@ class WidgetRegistry {
             //         'spacing' => ['type' => 'select', 'label' => 'Spacing', 'required' => false, 'options' => ['none' => 'None', 'small' => 'Small', 'medium' => 'Medium', 'large' => 'Large'], 'default' => 'small']
             //     ]
             // ],
-            
+
             // Giphy GIF Widgets
-            'giphy_search' => [
-                'widget_id' => 'giphy_search',
-                'name' => 'Giphy Search',
-                'description' => 'Display GIFs from Giphy search',
-                'thumbnail' => '/assets/widget-thumbnails/giphy_search.png',
-                'category' => 'content',
-                'requires_api' => true,
-                'config_fields' => [
-                    'search_query' => ['type' => 'text', 'label' => 'Search Query', 'required' => true, 'help' => 'Search term for GIFs (e.g., "happy", "cats", "celebrate")', 'placeholder' => 'happy'],
-                    'gif_count' => ['type' => 'text', 'label' => 'Number of GIFs', 'required' => false, 'default' => '12', 'help' => 'How many GIFs to display (1-50)'],
-                    'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['grid' => 'Grid', 'list' => 'List'], 'default' => 'grid'],
-                    'columns' => ['type' => 'text', 'label' => 'Grid Columns', 'required' => false, 'default' => '3', 'help' => 'Number of columns for grid layout (1-6)'],
-                    'rating' => ['type' => 'select', 'label' => 'Content Rating', 'required' => false, 'options' => ['g' => 'G (General)', 'pg' => 'PG (Parental Guidance)', 'pg-13' => 'PG-13', 'r' => 'R (Restricted)'], 'default' => 'g']
-                ]
-            ],
-            
-            'giphy_trending' => [
-                'widget_id' => 'giphy_trending',
-                'name' => 'Giphy Trending',
-                'description' => 'Display trending GIFs from Giphy',
-                'thumbnail' => '/assets/widget-thumbnails/giphy_trending.png',
-                'category' => 'content',
-                'requires_api' => true,
-                'config_fields' => [
-                    'gif_count' => ['type' => 'text', 'label' => 'Number of GIFs', 'required' => false, 'default' => '12', 'help' => 'How many GIFs to display (1-50)'],
-                    'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['grid' => 'Grid', 'list' => 'List'], 'default' => 'grid'],
-                    'columns' => ['type' => 'text', 'label' => 'Grid Columns', 'required' => false, 'default' => '3', 'help' => 'Number of columns for grid layout (1-6)'],
-                    'rating' => ['type' => 'select', 'label' => 'Content Rating', 'required' => false, 'options' => ['g' => 'G (General)', 'pg' => 'PG (Parental Guidance)', 'pg-13' => 'PG-13', 'r' => 'R (Restricted)'], 'default' => 'g']
-                ]
-            ],
-            
-            'giphy_random' => [
-                'widget_id' => 'giphy_random',
-                'name' => 'Giphy Random',
-                'description' => 'Display a random GIF from Giphy',
-                'thumbnail' => '/assets/widget-thumbnails/giphy_random.png',
-                'category' => 'content',
-                'requires_api' => true,
-                'config_fields' => [
-                    'tag' => ['type' => 'text', 'label' => 'Tag (optional)', 'required' => false, 'help' => 'Filter random GIF by tag (e.g., "cats", "funny")', 'placeholder' => 'cats'],
-                    'rating' => ['type' => 'select', 'label' => 'Content Rating', 'required' => false, 'options' => ['g' => 'G (General)', 'pg' => 'PG (Parental Guidance)', 'pg-13' => 'PG-13', 'r' => 'R (Restricted)'], 'default' => 'g'],
-                    'show_title' => ['type' => 'checkbox', 'label' => 'Show Title', 'required' => false, 'default' => false]
-                ]
-            ],
-            
-            'people' => [
-                'widget_id' => 'people',
-                'name' => 'People',
-                'description' => 'Display a searchable list of contacts with profile photos and contact information',
-                'thumbnail' => '/assets/widget-thumbnails/people.png',
-                'category' => 'content',
-                'requires_api' => false,
-                'config_fields' => [
-                    'thumbnail_image' => ['type' => 'url', 'label' => 'Widget Thumbnail', 'required' => false, 'help' => 'Thumbnail image for the widget'],
-                    'heading' => ['type' => 'text', 'label' => 'Heading', 'required' => false, 'help' => 'Main heading for the widget'],
-                    'paragraph' => ['type' => 'textarea', 'label' => 'Description', 'required' => false, 'help' => 'Brief description or introduction text', 'rows' => 3],
-                    'contacts' => ['type' => 'textarea', 'label' => 'Contacts (JSON)', 'required' => true, 'help' => 'JSON array of contacts. Each contact can have: name, photo, email, phone, company, title, address, website, notes. Example: [{"name":"John Doe","email":"john@example.com","phone":"+1-555-0123","company":"Acme Inc","photo":"https://example.com/photo.jpg"}]', 'rows' => 8],
-                    'show_search' => ['type' => 'checkbox', 'label' => 'Show Search Field', 'required' => false, 'default' => true, 'help' => 'Display search field at the top to filter contacts']
-                ]
-            ],
-            
+
+
+
+
             // Additional widgets will be added as they're implemented
         ];
     }
-    
+
     /**
      * Get widget by ID
      * @param string $widgetId
      * @return array|null
      */
-    public static function getWidget($widgetId) {
+    public static function getWidget($widgetId)
+    {
         $widgets = self::getAllWidgets();
         return $widgets[$widgetId] ?? null;
     }
-    
+
     /**
      * Get widgets by category
      * @param string $category
      * @return array
      */
-    public static function getWidgetsByCategory($category) {
+    public static function getWidgetsByCategory($category)
+    {
         $widgets = self::getAllWidgets();
-        return array_filter($widgets, function($widget) use ($category) {
+        return array_filter($widgets, function ($widget) use ($category) {
             return $widget['category'] === $category;
         });
     }
-    
+
     /**
      * Get all categories
      * @return array
      */
-    public static function getCategories() {
+    public static function getCategories()
+    {
         return [
             'links' => 'Links',
             'videos' => 'Videos',
@@ -364,22 +273,24 @@ class WidgetRegistry {
             'advanced' => 'Advanced'
         ];
     }
-    
+
     /**
      * Check if Shopify is configured
      * @return bool
      */
-    public static function isShopifyConfigured() {
-        return !empty(defined('SHOPIFY_SHOP_DOMAIN') ? SHOPIFY_SHOP_DOMAIN : '') 
+    public static function isShopifyConfigured()
+    {
+        return !empty(defined('SHOPIFY_SHOP_DOMAIN') ? SHOPIFY_SHOP_DOMAIN : '')
             && !empty(defined('SHOPIFY_STOREFRONT_TOKEN') ? SHOPIFY_STOREFRONT_TOKEN : '');
     }
-    
+
     /**
      * Check if Instagram is configured
      * @param int|null $userId Optional user ID to check for user-specific token
      * @return bool
      */
-    public static function isInstagramConfigured($userId = null) {
+    public static function isInstagramConfigured($userId = null)
+    {
         // Check for user-specific token if user ID provided
         if ($userId) {
             require_once __DIR__ . '/../config/database.php';
@@ -389,7 +300,7 @@ class WidgetRegistry {
                  WHERE id = ? AND instagram_access_token IS NOT NULL",
                 [$userId]
             );
-            
+
             if ($user && !empty($user['instagram_access_token'])) {
                 // Check if token is expired
                 if (!empty($user['instagram_token_expires_at'])) {
@@ -399,42 +310,45 @@ class WidgetRegistry {
                 return true;
             }
         }
-        
+
         // Fallback to global config token
         return !empty(defined('INSTAGRAM_ACCESS_TOKEN') ? INSTAGRAM_ACCESS_TOKEN : '');
     }
-    
+
     /**
      * Check if Giphy is configured
      * @return bool
      */
-    public static function isGiphyConfigured() {
+    public static function isGiphyConfigured()
+    {
         return !empty(defined('GIPHY_API_KEY') ? GIPHY_API_KEY : '');
     }
-    
+
     /**
      * Check if widget exists
      * @param string $widgetId
      * @return bool
      */
-    public static function widgetExists($widgetId) {
+    public static function widgetExists($widgetId)
+    {
         return self::getWidget($widgetId) !== null;
     }
-    
+
     /**
      * Get available widgets (filter out coming soon if needed)
      * @param bool $includeComingSoon
      * @return array
      */
-    public static function getAvailableWidgets($includeComingSoon = false) {
+    public static function getAvailableWidgets($includeComingSoon = false)
+    {
         $widgets = self::getAllWidgets();
-        
+
         if (!$includeComingSoon) {
-            $widgets = array_filter($widgets, function($widget) {
+            $widgets = array_filter($widgets, function ($widget) {
                 return !isset($widget['coming_soon']) || !$widget['coming_soon'];
             });
         }
-        
+
         return $widgets;
     }
 }

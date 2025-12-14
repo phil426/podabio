@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     // Resolve widget_styles (merged from page + theme using helper function)
     $resolvedWidgetStyles = getWidgetStyles($userPage, $activeTheme);
-    
+
     // Resolve spatial_effect (merged from page + theme using helper function)
     $resolvedSpatialEffect = getSpatialEffect($userPage, $activeTheme);
 
@@ -92,12 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'footer_copyright' => $userPage['footer_copyright'] ?? null,
             'footer_privacy_link' => $userPage['footer_privacy_link'] ?? null,
             'footer_terms_link' => $userPage['footer_terms_link'] ?? null,
-            'profile_visible' => isset($userPage['profile_visible']) ? (bool)$userPage['profile_visible'] : true,
-            'footer_visible' => isset($userPage['footer_visible']) ? (bool)$userPage['footer_visible'] : true,
-            'podcast_player_enabled' => isset($userPage['podcast_player_enabled']) ? (bool)$userPage['podcast_player_enabled'] : false,
+            'profile_visible' => isset($userPage['profile_visible']) ? (bool) $userPage['profile_visible'] : true,
+            'footer_visible' => isset($userPage['footer_visible']) ? (bool) $userPage['footer_visible'] : true,
+            'podcast_player_enabled' => isset($userPage['podcast_player_enabled']) ? (bool) $userPage['podcast_player_enabled'] : false,
             'profile_image_shape' => $userPage['profile_image_shape'] ?? 'circle',
             'profile_image_shadow' => $userPage['profile_image_shadow'] ?? 'subtle',
-            'profile_image_size' => (function() use ($userPage) {
+            'profile_image_size' => (function () use ($userPage) {
                 $size = $userPage['profile_image_size'] ?? null;
                 // Handle legacy string values
                 if (is_string($size)) {
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     return $sizeMap[$size] ?? 120;
                 }
                 // Return numeric value or default
-                return is_numeric($size) ? (int)$size : 120;
+                return is_numeric($size) ? (int) $size : 120;
             })(),
             'profile_image_border' => $userPage['profile_image_border'] ?? 'none',
             'profile_image_radius' => $userPage['profile_image_radius'] ?? null,
@@ -130,14 +130,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'theme_id' => $userPage['theme_id'],
             'colors' => json_decode($userPage['colors'] ?? '', true),
             'fonts' => json_decode($userPage['fonts'] ?? '', true),
+            'layout_option' => $userPage['layout_option'] ?? 'standard',
             'page_background' => $userPage['page_background'],
-            'page_background_animate' => isset($userPage['page_background_animate']) ? (bool)$userPage['page_background_animate'] : false,
+            'page_background_animate' => isset($userPage['page_background_animate']) ? (bool) $userPage['page_background_animate'] : false,
             'widget_background' => $userPage['widget_background'],
             'widget_border_color' => $userPage['widget_border_color'],
             'page_primary_font' => $userPage['page_primary_font'],
-        'page_secondary_font' => $userPage['page_secondary_font'],
-        'page_name_effect' => $userPage['page_name_effect'] ?? null,
-        'profile_image' => $userPage['profile_image'] ?? null,
+            'page_secondary_font' => $userPage['page_secondary_font'],
+            'page_name_effect' => $userPage['page_name_effect'] ?? null,
+            'profile_image' => $userPage['profile_image'] ?? null,
             'publish_status' => $userPage['publish_status'] ?? 'draft',
             'published_at' => $userPage['published_at'] ?? null,
             'scheduled_publish_at' => $userPage['scheduled_publish_at'] ?? null,
@@ -175,7 +176,7 @@ if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
 switch ($action) {
     case 'update_settings':
         $updateData = [];
-        
+
         if (isset($_POST['username'])) {
             $username = sanitizeInput($_POST['username']);
             // Check if username is available (if changed)
@@ -187,15 +188,19 @@ switch ($action) {
             }
             $updateData['username'] = $username;
         }
-        
+
         if (isset($_POST['podcast_name'])) {
             $podcastName = sanitizeInput($_POST['podcast_name']);
             $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
         }
-        
+
         if (isset($_POST['podcast_description'])) {
             $podcastDescription = sanitizeInput($_POST['podcast_description']);
             $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
+        }
+
+        if (isset($_POST['layout_option'])) {
+            $updateData['layout_option'] = sanitizeInput($_POST['layout_option']);
         }
 
         if (isset($_POST['footer_text'])) {
@@ -218,13 +223,13 @@ switch ($action) {
         }
 
         if (isset($_POST['profile_visible'])) {
-            $updateData['profile_visible'] = (int)$_POST['profile_visible'];
+            $updateData['profile_visible'] = (int) $_POST['profile_visible'];
         }
 
         if (isset($_POST['footer_visible'])) {
-            $updateData['footer_visible'] = (int)$_POST['footer_visible'];
+            $updateData['footer_visible'] = (int) $_POST['footer_visible'];
         }
-        
+
         // Debug logging for footer fields
         if (isset($updateData['footer_text']) || isset($updateData['footer_copyright']) || isset($updateData['footer_privacy_link']) || isset($updateData['footer_terms_link']) || isset($updateData['footer_visible'])) {
             error_log("Footer update data: " . json_encode([
@@ -237,7 +242,7 @@ switch ($action) {
         }
 
         if (isset($_POST['podcast_player_enabled'])) {
-            $updateData['podcast_player_enabled'] = (int)$_POST['podcast_player_enabled'];
+            $updateData['podcast_player_enabled'] = (int) $_POST['podcast_player_enabled'];
         }
 
         if (isset($_POST['profile_image_shape'])) {
@@ -288,7 +293,7 @@ switch ($action) {
             if (in_array($size, ['small', 'medium', 'large'], true)) {
                 $updateData['profile_image_size'] = $size;
             } elseif (is_numeric($size) && $size >= 40 && $size <= 200) {
-                $updateData['profile_image_size'] = (int)$size;
+                $updateData['profile_image_size'] = (int) $size;
             }
         }
 
@@ -399,12 +404,12 @@ switch ($action) {
                 $updateData['cover_image'] = null;
             }
         }
-        
+
         // Handle RSS feed URL
         if (isset($_POST['rss_feed_url'])) {
             $rssFeedUrl = trim(sanitizeInput($_POST['rss_feed_url']));
             $forceProcessing = isset($_POST['force_rss_processing']) && $_POST['force_rss_processing'] === '1';
-            
+
             if (empty($rssFeedUrl)) {
                 // Allow removing RSS feed URL
                 $updateData['rss_feed_url'] = null;
@@ -414,32 +419,32 @@ switch ($action) {
                     echo json_encode(['success' => false, 'error' => 'Invalid RSS feed URL format. Please enter a valid URL.']);
                     exit;
                 }
-                
+
                 $updateData['rss_feed_url'] = $rssFeedUrl;
-                
+
                 // Automatically parse RSS feed and extract podcast metadata
                 // Always process if force_rss_processing is set, or if URL has changed
                 $currentRssUrl = $userPage['rss_feed_url'] ?? '';
                 $shouldProcess = $forceProcessing || ($rssFeedUrl !== $currentRssUrl);
-                
+
                 if ($shouldProcess) {
-                try {
-                    $parser = new RSSParser();
-                    $feedResult = $parser->parseFeed($rssFeedUrl);
-                    
-                    if ($feedResult['success'] && !empty($feedResult['data'])) {
-                        $feedData = $feedResult['data'];
-                        
-                        // Save cover image URL from RSS feed
-                        if (!empty($feedData['cover_image'])) {
-                            $updateData['cover_image_url'] = $feedData['cover_image'];
-                                
+                    try {
+                        $parser = new RSSParser();
+                        $feedResult = $parser->parseFeed($rssFeedUrl);
+
+                        if ($feedResult['success'] && !empty($feedResult['data'])) {
+                            $feedData = $feedResult['data'];
+
+                            // Save cover image URL from RSS feed
+                            if (!empty($feedData['cover_image'])) {
+                                $updateData['cover_image_url'] = $feedData['cover_image'];
+
                                 // Download and save cover image to user's media library
                                 // This should ALWAYS happen when a cover image is found in the RSS feed
                                 try {
                                     $mediaLibrary = new MediaLibrary();
                                     $downloadResult = $mediaLibrary->downloadAndSaveImage($feedData['cover_image'], $userId, 'podcast-cover-' . time() . '.jpg');
-                                    
+
                                     if ($downloadResult['success']) {
                                         // Log success with more details
                                         error_log("[PODCAST COVER IMAGE SAVED] User ID: {$userId}, Media ID: " . ($downloadResult['media_id'] ?? 'N/A') . ", Path: " . ($downloadResult['path'] ?? 'unknown') . ", URL: " . ($downloadResult['url'] ?? 'unknown'));
@@ -454,34 +459,34 @@ switch ($action) {
                             } else {
                                 // Log when cover image is not found in RSS feed
                                 error_log("[PODCAST RSS FEED] User ID: {$userId}, No cover image found in RSS feed: {$rssFeedUrl}");
+                            }
+
+                            // Save podcast name and description for podcast player display
+                            if (!empty($feedData['title'])) {
+                                $podcastName = sanitizeInput($feedData['title']);
+                                $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
+                            }
+                            if (!empty($feedData['description'])) {
+                                $podcastDescription = sanitizeInput($feedData['description']);
+                                $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
+                            }
+                        } else {
+                            // Log error but don't fail the update
+                            error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
                         }
-                        
-                        // Save podcast name and description for podcast player display
-                        if (!empty($feedData['title'])) {
-                            $podcastName = sanitizeInput($feedData['title']);
-                            $updateData['podcast_name'] = strlen($podcastName) > 29 ? truncate($podcastName, 29) : $podcastName;
-                        }
-                        if (!empty($feedData['description'])) {
-                            $podcastDescription = sanitizeInput($feedData['description']);
-                            $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
-                        }
-                    } else {
-                        // Log error but don't fail the update
-                        error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
+                    } catch (Exception $e) {
+                        // Log error but don't fail the update - RSS URL will still be saved
+                        error_log("Exception while parsing RSS feed: " . $e->getMessage());
                     }
-                } catch (Exception $e) {
-                    // Log error but don't fail the update - RSS URL will still be saved
-                    error_log("Exception while parsing RSS feed: " . $e->getMessage());
-                }
                 } // End of shouldProcess check
             }
         }
-        
+
         // NOTE: Custom domain functionality is currently ON HOLD - using poda.bio URLs only
         // Handle custom domain
         if (isset($_POST['custom_domain'])) {
             $customDomain = trim(sanitizeInput($_POST['custom_domain']));
-            
+
             if (empty($customDomain)) {
                 // Allow removing custom domain
                 $updateData['custom_domain'] = null;
@@ -489,38 +494,38 @@ switch ($action) {
                 // Validate domain format
                 require_once __DIR__ . '/../classes/DomainVerifier.php';
                 $verifier = new DomainVerifier();
-                
+
                 if (!$verifier->isValidDomain($customDomain)) {
                     echo json_encode(['success' => false, 'error' => 'Invalid domain format. Please enter a valid domain (e.g., example.com)']);
                     exit;
                 }
-                
+
                 // Check if domain is already taken by another page
                 $existingPage = fetchOne("SELECT id FROM pages WHERE custom_domain = ? AND id != ?", [$customDomain, $pageId]);
                 if ($existingPage) {
                     echo json_encode(['success' => false, 'error' => 'This domain is already in use by another page']);
                     exit;
                 }
-                
+
                 $updateData['custom_domain'] = $customDomain;
             }
         }
-        
+
         $result = $page->update($pageId, $updateData);
         echo json_encode(['success' => $result, 'error' => $result ? null : 'Failed to update settings']);
         break;
-        
+
     case 'verify_domain':
         $domain = sanitizeInput($_POST['domain'] ?? '');
-        
+
         if (empty($domain)) {
             echo json_encode(['success' => false, 'verified' => false, 'message' => 'Domain is required']);
             exit;
         }
-        
+
         require_once __DIR__ . '/../classes/DomainVerifier.php';
         $verifier = new DomainVerifier();
-        
+
         $result = $verifier->verifyDomain($domain);
         echo json_encode([
             'success' => true,
@@ -529,18 +534,18 @@ switch ($action) {
             'records' => $result['records']
         ]);
         break;
-        
+
     case 'update_appearance':
         $updateData = [];
-        
+
         if (isset($_POST['theme_id'])) {
-            $updateData['theme_id'] = !empty($_POST['theme_id']) ? (int)$_POST['theme_id'] : null;
+            $updateData['theme_id'] = !empty($_POST['theme_id']) ? (int) $_POST['theme_id'] : null;
         }
-        
+
         if (isset($_POST['layout_option'])) {
             $updateData['layout_option'] = sanitizeInput($_POST['layout_option']);
         }
-        
+
         // Handle custom colors
         $colors = [];
         if (isset($_POST['custom_primary_color'])) {
@@ -555,7 +560,7 @@ switch ($action) {
         if (!empty($colors)) {
             $updateData['colors'] = $colors;
         }
-        
+
         // Handle page fonts (new separate columns)
         if (isset($_POST['page_primary_font'])) {
             $updateData['page_primary_font'] = sanitizeInput($_POST['page_primary_font']);
@@ -563,7 +568,7 @@ switch ($action) {
         if (isset($_POST['page_secondary_font'])) {
             $updateData['page_secondary_font'] = sanitizeInput($_POST['page_secondary_font']);
         }
-        
+
         // Handle legacy custom fonts (for backward compatibility)
         $fonts = [];
         if (isset($_POST['custom_heading_font'])) {
@@ -583,7 +588,7 @@ switch ($action) {
         if (!empty($fonts)) {
             $updateData['fonts'] = $fonts; // Keep for backward compatibility
         }
-        
+
         // Handle widget fonts
         if (isset($_POST['widget_primary_font'])) {
             $updateData['widget_primary_font'] = sanitizeInput($_POST['widget_primary_font']);
@@ -591,7 +596,7 @@ switch ($action) {
         if (isset($_POST['widget_secondary_font'])) {
             $updateData['widget_secondary_font'] = sanitizeInput($_POST['widget_secondary_font']);
         }
-        
+
         // Handle page background
         // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['page_background'])) {
@@ -602,13 +607,13 @@ switch ($action) {
                 $updateData['page_background'] = sanitizeInput($pageBg);
             }
         }
-        
+
         // Handle page background animation
         if (isset($_POST['page_background_animate'])) {
             $animate = filter_var($_POST['page_background_animate'], FILTER_VALIDATE_BOOLEAN);
             $updateData['page_background_animate'] = $animate ? 1 : 0;
         }
-        
+
         // Handle widget background
         // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['widget_background'])) {
@@ -619,12 +624,12 @@ switch ($action) {
                 $updateData['widget_background'] = sanitizeInput($widgetBg);
             }
         }
-        
+
         // Handle widget border color
         if (isset($_POST['widget_border_color'])) {
             $updateData['widget_border_color'] = sanitizeInput($_POST['widget_border_color']);
         }
-        
+
         // Handle widget styles
         // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['widget_styles'])) {
@@ -637,14 +642,14 @@ switch ($action) {
                 } else {
                     $widgetStyles = $widgetStylesJson;
                 }
-                
+
                 if (is_array($widgetStyles)) {
                     // Sanitize and merge with defaults
                     $updateData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
                 }
             }
         }
-        
+
         // Handle spatial effect
         // Allow null to clear page-level override (so theme value is used)
         if (isset($_POST['spatial_effect'])) {
@@ -659,19 +664,33 @@ switch ($action) {
                 }
             }
         }
-        
+
         // Handle page name effect
         if (isset($_POST['page_name_effect'])) {
             $pageNameEffect = sanitizeInput($_POST['page_name_effect']);
             // Valid page-title effects - includes all effects supported by the theme editor
             $validEffects = [
-                '', 'none', // No effect
+                '',
+                'none', // No effect
                 // Legacy/theme-driven effects
-                'glow', 'shadow',
+                'glow',
+                'shadow',
                 // New text effects
-                'retro', 'anaglyphic', 'deep', 'game', 'fancy', 'pretty', 'flat', 'long', 'party',
+                'retro',
+                'anaglyphic',
+                'deep',
+                'game',
+                'fancy',
+                'pretty',
+                'flat',
+                'long',
+                'party',
                 // Impressive special effects (from special-effects.css)
-                'aurora-borealis', 'holographic', 'liquid-neon', 'chrome-metallic', 'energy-pulse'
+                'aurora-borealis',
+                'holographic',
+                'liquid-neon',
+                'chrome-metallic',
+                'energy-pulse'
             ];
             if (in_array($pageNameEffect, $validEffects, true)) {
                 // Normalize 'none' and empty string to NULL (no effect)
@@ -684,7 +703,7 @@ switch ($action) {
                 error_log("API: page_name_effect validation FAILED. Value: " . var_export($pageNameEffect, true) . ", Valid effects: " . implode(', ', $validEffects));
             }
         }
-        
+
         // Handle profile image fields (for theme editor)
         // Profile image size (numeric, 40-200)
         if (isset($_POST['profile_image_size'])) {
@@ -695,7 +714,7 @@ switch ($action) {
                 error_log("API: profile_image_size validation FAILED. Raw value: " . var_export($_POST['profile_image_size'], true) . ", Validated: " . var_export($size, true) . ", Range: 40-200");
             }
         }
-        
+
         // Profile image radius (0-50)
         if (isset($_POST['profile_image_radius'])) {
             $radius = filter_var($_POST['profile_image_radius'], FILTER_VALIDATE_INT);
@@ -703,7 +722,7 @@ switch ($action) {
                 $updateData['profile_image_radius'] = $radius;
             }
         }
-        
+
         // Profile image effect
         if (isset($_POST['profile_image_effect'])) {
             $effect = sanitizeInput($_POST['profile_image_effect']);
@@ -711,7 +730,7 @@ switch ($action) {
                 $updateData['profile_image_effect'] = $effect;
             }
         }
-        
+
         // Profile image shadow properties
         if (isset($_POST['profile_image_shadow_color'])) {
             $color = sanitizeInput($_POST['profile_image_shadow_color']);
@@ -719,28 +738,28 @@ switch ($action) {
                 $updateData['profile_image_shadow_color'] = $color;
             }
         }
-        
+
         if (isset($_POST['profile_image_shadow_intensity'])) {
             $intensity = filter_var($_POST['profile_image_shadow_intensity'], FILTER_VALIDATE_FLOAT);
             if ($intensity !== false && $intensity >= 0 && $intensity <= 1) {
                 $updateData['profile_image_shadow_intensity'] = $intensity;
             }
         }
-        
+
         if (isset($_POST['profile_image_shadow_depth'])) {
             $depth = filter_var($_POST['profile_image_shadow_depth'], FILTER_VALIDATE_INT);
             if ($depth !== false && $depth >= 0 && $depth <= 20) {
                 $updateData['profile_image_shadow_depth'] = $depth;
             }
         }
-        
+
         if (isset($_POST['profile_image_shadow_blur'])) {
             $blur = filter_var($_POST['profile_image_shadow_blur'], FILTER_VALIDATE_INT);
             if ($blur !== false && $blur >= 0 && $blur <= 50) {
                 $updateData['profile_image_shadow_blur'] = $blur;
             }
         }
-        
+
         // Profile image glow properties
         if (isset($_POST['profile_image_glow_color'])) {
             $color = sanitizeInput($_POST['profile_image_glow_color']);
@@ -748,14 +767,14 @@ switch ($action) {
                 $updateData['profile_image_glow_color'] = $color;
             }
         }
-        
+
         if (isset($_POST['profile_image_glow_width'])) {
             $width = filter_var($_POST['profile_image_glow_width'], FILTER_VALIDATE_INT);
             if ($width !== false && $width >= 0 && $width <= 50) {
                 $updateData['profile_image_glow_width'] = $width;
             }
         }
-        
+
         // Profile image border properties
         if (isset($_POST['profile_image_border_color'])) {
             $color = sanitizeInput($_POST['profile_image_border_color']);
@@ -763,14 +782,14 @@ switch ($action) {
                 $updateData['profile_image_border_color'] = $color;
             }
         }
-        
+
         if (isset($_POST['profile_image_border_width'])) {
             $width = filter_var($_POST['profile_image_border_width'], FILTER_VALIDATE_FLOAT);
             if ($width !== false && $width >= 0 && $width <= 10) {
                 $updateData['profile_image_border_width'] = $width;
             }
         }
-        
+
         // Handle profile_image URL
         if (isset($_POST['profile_image'])) {
             $profileImageUrl = trim(sanitizeInput($_POST['profile_image']));
@@ -798,7 +817,7 @@ switch ($action) {
                 $updateData['cover_image'] = null;
             }
         }
-        
+
         $result = $page->update($pageId, $updateData);
         if ($result) {
             echo APIResponse::success(null, 'Appearance updated successfully');
@@ -806,119 +825,119 @@ switch ($action) {
             echo APIResponse::error('Failed to update appearance');
         }
         break;
-        
+
     case 'update_email_settings':
         $updateData = [];
-        
+
         if (isset($_POST['email_service_provider'])) {
             $updateData['email_service_provider'] = !empty($_POST['email_service_provider']) ? sanitizeInput($_POST['email_service_provider']) : null;
         }
-        
+
         if (isset($_POST['email_service_api_key'])) {
             $updateData['email_service_api_key'] = sanitizeInput($_POST['email_service_api_key']);
         }
-        
+
         if (isset($_POST['email_list_id'])) {
             $updateData['email_list_id'] = sanitizeInput($_POST['email_list_id']);
         }
-        
+
         if (isset($_POST['email_double_optin'])) {
-            $updateData['email_double_optin'] = (int)$_POST['email_double_optin'];
+            $updateData['email_double_optin'] = (int) $_POST['email_double_optin'];
         } else {
             $updateData['email_double_optin'] = 0;
         }
-        
+
         $result = $page->update($pageId, $updateData);
         echo json_encode(['success' => $result, 'error' => $result ? null : 'Failed to update email settings']);
         break;
-        
+
     case 'add_directory':
         $platformName = sanitizeInput($_POST['platform_name'] ?? '');
         $url = sanitizeUrl($_POST['url'] ?? '');
-        
+
         if (empty($platformName)) {
             echo json_encode(['success' => false, 'error' => 'Platform name is required']);
             exit;
         }
-        
+
         // Allow empty URL for placeholder icons (will be created with is_active = 0)
         if (empty($url)) {
             $url = ''; // Explicitly set to empty string
         }
-        
+
         $result = $page->addSocialIcon($pageId, $platformName, $url);
         echo json_encode($result);
         break;
-        
+
     case 'update_directory':
-        $iconId = (int)($_POST['directory_id'] ?? 0);
+        $iconId = (int) ($_POST['directory_id'] ?? 0);
         $platformName = sanitizeInput($_POST['platform_name'] ?? '');
         $url = sanitizeUrl($_POST['url'] ?? '');
-        
+
         if (!$iconId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
             exit;
         }
-        
+
         if (empty($platformName) || empty($url)) {
             echo json_encode(['success' => false, 'error' => 'Platform name and URL are required']);
             exit;
         }
-        
+
         // Validate URL format (must be valid http/https URL)
-        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false && 
-                      (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
-        
+        $isValidUrl = filter_var($url, FILTER_VALIDATE_URL) !== false &&
+            (strpos(strtolower($url), 'http://') === 0 || strpos(strtolower($url), 'https://') === 0);
+
         // If URL is invalid, ensure is_active is set to 0
-        $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : null;
+        $isActive = isset($_POST['is_active']) ? (int) $_POST['is_active'] : null;
         if ($isActive === 1 && !$isValidUrl) {
             $isActive = 0; // Cannot be active with invalid URL
         }
-        
+
         $result = $page->updateSocialIcon($iconId, $pageId, $platformName, $url, $isActive);
         echo json_encode($result);
         break;
-        
+
     case 'update_social_icon_visibility':
-        $iconId = (int)($_POST['icon_id'] ?? 0);
-        $isActive = isset($_POST['is_active']) ? (bool)$_POST['is_active'] : false;
-        
+        $iconId = (int) ($_POST['icon_id'] ?? 0);
+        $isActive = isset($_POST['is_active']) ? (bool) $_POST['is_active'] : false;
+
         if (!$iconId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
             exit;
         }
-        
+
         $result = $page->toggleSocialIconVisibility($iconId, $pageId, $isActive);
         echo json_encode($result);
         break;
-        
+
     case 'delete_directory':
-        $iconId = (int)($_POST['directory_id'] ?? 0);
+        $iconId = (int) ($_POST['directory_id'] ?? 0);
         if (!$iconId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Social icon ID required']);
             exit;
         }
-        
+
         $result = $page->deleteSocialIcon($iconId, $pageId);
         echo json_encode($result);
         break;
-        
+
     case 'reorder_social_icons':
         $iconOrdersJson = $_POST['icon_orders'] ?? '';
         if (empty($iconOrdersJson)) {
             echo json_encode(['success' => false, 'error' => 'Icon orders required']);
             exit;
         }
-        
+
         $iconOrders = json_decode($iconOrdersJson, true);
         if (!is_array($iconOrders)) {
             echo json_encode(['success' => false, 'error' => 'Invalid icon orders format']);
             exit;
         }
-        
+
         $result = $page->reorderSocialIcons($pageId, $iconOrders);
         echo json_encode($result);
         break;
@@ -980,10 +999,10 @@ switch ($action) {
             'scheduled_publish_at' => $latest['scheduled_publish_at'] ?? null
         ]);
         break;
-        
+
     case 'remove_image':
         $imageType = sanitizeInput($_POST['type'] ?? '');
-        
+
         if ($imageType === 'profile') {
             $updateField = 'profile_image';
         } elseif ($imageType === 'cover') {
@@ -994,13 +1013,13 @@ switch ($action) {
             echo json_encode(['success' => false, 'error' => 'Invalid image type']);
             exit;
         }
-        
+
         // Get old image to delete
         $oldImage = $userPage[$updateField] ?? null;
-        
+
         // Remove image from page
         $updateResult = $page->update($pageId, [$updateField => null]);
-        
+
         if ($updateResult) {
             // Delete old image file
             if ($oldImage && strpos($oldImage, APP_URL) === 0) {
@@ -1009,36 +1028,36 @@ switch ($action) {
                 $oldPath = str_replace(APP_URL, '', $oldImage);
                 $imageHandler->deleteImage($oldPath);
             }
-            
+
             echo json_encode(['success' => true, 'message' => ucfirst($imageType) . ' image removed successfully']);
         } else {
             echo json_encode(['success' => false, 'error' => 'Failed to remove image']);
         }
         break;
-        
+
     case 'import_rss':
         $rssUrl = sanitizeUrl($_POST['rss_feed_url'] ?? '');
-        
+
         if (empty($rssUrl)) {
             echo json_encode(['success' => false, 'error' => 'RSS feed URL is required']);
             exit;
         }
-        
+
         // Update page with RSS URL
         $page->update($pageId, ['rss_feed_url' => $rssUrl]);
-        
+
         // Parse and import RSS feed
         $parser = new RSSParser();
         $feedResult = $parser->parseFeed($rssUrl);
-        
+
         if (!$feedResult['success']) {
             echo json_encode(['success' => false, 'error' => $feedResult['error']]);
             exit;
         }
-        
+
         // Save to page
         $saveResult = $parser->saveToPage($pageId, $feedResult['data']);
-        
+
         if ($saveResult) {
             $episodeCount = count($feedResult['data']['episodes'] ?? []);
             echo json_encode([
@@ -1053,15 +1072,15 @@ switch ($action) {
             echo json_encode(['success' => false, 'error' => 'Failed to save RSS data']);
         }
         break;
-        
+
     case 'save_theme':
         $themeName = trim(sanitizeInput($_POST['theme_name'] ?? ''));
-        
+
         if (empty($themeName) || strlen($themeName) > 100) {
             echo APIResponse::error('Theme name must be 1-100 characters', 400);
             break;
         }
-        
+
         // Collect current theme configuration
         $themeData = [
             'colors' => [],
@@ -1070,7 +1089,7 @@ switch ($action) {
             'widget_styles' => null,
             'spatial_effect' => 'none'
         ];
-        
+
         // Get current colors
         if (isset($_POST['custom_primary_color'])) {
             $themeData['colors']['primary'] = sanitizeInput($_POST['custom_primary_color']);
@@ -1081,7 +1100,7 @@ switch ($action) {
         if (isset($_POST['custom_accent_color'])) {
             $themeData['colors']['accent'] = sanitizeInput($_POST['custom_accent_color']);
         }
-        
+
         // Get current fonts (legacy support)
         if (isset($_POST['custom_heading_font'])) {
             $themeData['fonts']['heading'] = sanitizeInput($_POST['custom_heading_font']);
@@ -1089,7 +1108,7 @@ switch ($action) {
         if (isset($_POST['custom_body_font'])) {
             $themeData['fonts']['body'] = sanitizeInput($_POST['custom_body_font']);
         }
-        
+
         // Get page fonts (new separate columns)
         if (isset($_POST['page_primary_font'])) {
             $themeData['page_primary_font'] = sanitizeInput($_POST['page_primary_font']);
@@ -1097,7 +1116,7 @@ switch ($action) {
         if (isset($_POST['page_secondary_font'])) {
             $themeData['page_secondary_font'] = sanitizeInput($_POST['page_secondary_font']);
         }
-        
+
         // Get widget fonts
         if (isset($_POST['widget_primary_font'])) {
             $themeData['widget_primary_font'] = sanitizeInput($_POST['widget_primary_font']);
@@ -1105,22 +1124,22 @@ switch ($action) {
         if (isset($_POST['widget_secondary_font'])) {
             $themeData['widget_secondary_font'] = sanitizeInput($_POST['widget_secondary_font']);
         }
-        
+
         // Get page background
         if (isset($_POST['page_background'])) {
             $themeData['page_background'] = sanitizeInput($_POST['page_background']);
         }
-        
+
         // Get widget background
         if (isset($_POST['widget_background'])) {
             $themeData['widget_background'] = sanitizeInput($_POST['widget_background']);
         }
-        
+
         // Get widget border color
         if (isset($_POST['widget_border_color'])) {
             $themeData['widget_border_color'] = sanitizeInput($_POST['widget_border_color']);
         }
-        
+
         // Get widget styles
         if (isset($_POST['widget_styles'])) {
             $widgetStylesJson = $_POST['widget_styles'];
@@ -1129,12 +1148,12 @@ switch ($action) {
             } else {
                 $widgetStyles = $widgetStylesJson;
             }
-            
+
             if (is_array($widgetStyles)) {
                 $themeData['widget_styles'] = WidgetStyleManager::sanitize($widgetStyles);
             }
         }
-        
+
         // Get spatial effect
         if (isset($_POST['spatial_effect'])) {
             $spatialEffect = sanitizeInput($_POST['spatial_effect']);
@@ -1143,11 +1162,11 @@ switch ($action) {
                 $themeData['spatial_effect'] = $spatialEffect;
             }
         }
-        
+
         // Create theme
         $theme = new Theme();
         $result = $theme->createTheme($userId, $themeName, $themeData);
-        
+
         if ($result['success']) {
             echo APIResponse::success([
                 'theme_id' => $result['theme_id'],
@@ -1157,25 +1176,25 @@ switch ($action) {
             echo APIResponse::error($result['error'] ?? 'Failed to save theme');
         }
         break;
-        
+
     case 'delete_theme':
-        $themeId = (int)($_POST['theme_id'] ?? 0);
-        
+        $themeId = (int) ($_POST['theme_id'] ?? 0);
+
         if (!$themeId) {
             echo APIResponse::error('Theme ID required', 400);
             break;
         }
-        
+
         $theme = new Theme();
         $result = $theme->deleteUserTheme($themeId, $userId);
-        
+
         if ($result) {
             echo APIResponse::success(null, 'Theme deleted successfully');
         } else {
             echo APIResponse::error('Failed to delete theme or theme not found');
         }
         break;
-        
+
     default:
         echo APIResponse::error('Invalid action', 400);
         break;

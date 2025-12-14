@@ -108,8 +108,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.15));
   border-radius: 8px;
   background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
@@ -185,4 +185,52 @@
   .body {
     padding: 1.25rem;
   }
+
+  /* Responsive Grids for Mobile */
+  .gridThree,
+  .gridTypography {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gridFour {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .gridThree {
+    /* 2 columns for shapes/colors on mobile, or 1? Let's try 2 for colors, 3 for shapes might be tight */
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Shapes can stay 3 across if small, but let's be safe */
+  .gridShapes {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Default Desktop Grids */
+.gridFour {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.gridThree {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.gridShapes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.gridTypography {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
 }

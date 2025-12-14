@@ -14,6 +14,7 @@
 
 ?><!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,11 +28,12 @@
     <!-- SPA Loader CSS (fallback styles) -->
     <link rel="stylesheet" href="/css/spa-loader.css?v=<?php echo filemtime(__DIR__ . '/../css/spa-loader.css'); ?>">
 </head>
+
 <body>
     <?php echo $windowGlobals ?? ''; ?>
     <script>
         // Clear any old admin panel references from client storage
-        (function() {
+        (function () {
             try {
                 // Clear localStorage
                 if (typeof localStorage !== 'undefined') {
@@ -78,5 +80,5 @@
         <script type="module" src="<?php echo h($scriptSrc); ?>"></script>
     <?php endif; ?>
 </body>
-</html>
 
+</html>

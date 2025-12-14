@@ -13,12 +13,14 @@ interface PageBackgroundSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function PageBackgroundSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: PageBackgroundSectionProps): JSX.Element {
   const pageBackground = (uiState['page-background'] as string) ?? '#ffffff';
   const pageSpacing = (uiState['page-spacing'] as number) ?? 16;
@@ -58,6 +60,7 @@ export function PageBackgroundSection({
             }
           }}
           label="Page background"
+          palette={palette}
         />
       </div>
 

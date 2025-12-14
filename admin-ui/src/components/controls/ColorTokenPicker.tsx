@@ -54,7 +54,7 @@ export function ColorTokenPicker({
   useEffect(() => {
     // Only update from external value changes if not manually changing mode and not in the middle of an update
     if (isUpdatingRef.current) return;
-    
+
     if (value && value !== lastValueRef.current && value !== internalValue && !isManualModeChange) {
       lastValueRef.current = value;
       setInternalValue(value);
@@ -71,7 +71,7 @@ export function ColorTokenPicker({
     // Only auto-switch mode if it wasn't manually changed and there's a mismatch
     // This handles cases where the value changes externally (not from user interaction)
     if (isUpdatingRef.current || isManualModeChange) return;
-    
+
     if (isGradientValue && mode === 'solid') {
       setMode('gradient');
       parseGradient(currentValue);
@@ -152,13 +152,13 @@ export function ColorTokenPicker({
   const handleModeToggle = (newMode: ColorMode) => {
     // Prevent switching to the same mode
     if (newMode === mode) return;
-    
+
     if (isUpdatingRef.current) return;
-    
+
     isUpdatingRef.current = true;
     setIsManualModeChange(true);
     setMode(newMode);
-    
+
     if (newMode === 'gradient') {
       // If switching to gradient, use current value if it's already a gradient, otherwise build new one
       const gradient = isGradientValue ? currentValue : buildGradient();
@@ -205,7 +205,7 @@ export function ColorTokenPicker({
   const displayValue = useMemo(() => {
     return mode === 'gradient' ? buildGradient() : currentValue;
   }, [mode, buildGradient, currentValue]);
-  
+
   const displayColor = mode === 'gradient' ? gradientStops[0].color : currentValue;
 
   return (
@@ -243,7 +243,7 @@ export function ColorTokenPicker({
           <button
             type="button"
             className={`${styles.swatchButton} ${mode === 'gradient' ? styles.swatchButtonGradient : ''}`}
-            style={mode === 'gradient' 
+            style={mode === 'gradient'
               ? { backgroundImage: displayValue }
               : { backgroundColor: displayValue }
             }
@@ -281,6 +281,26 @@ export function ColorTokenPicker({
                   <input type="text" value={hslString} readOnly aria-readonly="true" />
                 </label>
               </div>
+
+              {/* Palette Section */}
+              {palette && palette.length > 0 && (
+                <div className={styles.paletteGroup}>
+                  <p>Preset Colors</p>
+                  <div className={styles.swatchRow}>
+                    {palette.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        className={styles.paletteSwatch}
+                        style={{ backgroundColor: color }}
+                        onClick={() => handleChange(color)}
+                        aria-label={`Select color ${color}`}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className={styles.gradientEditor}>

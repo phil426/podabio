@@ -28,12 +28,12 @@ export function ThemeLibraryModal({ isOpen, onClose, activeColor }: ThemeLibrary
   // Derive active theme from theme library (user themes retired - only system themes)
   const activeTheme: ThemeRecord | null = themeLibrary
     ? (() => {
-        const themeId = snapshot?.page?.theme_id ?? null;
-        if (themeId == null) {
-          return themeLibrary.system?.[0] ?? null;
-        }
-        return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
-      })()
+      const themeId = snapshot?.page?.theme_id ?? null;
+      if (themeId == null) {
+        return themeLibrary.system?.[0] ?? null;
+      }
+      return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
+    })()
     : null;
 
   const handleSelectTheme = (theme: ThemeRecord) => {
@@ -56,7 +56,7 @@ export function ThemeLibraryModal({ isOpen, onClose, activeColor }: ThemeLibrary
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.content}>
+        <Dialog.Content className={`${styles.content} glassPanel`}>
           <div className={styles.header}>
             <Dialog.Title className={styles.title}>Select Theme</Dialog.Title>
             <Dialog.Description className={styles.description}>

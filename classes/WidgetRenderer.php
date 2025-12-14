@@ -7,25 +7,27 @@
 require_once __DIR__ . '/WidgetRegistry.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
-class WidgetRenderer {
-    
-    
+class WidgetRenderer
+{
+
+
     /**
      * Render a widget
      * @param array $widget Widget data from database
      * @param array|null $page Optional page data (for getting user_id)
      * @return string HTML output
      */
-    public static function render($widget, $page = null) {
+    public static function render($widget, $page = null)
+    {
         if (!$widget || !isset($widget['widget_type'])) {
             return '';
         }
-        
+
         $widgetType = $widget['widget_type'];
-        $configData = is_string($widget['config_data']) 
-            ? json_decode($widget['config_data'], true) 
+        $configData = is_string($widget['config_data'])
+            ? json_decode($widget['config_data'], true)
             : ($widget['config_data'] ?? []);
-        
+
         // Get user ID from page or widget
         $userId = null;
         if ($page && isset($page['user_id'])) {
@@ -38,23 +40,23 @@ class WidgetRenderer {
                 $userId = $pageData['user_id'];
             }
         }
-        
+
         // Get widget definition
         $widgetDef = WidgetRegistry::getWidget($widgetType);
-        
+
         if (!$widgetDef) {
             // Fallback: render as custom link (for backward compatibility)
             return self::renderCustomLink($widget, $configData);
         }
-        
+
         // Render based on widget type
         switch ($widgetType) {
             case 'custom_link':
                 return self::renderCustomLink($widget, $configData);
-                
+
             case 'youtube_video':
                 return self::renderYouTubeVideo($widget, $configData);
-                
+
             case 'text_html':
                 return self::renderTextHtml($widget, $configData);
 
@@ -66,78 +68,69 @@ class WidgetRenderer {
 
             case 'divider_rule':
                 return self::renderDividerRule($configData);
-                
-            case 'profile_carousel':
-                return self::renderProfileCarousel($widget, $configData);
-                
+
+
+
             case 'image':
                 return self::renderImage($widget, $configData);
-                
+
             case 'podcast_player_custom':
                 return self::renderPodcastPlayerCustom($widget, $configData);
-                
-            case 'email_subscription':
-                return self::renderEmailSubscription($widget, $configData);
-                
+
+
+
             // Blog widgets retired - return empty
             case 'blog_latest_posts':
             case 'blog_category_filter':
             case 'blog_related_posts':
                 return ''; // Blog feature retired
-                
-            case 'shopify_product':
-                return self::renderShopifyProduct($widget, $configData);
-                
-            case 'shopify_product_list':
-                return self::renderShopifyProductList($widget, $configData);
-                
-            case 'shopify_collection':
-                return self::renderShopifyCollection($widget, $configData);
-                
-            case 'giphy_search':
-                return self::renderGiphySearch($widget, $configData);
-                
-            case 'giphy_trending':
-                return self::renderGiphyTrending($widget, $configData);
-                
-            case 'giphy_random':
-                return self::renderGiphyRandom($widget, $configData);
-                
-            case 'people':
-                return self::renderPeople($widget, $configData);
-                
+
+
+
+
+
+            case 'contact_form':
+                return self::renderContactForm($widget, $configData);
+
+            case 'embed_code':
+                return self::renderEmbedCode($widget, $configData);
+
+            case 'image_gallery':
+                return self::renderImageGallery($widget, $configData);
+
             case 'rolodex':
                 return self::renderRolodex($widget, $configData); // Legacy support
-                
+
             default:
                 // Fallback rendering
                 return self::renderCustomLink($widget, $configData);
         }
     }
-    
+
     /**
      * Render custom link widget
      */
-    private static function renderCustomLink($widget, $configData) {
+    private static function renderCustomLink($widget, $configData)
+    {
         $url = $configData['url'] ?? '';
         $title = $widget['title'] ?? 'Untitled';
         $description = $configData['description'] ?? null;
         $thumbnail = $configData['thumbnail_image'] ?? null;
         $icon = $configData['icon'] ?? null;
         $disclosure = $configData['disclosure_text'] ?? null;
-        
+
         // Always render the widget if it has a title, even if URL is empty
         // This ensures all widgets show up on the page
         if (!$title || (trim($title) === '')) {
             return '';
         }
-        
+
         $pageId = $widget['page_id'] ?? 0;
         $widgetId = $widget['id'] ?? 0;
-        
+
         // Use URL if available, otherwise use # as placeholder
         $clickUrl = $url ? "/click.php?link_id={$widgetId}&page_id={$pageId}" : "#";
-        
+
         // Use horizontal card layout for all widgets (Linktree style)
         // Thumbnail and icon are mutually exclusive - thumbnail takes priority if both exist
         // Thumbnail/icon displays on the left side of the widget card
@@ -145,9 +138,9 @@ class WidgetRenderer {
         if (!$thumbnail && !$icon) {
             $widgetClass .= ' widget-link-simple';
         }
-        
+
         $html = '<a href="' . htmlspecialchars($clickUrl) . '" class="' . $widgetClass . '" target="_blank" rel="noopener noreferrer">';
-        
+
         // Always show thumbnail/icon section on left (thumbnail prioritized over icon)
         if ($thumbnail) {
             // Thumbnail takes priority - display on left side
@@ -169,7 +162,7 @@ class WidgetRenderer {
             $html .= '<div class="widget-icon"><i class="' . htmlspecialchars($icon) . '"></i></div>';
             $html .= '</div>';
         }
-        
+
         $html .= '<div class="widget-content">';
         $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
         if ($description) {
@@ -180,23 +173,24 @@ class WidgetRenderer {
         }
         $html .= '</div>';
         $html .= '</a>';
-        
+
         return $html;
     }
-    
+
     /**
      * Render YouTube video widget
      */
-    private static function renderYouTubeVideo($widget, $configData) {
+    private static function renderYouTubeVideo($widget, $configData)
+    {
         // Support both video_url (new) and video_id (legacy) for backward compatibility
         $videoUrl = $configData['video_url'] ?? $configData['video_id'] ?? '';
         $title = $widget['title'] ?? 'Video';
         $autoplay = isset($configData['autoplay']) && $configData['autoplay'];
-        
+
         if (!$videoUrl) {
             return '';
         }
-        
+
         // Extract video ID from URL if full URL provided, otherwise assume it's already a video ID
         $videoId = $videoUrl;
         if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $videoUrl, $matches)) {
@@ -205,13 +199,13 @@ class WidgetRenderer {
             // If it's not a valid video ID format (11 alphanumeric chars), return empty
             return '';
         }
-        
+
         // Build embed URL with autoplay if enabled
         $embedUrl = 'https://www.youtube.com/embed/' . htmlspecialchars($videoId);
         if ($autoplay) {
             $embedUrl .= '?autoplay=1';
         }
-        
+
         $html = '<div class="widget-item widget-video">';
         $html .= '<div class="widget-content">';
         // Do not show title for YouTube widgets
@@ -220,21 +214,22 @@ class WidgetRenderer {
         $html .= '</div>';
         $html .= '</div>';
         $html .= '</div>';
-        
+
         return $html;
     }
-    
+
     /**
      * Render text/HTML widget
      */
-    private static function renderTextHtml($widget, $configData) {
+    private static function renderTextHtml($widget, $configData)
+    {
         $title = $widget['title'] ?? '';
         $content = $configData['content'] ?? '';
-        
+
         if (!$content) {
             return '';
         }
-        
+
         $html = '<div class="widget-item widget-text">';
         if ($title) {
             $html .= '<div class="widget-content">';
@@ -246,14 +241,15 @@ class WidgetRenderer {
         $html .= self::sanitizeHtml($content);
         $html .= '</div>';
         $html .= '</div>';
-        
+
         return $html;
     }
 
     /**
      * Render heading block widget
      */
-    private static function renderHeadingBlock($widget, $configData) {
+    private static function renderHeadingBlock($widget, $configData)
+    {
         $text = trim($configData['text'] ?? $widget['title'] ?? '');
         if ($text === '') {
             return '';
@@ -275,7 +271,8 @@ class WidgetRenderer {
     /**
      * Render italic note text widget
      */
-    private static function renderTextNote($widget, $configData) {
+    private static function renderTextNote($widget, $configData)
+    {
         $text = trim($configData['text'] ?? $widget['title'] ?? '');
         if ($text === '') {
             return '';
@@ -291,7 +288,8 @@ class WidgetRenderer {
     /**
      * Render divider rule widget
      */
-    private static function renderDividerRule($configData) {
+    private static function renderDividerRule($configData)
+    {
         $style = strtolower($configData['style'] ?? 'flat');
         $allowed = ['flat', 'shadow', 'gradient'];
         if (!in_array($style, $allowed, true)) {
@@ -304,300 +302,25 @@ class WidgetRenderer {
 
         return $html;
     }
-    
+
     /**
      * Render image widget
      */
-    /**
-     * Render profile carousel widget
-     * Displays multiple profile-oriented images in a swipeable carousel
-     */
-    private static function renderProfileCarousel($widget, $configData) {
-        $title = $widget['title'] ?? 'Gallery';
-        $images = $configData['images'] ?? [];
-        
-        if (empty($images) || !is_array($images)) {
-            return '';
-        }
-        
-        // Filter out empty image URLs
-        $images = array_filter($images, function($img) {
-            return !empty($img) && is_string($img);
-        });
-        
-        if (empty($images)) {
-            return '';
-        }
-        
-        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
-        $carouselId = 'profile-carousel-' . $widgetId;
-        
-        $html = '<div class="widget-item widget-profile-carousel" id="' . htmlspecialchars($carouselId) . '">';
-        $html .= '<div class="widget-content">';
-        if ($title) {
-            $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
-        }
-        
-        $html .= '<div class="profile-carousel-container">';
-        $html .= '<div class="profile-carousel-track">';
-        
-        foreach ($images as $index => $imageUrl) {
-            $html .= '<div class="profile-carousel-slide" data-slide-index="' . $index . '">';
-            $html .= '<div class="profile-carousel-frame">';
-            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="Gallery image ' . ($index + 1) . '" loading="lazy">';
-            $html .= '</div>';
-            $html .= '</div>';
-        }
-        
-        $html .= '</div>'; // Close profile-carousel-track
-        
-        // Navigation dots
-        if (count($images) > 1) {
-            $html .= '<div class="profile-carousel-dots">';
-            foreach ($images as $index => $imageUrl) {
-                $isActive = $index === 0 ? 'active' : '';
-                $html .= '<button type="button" class="profile-carousel-dot ' . $isActive . '" data-slide-index="' . $index . '" aria-label="Go to slide ' . ($index + 1) . '"></button>';
-            }
-            $html .= '</div>';
-        }
-        
-        $html .= '</div>'; // Close profile-carousel-container
-        $html .= '</div>'; // Close widget-content
-        $html .= '</div>'; // Close widget-item
-        
-        // Add carousel JavaScript
-        $html .= '<script>
-(function() {
-    const carouselId = ' . json_encode($carouselId) . ';
-    
-    function initProfileCarousel() {
-        const carousel = document.getElementById(carouselId);
-        if (!carousel) {
-            console.warn("Carousel not found yet, will retry:", carouselId);
-            return false;
-        }
-        
-        const track = carousel.querySelector(".profile-carousel-track");
-        const slides = Array.from(carousel.querySelectorAll(".profile-carousel-slide"));
-        const dots = Array.from(carousel.querySelectorAll(".profile-carousel-dot"));
-        
-        if (!track) {
-            console.error("Carousel track not found");
-            return;
-        }
-        
-        if (slides.length === 0) {
-            console.error("No slides found in carousel");
-            return;
-        }
-        
-        let currentIndex = 0;
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        let offset = 0;
-        
-        if (slides.length <= 1) {
-            // Single slide - no navigation needed
-            return;
-        }
-        
-        function updateCarousel() {
-            for (let i = 0; i < dots.length; i++) {
-                if (dots[i]) {
-                    dots[i].classList.toggle("active", i === currentIndex);
-                }
-            }
-            if (track) {
-                const translateX = -currentIndex * 100;
-                track.style.transform = "translateX(" + translateX + "%)";
-                track.style.transition = "transform 0.3s ease";
-            }
-            console.log("Carousel updated to index:", currentIndex);
-        }
-        
-        function goToSlide(index) {
-            if (index < 0) index = slides.length - 1;
-            if (index >= slides.length) index = 0;
-            currentIndex = index;
-            updateCarousel();
-        }
-        
-        function nextSlide() {
-            goToSlide(currentIndex + 1);
-        }
-        
-        function prevSlide() {
-            goToSlide(currentIndex - 1);
-        }
-        
-        // Initialize track width and position
-        track.style.width = (slides.length * 100) + "%";
-        updateCarousel();
-        
-        // Touch events for swipe
-        track.addEventListener("touchstart", function(e) {
-            if (e.touches.length === 0) return;
-            startX = e.touches[0].clientX;
-            isDragging = true;
-            track.style.transition = "none";
-            console.log("Touch start:", startX);
-        }, { passive: false });
-        
-        track.addEventListener("touchmove", function(e) {
-            if (!isDragging || e.touches.length === 0) return;
-            e.preventDefault(); // Prevent scrolling while dragging
-            currentX = e.touches[0].clientX;
-            offset = currentX - startX;
-            const currentTranslate = -currentIndex * 100;
-            const trackWidth = track.offsetWidth || track.clientWidth;
-            if (trackWidth > 0) {
-                track.style.transform = "translateX(" + (currentTranslate + (offset / trackWidth) * 100) + "%)";
-            }
-        }, { passive: false });
-        
-        track.addEventListener("touchend", function() {
-            if (!isDragging) return;
-            console.log("Touch end, offset:", offset);
-            isDragging = false;
-            track.style.transition = "transform 0.3s ease";
-            
-            const trackWidth = track.offsetWidth || track.clientWidth;
-            const threshold = trackWidth * 0.3;
-            if (Math.abs(offset) > threshold) {
-                if (offset > 0) {
-                    console.log("Swipe right, going to previous slide");
-                    prevSlide();
-                } else {
-                    console.log("Swipe left, going to next slide");
-                    nextSlide();
-                }
-            } else {
-                console.log("Swipe not far enough, resetting");
-                updateCarousel();
-            }
-            offset = 0;
-        });
-        
-        // Mouse events for desktop drag
-        track.addEventListener("mousedown", function(e) {
-            e.preventDefault();
-            startX = e.clientX;
-            isDragging = true;
-            track.style.transition = "none";
-            track.style.cursor = "grabbing";
-            console.log("Mouse down:", startX);
-        });
-        
-        document.addEventListener("mousemove", function(e) {
-            if (!isDragging) return;
-            currentX = e.clientX;
-            offset = currentX - startX;
-            const currentTranslate = -currentIndex * 100;
-            const trackWidth = track.offsetWidth || track.clientWidth;
-            if (trackWidth > 0) {
-                track.style.transform = "translateX(" + (currentTranslate + (offset / trackWidth) * 100) + "%)";
-            }
-        });
-        
-        document.addEventListener("mouseup", function() {
-            if (!isDragging) return;
-            isDragging = false;
-            track.style.transition = "transform 0.3s ease";
-            track.style.cursor = "grab";
-            
-            const trackWidth = track.offsetWidth || track.clientWidth;
-            const threshold = trackWidth * 0.3;
-            if (Math.abs(offset) > threshold) {
-                if (offset > 0) {
-                    prevSlide();
-                } else {
-                    nextSlide();
-                }
-            } else {
-                updateCarousel();
-            }
-            offset = 0;
-        });
-        
-        
-        // Dot navigation
-        for (let i = 0; i < dots.length; i++) {
-            if (dots[i]) {
-                dots[i].addEventListener("click", function() {
-                    console.log("Dot clicked, going to slide:", i);
-                    goToSlide(i);
-                });
-            }
-        }
-        
-        console.log("Event listeners attached:", {
-            track: !!track,
-            dotsCount: dots.length,
-            slidesCount: slides.length
-        });
-        
-        // Keyboard navigation
-        carousel.addEventListener("keydown", function(e) {
-            if (e.key === "ArrowLeft" || e.keyCode === 37) {
-                e.preventDefault();
-                console.log("Left arrow pressed");
-                prevSlide();
-            } else if (e.key === "ArrowRight" || e.keyCode === 39) {
-                e.preventDefault();
-                console.log("Right arrow pressed");
-                nextSlide();
-            }
-        });
-        
-        // Make carousel focusable for keyboard navigation
-        carousel.setAttribute("tabindex", "0");
-        carousel.style.outline = "none";
-        
-        console.log("Profile carousel initialized:", {
-            carouselId: carouselId,
-            slidesCount: slides.length,
-            dotsCount: dots.length
-        });
-        return true;
-    }
-    
-    // Try to initialize immediately
-    if (!initProfileCarousel()) {
-        // If not found, wait for DOM and try again
-        function tryInit() {
-            if (initProfileCarousel()) {
-                return; // Success!
-            }
-            // Retry after a short delay
-            setTimeout(tryInit, 50);
-        }
-        
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", function() {
-                setTimeout(tryInit, 50);
-            });
-        } else {
-            setTimeout(tryInit, 50);
-        }
-    }
-})();
-</script>';
-        
-        return $html;
-    }
-    
-    private static function renderImage($widget, $configData) {
+
+
+
+    private static function renderImage($widget, $configData)
+    {
         $imageUrl = $configData['image_url'] ?? '';
         $title = $widget['title'] ?? 'Image';
         $linkUrl = $configData['link_url'] ?? null;
-        
+
         if (!$imageUrl) {
             return '';
         }
-        
+
         $html = '';
-        
+
         if ($linkUrl) {
             $pageId = $widget['page_id'] ?? 0;
             $widgetId = $widget['id'] ?? 0;
@@ -606,28 +329,29 @@ class WidgetRenderer {
         } else {
             $html .= '<div class="widget-item widget-image">';
         }
-        
+
         $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="' . htmlspecialchars($title) . '" class="widget-image-content">';
-        
+
         if ($linkUrl) {
             $html .= '</a>';
         } else {
             $html .= '</div>';
         }
-        
+
         return $html;
     }
-    
-    
+
+
     /**
      * Render PodNBio Player - Custom compact podcast widget
      * Ultra-compact design (100-120px height) with bottom sheet drawer
      */
-    private static function renderPodcastPlayerCustom($widget, $configData) {
+    private static function renderPodcastPlayerCustom($widget, $configData)
+    {
         try {
             // Disable podcast widget rendering - replaced by top drawer player
             // Check if page has RSS feed URL set (top drawer will handle it)
-            $pageId = isset($widget['page_id']) ? (int)$widget['page_id'] : 0;
+            $pageId = isset($widget['page_id']) ? (int) $widget['page_id'] : 0;
             if ($pageId > 0) {
                 require_once __DIR__ . '/Page.php';
                 $pageClass = new Page();
@@ -637,25 +361,25 @@ class WidgetRenderer {
                     return '';
                 }
             }
-            
+
             $title = $widget['title'] ?? 'Podcast Player';
             $rssFeedUrl = $configData['rss_feed_url'] ?? '';
-            $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+            $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
             $widgetType = $widget['widget_type'] ?? 'unknown';
-            
+
             // Debug: Log widget type (can be removed after verification)
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log("PodNBio Widget Debug - Type: {$widgetType}, ID: {$widgetId}, PageID: {$pageId}");
             }
-            
+
             if (empty($rssFeedUrl)) {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">RSS Feed URL is required</div></div></div>';
             }
-            
+
             if ($widgetId <= 0) {
                 return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Invalid widget ID</div></div></div>';
             }
-        
+
             // Get social icons and page data for this page
             require_once __DIR__ . '/Page.php';
             $pageClass = new Page();
@@ -674,14 +398,14 @@ class WidgetRenderer {
                     $socialIcons = [];
                 }
             }
-            
+
             $containerId = 'podnbio-player-' . $widgetId;
             $playerId = 'podnbio-audio-' . $widgetId;
             $drawerId = 'podnbio-drawer-' . $widgetId;
-            
+
             $html = '<div class="widget-item widget-podcast-custom" id="' . htmlspecialchars($containerId) . '">';
             $html .= '<div class="widget-content">';
-            
+
             // Horizontal Card Layout
             $html .= '<div class="podcast-compact-player">';
             $html .= '<div class="podcast-header-compact">';
@@ -716,7 +440,7 @@ class WidgetRenderer {
             $html .= '</div>'; // Close progress-container
             $html .= '</div>'; // Close podcast-info-compact
             $html .= '</div>'; // Close podcast-main-content
-            
+
             // Bottom Sheet Drawer (initially hidden)
             $html .= '<div class="podcast-bottom-sheet hidden" id="' . htmlspecialchars($drawerId) . '">';
             $html .= '<div class="drawer-backdrop" id="drawer-backdrop-' . $widgetId . '"></div>';
@@ -736,38 +460,39 @@ class WidgetRenderer {
             $html .= '</div>'; // Close drawer-panels
             $html .= '</div>'; // Close drawer-content-wrapper
             $html .= '</div>'; // Close podcast-bottom-sheet
-            
+
             $html .= '</div>'; // Close podcast-compact-player
             $html .= '</div>'; // Close widget-content
-            
+
             // Audio element (hidden)
             $html .= '<audio id="' . htmlspecialchars($playerId) . '" preload="metadata"></audio>';
-            
+
             $html .= '</div>'; // Close widget-item widget-podcast-custom
-            
+
             // Inline JavaScript (HTML5 Audio + Vanilla JS)
             $html .= self::getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssFeedUrl, $socialIcons);
-        
+
             return $html;
         } catch (Exception $e) {
             error_log("PodNBio Player render error: " . $e->getMessage());
             return '<div class="widget-item widget-podcast-custom"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Error loading podcast player. Please check your configuration.</div></div></div>';
         }
     }
-    
+
     /**
      * Get inline JavaScript for PodNBio Player
      * Full HTML5 Audio + Vanilla JS implementation
      */
-    private static function getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssUrl, $socialIcons = []) {
+    private static function getPodNBioPlayerInlineScript($widgetId, $containerId, $playerId, $drawerId, $rssUrl, $socialIcons = [])
+    {
         // Escape variables for JavaScript
-        $jsWidgetId = (int)$widgetId;
+        $jsWidgetId = (int) $widgetId;
         $jsContainerId = json_encode($containerId);
         $jsPlayerId = json_encode($playerId);
         $jsDrawerId = json_encode($drawerId);
         $jsRssUrl = json_encode($rssUrl);
         $jsSocialIcons = json_encode($socialIcons);
-        
+
         return '<script>
 (function() {
     const widgetId = ' . $jsWidgetId . ';
@@ -1405,848 +1130,64 @@ class WidgetRenderer {
 })();
 </script>';
     }
-    
-    /**
-     * Render email subscription widget
-     */
-    private static function renderEmailSubscription($widget, $configData) {
-        $pageId = $widget['page_id'] ?? 0;
-        
-        // Get page to check email service configuration
-        require_once __DIR__ . '/Page.php';
-        $pageClass = new Page();
-        $page = $pageClass->get($pageId);
-        
-        if (!$page || empty($page['email_service_provider'])) {
-            return ''; // Don't render if email service not configured
-        }
-        
-        $html = '<button onclick="openEmailDrawer()" class="widget-item">';
-        $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">📧 Subscribe to Email List</div>';
-        $html .= '</div>';
-        $html .= '</button>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Shopify product widget
-     */
-    private static function renderShopifyProduct($widget, $configData) {
-        require_once __DIR__ . '/ShopifyClient.php';
-        require_once __DIR__ . '/../config/shopify.php';
-        
-        $productHandle = $configData['product_handle'] ?? '';
-        $showDescription = isset($configData['show_description']) ? (bool)$configData['show_description'] : true;
-        $buttonText = $configData['button_text'] ?? 'Buy Now';
-        $title = $widget['title'] ?? '';
-        
-        if (empty($productHandle)) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Product handle is required</div></div></div>';
-        }
-        
-        if (!WidgetRegistry::isShopifyConfigured()) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
-        }
-        
-        $client = new ShopifyClient();
-        $product = $client->getProductByHandle($productHandle);
-        
-        if (!$product) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Product not found</div></div></div>';
-        }
-        
-        $productTitle = $product['title'] ?? $title;
-        $productDescription = $product['description'] ?? '';
-        $productImage = null;
-        if (!empty($product['images']['edges'])) {
-            $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
-        }
-        
-        $price = null;
-        $currencyCode = 'USD';
-        if (!empty($product['priceRange']['minVariantPrice'])) {
-            $price = $product['priceRange']['minVariantPrice']['amount'];
-            $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
-        }
-        
-        $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
-        
-        $html = '<div class="widget-item widget-shopify widget-shopify-product">';
-        $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-link">';
-        
-        if ($productImage) {
-            $html .= '<div class="shopify-product-image">';
-            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '">';
-            $html .= '</div>';
-        }
-        
-        $html .= '<div class="shopify-product-content">';
-        $html .= '<div class="shopify-product-title">' . htmlspecialchars($productTitle) . '</div>';
-        
-        if ($price !== null) {
-            $html .= '<div class="shopify-product-price">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
-        }
-        
-        if ($showDescription && $productDescription) {
-            $html .= '<div class="shopify-product-description">' . htmlspecialchars(substr(strip_tags($productDescription), 0, 150)) . '...</div>';
-        }
-        
-        $html .= '<div class="shopify-product-button">' . htmlspecialchars($buttonText) . '</div>';
-        $html .= '</div>';
-        $html .= '</a>';
-        $html .= '</div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Shopify product list widget
-     */
-    private static function renderShopifyProductList($widget, $configData) {
-        require_once __DIR__ . '/ShopifyClient.php';
-        require_once __DIR__ . '/../config/shopify.php';
-        
-        $productCount = min(max((int)($configData['product_count'] ?? 10), 1), 50);
-        $searchQuery = $configData['search_query'] ?? null;
-        $layout = $configData['layout'] ?? 'list';
-        $showPrices = isset($configData['show_prices']) ? (bool)$configData['show_prices'] : true;
-        
-        if (!WidgetRegistry::isShopifyConfigured()) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
-        }
-        
-        $client = new ShopifyClient();
-        $products = $client->getProducts($productCount, $searchQuery);
-        
-        if (empty($products)) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note">No products found</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-shopify widget-shopify-product-list layout-' . h($layout) . '">';
-        
-        if ($layout === 'grid') {
-            $html .= '<div class="shopify-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">';
-        } else {
-            $html .= '<div class="shopify-products-list" style="display: flex; flex-direction: column; gap: 1rem;">';
-        }
-        
-        foreach ($products as $product) {
-            $productTitle = $product['title'] ?? 'Untitled Product';
-            $productHandle = $product['handle'] ?? '';
-            $productImage = null;
-            if (!empty($product['images']['edges'])) {
-                $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
-            }
-            
-            $price = null;
-            $currencyCode = 'USD';
-            if (!empty($product['priceRange']['minVariantPrice'])) {
-                $price = $product['priceRange']['minVariantPrice']['amount'];
-                $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
-            }
-            
-            $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
-            
-            $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-item">';
-            
-            if ($layout === 'grid') {
-                $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
-                if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
-                }
-            } else {
-                $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
-                if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
-                }
-            }
-            
-            $html .= '<div style="flex: 1;">';
-            $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . htmlspecialchars($productTitle) . '</h3>';
-            
-            if ($showPrices && $price !== null) {
-                $html .= '<div style="font-size: 0.875rem; color: #666; font-weight: 500;">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
-            }
-            $html .= '</div>';
-            
-            $html .= '</div></a>';
-        }
-        
-        $html .= '</div></div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Shopify collection widget
-     */
-    private static function renderShopifyCollection($widget, $configData) {
-        require_once __DIR__ . '/ShopifyClient.php';
-        require_once __DIR__ . '/../config/shopify.php';
-        
-        $collectionHandle = $configData['collection_handle'] ?? '';
-        $productCount = min(max((int)($configData['product_count'] ?? 10), 1), 50);
-        $layout = $configData['layout'] ?? 'list';
-        $showCollectionTitle = isset($configData['show_collection_title']) ? (bool)$configData['show_collection_title'] : true;
-        $showPrices = isset($configData['show_prices']) ? (bool)$configData['show_prices'] : true;
-        
-        if (empty($collectionHandle)) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Collection handle is required</div></div></div>';
-        }
-        
-        if (!WidgetRegistry::isShopifyConfigured()) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Shopify is not configured. Please add your shop domain and access token in config/shopify.php</div></div></div>';
-        }
-        
-        $client = new ShopifyClient();
-        $collection = $client->getCollectionByHandle($collectionHandle, $productCount);
-        
-        if (!$collection) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Collection not found</div></div></div>';
-        }
-        
-        $collectionTitle = $collection['title'] ?? '';
-        $products = [];
-        if (!empty($collection['products']['edges'])) {
-            foreach ($collection['products']['edges'] as $edge) {
-                $products[] = $edge['node'];
-            }
-        }
-        
-        if (empty($products)) {
-            return '<div class="widget-item widget-shopify"><div class="widget-content"><div class="widget-note">No products in this collection</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-shopify widget-shopify-collection layout-' . h($layout) . '">';
-        
-        if ($showCollectionTitle && $collectionTitle) {
-            $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 600;">' . htmlspecialchars($collectionTitle) . '</h3>';
-        }
-        
-        if ($layout === 'grid') {
-            $html .= '<div class="shopify-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">';
-        } else {
-            $html .= '<div class="shopify-products-list" style="display: flex; flex-direction: column; gap: 1rem;">';
-        }
-        
-        foreach ($products as $product) {
-            $productTitle = $product['title'] ?? 'Untitled Product';
-            $productHandle = $product['handle'] ?? '';
-            $productImage = null;
-            if (!empty($product['images']['edges'])) {
-                $productImage = $product['images']['edges'][0]['node']['url'] ?? null;
-            }
-            
-            $price = null;
-            $currencyCode = 'USD';
-            if (!empty($product['priceRange']['minVariantPrice'])) {
-                $price = $product['priceRange']['minVariantPrice']['amount'];
-                $currencyCode = $product['priceRange']['minVariantPrice']['currencyCode'] ?? 'USD';
-            }
-            
-            $productUrl = "https://{$client->getShopDomain()}/products/{$productHandle}";
-            
-            $html .= '<a href="' . htmlspecialchars($productUrl) . '" target="_blank" rel="noopener noreferrer" class="shopify-product-item">';
-            
-            if ($layout === 'grid') {
-                $html .= '<div class="shopify-product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: white; transition: transform 0.2s;">';
-                if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 0.75rem;">';
-                }
-            } else {
-                $html .= '<div class="shopify-product-item-content" style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">';
-                if ($productImage) {
-                    $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($productImage)) . '" alt="' . htmlspecialchars($productTitle) . '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">';
-                }
-            }
-            
-            $html .= '<div style="flex: 1;">';
-            $html .= '<h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600;">' . htmlspecialchars($productTitle) . '</h3>';
-            
-            if ($showPrices && $price !== null) {
-                $html .= '<div style="font-size: 0.875rem; color: #666; font-weight: 500;">' . htmlspecialchars(ShopifyClient::formatPrice($price, $currencyCode)) . '</div>';
-            }
-            $html .= '</div>';
-            
-            $html .= '</div></a>';
-        }
-        
-        $html .= '</div></div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Giphy search widget
-     */
-    private static function renderGiphySearch($widget, $configData) {
-        require_once __DIR__ . '/GiphyClient.php';
-        require_once __DIR__ . '/../config/giphy.php';
-        
-        $searchQuery = $configData['search_query'] ?? '';
-        $gifCount = min(max((int)($configData['gif_count'] ?? 12), 1), 50);
-        $layout = $configData['layout'] ?? 'grid';
-        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
-        $rating = $configData['rating'] ?? 'g';
-        
-        if (empty($searchQuery)) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Search query is required</div></div></div>';
-        }
-        
-        if (!WidgetRegistry::isGiphyConfigured()) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
-        }
-        
-        $client = new GiphyClient();
-        $gifs = $client->search($searchQuery, $gifCount, $rating);
-        
-        if (empty($gifs)) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note">No GIFs found</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-giphy widget-giphy-search layout-' . h($layout) . '">';
-        
-        if ($layout === 'grid') {
-            $html .= '<div class="giphy-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: 0.5rem;">';
-        } else {
-            $html .= '<div class="giphy-list" style="display: flex; flex-direction: column; gap: 1rem;">';
-        }
-        
-        foreach ($gifs as $gif) {
-            $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
-            $previewUrl = GiphyClient::getPreviewImage($gif['images'] ?? []);
-            $gifTitle = $gif['title'] ?? 'GIF';
-            $gifPermalink = $gif['url'] ?? '';
-            
-            if (!$gifUrl) {
-                continue;
-            }
-            
-            if ($layout === 'grid') {
-                $html .= '<div class="giphy-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
-                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
-                $html .= '</div>';
-            } else {
-                $html .= '<div class="giphy-item" style="display: flex; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
-                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
-                $html .= '<div style="flex: 1; display: flex; align-items: center;">';
-                $html .= '<div style="font-size: 0.875rem; color: #333;">' . htmlspecialchars($gifTitle) . '</div>';
-                $html .= '</div>';
-                $html .= '</div>';
-            }
-        }
-        
-        $html .= '</div></div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Giphy trending widget
-     */
-    private static function renderGiphyTrending($widget, $configData) {
-        require_once __DIR__ . '/GiphyClient.php';
-        require_once __DIR__ . '/../config/giphy.php';
-        
-        $gifCount = min(max((int)($configData['gif_count'] ?? 12), 1), 50);
-        $layout = $configData['layout'] ?? 'grid';
-        $columns = min(max((int)($configData['columns'] ?? 3), 1), 6);
-        $rating = $configData['rating'] ?? 'g';
-        
-        if (!WidgetRegistry::isGiphyConfigured()) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
-        }
-        
-        $client = new GiphyClient();
-        $gifs = $client->getTrending($gifCount, $rating);
-        
-        if (empty($gifs)) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note">No trending GIFs found</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-giphy widget-giphy-trending layout-' . h($layout) . '">';
-        $html .= '<h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 600;">Trending GIFs</h3>';
-        
-        if ($layout === 'grid') {
-            $html .= '<div class="giphy-grid" style="display: grid; grid-template-columns: repeat(' . $columns . ', 1fr); gap: 0.5rem;">';
-        } else {
-            $html .= '<div class="giphy-list" style="display: flex; flex-direction: column; gap: 1rem;">';
-        }
-        
-        foreach ($gifs as $gif) {
-            $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
-            $previewUrl = GiphyClient::getPreviewImage($gif['images'] ?? []);
-            $gifTitle = $gif['title'] ?? 'GIF';
-            $gifPermalink = $gif['url'] ?? '';
-            
-            if (!$gifUrl) {
-                continue;
-            }
-            
-            if ($layout === 'grid') {
-                $html .= '<div class="giphy-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
-                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
-                $html .= '</div>';
-            } else {
-                $html .= '<div class="giphy-item" style="display: flex; gap: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; cursor: pointer;" onclick="window.open(\'' . htmlspecialchars($gifPermalink) . '\', \'_blank\')">';
-                $html .= '<img src="' . htmlspecialchars($previewUrl ?: $gifUrl) . '" data-gif="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" loading="lazy" onmouseover="this.src=this.dataset.gif" onmouseout="this.src=\'' . htmlspecialchars($previewUrl ?: $gifUrl) . '\'">';
-                $html .= '<div style="flex: 1; display: flex; align-items: center;">';
-                $html .= '<div style="font-size: 0.875rem; color: #333;">' . htmlspecialchars($gifTitle) . '</div>';
-                $html .= '</div>';
-                $html .= '</div>';
-            }
-        }
-        
-        $html .= '</div></div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render Giphy random widget
-     */
-    private static function renderGiphyRandom($widget, $configData) {
-        require_once __DIR__ . '/GiphyClient.php';
-        require_once __DIR__ . '/../config/giphy.php';
-        
-        $tag = $configData['tag'] ?? null;
-        $rating = $configData['rating'] ?? 'g';
-        $showTitle = isset($configData['show_title']) ? (bool)$configData['show_title'] : false;
-        
-        if (!WidgetRegistry::isGiphyConfigured()) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Giphy is not configured. Please add your API key in config/giphy.php</div></div></div>';
-        }
-        
-        $client = new GiphyClient();
-        $gif = $client->getRandom($tag, $rating);
-        
-        if (!$gif) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">Unable to load random GIF</div></div></div>';
-        }
-        
-        $gifUrl = GiphyClient::getBestRendition($gif['images'] ?? [], 'downsized');
-        $gifTitle = $gif['title'] ?? 'Random GIF';
-        $gifPermalink = $gif['url'] ?? '';
-        
-        if (!$gifUrl) {
-            return '<div class="widget-item widget-giphy"><div class="widget-content"><div class="widget-note" style="color: #dc3545;">GIF data incomplete</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-giphy widget-giphy-random">';
-        
-        if ($gifPermalink) {
-            $html .= '<a href="' . htmlspecialchars($gifPermalink) . '" target="_blank" rel="noopener noreferrer" class="giphy-random-link">';
-        }
-        
-        $html .= '<div class="giphy-random-gif" style="text-align: center;">';
-        $html .= '<img src="' . htmlspecialchars($gifUrl) . '" alt="' . htmlspecialchars($gifTitle) . '" style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 0 auto;">';
-        $html .= '</div>';
-        
-        if ($showTitle && $gifTitle) {
-            $html .= '<div class="giphy-random-title" style="padding: 0.75rem; text-align: center; font-size: 0.875rem; color: #333;">';
-            $html .= htmlspecialchars($gifTitle);
-            $html .= '</div>';
-        }
-        
-        if ($gifPermalink) {
-            $html .= '</a>';
-        }
-        
-        $html .= '</div>';
-        
-        return $html;
-    }
-    
-    /**
-     * Render People widget - searchable contacts with profile photos
-     */
-    private static function renderPeople($widget, $configData) {
-        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
-        $containerId = 'people-' . $widgetId;
-        
-        // Widget-level fields
-        $thumbnail = $configData['thumbnail_image'] ?? null;
-        $heading = $configData['heading'] ?? '';
-        $paragraph = $configData['paragraph'] ?? '';
-        $showSearch = isset($configData['show_search']) ? (bool)$configData['show_search'] : true;
-        
-        // Parse contacts JSON
-        $contactsJson = $configData['contacts'] ?? '[]';
-        $contacts = json_decode($contactsJson, true);
-        if (!is_array($contacts) || empty($contacts)) {
-            return '<div class="widget-item widget-people" id="' . htmlspecialchars($containerId) . '"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($heading ?: 'People') . '</div><div class="widget-note" style="color: #dc3545;">No contacts configured. Please add contacts in JSON format.</div></div></div>';
-        }
-        
-        $html = '<div class="widget-item widget-people" id="' . htmlspecialchars($containerId) . '">';
-        
-        // Widget thumbnail (outside widget-content, on the left - stays fixed)
-        if ($thumbnail) {
-            $html .= '<div class="widget-thumbnail-wrapper">';
-            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($heading ?: 'People') . '" class="widget-thumbnail" onerror="this.onerror=null; this.style.display=\'none\'; var wrapper=this.closest(\'.widget-thumbnail-wrapper\'); if(wrapper){var fallback=wrapper.querySelector(\'.widget-thumbnail-fallback\'); if(fallback)fallback.style.display=\'flex\';}">';
-            $html .= '</div>';
-        }
-        
-        $html .= '<div class="widget-content">';
-        
-        // Widget heading with accordion toggle button
-        $accordionId = $containerId . '-accordion';
-        $accordionContentId = $accordionId . '-content';
-        // Inline onclick handler - uses CSS classes only, no inline styles
-        $onclickCode = 'var w=this.closest(\'.widget-people\');if(!w)return false;var d=w.querySelector(\'.people-accordion-drawer\');if(!d)return false;var b=this;var o=d.classList.contains(\'open\');if(o){d.classList.remove(\'open\');b.setAttribute(\'aria-expanded\',\'false\');}else{d.classList.add(\'open\');b.setAttribute(\'aria-expanded\',\'true\');}var i=b.querySelector(\'.people-accordion-arrow i\');if(i){if(o){i.classList.remove(\'people-arrow-open\');}else{i.classList.add(\'people-arrow-open\');}}return false;';
-        
-        if ($heading) {
-            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false" onclick="' . htmlspecialchars($onclickCode) . '">';
-            $html .= '<div class="widget-title">' . htmlspecialchars($heading) . '</div>';
-            $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
-            $html .= '</button>';
-        } else {
-            $html .= '<button type="button" class="people-widget-header" data-accordion-content="' . htmlspecialchars($accordionContentId) . '" aria-expanded="false" onclick="' . htmlspecialchars($onclickCode) . '">';
-            $html .= '<div class="widget-title">People</div>';
-            $html .= '<span class="people-accordion-arrow"><i class="fas fa-chevron-down"></i></span>';
-            $html .= '</button>';
-        }
-        
-        // Widget paragraph (outside accordion, always visible)
-        if ($paragraph) {
-            $html .= '<div class="people-widget-paragraph">' . nl2br(htmlspecialchars($paragraph)) . '</div>';
-        }
-        
-        $html .= '</div>'; // Close widget-content
-        
-        // Accordion drawer - separate bottom drawer that slides down (outside widget-content)
-        $html .= '<div class="people-accordion-drawer" id="' . htmlspecialchars($accordionContentId) . '">';
-        
-        // Search field
-        if ($showSearch) {
-            $html .= '<div class="people-search-container">';
-            $html .= '<input type="text" class="people-search-input" id="' . htmlspecialchars($containerId) . '-search" placeholder="Search contacts..." aria-label="Search contacts" />';
-            $html .= '</div>';
-        }
-        
-        // Contacts list
-        $html .= '<div class="people-contacts-list">';
-        
-        foreach ($contacts as $index => $contact) {
-            $name = $contact['name'] ?? 'Unnamed';
-            $photo = $contact['photo'] ?? null;
-            $email = $contact['email'] ?? null;
-            $phone = $contact['phone'] ?? null;
-            $company = $contact['company'] ?? null;
-            $title = $contact['title'] ?? null;
-            $address = $contact['address'] ?? null;
-            $website = $contact['website'] ?? null;
-            $notes = $contact['notes'] ?? null;
-            
-            $contactId = 'people-contact-' . $widgetId . '-' . $index;
-            $initial = strtoupper(substr($name, 0, 1));
-            
-            $html .= '<div class="people-contact-item" data-contact-name="' . htmlspecialchars(strtolower($name)) . '" data-contact-company="' . htmlspecialchars(strtolower($company ?? '')) . '">';
-            $html .= '<button type="button" class="people-contact-header" onclick="togglePeopleContact(\'' . htmlspecialchars($contactId) . '\')" aria-expanded="false">';
-            
-            // Contact header with photo/initial
-            $html .= '<div class="people-contact-header-content">';
-            if ($photo) {
-                $html .= '<img src="' . htmlspecialchars($photo) . '" alt="' . htmlspecialchars($name) . '" class="people-contact-photo" />';
-            } else {
-                $html .= '<div class="people-contact-initial">' . htmlspecialchars($initial) . '</div>';
-            }
-            
-            $html .= '<div class="people-contact-info">';
-            $html .= '<div class="people-contact-name">' . htmlspecialchars($name) . '</div>';
-            if ($company) {
-                $html .= '<div class="people-contact-company">' . htmlspecialchars($company) . '</div>';
-            }
-            $html .= '</div>';
-            $html .= '</div>';
-            
-            $html .= '<span class="people-contact-toggle"><i class="fas fa-chevron-down"></i></span>';
-            $html .= '</button>';
-            
-            // Contact details (accordion content)
-            $html .= '<div class="people-contact-content people-contact-content-closed" id="' . htmlspecialchars($contactId) . '-content">';
-            $html .= '<div class="people-contact-details">';
-            
-            if ($title) {
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Title:</span>';
-                $html .= '<span class="people-contact-value">' . htmlspecialchars($title) . '</span>';
-                $html .= '</div>';
-            }
-            
-            if ($email) {
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Email:</span>';
-                $html .= '<a href="mailto:' . htmlspecialchars($email) . '" class="people-contact-link">' . htmlspecialchars($email) . '</a>';
-                $html .= '</div>';
-            }
-            
-            if ($phone) {
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Phone:</span>';
-                $html .= '<a href="tel:' . htmlspecialchars(preg_replace('/[^0-9+]/', '', $phone)) . '" class="people-contact-link">' . htmlspecialchars($phone) . '</a>';
-                $html .= '</div>';
-            }
-            
-            if ($address) {
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Address:</span>';
-                $html .= '<span class="people-contact-value">' . nl2br(htmlspecialchars($address)) . '</span>';
-                $html .= '</div>';
-            }
-            
-            if ($website) {
-                $url = $website;
-                if (!preg_match('/^https?:\/\//', $url)) {
-                    $url = 'https://' . $url;
-                }
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Website:</span>';
-                $html .= '<a href="' . htmlspecialchars($url) . '" class="people-contact-link" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($website) . '</a>';
-                $html .= '</div>';
-            }
-            
-            if ($notes) {
-                $html .= '<div class="people-contact-detail-row">';
-                $html .= '<span class="people-contact-label">Notes:</span>';
-                $html .= '<span class="people-contact-value people-contact-notes">' . nl2br(htmlspecialchars($notes)) . '</span>';
-                $html .= '</div>';
-            }
-            
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
-        }
-        
-        $html .= '</div>'; // Close people-contacts-list
-        $html .= '</div>'; // Close people-accordion-drawer
-        $html .= '</div>'; // Close widget-item
-        
-        // Add inline JavaScript for toggle and search functionality
-        $html .= '<script>
-(function() {
-    function initPeopleAccordion() {
-        const container = document.getElementById("' . htmlspecialchars($containerId) . '");
-        if (!container) {
-            console.warn("People accordion: Container not found");
-            return;
-        }
-        
-        const headerButton = container.querySelector(".people-widget-header");
-        if (!headerButton) {
-            console.warn("People accordion: Header button not found");
-            return;
-        }
-        
-        // Get content ID from data attribute or use the known ID
-        const contentId = headerButton.getAttribute("data-accordion-content") || "' . htmlspecialchars($accordionContentId) . '";
-        const content = document.getElementById(contentId);
-        
-        if (!content) {
-            console.warn("People accordion: Content not found", { contentId });
-            return;
-        }
-        
-        // Store references globally for debugging
-        window.peopleAccordionDebug = window.peopleAccordionDebug || {};
-        window.peopleAccordionDebug["' . htmlspecialchars($containerId) . '"] = {
-            container: container,
-            button: headerButton,
-            content: content
-        };
-        
-        // Ensure button has proper attributes
-        headerButton.setAttribute("type", "button");
-        headerButton.setAttribute("tabindex", "0");
-        headerButton.setAttribute("data-people-accordion", "' . htmlspecialchars($containerId) . '");
-        
-        // No inline styles - all styling handled by CSS classes
-        
-        // Toggle function
-        const toggleDrawer = function(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-            }
-            
-            const isOpen = content.classList.contains("open");
-            
-            if (isOpen) {
-                content.classList.remove("open");
-                headerButton.setAttribute("aria-expanded", "false");
-            } else {
-                content.classList.add("open");
-                headerButton.setAttribute("aria-expanded", "true");
-            }
-            
-            // Rotate arrow icon using CSS class
-            const icon = headerButton.querySelector(".people-accordion-arrow i");
-            if (icon) {
-                if (isOpen) {
-                    icon.classList.remove("people-arrow-open");
-                } else {
-                    icon.classList.add("people-arrow-open");
-                }
-            }
-        };
-        
-        // Global document click handler - most reliable approach
-        if (!window.peopleAccordionGlobalHandler) {
-            window.peopleAccordionGlobalHandler = function(e) {
-                const target = e.target;
-                const button = target.closest ? target.closest(".people-widget-header[data-people-accordion]") : null;
-                if (button) {
-                    const accordionId = button.getAttribute("data-people-accordion");
-                    const debug = window.peopleAccordionDebug[accordionId];
-                    if (debug && debug.content) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const isOpen = debug.content.classList.contains("open");
-                        if (isOpen) {
-                            debug.content.classList.remove("open");
-                            button.setAttribute("aria-expanded", "false");
-                        } else {
-                            debug.content.classList.add("open");
-                            button.setAttribute("aria-expanded", "true");
-                        }
-                        const icon = button.querySelector(".people-accordion-arrow i");
-                        if (icon) {
-                            if (isOpen) {
-                                icon.classList.remove("people-arrow-open");
-                            } else {
-                                icon.classList.add("people-arrow-open");
-                            }
-                        }
-                    }
-                }
-            };
-            document.addEventListener("click", window.peopleAccordionGlobalHandler, true);
-        }
-        
-        // Also try direct handlers as backup
-        headerButton.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleDrawer(e);
-        };
-        
-        headerButton.addEventListener("mousedown", function(e) {
-            e.preventDefault();
-            toggleDrawer(e);
-        }, true);
-        
-        console.log("People accordion initialized", { container, headerButton, content });
-    }
-    
-    // Run when DOM is ready
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initPeopleAccordion);
-    } else {
-        initPeopleAccordion();
-    }
-    
-    // Toggle contact accordion
-    window.togglePeopleContact = function(contactId) {
-        const content = document.getElementById(contactId + "-content");
-        const button = document.querySelector("[onclick*=\"" + contactId + "\"]");
-        if (!content || !button) return;
-        
-        const isExpanded = !content.classList.contains("people-contact-content-closed");
-        if (isExpanded) {
-            content.classList.add("people-contact-content-closed");
-            button.setAttribute("aria-expanded", "false");
-        } else {
-            content.classList.remove("people-contact-content-closed");
-            button.setAttribute("aria-expanded", "true");
-        }
-        
-        const icon = button.querySelector(".people-contact-toggle i");
-        if (icon) {
-            if (isExpanded) {
-                icon.classList.remove("people-contact-arrow-open");
-            } else {
-                icon.classList.add("people-contact-arrow-open");
-            }
-        }
-    };
-    
-    // Search functionality
-    const searchInput = document.getElementById("' . htmlspecialchars($containerId) . '-search");
-    if (searchInput) {
-        searchInput.addEventListener("input", function(e) {
-            const query = e.target.value.toLowerCase().trim();
-            const contacts = document.querySelectorAll("#' . htmlspecialchars($containerId) . ' .people-contact-item");
-            
-            contacts.forEach(function(contact) {
-                const name = contact.getAttribute("data-contact-name") || "";
-                const company = contact.getAttribute("data-contact-company") || "";
-                const matches = !query || name.includes(query) || company.includes(query);
-                contact.style.display = matches ? "" : "none";
-            });
-        });
-    }
-})();
-</script>';
-        
-        return $html;
-    }
-    
+
+
+
     /**
      * Render Rolodex widget - expandable content cards
      */
-    private static function renderRolodex($widget, $configData) {
+    private static function renderRolodex($widget, $configData)
+    {
         $title = $widget['title'] ?? 'Rolodex';
         $itemsJson = $configData['items'] ?? '[]';
         $defaultExpanded = isset($configData['default_expanded']) && $configData['default_expanded'];
-        
+
         // Parse items JSON
         $items = json_decode($itemsJson, true);
         if (!is_array($items) || empty($items)) {
             return '<div class="widget-item widget-rolodex"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">No items configured. Please add items in JSON format.</div></div></div>';
         }
-        
-        $widgetId = isset($widget['id']) ? (int)$widget['id'] : 0;
+
+        $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
         $containerId = 'rolodex-' . $widgetId;
-        
+
         $html = '<div class="widget-item widget-rolodex" id="' . htmlspecialchars($containerId) . '">';
         $html .= '<div class="widget-content">';
         $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
         $html .= '<div class="rolodex-items">';
-        
+
         foreach ($items as $index => $item) {
             $itemTitle = $item['title'] ?? 'Untitled';
             $itemDescription = $item['description'] ?? '';
             $itemUrl = $item['url'] ?? null;
             $itemId = 'rolodex-item-' . $widgetId . '-' . $index;
             $isExpanded = $defaultExpanded ? 'true' : 'false';
-            
+
             $html .= '<div class="rolodex-item" data-item-id="' . htmlspecialchars($itemId) . '">';
             $html .= '<button type="button" class="rolodex-item-header" onclick="toggleRolodexItem(\'' . htmlspecialchars($itemId) . '\')" aria-expanded="' . $isExpanded . '">';
             $html .= '<span class="rolodex-item-title">' . htmlspecialchars($itemTitle) . '</span>';
             $html .= '<span class="rolodex-item-toggle"><i class="fas fa-chevron-down"></i></span>';
             $html .= '</button>';
             $html .= '<div class="rolodex-item-content" id="' . htmlspecialchars($itemId) . '-content" style="display: ' . ($defaultExpanded ? 'block' : 'none') . ';">';
-            
+
             if ($itemDescription) {
                 $html .= '<div class="rolodex-item-description">' . self::sanitizeHtml($itemDescription) . '</div>';
             }
-            
+
             if ($itemUrl) {
                 $pageId = $widget['page_id'] ?? 0;
                 $clickUrl = "/click.php?link_id={$widgetId}&page_id={$pageId}&item_index={$index}";
                 $html .= '<a href="' . htmlspecialchars($clickUrl) . '" class="rolodex-item-link" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($itemUrl) . '</a>';
             }
-            
+
             $html .= '</div>';
             $html .= '</div>';
         }
-        
+
         $html .= '</div>'; // Close rolodex-items
         $html .= '</div>'; // Close widget-content
         $html .= '</div>'; // Close widget-item
-        
+
         // Add inline JavaScript for toggle functionality
         $html .= '<script>
 (function() {
@@ -2266,21 +1207,272 @@ class WidgetRenderer {
     };
 })();
 </script>';
-        
+
         return $html;
     }
-    
+
+    /**
+     * Render Contact Form Widget
+     */
+    private static function renderContactForm($widget, $configData)
+    {
+        $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
+        $pageId = isset($widget['page_id']) ? (int) $widget['page_id'] : 0;
+        $buttonText = $configData['button_text'] ?? 'Contact Me';
+        $title = $widget['title'] ?? 'Contact';
+        $drawerId = 'contact-drawer-' . $widgetId;
+        $description = $configData['description'] ?? 'Get in touch with me!';
+        $thumbnail = $configData['thumbnail_image'] ?? null; // Should come from config if user sets one, or default? 
+        // Note: New widgets might not have 'thumbnail_image' in config_data unless we add a field for it or use the registry thumbnail.
+        // For public render, we usually expect a specific thumbnail set by user. If not, maybe use default icon.
+
+        // Standard Widget Structure
+        // Wrapper button (opens drawer) - use <a> to match custom link styling exactly
+        $html = '<a href="javascript:void(0)" onclick="openContactDrawer(' . $widgetId . ')" class="widget-item widget-contact-btn">';
+
+        // Left Side: Thumbnail or Icon
+        if ($thumbnail) {
+            $html .= '<div class="widget-thumbnail-wrapper">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
+            $html .= '</div>';
+        } else {
+            $html .= '<div class="widget-icon-wrapper">';
+            $html .= '<div class="widget-icon"><i class="fas fa-envelope"></i></div>';
+            $html .= '</div>';
+        }
+
+        // Right Side: Content
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        if ($description) {
+            $html .= '<div class="widget-description">' . htmlspecialchars($description) . '</div>';
+        }
+        $html .= '</div>'; // widget-content
+
+        // Optional: Action Icon (e.g. arrow or chevron) - standard widgets don't always have it, but nice for interaction
+        //$html .= '<div class="widget-action"><i class="fas fa-chevron-right"></i></div>';
+
+        $html .= '</a>';
+
+        // Hidden Drawer HTML
+        $html .= '<div id="' . $drawerId . '" class="drawer contact-drawer">';
+        $html .= '<div class="drawer-header">';
+        $html .= '<h3>' . htmlspecialchars($title) . '</h3>';
+        $html .= '<button class="drawer-close" onclick="closeContactDrawer(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
+        $html .= '</div>';
+
+        $html .= '<div class="drawer-content">';
+        $html .= '<form id="contact-form-' . $widgetId . '" onsubmit="submitContactForm(event, ' . $widgetId . ', ' . $pageId . ')">';
+
+        $html .= '<div class="form-group">';
+        $html .= '<label for="contact-name-' . $widgetId . '">Name</label>';
+        $html .= '<input type="text" id="contact-name-' . $widgetId . '" name="name" required placeholder="Your Name" class="form-control">';
+        $html .= '</div>';
+
+        $html .= '<div class="form-group">';
+        $html .= '<label for="contact-email-' . $widgetId . '">Email</label>';
+        $html .= '<input type="email" id="contact-email-' . $widgetId . '" name="email" required placeholder="your@email.com" class="form-control">';
+        $html .= '</div>';
+
+        $html .= '<div class="form-group">';
+        $html .= '<label for="contact-message-' . $widgetId . '">Message</label>';
+        $html .= '<textarea id="contact-message-' . $widgetId . '" name="message" required rows="5" placeholder="How can we help?" class="form-control"></textarea>';
+        $html .= '</div>';
+
+        $html .= '<div id="contact-message-' . $widgetId . '-status" class="form-status" style="display:none; margin-bottom: 15px;"></div>';
+
+        $html .= '<button type="submit" class="btn btn-primary btn-block">Send Message</button>';
+
+        $html .= '</form>';
+        $html .= '</div>'; // drawer-content
+        $html .= '</div>'; // drawer
+
+        $html .= '<div id="contact-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeContactDrawer(' . $widgetId . ')"></div>';
+
+        return $html;
+    }
+
+    /**
+     * Render Embed Code Widget
+     */
+    private static function renderEmbedCode($widget, $configData)
+    {
+        $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
+        $codeContent = $configData['code_content'] ?? '';
+        $displayMode = $configData['display_mode'] ?? 'inline';
+        $buttonLabel = $configData['button_label'] ?? 'View Content';
+        $title = $widget['title'] ?? 'Embed Config'; // Usually hidden or used for button
+
+        if (empty($codeContent)) {
+            return '';
+        }
+
+        // Inline Mode
+        if ($displayMode === 'inline') {
+            // "Stripped of any traditional widget styling" - Render without widget-item class
+            $html = '<div class="widget-embed-inline-container">';
+            $html .= $codeContent;
+            $html .= '</div>';
+            return $html;
+        }
+
+        // Modal Mode
+        $drawerId = 'embed-drawer-' . $widgetId;
+        $description = $configData['description'] ?? '';
+        $thumbnail = $configData['thumbnail_image'] ?? null;
+
+        // Button trigger with Standard Structure
+        $html = '<a href="javascript:void(0)" onclick="openEmbedDrawer(' . $widgetId . ')" class="widget-item widget-embed-btn">';
+
+        // Left Side
+        if ($thumbnail) {
+            $html .= '<div class="widget-thumbnail-wrapper">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($buttonLabel) . '" class="widget-thumbnail">';
+            $html .= '</div>';
+        } else {
+            $html .= '<div class="widget-icon-wrapper">';
+            $html .= '<div class="widget-icon"><i class="fas fa-code"></i></div>';
+            $html .= '</div>';
+        }
+
+        // Right Side
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">' . htmlspecialchars($buttonLabel) . '</div>';
+        if ($description) {
+            $html .= '<div class="widget-description">' . htmlspecialchars($description) . '</div>';
+        }
+        $html .= '</div>';
+
+        $html .= '</a>';
+
+        // Hidden Drawer
+        $html .= '<div id="' . $drawerId . '" class="drawer embed-drawer">';
+        $html .= '<div class="drawer-header">';
+        $html .= '<h3>' . htmlspecialchars($buttonLabel) . '</h3>';
+        $html .= '<button class="drawer-close" onclick="closeEmbedDrawer(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
+        $html .= '</div>';
+        $html .= '<div class="drawer-content">';
+        $html .= '<div class="embed-content-wrapper">';
+        $html .= $codeContent;
+        $html .= '</div>';
+        $html .= '</div>';
+        $html .= '</div>';
+
+        // Overlay
+        $html .= '<div id="embed-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeEmbedDrawer(' . $widgetId . ')"></div>';
+
+        return $html;
+    }
+
+    /**
+     * Render Photo Gallery Widget
+     */
+    private static function renderImageGallery($widget, $configData)
+    {
+        $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
+        $title = $widget['title'] ?? 'Gallery';
+        // 'images' might be JSON string or array depending on how it's stored and retrieved
+        $images = $configData['images'] ?? [];
+        if (is_string($images)) {
+            $images = json_decode($images, true);
+        }
+
+        // Filter valid images
+        $validImages = [];
+        if (is_array($images)) {
+            foreach ($images as $img) {
+                if (!empty($img)) {
+                    $validImages[] = $img;
+                }
+            }
+        }
+
+        if (empty($validImages)) {
+            return '';
+        }
+
+        $gridColumns = isset($configData['grid_columns']) ? (int) $configData['grid_columns'] : 3;
+        // Strict bounds check: only 2, 3, or 4 allowed. Fallback to 3.
+        if ($gridColumns < 2 || $gridColumns > 4) {
+            $gridColumns = 3;
+        }
+        $gridClass = 'gallery-grid-' . $gridColumns; // e.g., gallery-grid-2, gallery-grid-3
+
+        // Encode images for JS
+        $imagesJson = htmlspecialchars(json_encode($validImages), ENT_QUOTES, 'UTF-8');
+
+        $drawerId = 'gallery-drawer-' . $widgetId;
+        $description = $configData['description'] ?? ''; // Gallery description
+        // Use first image as thumbnail if no explicit thumbnail, or better yet, generic icon if no specific thumb?
+        // User wants "A thumbnail". If specific thumbnail set for widget, use it. Else, maybe use first gallery image? 
+        // For now, let's look for 'thumbnail_image' property (standard across widgets).
+        $thumbnail = $configData['thumbnail_image'] ?? ($validImages[0] ?? null);
+
+        // Render Trigger Button (opening the thumbnails modal)
+        $html = '<a href="javascript:void(0)" onclick="openGalleryModal(' . $widgetId . ')" class="widget-item widget-gallery-btn" data-widget-id="' . $widgetId . '" data-images="' . $imagesJson . '">';
+
+        // Left Side: Thumbnail or Icon
+        if ($thumbnail) {
+            $html .= '<div class="widget-thumbnail-wrapper">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
+            $html .= '</div>';
+        } else {
+            $html .= '<div class="widget-icon-wrapper">';
+            $html .= '<div class="widget-icon"><i class="fas fa-images"></i></div>';
+            $html .= '</div>';
+        }
+
+        // Right Side: Content
+        $html .= '<div class="widget-content">';
+        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
+        // Description
+        // Note: 'description' was added to registry, so it should be in configData if saved
+        if ($description) {
+            $html .= '<div class="widget-description">' . htmlspecialchars($description) . '</div>';
+        } else {
+            // Fallback description line if empty? Or just hide it. Standard is hide.
+        }
+        $html .= '</div>';
+
+        $html .= '</a>';
+
+        // Hidden Drawer (The Thumbnails Modal)
+        $html .= '<div id="' . $drawerId . '" class="drawer gallery-drawer">';
+        $html .= '<div class="drawer-header">';
+        $html .= '<h3>' . htmlspecialchars($title) . '</h3>';
+        $html .= '<button class="drawer-close" onclick="closeGalleryModal(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
+        $html .= '</div>'; // drawer-header
+
+        $html .= '<div class="drawer-content">';
+        $html .= '<div class="gallery-grid ' . $gridClass . '">';
+        foreach ($validImages as $index => $imageUrl) {
+            // Click thumb -> Open Swipe Deck
+            $html .= '<div class="gallery-grid-item" onclick="openSwipeDeck(' . $widgetId . ', ' . $index . ')">';
+            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="Gallery Image ' . ($index + 1) . '" class="gallery-grid-image" loading="lazy">';
+            $html .= '</div>';
+        }
+        $html .= '</div>'; // gallery-grid
+        $html .= '</div>'; // drawer-content
+        $html .= '</div>'; // drawer
+
+        // Overlay for the drawer
+        $html .= '<div id="gallery-drawer-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeGalleryModal(' . $widgetId . ')"></div>';
+
+        return $html;
+    }
+
     /**
      * Sanitize HTML content (allow safe tags only)
      */
-    private static function sanitizeHtml($html) {
+    private static function sanitizeHtml($html)
+    {
         // Allow common safe HTML tags
         $allowedTags = '<p><br><strong><em><u><a><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><code><pre>';
         $html = strip_tags($html, $allowedTags);
-        
+
         // Remove javascript: and data: URLs from links
         $html = preg_replace('/(<a[^>]+href=["\'])(javascript:|data:)/i', '$1#', $html);
-        
+
         return $html;
     }
 }

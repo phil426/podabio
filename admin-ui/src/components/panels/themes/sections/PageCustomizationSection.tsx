@@ -24,12 +24,14 @@ interface PageCustomizationSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function PageCustomizationSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: PageCustomizationSectionProps): JSX.Element {
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
@@ -37,9 +39,9 @@ export function PageCustomizationSection({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-  
+
   const profileImage = page?.profile_image ?? null;
-  
+
   const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
     try {
       setIsUploading(true);
@@ -53,14 +55,14 @@ export function PageCustomizationSection({
       setIsUploading(false);
     }
   };
-  
+
   // Get fields for this section
   const fields = fieldRegistry.getFieldsForSection('page-customization');
 
   // Extract values with defaults
   const pageBackground = (uiState['page-background'] as string) ?? '#ffffff';
   const [pageBackgroundType, setPageBackgroundType] = useState<'solid' | 'gradient'>('solid');
-  
+
   // Map effect values to display names
   const effectValueToDisplay: Record<string, string> = {
     'none': 'None',
@@ -74,27 +76,27 @@ export function PageCustomizationSection({
   };
   const pageTitleEffectValue = (uiState['page-title-effect'] as string) ?? 'none';
   const pageTitleEffect = effectValueToDisplay[pageTitleEffectValue] || 'None';
-  
+
   // Shadow properties
   const shadowColor = (uiState['page-title-shadow-color'] as string) ?? '#000000';
   const shadowIntensity = (uiState['page-title-shadow-intensity'] as number) ?? 0.5;
   const shadowDepth = (uiState['page-title-shadow-depth'] as number) ?? 4;
   const shadowBlur = (uiState['page-title-shadow-blur'] as number) ?? 8;
-  
+
   // Glow properties
   const glowColor = (uiState['page-title-glow-color'] as string) ?? '#2563eb';
   const glowWidth = (uiState['page-title-glow-width'] as number) ?? 10;
-  
+
   // Border/Stroke properties
   const borderColor = (uiState['page-title-border-color'] as string) ?? '#000000';
   const borderWidth = (uiState['page-title-border-width'] as number) ?? 0;
-  
+
   const pageTitleColor = (uiState['page-title-color'] as string) ?? '#0f172a';
   const pageTitleFont = (uiState['page-title-font'] as string) ?? 'Inter';
   const pageTitleSize = (uiState['page-title-size'] as number) ?? 24;
   const pageTitleSpacing = (uiState['page-title-spacing'] as number) ?? 1.2;
   const pageTitleWeight = (uiState['page-title-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
-  
+
   const pageBioColor = (uiState['page-bio-color'] as string) ?? '#4b5563';
   const pageBioFont = (uiState['page-bio-font'] as string) ?? 'Inter';
   const pageBioSize = (uiState['page-bio-size'] as number) ?? 16;
@@ -132,25 +134,26 @@ export function PageCustomizationSection({
             }
           }}
           label="Page background"
+          palette={palette}
         />
       </div>
 
       {/* Profile Image */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Profile Image</h4>
-        
+
         {/* Profile Image Upload */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Image</label>
           <div className={styles.imageUploadContainer}>
-            <div 
+            <div
               className={styles.imagePreview}
               data-has-image={profileImage ? 'true' : 'false'}
             >
               {profileImage ? (
-                <img 
-                  src={normalizeImageUrl(profileImage)} 
-                  alt="Profile" 
+                <img
+                  src={normalizeImageUrl(profileImage)}
+                  alt="Profile"
                   className={styles.imagePreviewImg}
                 />
               ) : (
@@ -160,15 +163,15 @@ export function PageCustomizationSection({
               )}
               <div className={styles.imageOverlay}>
                 <div className={styles.segmentedBar}>
-                <button
-                  type="button"
+                  <button
+                    type="button"
                     className={styles.segmentedButton}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                >
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
+                  >
                     <Upload size={16} weight="regular" aria-hidden="true" />
-                </button>
+                  </button>
                   <div className={styles.segmentedDivider} />
                   <button
                     type="button"
@@ -185,24 +188,24 @@ export function PageCustomizationSection({
                       <button
                         type="button"
                         className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
-                    onClick={async () => {
-                      try {
-                        setIsUploading(true);
-                        await removeProfileImage();
-                        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-                      } catch (error) {
-                        console.error('Failed to remove image:', error);
-                      } finally {
-                        setIsUploading(false);
-                      }
-                    }}
-                    disabled={isUploading}
-                    title="Remove image"
-                  >
+                        onClick={async () => {
+                          try {
+                            setIsUploading(true);
+                            await removeProfileImage();
+                            await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+                          } catch (error) {
+                            console.error('Failed to remove image:', error);
+                          } finally {
+                            setIsUploading(false);
+                          }
+                        }}
+                        disabled={isUploading}
+                        title="Remove image"
+                      >
                         <X size={16} weight="regular" aria-hidden="true" />
-                  </button>
+                      </button>
                     </>
-                )}
+                  )}
                 </div>
               </div>
             </div>
@@ -214,7 +217,7 @@ export function PageCustomizationSection({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                
+
                 // Client-side validation: Check file size (5MB limit)
                 const maxSize = 5 * 1024 * 1024; // 5MB in bytes
                 if (file.size > maxSize) {
@@ -224,7 +227,7 @@ export function PageCustomizationSection({
                   }
                   return;
                 }
-                
+
                 // Validate file type
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 if (!allowedTypes.includes(file.type)) {
@@ -234,7 +237,7 @@ export function PageCustomizationSection({
                   }
                   return;
                 }
-                
+
                 try {
                   setIsUploading(true);
                   await uploadProfileImage(file);
@@ -258,7 +261,7 @@ export function PageCustomizationSection({
             />
           </div>
         </div>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Size</label>
           <SliderInput
@@ -303,6 +306,7 @@ export function PageCustomizationSection({
                 value={(uiState['profile-image-shadow-color'] as string) ?? '#000000'}
                 onChange={(value) => onFieldChange('profile-image-shadow-color', value)}
                 label="Shadow color"
+                palette={palette}
               />
             </div>
 
@@ -352,6 +356,7 @@ export function PageCustomizationSection({
                 value={(uiState['profile-image-glow-color'] as string) ?? '#2563eb'}
                 onChange={(value) => onFieldChange('profile-image-glow-color', value)}
                 label="Glow color"
+                palette={palette}
               />
             </div>
 
@@ -376,6 +381,7 @@ export function PageCustomizationSection({
             value={(uiState['profile-image-border-color'] as string) ?? '#000000'}
             onChange={(value) => onFieldChange('profile-image-border-color', value)}
             label="Border color"
+            palette={palette}
           />
         </div>
 
@@ -395,7 +401,7 @@ export function PageCustomizationSection({
       {/* Page Title */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Page Title</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Special Effect</label>
           <SpecialTextSelect
@@ -416,6 +422,7 @@ export function PageCustomizationSection({
                 value={shadowColor}
                 onChange={(value) => onFieldChange('page-title-shadow-color', value)}
                 solidOnly
+                palette={palette}
               />
             </div>
 
@@ -465,6 +472,7 @@ export function PageCustomizationSection({
                 value={glowColor}
                 onChange={(value) => onFieldChange('page-title-glow-color', value)}
                 solidOnly
+                palette={palette}
               />
             </div>
 
@@ -490,6 +498,7 @@ export function PageCustomizationSection({
             onChange={(value) => onFieldChange('page-title-color', value)}
             label="Page title color"
             solidOnly={true}
+            palette={palette}
           />
         </div>
 
@@ -500,6 +509,7 @@ export function PageCustomizationSection({
             value={borderColor}
             onChange={(value) => onFieldChange('page-title-border-color', value)}
             label="Font border color"
+            palette={palette}
           />
         </div>
 
@@ -570,13 +580,14 @@ export function PageCustomizationSection({
       {/* Page Bio */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Page Bio</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Color</label>
           <BackgroundColorSwatch
             value={pageBioColor}
             onChange={(value) => onFieldChange('page-bio-color', value)}
             label="Page bio color"
+            palette={palette}
           />
         </div>
 

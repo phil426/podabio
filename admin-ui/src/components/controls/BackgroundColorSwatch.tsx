@@ -10,15 +10,17 @@ interface BackgroundColorSwatchProps {
   onTypeChange?: (type: 'solid' | 'gradient') => void; // Optional - kept for backward compatibility
   label: string;
   solidOnly?: boolean; // If true, only allow solid colors (no gradients)
+  palette?: string[]; // Optional preset palette
 }
 
-export function BackgroundColorSwatch({ 
-  value, 
+export function BackgroundColorSwatch({
+  value,
   backgroundType,
-  onChange, 
+  onChange,
   onTypeChange,
   label,
-  solidOnly = false
+  solidOnly = false,
+  palette
 }: BackgroundColorSwatchProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
@@ -26,7 +28,7 @@ export function BackgroundColorSwatch({
     if (!value || typeof value !== 'string') {
       return '#FFFFFF';
     }
-      return value;
+    return value;
   };
 
   const displayValue = getDisplayValue();
@@ -66,6 +68,7 @@ export function BackgroundColorSwatch({
                     onChange={onChange}
                     onTypeChange={onTypeChange}
                     solidOnly={solidOnly}
+                    palette={palette}
                   />
                 </div>
               </Popover.Content>

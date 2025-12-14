@@ -1,0 +1,175 @@
+/* 
+ * Layouts CSS
+ * Defines alternative page layouts (Bento, Magazine, Spotlight)
+ * Default/Standard layout is handled by existing CSS
+ */
+
+/* =========================================
+   Bento Grid Layout
+   ========================================= */
+body.layout-bento .widget-section-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: transparent !important;
+    /* Remove container background for grid items */
+    border: none !important;
+    padding: 0 !important;
+}
+
+body.layout-bento .widget-item {
+    height: 100%;
+    min-height: 140px;
+    /* Square-ish tiles */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 0 !important;
+}
+
+/* Make social icons and profile header span full width */
+body.layout-bento .profile-header,
+body.layout-bento .social-icons,
+body.layout-bento .podcast-top-banner {
+    grid-column: span 2;
+}
+
+/* Featured widgets span full width */
+body.layout-bento .widget-item.featured,
+body.layout-bento .widget-item.widget-video,
+body.layout-bento .widget-item.widget-spotify,
+body.layout-bento .widget-item.widget-profile-carousel {
+    grid-column: span 2;
+}
+
+
+/* =========================================
+   Magazine Layout
+   ========================================= */
+body.layout-magazine .profile-header {
+    text-align: left;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+    margin-bottom: 2rem;
+}
+
+body.layout-magazine .profile-image-container {
+    float: left;
+    margin-right: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+body.layout-magazine .page-title {
+    font-size: 2.5rem;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+
+/* First widget is Hero */
+body.layout-magazine .widget-section-container .widget-item:first-child {
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 2rem;
+    border-radius: var(--widget-border-radius, 16px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* If it's a link with thumbnail, use thumbnail as background */
+body.layout-magazine .widget-item:first-child .widget-thumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.6;
+    /* Dim for text readability */
+}
+
+body.layout-magazine .widget-item:first-child .widget-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+}
+
+body.layout-magazine .widget-item:first-child .widget-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white !important;
+    /* Always white on hero */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+
+/* =========================================
+   Spotlight Layout (Swipe Deck)
+   ========================================= */
+body.layout-spotlight .page-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
+body.layout-spotlight .widget-section-container {
+    display: contents;
+    /* Let children partake in scroll grid */
+}
+
+/* Profile header is the first "slide" */
+body.layout-spotlight .profile-header {
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+/* Each widget is a full screen slide */
+body.layout-spotlight .widget-item {
+    height: 100vh;
+    scroll-snap-align: start;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+    background: transparent !important;
+    /* Allow body bg to show */
+    border: none !important;
+}
+
+body.layout-spotlight .widget-content {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    /* Glass card */
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 400px;
+}
+
+body.layout-spotlight .widget-thumbnail {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}

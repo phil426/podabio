@@ -73,7 +73,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
+  border-bottom: none;
   flex-shrink: 0;
 }
 
@@ -115,69 +115,11 @@
   border-color: var(--admin-border-strong, rgba(15, 23, 42, 0.2));
 }
 
-/* Tabs (Pill Style) */
+/* Tabs placement */
 .tabs {
-  display: flex;
-  gap: 4px;
-  background: var(--admin-bg-canvas, #f1f5f9);
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.08));
-  margin: 0 24px;
+  margin: 1.5rem 1.5rem 0 1.5rem;
   width: auto;
-  /* Allow it to fill available space with margins */
-}
-
-.tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  color: var(--admin-text-secondary, #64748b);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--admin-text-primary, #0f172a);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.modal.activeColorvibrant .tabActive {
-  background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  /* Shadow for active pill */
-  font-weight: 600;
-  border-bottom-color: transparent;
-}
-
-.modal.activeColorminimal .tabActive {
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-weight: 600;
-  border-bottom-color: transparent;
-}
-
-.tabActive {
-  color: var(--admin-accent-primary, #2563eb);
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-weight: 600;
-  border-bottom-color: transparent;
-}
-
-.tab svg {
-  flex-shrink: 0;
+  margin-bottom: 0;
 }
 
 .body {

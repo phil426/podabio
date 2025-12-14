@@ -12,12 +12,14 @@ interface SocialIconsSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function SocialIconsSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: SocialIconsSectionProps): JSX.Element {
   // Extract solid color from value (in case a gradient was previously set)
   const rawColor = (uiState['social-icon-color'] as string) ?? '#2563eb';
@@ -34,6 +36,7 @@ export function SocialIconsSection({
           onChange={(value) => onFieldChange('social-icon-color', value)}
           label="Social icon color"
           solidOnly={true}
+          palette={palette}
         />
       </div>
 

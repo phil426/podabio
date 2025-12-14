@@ -14,12 +14,14 @@ interface WidgetButtonSectionProps {
   uiState: Record<string, unknown>;
   onFieldChange: (fieldId: string, value: unknown) => void;
   activeColor: TabColorTheme;
+  palette?: string[];
 }
 
 export function WidgetButtonSection({
   uiState,
   onFieldChange,
-  activeColor
+  activeColor,
+  palette
 }: WidgetButtonSectionProps): JSX.Element {
   const widgetBackground = (uiState['widget-background'] as string) ?? '#ffffff';
   const widgetBorderColor = (uiState['widget-border-color'] as string) ?? '#e2e8f0';
@@ -27,11 +29,11 @@ export function WidgetButtonSection({
   const widgetRounding = (uiState['widget-rounding'] as number) ?? 12;
   const widgetButtonWidth = (uiState['widget-button-width'] as number) ?? 100;
   const widgetBorderEffect = (uiState['widget-border-effect'] as string) ?? 'none';
-  
+
   const widgetShadowDepth = (uiState['widget-shadow-depth'] as number) ?? 1;
   const widgetShadowColor = (uiState['widget-shadow-color'] as string) ?? 'rgba(15, 23, 42, 0.12)';
   const widgetShadowIntensity = (uiState['widget-shadow-intensity'] as number) ?? 1;
-  
+
   const widgetGlowWidth = (uiState['widget-glow-width'] as number) ?? 2;
   const widgetGlowColor = (uiState['widget-glow-color'] as string) ?? '#2563eb';
   const widgetGlowIntensity = (uiState['widget-glow-intensity'] as number) ?? 1;
@@ -41,13 +43,14 @@ export function WidgetButtonSection({
       {/* Background & Border */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Background & Border</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Background</label>
           <BackgroundColorSwatch
             value={widgetBackground}
             onChange={(value) => onFieldChange('widget-background', value)}
             label="Widget background"
+            palette={palette}
           />
         </div>
 
@@ -57,6 +60,7 @@ export function WidgetButtonSection({
             value={widgetBorderColor}
             onChange={(value) => onFieldChange('widget-border-color', value)}
             label="Widget border color"
+            palette={palette}
           />
         </div>
 
@@ -100,7 +104,7 @@ export function WidgetButtonSection({
       {/* Shadow/Glow Effects */}
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Effects</h4>
-        
+
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Effect Type</label>
           <WidgetBorderEffectSelect
@@ -128,6 +132,7 @@ export function WidgetButtonSection({
                 value={widgetShadowColor}
                 onChange={(value) => onFieldChange('widget-shadow-color', value)}
                 label="Shadow color"
+                palette={palette}
               />
             </div>
 
@@ -164,6 +169,7 @@ export function WidgetButtonSection({
                 value={widgetGlowColor}
                 onChange={(value) => onFieldChange('widget-glow-color', value)}
                 label="Glow color"
+                palette={palette}
               />
             </div>
 
