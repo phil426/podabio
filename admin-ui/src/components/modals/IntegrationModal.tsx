@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useIntegrationSelection } from '../../state/integrationSelection';
 import { IntegrationInspector } from '../panels/IntegrationInspector';
 import { tabColors } from '../layout/tab-colors';
@@ -25,6 +26,12 @@ export function IntegrationModal(): JSX.Element | null {
             <Dialog.Portal>
                 <Dialog.Overlay className={styles.overlay} />
                 <Dialog.Content className={styles.content}>
+                    <VisuallyHidden.Root asChild>
+                        <Dialog.Title>Integration Settings</Dialog.Title>
+                    </VisuallyHidden.Root>
+                    <VisuallyHidden.Root asChild>
+                        <Dialog.Description>Configure third-party integrations</Dialog.Description>
+                    </VisuallyHidden.Root>
                     <IntegrationInspector activeColor={tabColors.integration} />
                 </Dialog.Content>
             </Dialog.Portal>

@@ -7,6 +7,7 @@
 import { extractTokenValues } from './themeMapper';
 import { fieldRegistry } from './fieldRegistry';
 import type { ThemeRecord } from '../../../../api/types';
+import { normalizeImageUrl } from '../../../../api/utils';
 
 export interface PreviewElement {
   id: string;
@@ -55,15 +56,15 @@ class PreviewRenderer {
     // Convert UI state (field IDs) to token path values and handle direct columns
     const uiStateTokenValues: Record<string, unknown> = {};
     const directColumns: Record<string, unknown> = {};
-    
+
     if (uiState) {
       for (const [fieldId, value] of Object.entries(uiState)) {
         const field = fieldRegistry.get(fieldId);
         if (field && field.tokenPath) {
           // Check if it's a direct column (not a token path)
-          if (field.tokenPath === 'page_background' || 
-              field.tokenPath === 'widget_background' || 
-              field.tokenPath === 'widget_border_color') {
+          if (field.tokenPath === 'page_background' ||
+            field.tokenPath === 'widget_background' ||
+            field.tokenPath === 'widget_border_color') {
             directColumns[field.tokenPath] = value;
           } else {
             // Map field ID to token path
@@ -77,32 +78,77 @@ class PreviewRenderer {
     const allValues = { ...tokenValues, ...uiStateTokenValues };
 
     // Handle direct columns (from theme or UI state)
-    const pageBackground = directColumns['page_background'] ?? 
-                           (theme?.page_background) ?? 
-                           allValues['typography_tokens.background.page'];
+    const pageBackground = directColumns['page_background'] ??
+      (theme?.page_background) ??
+      allValues['typography_tokens.background.page'];
     if (pageBackground) {
       cssVars['--page-background'] = String(pageBackground);
     }
-    
+
     // Handle page background animation
-    const pageBackgroundAnimate = uiState?.['page-background-animate'] ?? 
-                                   (page?.page_background_animate ? true : false);
-    const isGradient = pageBackground && typeof pageBackground === 'string' && 
-                       (pageBackground.includes('gradient') || pageBackground.includes('linear-gradient') || pageBackground.includes('radial-gradient'));
+    const pageBackgroundAnimate = uiState?.['page-background-animate'] ??
+      (page?.page_background_animate ? true : false);
+    const isGradient = pageBackground && typeof pageBackground === 'string' &&
+      (pageBackground.includes('gradient') || pageBackground.includes('linear-gradient') || pageBackground.includes('radial-gradient'));
     if (pageBackgroundAnimate && isGradient) {
       cssVars['--page-background-animate'] = 'true';
     }
 
-    const widgetBackground = directColumns['widget_background'] ?? 
-                             (theme?.widget_background) ?? 
-                             allValues['widget_styles.background'];
+    // Handle Page Background Image - CRITICAL for preview updates
+    // Check uiState first, then page data
+    const rawBgImageUrl = (uiState?.['page_background_image_url'] as string) ?? (page?.['page_background_image_url'] as string);
+    const bgImageUrl = normalizeImageUrl(rawBgImageUrl);
+
+    if (bgImageUrl) {
+      cssVars['--page-background-image-url'] = `url('${bgImageUrl}')`;
+      cssVars['--page-background-image-active'] = '1';
+      // Force screen background to transparent so image shows through
+      // page-screen-background is for page-preview.php, page-background is for page.php
+      cssVars['--page-screen-background'] = 'transparent';
+      cssVars['--page-background'] = 'transparent';
+
+      // Handle Image Overlay
+      const bgOverlay = (uiState?.['page_background_image_overlay'] as string) ?? (page?.['page_background_image_overlay'] as string);
+      if (bgOverlay) {
+        cssVars['--page-background-image-overlay'] = bgOverlay;
+      }
+
+      // Handle Focal Point
+      // Values are stored as "50%" strings in DB/State
+      const rawFocalX = (uiState?.['page_background_image_focal_x'] as string | number) ?? (page?.['page_background_image_focal_x'] as string | number) ?? '50%';
+      const rawFocalY = (uiState?.['page_background_image_focal_y'] as string | number) ?? (page?.['page_background_image_focal_y'] as string | number) ?? '50%';
+
+      const focalX = parseFloat(String(rawFocalX).replace('%', ''));
+      const focalY = parseFloat(String(rawFocalY).replace('%', ''));
+
+      cssVars['--page-background-image-focal-x'] = `${isNaN(focalX) ? 50 : focalX}%`;
+      cssVars['--page-background-image-focal-y'] = `${isNaN(focalY) ? 50 : focalY}%`;
+
+      // Handle Scale
+      const scale = (uiState?.['page_background_image_scale'] as number) ?? (page?.['page_background_image_scale'] as number) ?? 1;
+      // Scale should be a unitless factor (e.g. 1, 1.5), NOT a percentage
+      cssVars['--page-background-image-scale'] = `${scale}`;
+
+      // Handle Blur
+      const rawBlur = (uiState?.['page_background_image_blur'] as string | number) ?? (page?.['page_background_image_blur'] as string | number) ?? 0;
+      const blur = parseFloat(String(rawBlur).replace('px', ''));
+      const finalBlur = isNaN(blur) ? 0 : blur;
+      cssVars['--page-background-image-focal-blur'] = `${finalBlur}px`;
+    } else {
+      // Ensure image is inactive if not present
+      cssVars['--page-background-image-active'] = '0';
+    }
+
+    const widgetBackground = directColumns['widget_background'] ??
+      (theme?.widget_background) ??
+      allValues['widget_styles.background'];
     if (widgetBackground) {
       cssVars['--widget-background'] = String(widgetBackground);
     }
 
-    const widgetBorderColor = directColumns['widget_border_color'] ?? 
-                              (theme?.widget_border_color) ?? 
-                              allValues['widget_styles.border_color'];
+    const widgetBorderColor = directColumns['widget_border_color'] ??
+      (theme?.widget_border_color) ??
+      allValues['widget_styles.border_color'];
     if (widgetBorderColor) {
       cssVars['--widget-border-color'] = String(widgetBorderColor);
     }
@@ -158,7 +204,7 @@ class PreviewRenderer {
     if (pageTitleSpacing !== undefined) {
       cssVars['--page-title-spacing'] = String(pageTitleSpacing);
     }
-    
+
     // Map font weights and styles
     // Page title weight - check uiState first, then allValues
     const pageTitleWeight = uiState?.['page-title-weight'] ?? allValues['typography_tokens.weight.heading'];
@@ -199,7 +245,7 @@ class PreviewRenderer {
         cssVars['--widget-body-style'] = weightObj.italic ? 'italic' : 'normal';
       }
     }
-    
+
     // Map widget text tokens - use variable names that match ThemeCSSGenerator
     if (allValues['typography_tokens.font.widget_heading']) {
       const fontName = String(allValues['typography_tokens.font.widget_heading']);
@@ -269,14 +315,14 @@ class PreviewRenderer {
       if (profileImageSize !== undefined) {
         cssVars['--profile-image-size'] = typeof profileImageSize === 'number' ? `${profileImageSize}px` : String(profileImageSize);
       }
-      
+
       // Profile image radius (0-50% for border-radius)
       const profileImageRadius = uiState['profile-image-radius'];
       if (profileImageRadius !== undefined) {
         const radiusValue = typeof profileImageRadius === 'number' ? profileImageRadius : Number(profileImageRadius);
         cssVars['--profile-image-radius'] = `${radiusValue}%`;
       }
-      
+
       // Profile image border
       const profileImageBorderWidth = uiState['profile-image-border-width'];
       if (profileImageBorderWidth !== undefined) {
@@ -286,33 +332,33 @@ class PreviewRenderer {
       if (profileImageBorderColor !== undefined) {
         cssVars['--profile-image-border-color'] = String(profileImageBorderColor);
       }
-      
+
       // Profile image effects (shadow/glow)
       const profileImageEffect = uiState['profile-image-effect'] ?? 'none';
       let profileImageShadows: string[] = [];
-      
+
       if (profileImageEffect === 'shadow') {
         const shadowColor = uiState['profile-image-shadow-color'] ?? '#000000';
         const shadowIntensity = uiState['profile-image-shadow-intensity'] ?? 0.5;
         const shadowDepth = uiState['profile-image-shadow-depth'] ?? 4;
         const shadowBlur = uiState['profile-image-shadow-blur'] ?? 8;
-        
+
         const rgbaColor = hexToRgba(String(shadowColor), Number(shadowIntensity));
         profileImageShadows.push(`${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${rgbaColor}`);
       } else if (profileImageEffect === 'glow') {
         const glowColor = uiState['profile-image-glow-color'] ?? '#2563eb';
-        const glowWidth = typeof uiState['profile-image-glow-width'] === 'number' 
-          ? uiState['profile-image-glow-width'] 
+        const glowWidth = typeof uiState['profile-image-glow-width'] === 'number'
+          ? uiState['profile-image-glow-width']
           : (typeof uiState['profile-image-glow-width'] === 'string' ? Number(uiState['profile-image-glow-width']) : 10);
-        
+
         const glowColorRgba = hexToRgba(String(glowColor), 0.8);
         profileImageShadows.push(`0 0 ${glowWidth}px ${glowColorRgba}`, `0 0 ${glowWidth * 1.5}px ${glowColorRgba}`, `0 0 ${glowWidth * 2}px ${glowColorRgba}`);
       }
-      
+
       // Profile image border is handled via CSS border properties (border-width, border-color, border-style)
       // NOT via box-shadow - this matches page.php implementation
       // Border properties are set separately above
-      
+
       if (profileImageShadows.length > 0) {
         cssVars['--profile-image-box-shadow'] = profileImageShadows.join(', ');
       } else {
@@ -322,24 +368,24 @@ class PreviewRenderer {
 
     // Map widget shadow effect (if border_effect is 'shadow')
     // Check both allValues (from theme + converted uiState) and uiState directly as fallback
-    const borderEffect = allValues['widget_styles.border_effect'] ?? 
-                         (uiState?.['widget-border-effect'] as string) ?? 
-                         'none';
-    
+    const borderEffect = allValues['widget_styles.border_effect'] ??
+      (uiState?.['widget-border-effect'] as string) ??
+      'none';
+
     // Only set shadow CSS variable if borderEffect is 'shadow'
     // Don't set it to 'none' for other effects - let CSS fallback work
     if (borderEffect === 'shadow') {
       // Get shadow values from widget_styles, with fallback to uiState directly
-      const shadowDepth = allValues['widget_styles.shadow_depth'] ?? 
-                          (uiState?.['widget-shadow-depth'] as number) ?? 
-                          1;
-      const shadowColor = allValues['widget_styles.shadow_color'] ?? 
-                          (uiState?.['widget-shadow-color'] as string) ?? 
-                          'rgba(15, 23, 42, 0.12)';
-      const shadowIntensity = allValues['widget_styles.shadow_intensity'] ?? 
-                              (uiState?.['widget-shadow-intensity'] as number) ?? 
-                              1;
-      
+      const shadowDepth = allValues['widget_styles.shadow_depth'] ??
+        (uiState?.['widget-shadow-depth'] as number) ??
+        1;
+      const shadowColor = allValues['widget_styles.shadow_color'] ??
+        (uiState?.['widget-shadow-color'] as string) ??
+        'rgba(15, 23, 42, 0.12)';
+      const shadowIntensity = allValues['widget_styles.shadow_intensity'] ??
+        (uiState?.['widget-shadow-intensity'] as number) ??
+        1;
+
       // Only apply shadow if depth > 0
       if (typeof shadowDepth === 'number' && shadowDepth > 0) {
         // Calculate shadow blur based on depth (0-10)
@@ -347,7 +393,7 @@ class PreviewRenderer {
         // Profile image uses: depth depth blur color (e.g., 4px 4px 8px rgba(...))
         // For widgets, scale blur relative to depth: depth 1 = 2px blur, depth 10 = 20px blur
         const shadowBlur = shadowDepth * 2; // 0-20px (similar to profile image's 8px default for depth 4)
-        
+
         // Convert shadow color to rgba if needed (same as profile image)
         let shadowColorRgba = String(shadowColor);
         if (typeof shadowColor === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/i.test(shadowColor)) {
@@ -373,7 +419,7 @@ class PreviewRenderer {
             }
           }
         }
-        
+
         // Generate drop shadow like profile image: offset-x offset-y blur-radius color
         // Both x and y offsets use depth for diagonal drop shadow effect
         cssVars['--widget-shadow-box-shadow'] = `${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${shadowColorRgba}`;
@@ -386,36 +432,36 @@ class PreviewRenderer {
 
     // Map widget glow effect (if border_effect is 'glow')
     // Also check if glow values exist in uiState even if borderEffect isn't set correctly
-    const hasGlowValues = borderEffect === 'glow' || 
-                         (uiState?.['widget-glow-color'] !== undefined || 
-                          uiState?.['widget-glow-width'] !== undefined || 
-                          uiState?.['widget-glow-intensity'] !== undefined);
-    
+    const hasGlowValues = borderEffect === 'glow' ||
+      (uiState?.['widget-glow-color'] !== undefined ||
+        uiState?.['widget-glow-width'] !== undefined ||
+        uiState?.['widget-glow-intensity'] !== undefined);
+
     if (borderEffect === 'glow' || (hasGlowValues && borderEffect !== 'shadow')) {
       // Get glow values - check both UI state format and CSS generator format
       // UI saves: glow_intensity (number 0-1), glow_color, glow_width
       // CSS generator uses: border_glow_intensity (enum 'subtle'/'pronounced'), glow_color
       // Also check uiState directly as fallback
-      const glowIntensity = allValues['widget_styles.border_glow_intensity'] ?? 
-                           allValues['widget_styles.glow_intensity'] ?? 
-                           (uiState?.['widget-glow-intensity'] as number) ??
-                           'subtle';
-      const glowColor = allValues['widget_styles.glow_color'] ?? 
-                       (uiState?.['widget-glow-color'] as string) ?? 
-                       '#2563eb';
-      const glowWidth = allValues['widget_styles.glow_width'] ?? 
-                       (uiState?.['widget-glow-width'] as number) ?? 
-                       null;
-      
+      const glowIntensity = allValues['widget_styles.border_glow_intensity'] ??
+        allValues['widget_styles.glow_intensity'] ??
+        (uiState?.['widget-glow-intensity'] as number) ??
+        'subtle';
+      const glowColor = allValues['widget_styles.glow_color'] ??
+        (uiState?.['widget-glow-color'] as string) ??
+        '#2563eb';
+      const glowWidth = allValues['widget_styles.glow_width'] ??
+        (uiState?.['widget-glow-width'] as number) ??
+        null;
+
       // Convert intensity to blur and opacity
       // If glowIntensity is a number (0-1), convert to enum-like behavior
       // If it's already an enum ('subtle'/'pronounced'), use it directly
       let glowBlur: string;
       let glowOpacity: number;
       let glowSpread: string;
-      
+
       // Use glow_width directly as blur radius if provided, otherwise calculate from intensity
-      if (glowWidth && (typeof glowWidth === 'number' || (typeof glowWidth === 'string' && !isNaN(Number(glowWidth)))) ) {
+      if (glowWidth && (typeof glowWidth === 'number' || (typeof glowWidth === 'string' && !isNaN(Number(glowWidth))))) {
         const widthNum = typeof glowWidth === 'number' ? glowWidth : Number(glowWidth);
         glowBlur = `${widthNum}px`;
         // Spread is half of blur for good glow effect
@@ -452,10 +498,10 @@ class PreviewRenderer {
           }
         }
       }
-      
+
       // Convert hex color to rgba
       const glowColorRgba = hexToRgba(String(glowColor), glowOpacity);
-      
+
       // Generate box-shadow for glow: 0 0 blur spread color
       cssVars['--widget-glow-box-shadow'] = `0 0 ${glowBlur} ${glowSpread} ${glowColorRgba}`;
     }
@@ -484,19 +530,19 @@ class PreviewRenderer {
     // Calculate unified page spacing (used for all element spacing)
     // Check uiState first (unsaved changes), then allValues (from theme), then default
     const pageSpacingFromUI = uiState?.['page-spacing'];
-    const pageSpacingValue = pageSpacingFromUI !== undefined 
-      ? pageSpacingFromUI 
+    const pageSpacingValue = pageSpacingFromUI !== undefined
+      ? pageSpacingFromUI
       : (allValues['spacing_tokens.page_spacing'] ?? 16);
-    const spacingNum = typeof pageSpacingValue === 'number' 
-      ? pageSpacingValue 
-      : (typeof pageSpacingValue === 'string' 
+    const spacingNum = typeof pageSpacingValue === 'number'
+      ? pageSpacingValue
+      : (typeof pageSpacingValue === 'string'
         ? Number(String(pageSpacingValue).replace(/px|rem|%|em/gi, '').trim()) || 16
         : 16);
-    
+
     // Use unified spacing for all elements
     cssVars['--page-spacing'] = `${spacingNum}px`;
     cssVars['--page-element-spacing'] = `${spacingNum}px`;
-    
+
     // Profile image spacing - use unified spacing with small offset for top (accounting for podcast bar)
     // Always calculate this (not just when uiState exists) so spacing works even without uiState
     cssVars['--profile-image-spacing-top'] = `${spacingNum + 12}px`;
@@ -555,12 +601,12 @@ class PreviewRenderer {
     const borderColor = allValues['typography_tokens.effect.border.color'] ?? '#000000';
     const borderWidth = allValues['typography_tokens.effect.border.width'] ?? 0;
     const borderShadows: string[] = [];
-    
+
     if (Number(borderWidth) > 0) {
       // Create outside border using multiple text-shadows positioned around the text
       // This creates a border effect that doesn't cut into the text
       const width = Number(borderWidth);
-      
+
       // Generate shadows in a circle around the text for smooth border
       for (let angle = 0; angle < 360; angle += 15) {
         const rad = (angle * Math.PI) / 180;
@@ -575,18 +621,18 @@ class PreviewRenderer {
     // Also check if page object is passed (for preview)
     // CRITICAL: If uiState has 'page-title-effect' set to 'none', use that (even if page data has an effect)
     // This allows users to turn off effects in real-time preview
-    const effectType = uiState?.['page-title-effect'] !== undefined 
-                      ? (uiState['page-title-effect'] as string) ?? 'none'
-                      : ((typeof page !== 'undefined' && page && 'page_name_effect' in page ? (page as Record<string, unknown>).page_name_effect : null) ?? 'none');
+    const effectType = uiState?.['page-title-effect'] !== undefined
+      ? (uiState['page-title-effect'] as string) ?? 'none'
+      : ((typeof page !== 'undefined' && page && 'page_name_effect' in page ? (page as Record<string, unknown>).page_name_effect : null) ?? 'none');
     const effectShadows: string[] = [];
-    
+
     // Get background color for effects that need it (retro, pretty, flat, long)
     // Use the page background from CSS vars if available, otherwise default
     const pageBgValue = cssVars['--page-background'] ?? allValues['page_background'] ?? '#f1f1f1';
-    const bgColor = typeof pageBgValue === 'string' && pageBgValue.includes('gradient') 
+    const bgColor = typeof pageBgValue === 'string' && pageBgValue.includes('gradient')
       ? '#f1f1f1' // Default for gradients
       : (typeof pageBgValue === 'string' ? pageBgValue : '#f1f1f1');
-    
+
     // Only generate effect shadows if effect is not 'none'
     if (effectType === 'shadow') {
       // Drop Shadow effect
@@ -594,10 +640,10 @@ class PreviewRenderer {
       const shadowIntensity = allValues['typography_tokens.effect.shadow.intensity'] ?? 0.5;
       const shadowDepth = allValues['typography_tokens.effect.shadow.depth'] ?? 4;
       const shadowBlur = allValues['typography_tokens.effect.shadow.blur'] ?? 8;
-      
+
       // Convert color to rgba with intensity
       const rgbaColor = hexToRgba(String(shadowColor), Number(shadowIntensity));
-      
+
       // Generate text-shadow: offset-x offset-y blur-radius color
       effectShadows.push(`${shadowDepth}px ${shadowDepth}px ${shadowBlur}px ${rgbaColor}`);
     } else if (effectType === 'glow') {
@@ -605,15 +651,15 @@ class PreviewRenderer {
       const glowColor = allValues['typography_tokens.effect.glow.color'] ?? '#3EB0B4';
       const glowWidth = typeof allValues['typography_tokens.effect.glow.width'] === 'number'
         ? allValues['typography_tokens.effect.glow.width'] as number
-        : (typeof allValues['typography_tokens.effect.glow.width'] === 'string' 
-            ? Number(allValues['typography_tokens.effect.glow.width']) 
-            : 10);
-      
+        : (typeof allValues['typography_tokens.effect.glow.width'] === 'string'
+          ? Number(allValues['typography_tokens.effect.glow.width'])
+          : 10);
+
       // Generate text-shadow for glow (multiple shadows for better glow effect)
       const glowColorRgba = hexToRgba(String(glowColor), 0.8);
       effectShadows.push(
-        `0 0 ${glowWidth}px ${glowColorRgba}`, 
-        `0 0 ${glowWidth * 1.5}px ${glowColorRgba}`, 
+        `0 0 ${glowWidth}px ${glowColorRgba}`,
+        `0 0 ${glowWidth * 1.5}px ${glowColorRgba}`,
         `0 0 ${glowWidth * 2}px ${glowColorRgba}`,
         `0 0 ${glowWidth * 3}px ${glowColorRgba}`,
         `0 0 ${glowWidth * 4}px ${glowColorRgba}`
@@ -724,23 +770,23 @@ class PreviewRenderer {
       // Party Time - multiple colorful shadows based on page title color
       // Text color should be white
       cssVars['--page-title-color'] = '#ffffff';
-      
+
       // Get page title color to generate variations
       const pageTitleColor = allValues['typography_tokens.color.heading'] ?? '#ffffff';
       const baseColor = typeof pageTitleColor === 'string' ? pageTitleColor : '#ffffff';
-      
+
       // Generate color variations from base color
       const partyColors = generatePartyColors(baseColor);
-      
+
       // Get font size to calculate shadow offsets (use percentage of font size)
       const fontSize = allValues['typography_tokens.scale.heading'] ?? 24;
       const fontSizeNum = typeof fontSize === 'number' ? fontSize : Number(fontSize) || 24;
-      
+
       // Create shadows with increasing offsets (similar to vw units but using px)
       // Offsets: 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5 times a base unit
       const baseOffset = Math.max(2, fontSizeNum * 0.05); // 5% of font size, min 2px
       const offsets = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5];
-      
+
       offsets.forEach((multiplier, index) => {
         const offset = baseOffset * multiplier;
         const color = partyColors[index] || partyColors[partyColors.length - 1];
@@ -800,17 +846,17 @@ export const previewRenderer = new PreviewRenderer();
 function hexToRgba(hex: string, opacity: number): string {
   // Remove # if present
   const cleanHex = hex.replace('#', '');
-  
+
   // Handle 3-digit hex
   const fullHex = cleanHex.length === 3
     ? cleanHex.split('').map(char => char + char).join('')
     : cleanHex;
-  
+
   // Parse RGB values
   const r = parseInt(fullHex.substring(0, 2), 16);
   const g = parseInt(fullHex.substring(2, 4), 16);
   const b = parseInt(fullHex.substring(4, 6), 16);
-  
+
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
@@ -824,29 +870,29 @@ function generatePartyColors(baseColor: string): string[] {
   const fullHex = cleanHex.length === 3
     ? cleanHex.split('').map(char => char + char).join('')
     : cleanHex;
-  
+
   const r = parseInt(fullHex.substring(0, 2), 16);
   const g = parseInt(fullHex.substring(2, 4), 16);
   const b = parseInt(fullHex.substring(4, 6), 16);
-  
+
   // Convert RGB to HSL for easier color manipulation
   const hsl = rgbToHsl(r, g, b);
-  
+
   // Generate 9 colors: lighter/more saturated -> darker/less saturated
   const colors: string[] = [];
   for (let i = 0; i < 9; i++) {
     // Adjust hue slightly for variation (rotate around color wheel)
     const hueShift = (i * 30) % 360; // 30 degree steps
     const newHue = (hsl.h + hueShift) % 360;
-    
+
     // Start bright and saturated, gradually darken
     const saturation = Math.max(70, 100 - (i * 3)); // 100% -> 70%
     const lightness = Math.max(30, 80 - (i * 5)); // 80% -> 30%
-    
+
     const rgb = hslToRgb(newHue, saturation, lightness);
     colors.push(`#${rgb.r.toString(16).padStart(2, '0')}${rgb.g.toString(16).padStart(2, '0')}${rgb.b.toString(16).padStart(2, '0')}`);
   }
-  
+
   return colors;
 }
 
@@ -857,24 +903,24 @@ function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: n
   r /= 255;
   g /= 255;
   b /= 255;
-  
+
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h = 0;
   let s = 0;
   const l = (max + min) / 2;
-  
+
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    
+
     switch (max) {
       case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
       case g: h = ((b - r) / d + 2) / 6; break;
       case b: h = ((r - g) / d + 4) / 6; break;
     }
   }
-  
+
   return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
@@ -885,28 +931,28 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
   h /= 360;
   s /= 100;
   l /= 100;
-  
+
   let r: number, g: number, b: number;
-  
+
   if (s === 0) {
     r = g = b = l;
   } else {
     const hue2rgb = (p: number, q: number, t: number) => {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
       return p;
     };
-    
+
     const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
     const p = 2 * l - q;
-    r = hue2rgb(p, q, h + 1/3);
+    r = hue2rgb(p, q, h + 1 / 3);
     g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1/3);
+    b = hue2rgb(p, q, h - 1 / 3);
   }
-  
+
   return {
     r: Math.round(r * 255),
     g: Math.round(g * 255),

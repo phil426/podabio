@@ -608,7 +608,41 @@ switch ($action) {
             }
         }
 
-        // Handle page background animation
+
+
+        if (isset($_POST['page_background_image_focal_x'])) {
+            $updateData['page_background_image_focal_x'] = sanitizeInput($_POST['page_background_image_focal_x']);
+        }
+
+        if (isset($_POST['page_background_image_focal_y'])) {
+            $updateData['page_background_image_focal_y'] = sanitizeInput($_POST['page_background_image_focal_y']);
+        }
+
+        // Handle page background image properties
+        if (isset($_POST['page_background_image_url'])) {
+            $bgImageUrl = trim(sanitizeInput($_POST['page_background_image_url']));
+            if (!empty($bgImageUrl) && $bgImageUrl !== 'null') {
+                // Validate URL - allow full URLs and uploads path
+                if (filter_var($bgImageUrl, FILTER_VALIDATE_URL) || preg_match('/^\/uploads\//', $bgImageUrl)) {
+                    $updateData['page_background_image_url'] = $bgImageUrl;
+                }
+            } else {
+                $updateData['page_background_image_url'] = null;
+            }
+        }
+
+        if (isset($_POST['page_background_image_overlay'])) {
+            $updateData['page_background_image_overlay'] = sanitizeInput($_POST['page_background_image_overlay']);
+        }
+
+        if (isset($_POST['page_background_image_scale'])) {
+            $updateData['page_background_image_scale'] = filter_var($_POST['page_background_image_scale'], FILTER_VALIDATE_FLOAT);
+        }
+
+        if (isset($_POST['page_background_image_blur'])) {
+            $updateData['page_background_image_blur'] = sanitizeInput($_POST['page_background_image_blur']);
+        }
+
         if (isset($_POST['page_background_animate'])) {
             $animate = filter_var($_POST['page_background_animate'], FILTER_VALIDATE_BOOLEAN);
             $updateData['page_background_animate'] = $animate ? 1 : 0;

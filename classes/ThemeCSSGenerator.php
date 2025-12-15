@@ -748,6 +748,22 @@ class ThemeCSSGenerator
         // Page background animation flag (for gradient animation)
         $css .= "    --page-background-animate: " . ($this->pageBackgroundAnimate ? 'true' : 'false') . ";\n";
 
+        // Page Background Image
+        $bgImageUrl = $this->page['page_background_image_url'] ?? '';
+        if (!empty($bgImageUrl)) {
+            $css .= "    --page-background-image-url: url('" . h($bgImageUrl) . "');\n";
+            $css .= "    --page-background-image-active: 1;\n";
+            $css .= "    --page-screen-background: transparent;\n";
+            $css .= "    --page-background-image-overlay: " . h($this->page['page_background_image_overlay'] ?? 'rgba(0,0,0,0.4)') . ";\n";
+            $css .= "    --page-background-image-focal-x: " . h($this->page['page_background_image_focal_x'] ?? '50%') . ";\n";
+            $css .= "    --page-background-image-focal-y: " . h($this->page['page_background_image_focal_y'] ?? '50%') . ";\n";
+            $css .= "    --page-background-image-scale: " . h($this->page['page_background_image_scale'] ?? '1.00') . ";\n";
+            $css .= "    --page-background-image-blur: " . h($this->page['page_background_image_blur'] ?? '0px') . ";\n";
+        } else {
+            $css .= "    --page-background-image-active: 0;\n";
+            $css .= "    --page-screen-background: " . h($pageBackgroundValue) . ";\n";
+        }
+
         // Widget Background - synced with Live Preview
         $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
 
@@ -1067,35 +1083,38 @@ class ThemeCSSGenerator
 
         // Check if background is a gradient - use the resolved pageBackgroundValue, not this->pageBackground
         // This ensures we check the actual value being used, not the raw database value
+        // Check if background is a gradient - use the resolved pageBackgroundValue, not this->pageBackground
+        // This ensures we check the actual value being used, not the raw database value
         $isGradient = strpos($pageBackgroundValue, 'gradient') !== false || strpos($pageBackgroundValue, 'linear-gradient') !== false || strpos($pageBackgroundValue, 'radial-gradient') !== false;
 
-        // Check if background is a Vanta.js effect
-        $isVanta = strpos($pageBackgroundValue, 'vanta:') === 0;
-
         // Check if gradient animation is enabled (only applies to gradients)
-        $shouldAnimate = $isGradient && $this->pageBackgroundAnimate;
+        // Note: User retired "animated background attempt", so we disable animation logic for simplicity
+        $shouldAnimate = false; // Forced off per request
+        $bgImageUrl = $this->page['page_background_image_url'] ?? '';
 
         // Base body styles
         // CRITICAL: Use the resolved pageBackgroundValue directly (not CSS variable) to ensure it's applied
         // Use !important to override any other styles that might interfere
         $css .= "body {\n";
         $css .= "    font-family: var(--page-secondary-font), var(--body-font), sans-serif;\n";
-        // For Vanta.js, don't set background - let the effect handle it
-        if (!$isVanta) {
-            // Use direct value with !important - no CSS variable, no fallback, just the actual value
-            $css .= "    background: " . h($pageBackgroundValue) . " !important;\n";
-            if (!$isGradient) {
-                // For solid colors, use fixed attachment for full coverage
-                $css .= "    background-attachment: fixed !important;\n";
-            } else if ($shouldAnimate) {
-                // For animated gradients, use larger background size and animation
-                $css .= "    background-size: 200% 200% !important;\n";
-                $css .= "    animation: gradientShift 15s ease infinite !important;\n";
-            }
+
+        // Background Logic: Image > Color
+        if (!empty($bgImageUrl)) {
+            // If background image is set, body background must be transparent or it covers the fixed image
+            $css .= "    background: transparent !important;\n";
         } else {
-            // For Vanta.js, set a fallback background color
-            $css .= "    background: #0a0e27 !important;\n";
+            // Fallback to solid color or gradient
+            $css .= "    background: " . h($pageBackgroundValue) . " !important;\n";
         }
+
+        if (!$isGradient && empty($bgImageUrl)) {
+            // For solid colors (no image), use fixed attachment for full coverage
+            $css .= "    background-attachment: fixed !important;\n";
+        } elseif ($isGradient && empty($bgImageUrl)) {
+            // For gradients (no image), standard size
+            $css .= "    background-size: cover !important;\n";
+        }
+
         $css .= "    min-height: 100vh;\n";
         $css .= "    color: var(--text-color);\n";
         $css .= "    margin: 0;\n";
@@ -1104,39 +1123,16 @@ class ThemeCSSGenerator
 
         // Ensure html element also has background for full coverage
         $css .= "html {\n";
-        if (!$isVanta) {
-            $css .= "    background: " . h($pageBackgroundValue) . " !important;\n";
-            if ($isGradient && $shouldAnimate) {
-                $css .= "    background-size: 200% 200% !important;\n";
-                $css .= "    animation: gradientShift 15s ease infinite !important;\n";
-            }
+        if (!empty($bgImageUrl)) {
+            $css .= "    background: transparent !important;\n";
         } else {
-            $css .= "    background: #0a0e27 !important;\n";
+            $css .= "    background: " . h($pageBackgroundValue) . " !important;\n";
         }
         $css .= "    min-height: 100%;\n";
         $css .= "}\n\n";
 
-        // Add gradient animation keyframes if animation is enabled
-        if ($shouldAnimate) {
-            $css .= "@keyframes gradientShift {\n";
-            $css .= "    0% { background-position: 0% 50%; }\n";
-            $css .= "    50% { background-position: 100% 50%; }\n";
-            $css .= "    100% { background-position: 0% 50%; }\n";
-            $css .= "}\n\n";
-        }
+        // Removed Vanta.js container styles
 
-        // Vanta.js container styles
-        if ($isVanta) {
-            $css .= "#vanta-background {\n";
-            $css .= "    position: fixed;\n";
-            $css .= "    top: 0;\n";
-            $css .= "    left: 0;\n";
-            $css .= "    width: 100%;\n";
-            $css .= "    height: 100%;\n";
-            $css .= "    z-index: -1;\n";
-            $css .= "    pointer-events: none;\n";
-            $css .= "}\n\n";
-        }
 
         // Typography - page fonts
         $css .= "h1, h2, h3, .page-title {\n";

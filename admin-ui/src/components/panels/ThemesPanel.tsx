@@ -52,7 +52,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const activeTheme = useMemo(() => {
     if (!themeLibrary) return null;
     const themeId = snapshot?.page?.theme_id ?? null;
-    
+
     // Always prefer user theme if it exists
     if (themeLibrary.user && themeLibrary.user.length > 0) {
       // If page points to user theme, use it; otherwise use first user theme
@@ -62,7 +62,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       }
       return themeLibrary.user[0];
     }
-    
+
     // Fallback to system theme if no user theme exists
     if (themeId) {
       return themeLibrary.system?.find(theme => theme.id === themeId) ?? themeLibrary.system?.[0] ?? null;
@@ -109,7 +109,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     // Use refs to get latest values to avoid stale closure issues
     const currentSelectedTheme = selectedThemeRef.current;
     const currentUIState = uiStateRef.current;
-    
+
     if (!currentSelectedTheme || isSaving) {
       return;
     }
@@ -120,7 +120,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       // Convert UI state to database format
       const dbState = uiToDatabase(currentUIState);
-      
+
       // Debug: Log what we're trying to save
       console.log('Saving theme:', {
         themeId: currentSelectedTheme.id,
@@ -136,8 +136,8 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       // Merge with existing theme data to preserve fields not in UI state
       const existingThemeData = currentSelectedTheme ? {
-        color_tokens: typeof currentSelectedTheme.color_tokens === 'string' 
-          ? JSON.parse(currentSelectedTheme.color_tokens) 
+        color_tokens: typeof currentSelectedTheme.color_tokens === 'string'
+          ? JSON.parse(currentSelectedTheme.color_tokens)
           : currentSelectedTheme.color_tokens,
         typography_tokens: typeof currentSelectedTheme.typography_tokens === 'string'
           ? JSON.parse(currentSelectedTheme.typography_tokens)
@@ -187,7 +187,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       // Always use the single user theme (get or create if needed)
       const userThemeId = await getOrCreateUserTheme();
-      
+
       // Update the user theme with all current settings
       await updateMutation.mutateAsync({
         themeId: userThemeId,
@@ -196,7 +196,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           name: 'My Theme' // Keep user theme name consistent
         }
       });
-      
+
       // Ensure page.theme_id points to user theme
       const currentPageThemeId = snapshot?.page?.theme_id;
       if (currentPageThemeId !== userThemeId) {
@@ -212,7 +212,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           spatial_effect: null
         });
       }
-      
+
       // Refresh the selected theme data
       await queryClient.refetchQueries({ queryKey: queryKeys.themes() });
       const refreshedLibrary = await queryClient.fetchQuery<ThemeLibraryResult>({ queryKey: queryKeys.themes() });
@@ -224,7 +224,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
 
       // Save page-level fields (profile image styling and page title effects)
       const pageFields: Record<string, string | number | boolean | null> = {};
-      
+
       // Profile image fields
       const profileImageFields = [
         'profile-image-size',
@@ -245,6 +245,23 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         if (value !== undefined && value !== null) {
           const dbFieldName = fieldId.replace('profile-image-', 'profile_image_').replace(/-/g, '_');
           pageFields[dbFieldName] = typeof value === 'number' ? value : String(value);
+        }
+      });
+
+      // Page Background Image fields (page-level)
+      const pageBackgroundFields = [
+        'page_background_image_url',
+        'page_background_image_overlay',
+        'page_background_image_focal_x',
+        'page_background_image_focal_y',
+        'page_background_image_scale',
+        'page_background_image_blur'
+      ];
+
+      pageBackgroundFields.forEach(fieldId => {
+        const value = currentUIState[fieldId];
+        if (value !== undefined) {
+          pageFields[fieldId] = value as string | number | boolean | null;
         }
       });
 
@@ -277,15 +294,15 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       // Invalidate queries - this will trigger refetch and update UI state via useEffect
       await queryClient.invalidateQueries({ queryKey: queryKeys.themes() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      
+
       // Update autosave status
       setAutoSaveStatus('saved');
-      
+
       // Show success message only for manual saves
       if (!isAutoSave) {
         setStatus({ tone: 'success', message: 'Theme saved successfully!' });
       }
-      
+
       // Reset saved status after 2 seconds
       setTimeout(() => {
         setAutoSaveStatus(prev => prev === 'saved' ? 'idle' : prev);
@@ -293,11 +310,11 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     } catch (error) {
       console.error('Failed to save theme:', error);
       setAutoSaveStatus('error');
-      setStatus({ 
-        tone: 'error', 
-        message: error instanceof Error ? error.message : 'Failed to save theme. Please try again.' 
+      setStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to save theme. Please try again.'
       });
-      
+
       // Reset error status after 3 seconds
       setTimeout(() => {
         setAutoSaveStatus('idle');
@@ -311,14 +328,14 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
   const handleFieldChange = useCallback((fieldId: string, value: unknown) => {
     setUIState(prev => {
       const newState = {
-      ...prev,
-      [fieldId]: value
+        ...prev,
+        [fieldId]: value
       };
       // Update ref immediately with new state
       uiStateRef.current = newState;
       return newState;
     });
-    
+
     // Trigger autosave after a delay (debounce)
     // Use ref to check current theme (handles theme changes during debounce)
     if (selectedThemeRef.current) {
@@ -326,17 +343,17 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
-      
+
       // Set status to saving (will be updated after save completes)
       setAutoSaveStatus('saving');
-      
+
       // Schedule autosave after 1 second of inactivity
       autoSaveTimeoutRef.current = setTimeout(() => {
         handleSave(true); // Pass true to indicate it's an autosave
       }, 1000);
     }
   }, [handleSave]);
-  
+
   // Cleanup autosave timeout on unmount
   useEffect(() => {
     return () => {
@@ -369,14 +386,14 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
     try {
       // Extract page background from theme
       let pageBackground: string | null | undefined = theme.page_background;
-      
+
       // If page_background is not set, try to extract from color_tokens
       if (!pageBackground && theme.color_tokens) {
         try {
-          const colorTokens = typeof theme.color_tokens === 'string' 
-            ? JSON.parse(theme.color_tokens) 
+          const colorTokens = typeof theme.color_tokens === 'string'
+            ? JSON.parse(theme.color_tokens)
             : theme.color_tokens;
-          
+
           if (colorTokens?.semantic?.surface?.canvas) {
             pageBackground = colorTokens.semantic.surface.canvas as string;
           } else if (colorTokens?.semantic?.surface?.background) {
@@ -388,7 +405,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           console.warn('Failed to parse color_tokens:', e);
         }
       }
-      
+
       // Parse widget_styles if it's a string
       let widgetStyles: Record<string, unknown> | string | null = null;
       if (theme.widget_styles) {
@@ -402,7 +419,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
           widgetStyles = theme.widget_styles;
         }
       }
-      
+
       // Use updatePageThemeId to set theme as active
       await updatePageThemeId(theme.id, {
         page_background: pageBackground ?? null,
@@ -415,7 +432,7 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         widget_styles: widgetStyles,
         spatial_effect: theme.spatial_effect ?? null
       });
-      
+
       // Invalidate and refetch queries to update the UI
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
       await queryClient.refetchQueries({ queryKey: queryKeys.pageSnapshot() });

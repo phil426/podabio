@@ -123,6 +123,20 @@ if [ -d ".git" ] && [ -n "$STASH_MESSAGE" ]; then
 fi
 echo "   • Build caches cleaned"
 echo ""
+
+# Show Session Summary
+if [ -f "CURRENT_STATUS.md" ]; then
+    echo "📘 Session Summary (from CURRENT_STATUS.md):"
+    echo "--------------------------------------------"
+    if command -v glow >/dev/null 2>&1; then
+        glow CURRENT_STATUS.md
+    else
+        cat CURRENT_STATUS.md
+    fi
+    echo "--------------------------------------------"
+    echo ""
+fi
+
 echo "💡 To resume: run ./dev-start.sh or ./dev-session.sh start"
 echo ""
 

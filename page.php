@@ -712,6 +712,46 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
 <body
     class="<?php echo trim($cssGenerator->getSpatialEffectClass() . ' ' . $themeBodyClass . ' layout-' . ($page['layout_option'] ?: 'standard') . ($enablePreviewMode ? ' preview-mode' : '')); ?>">
+
+    <!-- Page Background Image (if active) -->
+    <div id="page-background-image"></div>
+    <style>
+        #page-background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            /* Behind everything */
+            pointer-events: none;
+            opacity: var(--page-background-image-active, 0);
+            /* Control visibility via variable */
+            transition: opacity 0.3s ease;
+        }
+
+        #page-background-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: var(--page-background-image-url);
+            background-size: cover;
+            background-position: var(--page-background-image-focal-x, 50%) var(--page-background-image-focal-y, 50%);
+            transform: scale(var(--page-background-image-scale, 1));
+            filter: blur(var(--page-background-image-blur, 0px));
+            transform-origin: var(--page-background-image-focal-x, 50%) var(--page-background-image-focal-y, 50%);
+            z-index: 1;
+        }
+
+        #page-background-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: var(--page-background-image-overlay, rgba(0, 0, 0, 0.4));
+            z-index: 2;
+        }
+    </style>
+
     <!-- Mobile: Normal single column layout -->
     <div class="mobile-page-container">
         <div class="page-container">
@@ -1894,143 +1934,143 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
         <script src="/js/podcast-player-rss-parser.js"></script>
         <script src="/js/podcast-player-audio.js"></script>
         <script src="/js/podcast-player-app.js"></script>
-        <script>         
-                    window.podcastConfig = {
-                    rssFeedUrl: <?php echo json_encode($page['rss_feed_url'] ?? ''); ?>,
-                    savedCoverImage: <?php echo json_encode($page['cover_image_url'] ?? ''); ?>,
-                    socialIcons: <?php echo json_encode($socialIcons ?? []); ?>
-                };
-            </script>
-            <script
-                src="/js/podcast-drawer-init.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-drawer-init.js'); ?>"></script>
+        <script>
+            window.podcastConfig = {
+                rssFeedUrl: <?php echo json_encode($page['rss_feed_url'] ?? ''); ?>,
+                savedCoverImage: <?php echo json_encode($page['cover_image_url'] ?? ''); ?>,
+                socialIcons: <?php echo json_encode($socialIcons ?? []); ?>
+            };
+        </script>
+        <script
+            src="/js/podcast-drawer-init.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-drawer-init.js'); ?>"></script>
 
-            <!-- Desktop Podcast Player Initialization -->
-            <script>
-                (function () {
-                    function initDesktopPlayer() {
-                        if (typeof PodcastPlayerApp === 'undefined') {
-                            console.error('PodcastPlayerApp is not defined');
-                            return;
+        <!-- Desktop Podcast Player Initialization -->
+        <script>
+            (function () {
+                function initDesktopPlayer() {
+                    if (typeof PodcastPlayerApp === 'undefined') {
+                        console.error('PodcastPlayerApp is not defined');
+                        return;
+                    }
+                    const drawer = document.getElementById('podcast-top-drawer-desktop');
+                    if (!drawer) {
+                        // Desktop frame not visible (mobile view)
+                        return;
+                    }
+                    // Update drawer container ID first
+                    drawer.id = 'podcast-top-drawer';
+                    // Update ALL element IDs to standard IDs that PodcastPlayerApp expects
+                    const idUpdates = {
+                        // Tab navigation
+                        'tab-navigation-desktop': 'tab-navigation',
+                        'tab-now-playing-desktop': 'tab-now-playing',
+                        'tab-follow-desktop': 'tab-follow',
+                        'tab-details-desktop': 'tab-details',
+                        'tab-episodes-desktop': 'tab-episodes',
+                        'tab-content-container-desktop': 'tab-content-container',
+                        // Tab panels
+                        'now-playing-panel-desktop': 'now-playing-panel',
+                        'follow-panel-desktop': 'follow-panel',
+                        'details-panel-desktop': 'details-panel',
+                        'episodes-panel-desktop': 'episodes-panel',
+                        // Now playing elements
+                        'now-playing-artwork-container-desktop': 'now-playing-artwork-container',
+                        'now-playing-artwork-desktop': 'now-playing-artwork',
+                        'artwork-placeholder-desktop': 'artwork-placeholder',
+                        'progress-section-now-playing-desktop': 'progress-section-now-playing',
+                        'current-time-display-desktop': 'current-time-display',
+                        'remaining-time-display-desktop': 'remaining-time-display',
+                        'progress-bar-now-playing-desktop': 'progress-bar-now-playing',
+                        'progress-fill-now-playing-desktop': 'progress-fill-now-playing',
+                        'progress-scrubber-now-playing-desktop': 'progress-scrubber-now-playing',
+                        'skip-back-large-desktop': 'skip-back-large',
+                        'play-pause-large-now-desktop': 'play-pause-large-now',
+                        'skip-forward-large-desktop': 'skip-forward-large',
+                        // Other tabs
+                        'follow-content-desktop': 'follow-content',
+                        'shownotes-content-desktop': 'shownotes-content',
+                        'shownotes-section-desktop': 'shownotes-section',
+                        'chapters-list-desktop': 'chapters-list',
+                        'chapters-section-desktop': 'chapters-section',
+                        'episodes-list-desktop': 'episodes-list',
+                        'loading-skeleton-desktop': 'loading-skeleton',
+                        'error-state-desktop': 'error-state',
+                        'episodes-header-desktop': 'episodes-header',
+                        'episodes-count-desktop': 'episodes-count',
+                        'retry-button-desktop': 'retry-button',
+                        'toast-desktop': 'toast',
+                        'toast-message-desktop': 'toast-message',
+                        'podcast-audio-player-desktop': 'podcast-audio-player',
+                        'speed-control-btn-desktop': 'speed-control-btn',
+                        'timer-control-btn-desktop': 'timer-control-btn',
+                        'share-control-btn-desktop': 'share-control-btn',
+                        'close-player-btn-desktop': 'close-player-btn',
+                        'speed-display-desktop': 'speed-display',
+                        'timer-display-desktop': 'timer-display',
+                        'speed-modal-overlay-desktop': 'speed-modal-overlay',
+                        'timer-modal-overlay-desktop': 'timer-modal-overlay',
+                        'speed-options-modal-desktop': 'speed-options-modal',
+                        'timer-options-modal-desktop': 'timer-options-modal'
+                    };
+                    // Update IDs to standard names
+                    Object.keys(idUpdates).forEach(oldId => {
+                        const el = document.getElementById(oldId);
+                        if (el) {
+                            el.id = idUpdates[oldId];
                         }
-                        const drawer = document.getElementById('podcast-top-drawer-desktop');
-                        if (!drawer) {
-                            // Desktop frame not visible (mobile view)
-                            return;
+                    });
+                    // Extract platform links from social icons
+                    const socialIcons = window.podcastConfig.socialIcons || [];
+                    const platformLinks = {
+                        apple: null,
+                        spotify: null,
+                        google: null
+                    };
+                    socialIcons.forEach(icon => {
+                        const platformName = (icon.platform_name || '').toLowerCase();
+                        const url = icon.url || '';
+                        if (platformName === 'apple_podcasts' && url) {
+                            platformLinks.apple = url;
+                        } else if (platformName === 'spotify' && url) {
+                            platformLinks.spotify = url;
+                        } else if (platformName === 'google_podcasts' && url) {
+                            platformLinks.google = url;
                         }
-                        // Update drawer container ID first
-                        drawer.id = 'podcast-top-drawer';
-                        // Update ALL element IDs to standard IDs that PodcastPlayerApp expects
-                        const idUpdates = {
-                            // Tab navigation
-                            'tab-navigation-desktop': 'tab-navigation',
-                            'tab-now-playing-desktop': 'tab-now-playing',
-                            'tab-follow-desktop': 'tab-follow',
-                            'tab-details-desktop': 'tab-details',
-                            'tab-episodes-desktop': 'tab-episodes',
-                            'tab-content-container-desktop': 'tab-content-container',
-                            // Tab panels
-                            'now-playing-panel-desktop': 'now-playing-panel',
-                            'follow-panel-desktop': 'follow-panel',
-                            'details-panel-desktop': 'details-panel',
-                            'episodes-panel-desktop': 'episodes-panel',
-                            // Now playing elements
-                            'now-playing-artwork-container-desktop': 'now-playing-artwork-container',
-                            'now-playing-artwork-desktop': 'now-playing-artwork',
-                            'artwork-placeholder-desktop': 'artwork-placeholder',
-                            'progress-section-now-playing-desktop': 'progress-section-now-playing',
-                            'current-time-display-desktop': 'current-time-display',
-                            'remaining-time-display-desktop': 'remaining-time-display',
-                            'progress-bar-now-playing-desktop': 'progress-bar-now-playing',
-                            'progress-fill-now-playing-desktop': 'progress-fill-now-playing',
-                            'progress-scrubber-now-playing-desktop': 'progress-scrubber-now-playing',
-                            'skip-back-large-desktop': 'skip-back-large',
-                            'play-pause-large-now-desktop': 'play-pause-large-now',
-                            'skip-forward-large-desktop': 'skip-forward-large',
-                            // Other tabs
-                            'follow-content-desktop': 'follow-content',
-                            'shownotes-content-desktop': 'shownotes-content',
-                            'shownotes-section-desktop': 'shownotes-section',
-                            'chapters-list-desktop': 'chapters-list',
-                            'chapters-section-desktop': 'chapters-section',
-                            'episodes-list-desktop': 'episodes-list',
-                            'loading-skeleton-desktop': 'loading-skeleton',
-                            'error-state-desktop': 'error-state',
-                            'episodes-header-desktop': 'episodes-header',
-                            'episodes-count-desktop': 'episodes-count',
-                            'retry-button-desktop': 'retry-button',
-                            'toast-desktop': 'toast',
-                            'toast-message-desktop': 'toast-message',
-                            'podcast-audio-player-desktop': 'podcast-audio-player',
-                            'speed-control-btn-desktop': 'speed-control-btn',
-                            'timer-control-btn-desktop': 'timer-control-btn',
-                            'share-control-btn-desktop': 'share-control-btn',
-                            'close-player-btn-desktop': 'close-player-btn',
-                            'speed-display-desktop': 'speed-display',
-                            'timer-display-desktop': 'timer-display',
-                            'speed-modal-overlay-desktop': 'speed-modal-overlay',
-                            'timer-modal-overlay-desktop': 'timer-modal-overlay',
-                            'speed-options-modal-desktop': 'speed-options-modal',
-                            'timer-options-modal-desktop': 'timer-options-modal'
-                        };
-                        // Update IDs to standard names
-                        Object.keys(idUpdates).forEach(oldId => {
-                            const el = document.getElementById(oldId);
-                            if (el) {
-                                el.id = idUpdates[oldId];
-                            }
-                        });
-                        // Extract platform links from social icons
-                        const socialIcons = window.podcastConfig.socialIcons || [];
-                        const platformLinks = {
+                    });
+                    const config = {
+                        rssFeedUrl: window.podcastConfig.rssFeedUrl,
+                        rssProxyUrl: '/api/rss-proxy.php',
+                        imageProxyUrl: '/api/podcast-image-proxy.php',
+                        savedCoverImage: window.podcastConfig.savedCoverImage || '',
+                        platformLinks: platformLinks,
+                        reviewLinks: {
                             apple: null,
                             spotify: null,
                             google: null
-                        };
-                        socialIcons.forEach(icon => {
-                            const platformName = (icon.platform_name || '').toLowerCase();
-                            const url = icon.url || '';
-                            if (platformName === 'apple_podcasts' && url) {
-                                platformLinks.apple = url;
-                            } else if (platformName === 'spotify' && url) {
-                                platformLinks.spotify = url;
-                            } else if (platformName === 'google_podcasts' && url) {
-                                platformLinks.google = url;
-                            }
-                        });
-                        const config = {
-                            rssFeedUrl: window.podcastConfig.rssFeedUrl,
-                            rssProxyUrl: '/api/rss-proxy.php',
-                            imageProxyUrl: '/api/podcast-image-proxy.php',
-                            savedCoverImage: window.podcastConfig.savedCoverImage || '',
-                            platformLinks: platformLinks,
-                            reviewLinks: {
-                                apple: null,
-                                spotify: null,
-                                google: null
-                            },
-                            socialIcons: socialIcons,
-                            cacheTTL: 3600000
-                        };
-                        try {
-                            window.podcastPlayerAppDesktop = new PodcastPlayerApp(config, drawer);
-                            console.log('Desktop podcast player initialized successfully');
-                            /* Load RSS feed automatically */
-                            if (config.rssFeedUrl) {
-                                window.podcastPlayerAppDesktop.loadFeed().catch(err => {
-                                    console.error('Failed to load RSS feed:', err);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Failed to initialize desktop podcast player:', error);
+                        },
+                        socialIcons: socialIcons,
+                        cacheTTL: 3600000
+                    };
+                    try {
+                        window.podcastPlayerAppDesktop = new PodcastPlayerApp(config, drawer);
+                        console.log('Desktop podcast player initialized successfully');
+                        /* Load RSS feed automatically */
+                        if (config.rssFeedUrl) {
+                            window.podcastPlayerAppDesktop.loadFeed().catch(err => {
+                                console.error('Failed to load RSS feed:', err);
+                            });
                         }
+                    } catch (error) {
+                        console.error('Failed to initialize desktop podcast player:', error);
                     }
-                    if (document.readyState === 'loading') {
-                        document.addEventListener('DOMContentLoaded', initDesktopPlayer);
-                    } else {
-                        initDesktopPlayer();
-                    }
-                })();
-            </script>
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDesktopPlayer);
+                } else {
+                    initDesktopPlayer();
+                }
+            })();
+        </script>
     <?php endif; ?>
 
     <!-- QR Code Morphing Animation Script -->
@@ -2206,8 +2246,8 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     </script>
 
     <?php if ($enablePreviewMode): ?>
-            <script>
-            (function() {
+        <script>
+            (function () {
                 // Only run if in iframe and preview mode is enabled
                 if (window.parent === window) {
                     return; // Not in iframe
@@ -2216,7 +2256,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 console.log('Page.php: Preview mode click handler initialized');
 
                 // Single catch-all capture listener for ALL clicks
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     // 1. Traverse up to find if we clicked a hotspot
                     let target = e.target;
                     let hotspot = null;
@@ -2284,7 +2324,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     // Allow clicks on non-interactive elements (like selecting text)
                 }, true); // Capture phase is CRITICAL to intercept before other listeners
             })();
-            </script>
+        </script>
     <?php endif; ?>
     <!-- Widget Scripts -->
     <script src="js/contact-form.js"></script>

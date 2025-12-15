@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { MediaLibrary } from '../media/MediaLibrary';
 import { MediaItem } from '../../api/media';
 import styles from './media-library-modal.module.css';
@@ -27,6 +28,12 @@ export function MediaLibraryModal({
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content className={`${styles.modal} glassPanel`} aria-label="Media Library" style={{ padding: 0, background: 'none', border: 'none', boxShadow: 'none' }}>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Title>Media Library</Dialog.Title>
+          </VisuallyHidden.Root>
+          <VisuallyHidden.Root asChild>
+            <Dialog.Description>Manage and select images from your library</Dialog.Description>
+          </VisuallyHidden.Root>
           <MediaLibrary
             mode="pick"
             onSelect={handleSelect}

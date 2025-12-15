@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { SocialIconInspector } from '../panels/SocialIconInspector';
 import { tabColors } from '../layout/tab-colors';
@@ -23,6 +24,12 @@ export function SocialIconModal(): JSX.Element | null {
             <Dialog.Portal>
                 <Dialog.Overlay className={styles.overlay} />
                 <Dialog.Content className={styles.content}>
+                    <VisuallyHidden.Root asChild>
+                        <Dialog.Title>Social Icons</Dialog.Title>
+                    </VisuallyHidden.Root>
+                    <VisuallyHidden.Root asChild>
+                        <Dialog.Description>Configure social media links</Dialog.Description>
+                    </VisuallyHidden.Root>
                     <SocialIconInspector activeColor={tabColors.integration} />
                 </Dialog.Content>
             </Dialog.Portal>

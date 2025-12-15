@@ -383,25 +383,8 @@ export function PodaColorPicker({
                 )}
               </div>
             </div>
-            {palette && palette.length > 0 && (
-              <div className={styles.paletteGroup}>
-                <p className={styles.paletteLabel}>Preset Colors</p>
-                <div className={styles.swatchRow}>
-                  {palette.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={styles.paletteSwatch}
-                      style={{ backgroundColor: color }}
-                      onClick={() => handleSolidChange(color)}
-                      aria-label={`Select color ${color}`}
-                      title={color}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
+
         ) : (
           <>
             <div className={styles.controlGroup}>
@@ -424,8 +407,35 @@ export function PodaColorPicker({
             </div>
           </>
         )}
+
+        {/* Palette Section - Now enabled for both modes */}
+        {palette && palette.length > 0 && (
+          <div className={styles.paletteGroup}>
+            <p className={styles.paletteLabel}>Preset Colors</p>
+            <div className={styles.swatchRow}>
+              {palette.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  className={styles.paletteSwatch}
+                  style={{ backgroundColor: color }}
+                  onClick={() => {
+                    if (mode === 'solid') {
+                      handleSolidChange(color);
+                    } else {
+                      // In gradient mode, update Color 1 (Primary)
+                      handleColor1Change(color);
+                    }
+                  }}
+                  aria-label={`Select color ${color}`}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </div >
   );
 }
 

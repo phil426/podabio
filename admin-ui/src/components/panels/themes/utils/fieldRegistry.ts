@@ -157,6 +157,73 @@ fieldRegistry.register({
   implemented: true
 });
 
+// Page Background Image properties
+fieldRegistry.register({
+  id: 'page_background_image_url',
+  label: 'Background Image URL',
+  type: 'image',
+  tokenPath: 'page.page_background_image_url',
+  section: 'page-background',
+  defaultValue: null,
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'page_background_image_overlay',
+  label: 'Image Overlay',
+  type: 'color',
+  tokenPath: 'page.page_background_image_overlay',
+  section: 'page-background',
+  defaultValue: 'rgba(0,0,0,0.4)',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'page_background_image_focal_x',
+  label: 'Focal Point X',
+  type: 'text' as any,
+  tokenPath: 'page.page_background_image_focal_x',
+  section: 'page-background',
+  defaultValue: '50%',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'page_background_image_focal_y',
+  label: 'Focal Point Y',
+  type: 'text' as any,
+  tokenPath: 'page.page_background_image_focal_y',
+  section: 'page-background',
+  defaultValue: '50%',
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'page_background_image_scale',
+  label: 'Image Scale',
+  type: 'number',
+  tokenPath: 'page.page_background_image_scale',
+  section: 'page-background',
+  defaultValue: 1.0,
+  min: 1.0,
+  max: 3.0,
+  step: 0.1,
+  implemented: true
+});
+
+fieldRegistry.register({
+  id: 'page_background_image_blur',
+  label: 'Image Blur',
+  type: 'number',
+  tokenPath: 'page.page_background_image_blur',
+  section: 'page-background',
+  defaultValue: 0,
+  min: 0,
+  max: 20,
+  unit: 'px',
+  implemented: true
+});
+
 // Shadow properties
 fieldRegistry.register({
   id: 'page-title-shadow-color',
