@@ -1208,6 +1208,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         'follow-content-desktop': 'follow-content',
                         'shownotes-content-desktop': 'shownotes-content',
                         'shownotes-section-desktop': 'shownotes-section',
+                        'text-size-controls-desktop': 'text-size-controls',
                         'chapters-list-desktop': 'chapters-list',
                         'chapters-section-desktop': 'chapters-section',
                         'episodes-list-desktop': 'episodes-list',

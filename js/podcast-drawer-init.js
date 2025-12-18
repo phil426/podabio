@@ -8,7 +8,7 @@
     'use strict';
 
     // Find elements, checking for mobile suffix first since page.php uses it
-    const suffixes = ['-mobile', ''];
+    const suffixes = ['-mobile', '-desktop', ''];
     let drawer, toggleBtn, closeBtn, banner, suffix;
 
     for (const s of suffixes) {
