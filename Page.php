@@ -978,7 +978,11 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     <div class="page-container">
                         <?php
                         $idSuffix = '-desktop';
+                        // Prevent duplicate player ID on desktop (it's rendered in the right frame)
+                        $tempShowPlayer = $showPodcastPlayer;
+                        $showPodcastPlayer = false;
                         require __DIR__ . '/templates/page-content.php';
+                        $showPodcastPlayer = $tempShowPlayer;
                         ?>
                     </div>
                 </div>
