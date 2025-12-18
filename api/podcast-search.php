@@ -15,7 +15,11 @@ require_once __DIR__ . '/../classes/iTunesSearchClient.php';
 require_once __DIR__ . '/../classes/APIResponse.php';
 
 // Check authentication
-requireAuth();
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo APIResponse::error('Unauthorized');
+    exit;
+}
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
