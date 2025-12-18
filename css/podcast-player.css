@@ -66,14 +66,14 @@ body[class*="theme-"] .podcast-top-drawer {
     --podcast-text-dark: #FFFFFF;
     --podcast-text-secondary-dark: #AAAAAA;
     --podcast-border-dark: rgba(255, 255, 255, 0.1);
-    
+
     /* Force dark mode for drawer */
     --podcast-background: var(--podcast-background-dark);
     --podcast-card: var(--podcast-card-dark);
     --podcast-text: var(--podcast-text-dark);
     --podcast-text-secondary: var(--podcast-text-secondary-dark);
     --podcast-border: var(--podcast-border-dark);
-    
+
     /* Base positioning - will be overridden by more specific rules below */
     position: fixed;
     top: 0;
@@ -183,6 +183,7 @@ body[class*="theme-"] .podcast-top-drawer {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -497,6 +498,7 @@ body[class*="theme-"] .podcast-top-drawer {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -519,6 +521,7 @@ body[class*="theme-"] .podcast-top-drawer {
         transform: scale(0.9);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;
@@ -736,9 +739,12 @@ body[class*="theme-"] .podcast-top-drawer .episodes-content {
 }
 
 @keyframes podcast-skeleton-loading {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -827,6 +833,7 @@ body[class*="theme-"] .podcast-top-drawer .episodes-content {
         opacity: 0;
         transform: translateX(-50%) translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
@@ -1180,7 +1187,8 @@ body[class*="theme-"] .podcast-top-drawer .follow-section .rss-button:hover {
 
 /* Email form - HIDDEN for now (TODO: Integrate email subscription feature at a later date) */
 .podcast-top-drawer .email-form {
-    display: none; /* TODO: Integrate email subscription feature at a later date */
+    display: none;
+    /* TODO: Integrate email subscription feature at a later date */
 }
 
 .podcast-top-drawer .email-input {
@@ -1365,7 +1373,7 @@ body[class*="theme-"] .podcast-top-drawer .review-button:active {
     font-size: var(--type-scale-xs, 0.889rem);
     font-weight: var(--type-weight-medium, 500);
     cursor: pointer;
-    transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+    transition: background var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1)), transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
     text-align: center;
     box-sizing: border-box;
 }
@@ -1480,7 +1488,7 @@ html:has(.podcast-top-drawer.peek) {
     height: 100vh;
     background: var(--color-background-surface-raised, var(--color-background-base));
     border-left: 2px solid var(--color-accent-primary);
-    box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
     transition: right 0.3s ease;
     z-index: 1000;
     overflow-y: auto;
@@ -1491,6 +1499,7 @@ html:has(.podcast-top-drawer.peek) {
 .episode-drawer.open {
     right: var(--mobile-page-offset);
 }
+
 /* Podcast Player widget styles */
 .widget-podcast {
     /* Inherits standard widget styling from .widget-item */
@@ -1582,11 +1591,11 @@ html:has(.podcast-top-drawer.peek) {
     color: var(--color-text-on-surface);
     line-height: 1.25;
     margin: 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     letter-spacing: -0.01em;
 }
 
@@ -1624,7 +1633,7 @@ html:has(.podcast-top-drawer.peek) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
     font-size: 0.75rem;
     padding: 0;
     position: relative;
@@ -1666,7 +1675,7 @@ html:has(.podcast-top-drawer.peek) {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+    transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
     padding: 0;
     position: relative;
     box-shadow: var(--shadow-level-2, 0 6px 16px rgba(15, 23, 42, 0.16));
@@ -1752,7 +1761,7 @@ html:has(.podcast-top-drawer.peek) {
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
     font-size: 0.8125rem;
     padding: 0;
     position: relative;
@@ -1943,7 +1952,8 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 .drawer-backdrop {
-    display: none; /* No backdrop needed for compact tray */
+    display: none;
+    /* No backdrop needed for compact tray */
 }
 
 .drawer-content-wrapper {
@@ -2059,6 +2069,7 @@ html:has(.podcast-top-drawer.peek) {
         opacity: 0;
         transform: translateY(4px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2229,11 +2240,11 @@ html:has(.podcast-top-drawer.peek) {
     color: var(--text-color);
     font-size: 0.9375rem;
     line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .episode-desc {
@@ -2241,11 +2252,11 @@ html:has(.podcast-top-drawer.peek) {
     color: var(--text-color);
     opacity: 0.6;
     line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* Follow Tab Styles */
@@ -2269,7 +2280,7 @@ html:has(.podcast-top-drawer.peek) {
     border-radius: 12px;
     color: var(--color-accent-primary);
     text-decoration: none;
-    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4,0,0.2,1));
+    transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
     font-size: 0.875rem;
     font-weight: 500;
     box-shadow: var(--shadow-level-1, 0 2px 6px rgba(15, 23, 42, 0.12));
@@ -2339,54 +2350,54 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 /* Mobile-only styles - always applied */
-    .podcast-bottom-sheet .follow-buttons,
-    .podcast-widget-drawer .follow-buttons {
-        grid-template-columns: 1fr;
-        gap: 0.625rem;
-    }
-    
-    .podcast-bottom-sheet .follow-button,
-    .podcast-widget-drawer .follow-button {
-        padding: 1rem 1.125rem;
-    }
-    
-    .podcast-compact-player {
-        padding: 0.75rem;
-        min-height: 110px;
-    }
-    
-    .podcast-main-content {
-        min-height: 110px;
-        gap: 0.75rem;
-    }
-    
-    .podcast-cover-compact {
-        width: 90px;
-        height: 90px;
-    }
-    
-    .skip-back-btn,
-    .skip-forward-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 0.6875rem;
-    }
-    
-    .play-pause-btn {
-        width: 52px;
-        height: 52px;
-        font-size: 1rem;
-    }
-    
-    .expand-drawer-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 0.75rem;
-    }
-    
-    .podcast-bottom-sheet {
-        max-height: 90vh;
-        border-radius: 0;
+.podcast-bottom-sheet .follow-buttons,
+.podcast-widget-drawer .follow-buttons {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+}
+
+.podcast-bottom-sheet .follow-button,
+.podcast-widget-drawer .follow-button {
+    padding: 1rem 1.125rem;
+}
+
+.podcast-compact-player {
+    padding: 0.75rem;
+    min-height: 110px;
+}
+
+.podcast-main-content {
+    min-height: 110px;
+    gap: 0.75rem;
+}
+
+.podcast-cover-compact {
+    width: 90px;
+    height: 90px;
+}
+
+.skip-back-btn,
+.skip-forward-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0.6875rem;
+}
+
+.play-pause-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 1rem;
+}
+
+.expand-drawer-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+}
+
+.podcast-bottom-sheet {
+    max-height: 90vh;
+    border-radius: 0;
 }
 
 /* Minimal Collapsed View - Mobile-only */
@@ -2570,20 +2581,20 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 /* Mobile-only styles - always applied */
-    .podcast-widget-drawer {
-        max-height: 90vh;
-        border-radius: 0;
-    }
-    
-    .podcast-header-full {
-        flex-direction: column;
-    }
-    
-    .podcast-cover-full {
-        width: 100%;
-        height: auto;
-        max-height: 250px;
-    }
+.podcast-widget-drawer {
+    max-height: 90vh;
+    border-radius: 0;
+}
+
+.podcast-header-full {
+    flex-direction: column;
+}
+
+.podcast-cover-full {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+}
 
 /* ============================================================================
    MODERN TAB CONTENT STYLES - Follow, Details, Episodes
@@ -3195,9 +3206,12 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 @keyframes podcast-skeleton-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -3270,11 +3284,4 @@ html:has(.podcast-top-drawer.peek) {
 
 .podcast-top-drawer .retry-button-modern i {
     font-size: 14px;
-}
-
-/* Hide podcast banner on tablet and desktop (width >= 768px) */
-@media (min-width: 768px) {
-    .podcast-top-banner {
-        display: none !important;
-    }
 }
