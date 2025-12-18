@@ -148,8 +148,13 @@
 
     // Auto-initialize player if config exists (don't wait for toggle)
     // This ensures playback works even if the UI drawer is hidden (e.g. on desktop)
-    // Use a small delay to ensure dependencies are loaded
+    // VALIDATION: Only init if we are NOT on desktop (width < 1024px)
+    // On desktop (>= 1024px), page.php handles initialization of the Desktop Player instance separately.
+    // Initializing both causes a singleton conflict (window.podcastPlayerApp).
     setTimeout(() => {
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            return; // Skip on desktop, let page.php handle it
+        }
         if (typeof PodcastPlayerApp !== 'undefined' && window.podcastConfig?.rssFeedUrl) {
             initPlayer();
         }
