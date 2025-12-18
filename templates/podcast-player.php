@@ -83,6 +83,22 @@ $showCloseButton = $showCloseButton ?? true;
                         </button>
                     </div>
 
+                    <div class="secondary-controls-bar">
+                        <button class="secondary-control-btn speed-control-btn"
+                            id="speed-control-btn<?php echo $idSuffix; ?>" aria-label="Playback Speed">
+                            <span id="speed-display<?php echo $idSuffix; ?>">1x</span>
+                        </button>
+                        <button class="secondary-control-btn timer-control-btn"
+                            id="timer-control-btn<?php echo $idSuffix; ?>" aria-label="Sleep Timer">
+                            <i class="fas fa-moon"></i>
+                            <span id="timer-display<?php echo $idSuffix; ?>">Off</span>
+                        </button>
+                        <button class="secondary-control-btn share-control-btn"
+                            id="share-control-btn<?php echo $idSuffix; ?>" aria-label="Share">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+
 
                 </div>
             </div>
@@ -196,28 +212,14 @@ $showCloseButton = $showCloseButton ?? true;
 
     <audio id="podcast-audio-player<?php echo $idSuffix; ?>" preload="metadata"></audio>
 
-    <div class="podcast-drawer-footer-controls">
-        <button class="secondary-control-btn speed-control-btn" id="speed-control-btn<?php echo $idSuffix; ?>"
-            aria-label="Playback Speed">
-            <span id="speed-display<?php echo $idSuffix; ?>">1x</span>
+    <?php if ($showCloseButton): ?>
+    <div class="podcast-global-close-footer">
+        <button class="floating-close-btn" id="close-player-btn<?php echo $idSuffix; ?>" aria-label="Close Player">
+            <i class="fas fa-chevron-down"></i>
+            <span>Close</span>
         </button>
-        <button class="secondary-control-btn timer-control-btn" id="timer-control-btn<?php echo $idSuffix; ?>"
-            aria-label="Sleep Timer">
-            <i class="fas fa-moon"></i>
-            <span id="timer-display<?php echo $idSuffix; ?>">Off</span>
-        </button>
-        <button class="secondary-control-btn share-control-btn" id="share-control-btn<?php echo $idSuffix; ?>"
-            aria-label="Share">
-            <i class="fas fa-share-alt"></i>
-        </button>
-
-        <?php if ($showCloseButton): ?>
-            <button class="secondary-control-btn close-player-btn" id="close-player-btn<?php echo $idSuffix; ?>"
-                aria-label="Close Player">
-                <i class="fas fa-times"></i>
-            </button>
-        <?php endif; ?>
     </div>
+    <?php endif; ?>
 
     <!-- Speed Modal (Global) -->
     <div class="podcast-modal-overlay" id="speed-modal-overlay<?php echo $idSuffix; ?>" style="display: none;">

@@ -477,46 +477,60 @@ body[class*="theme-"] .podcast-top-drawer {
     text-transform: uppercase;
 }
 
-/* Global Footer Controls (replaces secondary-controls-bar) */
-.podcast-top-drawer .podcast-drawer-footer-controls {
+/* Global Floating Close Footer */
+.podcast-top-drawer .podcast-global-close-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
-    background: rgba(6, 10, 26, 0.85);
+    align-items: flex-end;
+    z-index: 100;
+    pointer-events: none;
+    background: transparent;
+}
+
+.podcast-top-drawer .floating-close-btn {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-    z-index: 100;
-}
-
-/* Adjust secondary buttons for the footer context if needed */
-.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn {
-    width: auto;
-    height: auto;
-    padding: 8px 12px;
-    background: transparent;
-    border-radius: 8px;
-    gap: 6px;
-}
-
-.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn i {
-    font-size: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    padding: 12px 32px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 0;
 }
 
-.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn span {
-    font-size: 10px;
-    margin-top: 2px;
+.podcast-top-drawer .floating-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
+
+.podcast-top-drawer .floating-close-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+.podcast-top-drawer .floating-close-btn i {
+    font-size: 14px;
+}
+
+
 
 /* Modal Overlay and Container */
 .podcast-top-drawer .podcast-modal-overlay {
