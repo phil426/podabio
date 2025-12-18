@@ -83,49 +83,7 @@ $showCloseButton = $showCloseButton ?? true;
                         </button>
                     </div>
 
-                    <div class="secondary-controls-bar">
-                        <button class="secondary-control-btn speed-control-btn"
-                            id="speed-control-btn<?php echo $idSuffix; ?>" aria-label="Playback Speed">
-                            <span id="speed-display<?php echo $idSuffix; ?>">1x</span>
-                        </button>
-                        <button class="secondary-control-btn timer-control-btn"
-                            id="timer-control-btn<?php echo $idSuffix; ?>" aria-label="Sleep Timer">
-                            <i class="fas fa-moon"></i>
-                            <span id="timer-display<?php echo $idSuffix; ?>">Off</span>
-                        </button>
-                        <button class="secondary-control-btn share-control-btn"
-                            id="share-control-btn<?php echo $idSuffix; ?>" aria-label="Share">
-                            <i class="fas fa-share-alt"></i>
-                        </button>
-                        <button class="secondary-control-btn close-player-btn"
-                            id="close-player-btn<?php echo $idSuffix; ?>" aria-label="Close Player">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
 
-                    <!-- Speed Modal -->
-                    <div class="podcast-modal-overlay" id="speed-modal-overlay<?php echo $idSuffix; ?>"
-                        style="display: none;">
-                        <div class="podcast-modal-container">
-                            <div class="podcast-modal-content">
-                                <h3 class="podcast-modal-title">Playback Speed</h3>
-                                <div class="podcast-modal-options" id="speed-options-modal<?php echo $idSuffix; ?>">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Timer Modal -->
-                    <div class="podcast-modal-overlay" id="timer-modal-overlay<?php echo $idSuffix; ?>"
-                        style="display: none;">
-                        <div class="podcast-modal-container">
-                            <div class="podcast-modal-content">
-                                <h3 class="podcast-modal-title">Sleep Timer</h3>
-                                <div class="podcast-modal-options" id="timer-options-modal<?php echo $idSuffix; ?>">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -141,9 +99,16 @@ $showCloseButton = $showCloseButton ?? true;
         <div class="tab-panel" id="details-panel<?php echo $idSuffix; ?>">
             <div class="details-tab-content">
                 <div class="details-section-modern" id="shownotes-section<?php echo $idSuffix; ?>">
-                    <div class="section-header-modern">
-                        <i class="fas fa-file-alt section-icon"></i>
-                        <h2 class="section-title-modern">Show Notes</h2>
+                    <div class="section-header-modern" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-file-alt section-icon"></i>
+                            <h2 class="section-title-modern">Show Notes</h2>
+                        </div>
+                        <div class="text-size-controls" id="text-size-controls<?php echo $idSuffix; ?>">
+                            <button class="text-size-btn" data-size="small" aria-label="Small text">A</button>
+                            <button class="text-size-btn active" data-size="medium" aria-label="Medium text">A</button>
+                            <button class="text-size-btn" data-size="large" aria-label="Large text">A</button>
+                        </div>
                     </div>
                     <div class="shownotes-content-modern" id="shownotes-content<?php echo $idSuffix; ?>">
                         <div class="empty-state-modern">
@@ -231,13 +196,48 @@ $showCloseButton = $showCloseButton ?? true;
 
     <audio id="podcast-audio-player<?php echo $idSuffix; ?>" preload="metadata"></audio>
 
-    <?php if ($showCloseButton): ?>
-    <div class="podcast-drawer-footer">
-        <button type="button" class="podcast-drawer-footer-button" id="podcast-drawer-close<?php echo $idSuffix; ?>"
-            aria-label="Close Podcast Player">
-            <i class="fas fa-chevron-up"></i>
-            <span>Close Player</span>
+    <div class="podcast-drawer-footer-controls">
+        <button class="secondary-control-btn speed-control-btn" id="speed-control-btn<?php echo $idSuffix; ?>"
+            aria-label="Playback Speed">
+            <span id="speed-display<?php echo $idSuffix; ?>">1x</span>
         </button>
+        <button class="secondary-control-btn timer-control-btn" id="timer-control-btn<?php echo $idSuffix; ?>"
+            aria-label="Sleep Timer">
+            <i class="fas fa-moon"></i>
+            <span id="timer-display<?php echo $idSuffix; ?>">Off</span>
+        </button>
+        <button class="secondary-control-btn share-control-btn" id="share-control-btn<?php echo $idSuffix; ?>"
+            aria-label="Share">
+            <i class="fas fa-share-alt"></i>
+        </button>
+
+        <?php if ($showCloseButton): ?>
+            <button class="secondary-control-btn close-player-btn" id="close-player-btn<?php echo $idSuffix; ?>"
+                aria-label="Close Player">
+                <i class="fas fa-times"></i>
+            </button>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
+
+    <!-- Speed Modal (Global) -->
+    <div class="podcast-modal-overlay" id="speed-modal-overlay<?php echo $idSuffix; ?>" style="display: none;">
+        <div class="podcast-modal-container">
+            <div class="podcast-modal-content">
+                <h3 class="podcast-modal-title">Playback Speed</h3>
+                <div class="podcast-modal-options" id="speed-options-modal<?php echo $idSuffix; ?>">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer Modal (Global) -->
+    <div class="podcast-modal-overlay" id="timer-modal-overlay<?php echo $idSuffix; ?>" style="display: none;">
+        <div class="podcast-modal-container">
+            <div class="podcast-modal-content">
+                <h3 class="podcast-modal-title">Sleep Timer</h3>
+                <div class="podcast-modal-options" id="timer-options-modal<?php echo $idSuffix; ?>">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

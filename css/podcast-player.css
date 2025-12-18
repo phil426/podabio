@@ -477,6 +477,47 @@ body[class*="theme-"] .podcast-top-drawer {
     text-transform: uppercase;
 }
 
+/* Global Footer Controls (replaces secondary-controls-bar) */
+.podcast-top-drawer .podcast-drawer-footer-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    background: rgba(6, 10, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+/* Adjust secondary buttons for the footer context if needed */
+.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn {
+    width: auto;
+    height: auto;
+    padding: 8px 12px;
+    background: transparent;
+    border-radius: 8px;
+    gap: 6px;
+}
+
+.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn i {
+    font-size: 22px;
+    margin-bottom: 0;
+}
+
+.podcast-top-drawer .podcast-drawer-footer-controls .secondary-control-btn span {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
 /* Modal Overlay and Container */
 .podcast-top-drawer .podcast-modal-overlay {
     position: fixed;
@@ -844,7 +885,7 @@ body[class*="theme-"] .podcast-top-drawer .episodes-content {
 .podcast-top-drawer .shownotes-content {
     color: #ffffff;
     line-height: 1.6;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .podcast-top-drawer .shownotes-content p {
@@ -969,8 +1010,8 @@ body[class*="theme-"] .podcast-top-drawer #follow-panel .follow-button {
 }
 
 .podcast-top-drawer .follow-section.listen-on-section .social-icon {
-    width: 40px !important;
-    height: 40px !important;
+    width: 48px !important;
+    height: 48px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -980,7 +1021,7 @@ body[class*="theme-"] .podcast-top-drawer #follow-panel .follow-button {
     color: #ffffff !important;
     text-decoration: none !important;
     transition: background-color 0.15s ease !important;
-    font-size: 16px !important;
+    font-size: 20px !important;
     box-shadow: none !important;
 }
 
@@ -1008,8 +1049,8 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 8px !important;
-    padding: 16px !important;
+    gap: 12px !important;
+    padding: 20px !important;
     background: #1a1a1a !important;
     border: 1px solid #2a2a2a !important;
     border-radius: 0 !important;
@@ -1018,7 +1059,7 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
     transition: background-color 0.15s ease !important;
     cursor: pointer !important;
     flex: 1 !important;
-    min-width: 120px !important;
+    min-width: 140px !important;
     width: auto !important;
     height: auto !important;
     margin-bottom: 0 !important;
@@ -1047,8 +1088,8 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
 }
 
 .podcast-top-drawer .platform-icon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1056,17 +1097,17 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
     border-radius: 0;
     flex-shrink: 0;
     margin-right: 0;
-    font-size: 18px;
+    font-size: 24px;
 }
 
 .podcast-top-drawer .platform-icon i {
-    font-size: 18px;
+    font-size: 24px;
     color: #ffffff;
 }
 
 .podcast-top-drawer .platform-name {
-    font-size: 14px;
-    font-weight: 400;
+    font-size: 16px;
+    font-weight: 500;
     color: #ffffff;
     text-align: center;
     flex: 1;
@@ -1074,6 +1115,21 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
 
 .podcast-top-drawer .platform-button .chevron {
     display: none;
+}
+
+.podcast-top-drawer .review-stars {
+    color: #FFD700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+/* Allow chevron on RSS copy button since it uses .chevron class for the copy icon */
+.podcast-top-drawer #rss-copy-button .chevron {
+    display: block;
+    font-size: 16px;
+    color: #888888;
 }
 
 .podcast-top-drawer .social-icons-container {
@@ -1092,8 +1148,8 @@ body[class*="theme-"] .podcast-top-drawer .social-icon,
 body[class*="theme-"] .podcast-top-drawer .social-icons-container .social-icon,
 body[class*="theme-"] .podcast-top-drawer .follow-section .social-icon,
 body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .social-icon {
-    width: 40px !important;
-    height: 40px !important;
+    width: 48px !important;
+    height: 48px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1106,7 +1162,7 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .soc
     cursor: pointer !important;
     box-shadow: none !important;
     opacity: 1 !important;
-    font-size: 16px !important;
+    font-size: 20px !important;
 }
 
 .podcast-top-drawer .social-icon:hover,
@@ -1130,12 +1186,12 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .soc
 }
 
 .podcast-top-drawer .social-icon i {
-    font-size: 16px;
+    font-size: 20px;
 }
 
 .podcast-top-drawer .social-icon .social-icon-svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     display: block;
     color: inherit;
 }
@@ -2860,7 +2916,66 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .shownotes-content-modern {
     color: #e0e0e0;
     line-height: 1.7;
-    font-size: 15px;
+    font-size: 16px;
+    /* Default size (Medium) */
+    transition: font-size 0.2s ease;
+}
+
+/* Text Size Utility Classes */
+.podcast-top-drawer .shownotes-content-modern.text-size-sm {
+    font-size: 14px !important;
+}
+
+.podcast-top-drawer .shownotes-content-modern.text-size-md {
+    font-size: 16px !important;
+}
+
+.podcast-top-drawer .shownotes-content-modern.text-size-lg {
+    font-size: 18px !important;
+}
+
+/* Text Size Controls */
+.podcast-top-drawer .text-size-controls {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.podcast-top-drawer .text-size-btn {
+    background: transparent;
+    border: none;
+    color: #888888;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.podcast-top-drawer .text-size-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.podcast-top-drawer .text-size-btn.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+}
+
+.podcast-top-drawer .text-size-btn[data-size="small"] {
+    font-size: 12px;
+}
+
+.podcast-top-drawer .text-size-btn[data-size="medium"] {
+    font-size: 14px;
+}
+
+.podcast-top-drawer .text-size-btn[data-size="large"] {
+    font-size: 16px;
 }
 
 .podcast-top-drawer .shownotes-content-modern p {
@@ -3285,6 +3400,7 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .retry-button-modern i {
     font-size: 14px;
 }
+
 /* Hide podcast banner on tablet and desktop (width >= 768px) */
 @media (min-width: 768px) {
     .podcast-top-banner {

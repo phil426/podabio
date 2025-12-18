@@ -7,12 +7,29 @@
 (function () {
     'use strict';
 
-    const drawer = document.getElementById('podcast-top-drawer');
-    const toggleBtn = document.getElementById('podcast-drawer-toggle');
-    const closeBtn = document.getElementById('podcast-drawer-close');
-    const banner = document.getElementById('podcast-top-banner');
+    // Find elements, checking for mobile suffix first since page.php uses it
+    const suffixes = ['-mobile', ''];
+    let drawer, toggleBtn, closeBtn, banner, suffix;
 
-    if (!drawer || !toggleBtn) return;
+    for (const s of suffixes) {
+        const d = document.getElementById('podcast-top-drawer' + s);
+        // Only accept if we also find the toggle button matching this suffix
+        const t = document.getElementById('podcast-drawer-toggle' + s);
+
+        if (d && t) {
+            drawer = d;
+            toggleBtn = t;
+            closeBtn = document.getElementById('close-player-btn' + s);
+            banner = document.getElementById('podcast-top-banner' + s);
+            suffix = s;
+            break;
+        }
+    }
+
+    if (!drawer || !toggleBtn) {
+        console.warn('Podcast drawer elements not found. Checked suffixes:', suffixes);
+        return;
+    }
 
     // Namespace for drawer functions
     const PodcastDrawerController = {
@@ -110,21 +127,40 @@
                 return;
             }
 
+            // Extract review links from social icons
+            const reviewLinks = {
+                apple: null,
+                spotify: null,
+                google: null
+            };
+
+            if (Array.isArray(socialIcons)) {
+                socialIcons.forEach(icon => {
+                    if (!icon.url) return;
+                    const platform = icon.platform_name ? icon.platform_name.toLowerCase() : '';
+                    if (platform === 'apple_podcasts' || platform === 'apple podcasts') {
+                        reviewLinks.apple = icon.url;
+                    } else if (platform === 'spotify') {
+                        reviewLinks.spotify = icon.url;
+                    } else if (platform === 'google_podcasts' || platform === 'google podcasts') {
+                        reviewLinks.google = icon.url;
+                    } else if (platform === 'youtube_music') {
+                        reviewLinks.youtube_music = icon.url;
+                    }
+                });
+            }
+
             const config = {
                 rssFeedUrl: rssFeedUrl,
                 rssProxyUrl: '/api/rss-proxy.php',
                 imageProxyUrl: '/api/podcast-image-proxy.php',
                 savedCoverImage: savedCoverImage,
                 platformLinks: {
-                    apple: null,
-                    spotify: null,
-                    google: null
+                    apple: reviewLinks.apple,
+                    spotify: reviewLinks.spotify,
+                    google: reviewLinks.google
                 },
-                reviewLinks: {
-                    apple: null,
-                    spotify: null,
-                    google: null
-                },
+                reviewLinks: reviewLinks,
                 socialIcons: socialIcons,
                 cacheTTL: 3600000
             };
@@ -132,7 +168,7 @@
             // Initialize player
             try {
                 console.log('Initializing podcast player with RSS feed:', rssFeedUrl);
-                window.podcastPlayerApp = new PodcastPlayerApp(config, drawer);
+                window.podcastPlayerApp = new PodcastPlayerApp(config, drawer, suffix);
                 playerInitialized = true;
                 console.log('Podcast player initialized successfully');
             } catch (error) {
@@ -190,24 +226,6 @@
     // Expose controller to window for debugging (optional)
     window.PodcastDrawerController = PodcastDrawerController;
 
-    // Handle close player buttons (in secondary controls)
-    const closePlayerBtn = document.getElementById('close-player-btn');
-    const closePlayerBtnDesktop = document.getElementById('close-player-btn-desktop');
-
-    if (closePlayerBtn) {
-        closePlayerBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            PodcastDrawerController.closeDrawer();
-        });
-    }
-
-    if (closePlayerBtnDesktop) {
-        closePlayerBtnDesktop.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            PodcastDrawerController.closeDrawer();
-        });
-    }
+    // Handle close player buttons (redundant manual handling removed, handled by closeBtn above)
 })();
 

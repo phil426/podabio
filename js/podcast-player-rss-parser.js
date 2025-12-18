@@ -13,15 +13,15 @@ class PodcastRSSParser {
             // Try using proxy first (for CORS handling)
             const proxyUrl = this.rssProxyUrl + '?url=' + encodeURIComponent(url);
             console.log('Fetching RSS via proxy:', proxyUrl);
-            
+
             const response = await fetch(proxyUrl);
-            
+
             if (!response.ok) {
                 const errorText = await response.text().catch(() => 'Unknown error');
                 console.error('RSS proxy error:', response.status, errorText);
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
-            
+
             const text = await response.text();
             console.log('RSS feed fetched successfully, length:', text.length);
             return text;
@@ -49,14 +49,14 @@ class PodcastRSSParser {
     async parseFeed(feedUrl) {
         try {
             const xmlText = await this.fetchFeed(feedUrl);
-            
+
             if (!xmlText || xmlText.trim().length === 0) {
                 throw new Error('RSS feed is empty');
             }
-            
+
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-            
+
             // Check for parsing errors
             const parseError = xmlDoc.querySelector('parsererror');
             if (parseError) {
@@ -64,13 +64,13 @@ class PodcastRSSParser {
                 console.error('XML parsing error:', errorText);
                 throw new Error('Failed to parse RSS feed XML: ' + errorText);
             }
-            
+
             const parsedData = this.parseXML(xmlDoc);
             console.log('RSS feed parsed:', {
                 title: parsedData.title,
                 episodeCount: parsedData.episodes?.length || 0
             });
-            
+
             return parsedData;
         } catch (error) {
             console.error('RSS parsing error:', error);
@@ -95,7 +95,7 @@ class PodcastRSSParser {
             // Parse podcast metadata
             data.title = this.getTextContent(channel, 'title') || '';
             data.description = this.getTextContent(channel, 'description') || '';
-            
+
             // Get cover image (iTunes namespace)
             const itunesImage = channel.querySelector('itunes\\:image, image[href]');
             if (itunesImage) {
@@ -106,7 +106,7 @@ class PodcastRSSParser {
                     data.coverImage = this.getTextContent(channel, 'image > url') || '';
                 }
             }
-            
+
             // Parse episodes
             const items = channel.querySelectorAll('item');
             items.forEach((item, index) => {
@@ -121,7 +121,7 @@ class PodcastRSSParser {
             if (entries.length > 0) {
                 data.title = this.getTextContent(xmlDoc.documentElement, 'title') || '';
                 data.description = this.getTextContent(xmlDoc.documentElement, 'subtitle') || '';
-                
+
                 entries.forEach(entry => {
                     const episode = this.parseAtomEntry(entry);
                     if (episode) {
@@ -140,7 +140,7 @@ class PodcastRSSParser {
     parseEpisode(item) {
         const episode = {
             title: this.getTextContent(item, 'title') || 'Untitled Episode',
-            description: this.getTextContent(item, 'description') || '',
+            description: this.getTextContent(item, 'content\\:encoded') || this.getTextContent(item, 'description') || '',
             pubDate: this.getTextContent(item, 'pubDate') || '',
             audioUrl: '',
             duration: null,
@@ -220,7 +220,7 @@ class PodcastRSSParser {
     parseAtomEntry(entry) {
         const episode = {
             title: this.getTextContent(entry, 'title') || 'Untitled Episode',
-            description: this.getTextContent(entry, 'summary') || '',
+            description: this.getTextContent(entry, 'content') || this.getTextContent(entry, 'summary') || '',
             pubDate: this.getTextContent(entry, 'published') || this.getTextContent(entry, 'updated') || '',
             audioUrl: '',
             duration: null,
@@ -258,10 +258,10 @@ class PodcastRSSParser {
      */
     parseDurationString(duration) {
         if (!duration) return null;
-        
+
         // Handle formats like "01:23:45", "83:45", or "5025"
         const parts = duration.split(':').map(Number);
-        
+
         if (parts.length === 3) {
             return parts[0] * 3600 + parts[1] * 60 + parts[2];
         } else if (parts.length === 2) {
@@ -269,7 +269,7 @@ class PodcastRSSParser {
         } else if (parts.length === 1) {
             return parts[0];
         }
-        
+
         return null;
     }
 
@@ -280,7 +280,7 @@ class PodcastRSSParser {
         const chapters = [];
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, 'text/html');
-        
+
         // Look for timestamp links or patterns like [1:23] or 1:23 - Chapter Title
         const links = doc.querySelectorAll('a[href*="#t="], a[href*="?t="]');
         links.forEach(link => {
@@ -296,10 +296,10 @@ class PodcastRSSParser {
                 });
             }
         });
-        
+
         // Sort by start time
         chapters.sort((a, b) => a.startTime - b.startTime);
-        
+
         return chapters;
     }
 }

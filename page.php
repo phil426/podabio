@@ -716,6 +716,18 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                 background: #000000;
             }
 
+            /* Desktop Left Column Customization */
+            /* 1. Hide Podcast Banner */
+            .desktop-frame-container .iphone-frame:not(.iphone-podcast-frame) .podcast-top-banner {
+                display: none !important;
+            }
+
+            /* 2. Read-Only Widgets (Disable clicks, allow scrolling) */
+            .desktop-frame-container .iphone-frame:not(.iphone-podcast-frame) .page-container {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+
             /* Podcast Buttons Container */
             .podcast-buttons-container {
                 width: 294.75px;

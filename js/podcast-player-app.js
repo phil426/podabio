@@ -1,48 +1,66 @@
 // Main Application Controller - Namespaced for podcast drawer
 
 class PodcastPlayerApp {
-    constructor(config, drawerContainer) {
+    constructor(config, drawerContainer, idSuffix = '') {
         // Config object with: rssFeedUrl, rssProxyUrl, imageProxyUrl, platformLinks, reviewLinks, socialIcons
         this.config = config || {};
-        this.drawerContainer = drawerContainer || document.querySelector('.podcast-top-drawer');
+        this.drawerContainer = drawerContainer || document.querySelector('.podcast-top-drawer' + idSuffix);
+        this.idSuffix = idSuffix;
+
         if (!this.drawerContainer) {
             console.error('PodcastPlayerApp: drawerContainer not found');
             return;
         }
-        
+
         this.rssParser = new PodcastRSSParser(this.config.rssProxyUrl || '/api/rss-proxy.php');
         this.player = new PodcastAudioPlayer(this.drawerContainer);
         this.podcastData = null;
         this.currentEpisode = null;
         this.activeChapter = null;
         this.currentTab = 'now-playing';
-        
+
         // Make player and app accessible globally for event handlers (namespaced)
-        window.podcastPlayerApp = this;
-        window.podcastPlayer = this.player;
-        
+        if (idSuffix === '-desktop') {
+            window.podcastPlayerAppDesktop = this;
+        } else if (idSuffix === '-mobile') {
+            window.podcastPlayerAppMobile = this;
+        } else {
+            window.podcastPlayerApp = this;
+            window.podcastPlayer = this.player;
+        }
+
         this.init();
+    }
+
+    /**
+     * Helper to get suffixed ID
+     */
+    _id(baseId) {
+        return baseId + this.idSuffix;
     }
 
     async init() {
         // Initialize tab navigation
         this.initTabNavigation();
-        
+
         // Initialize UI event listeners
         this.initEventListeners();
-        
+
         // Initialize speed selector
         this.initSpeedSelector();
-        
+
         // Initialize timer selector
         this.initTimerSelector();
-        
+
         // Initialize sharing
         this.initSharing();
-        
+
         // Initialize follow section
         this.initFollowSection();
-        
+
+        // Initialize text size controls
+        this.initTextSizeControls();
+
         // Load RSS feed
         await this.loadFeed();
     }
@@ -65,15 +83,50 @@ class PodcastPlayerApp {
      */
     switchTab(tabName) {
         this.currentTab = tabName;
-        
+
         // Update tab buttons
         this.drawerContainer.querySelectorAll('.tab-button').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
-        
+
         // Update panels
         this.drawerContainer.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === `${tabName}-panel`);
+            panel.classList.toggle('active', panel.id === this._id(`${tabName}-panel`));
+        });
+    }
+
+    /**
+     * Initialize text size controls
+     */
+    initTextSizeControls() {
+        const controls = this.drawerContainer.querySelector('#' + this._id('text-size-controls'));
+        if (!controls) return;
+
+        const content = this.drawerContainer.querySelector('#' + this._id('shownotes-content'));
+        const buttons = controls.querySelectorAll('.text-size-btn');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const size = btn.getAttribute('data-size');
+
+                // Remove active class from all buttons
+                buttons.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                // Update content class
+                if (content) {
+                    content.classList.remove('text-size-sm', 'text-size-md', 'text-size-lg');
+                    if (size === 'small') {
+                        content.classList.add('text-size-sm');
+                    } else if (size === 'medium') {
+                        content.classList.add('text-size-md');
+                    } else if (size === 'large') {
+                        content.classList.add('text-size-lg');
+                    }
+                }
+            });
         });
     }
 
@@ -81,50 +134,50 @@ class PodcastPlayerApp {
      * Load RSS feed
      */
     async loadFeed() {
-        const loadingSkeleton = this.drawerContainer.querySelector('#loading-skeleton');
-        const episodesList = this.drawerContainer.querySelector('#episodes-list');
-        const errorState = this.drawerContainer.querySelector('#error-state');
-        
+        const loadingSkeleton = this.drawerContainer.querySelector('#' + this._id('loading-skeleton'));
+        const episodesList = this.drawerContainer.querySelector('#' + this._id('episodes-list'));
+        const errorState = this.drawerContainer.querySelector('#' + this._id('error-state'));
+
         try {
             // Show loading state
             if (loadingSkeleton) loadingSkeleton.style.display = 'block';
             if (episodesList) episodesList.style.display = 'none';
             if (errorState) errorState.style.display = 'none';
-            
+
             // Check cache first
             const cached = PodcastStorage.get('podcast_data');
             const cacheTime = PodcastStorage.get('podcast_data_time', 0);
             const now = Date.now();
             const cacheTTL = this.config.cacheTTL || 3600000; // Default 1 hour
-            
+
             if (cached && (now - cacheTime) < cacheTTL) {
                 this.podcastData = cached;
                 this.renderPodcastData();
                 if (loadingSkeleton) loadingSkeleton.style.display = 'none';
                 return;
             }
-            
+
             // Fetch and parse RSS
             if (!this.config.rssFeedUrl) {
                 throw new Error('RSS feed URL not provided');
             }
-            
+
             console.log('Fetching RSS feed from:', this.config.rssFeedUrl);
             console.log('Using RSS proxy:', this.config.rssProxyUrl);
-            
+
             this.podcastData = await this.rssParser.parseFeed(this.config.rssFeedUrl);
-            
+
             console.log('RSS feed parsed successfully:', {
                 title: this.podcastData?.title,
                 episodeCount: this.podcastData?.episodes?.length || 0
             });
-            
+
             // Cache the data
             PodcastStorage.set('podcast_data', this.podcastData);
             PodcastStorage.set('podcast_data_time', now);
-            
+
             this.renderPodcastData();
-            
+
         } catch (error) {
             console.error('Failed to load feed:', error);
             console.error('Error details:', {
@@ -133,18 +186,18 @@ class PodcastPlayerApp {
                 rssFeedUrl: this.config.rssFeedUrl,
                 rssProxyUrl: this.config.rssProxyUrl
             });
-            
+
             // Show error state
             if (loadingSkeleton) loadingSkeleton.style.display = 'none';
             if (episodesList) episodesList.style.display = 'none';
             if (errorState) errorState.style.display = 'block';
-            
+
             // Update error message with details
             const errorMessage = errorState.querySelector('p');
             if (errorMessage) {
                 errorMessage.textContent = `Failed to load podcast feed: ${error.message}`;
             }
-            
+
             this.showToast('Failed to load podcast feed: ' + error.message, 'error');
         }
     }
@@ -154,13 +207,13 @@ class PodcastPlayerApp {
      */
     renderPodcastData() {
         if (!this.podcastData) return;
-        
+
         // Prioritize saved cover image from database over RSS feed cover image
         const coverImage = this.config.savedCoverImage || this.podcastData.coverImage || '';
         if (coverImage) {
             // Update podcastData to use saved cover image
             this.podcastData.coverImage = coverImage;
-            
+
             // Extract dominant color for theme
             getDominantColor(getProxiedImageUrl(coverImage, this.config.imageProxyUrl), (color) => {
                 if (color && this.drawerContainer) {
@@ -168,17 +221,17 @@ class PodcastPlayerApp {
                 }
             });
         }
-        
+
         // Render episodes
         this.renderEpisodeList();
-        
+
         // Hide loading, show episodes
-        const loadingSkeleton = this.drawerContainer.querySelector('#loading-skeleton');
-        const episodesList = this.drawerContainer.querySelector('#episodes-list');
-        
+        const loadingSkeleton = this.drawerContainer.querySelector('#' + this._id('loading-skeleton'));
+        const episodesList = this.drawerContainer.querySelector('#' + this._id('episodes-list'));
+
         if (loadingSkeleton) loadingSkeleton.style.display = 'none';
         if (episodesList) episodesList.style.display = 'block';
-        
+
         // Auto-load the most recent episode (first in list)
         if (this.podcastData.episodes && this.podcastData.episodes.length > 0) {
             const mostRecentEpisode = this.podcastData.episodes[0];
@@ -192,22 +245,22 @@ class PodcastPlayerApp {
      */
     renderEpisodeList() {
         if (!this.podcastData || !this.podcastData.episodes) return;
-        
-        const episodesList = this.drawerContainer.querySelector('#episodes-list');
-        const episodesHeader = this.drawerContainer.querySelector('#episodes-header');
-        const episodesCount = this.drawerContainer.querySelector('#episodes-count');
-        
+
+        const episodesList = this.drawerContainer.querySelector('#' + this._id('episodes-list'));
+        const episodesHeader = this.drawerContainer.querySelector('#' + this._id('episodes-header'));
+        const episodesCount = this.drawerContainer.querySelector('#' + this._id('episodes-count'));
+
         if (!episodesList) return;
-        
+
         // Update header with count
         if (episodesHeader && episodesCount) {
             const count = this.podcastData.episodes.length;
             episodesCount.textContent = `${count} ${count === 1 ? 'episode' : 'episodes'}`;
             episodesHeader.style.display = 'flex';
         }
-        
+
         episodesList.innerHTML = '';
-        
+
         this.podcastData.episodes.forEach((episode, index) => {
             const card = this.createEpisodeCard(episode, index);
             episodesList.appendChild(card);
@@ -219,7 +272,7 @@ class PodcastPlayerApp {
      */
     createEpisodeCard(episode, index) {
         const card = createElement('div', { className: 'episode-card-modern' });
-        
+
         // Prioritize episode artwork, then saved cover image, then RSS feed cover image
         let artworkUrl = episode.artwork || this.config.savedCoverImage || this.podcastData.coverImage || '';
         const artworkWrapper = createElement('div', { className: 'episode-artwork-wrapper' });
@@ -228,7 +281,7 @@ class PodcastPlayerApp {
             src: getProxiedImageUrl(artworkUrl, this.config.imageProxyUrl),
             alt: episode.title
         });
-        
+
         // Handle image load errors - fallback to next available image source
         artwork.addEventListener('error', () => {
             // Try fallback: if we used saved cover image, try RSS feed cover image
@@ -251,16 +304,16 @@ class PodcastPlayerApp {
                 artworkWrapper.innerHTML = '<div class="episode-artwork-placeholder"><i class="fas fa-music"></i></div>';
             }
         });
-        
+
         artworkWrapper.appendChild(artwork);
-        
+
         const info = createElement('div', { className: 'episode-info-modern' });
         const title = createElement('div', { className: 'episode-title-modern' }, episode.title);
         const meta = createElement('div', { className: 'episode-meta-modern' });
-        
+
         const duration = episode.duration ? formatTime(episode.duration) : '';
         const date = episode.pubDate ? formatDate(episode.pubDate) : '';
-        
+
         if (duration) {
             const durationEl = createElement('span', { className: 'episode-duration' }, duration);
             meta.appendChild(durationEl);
@@ -272,22 +325,22 @@ class PodcastPlayerApp {
             const dateEl = createElement('span', { className: 'episode-date' }, date);
             meta.appendChild(dateEl);
         }
-        
+
         const chevron = createElement('i', { className: 'fas fa-chevron-right episode-chevron' });
-        
+
         info.appendChild(title);
         info.appendChild(meta);
-        
+
         card.appendChild(artworkWrapper);
         card.appendChild(info);
         card.appendChild(chevron);
-        
+
         card.addEventListener('click', () => {
             this.loadEpisode(episode);
             // Switch to Now Playing tab
             this.switchTab('now-playing');
         });
-        
+
         return card;
     }
 
@@ -297,17 +350,17 @@ class PodcastPlayerApp {
     loadEpisode(episode) {
         this.currentEpisode = episode;
         this.player.loadEpisode(episode, true);
-        
+
         // Update Now Playing UI
         this.updateNowPlayingUI();
-        
+
         // Switch to Now Playing tab
         this.switchTab('now-playing');
-        
+
         // Render show notes, chapters, etc.
         this.renderShowNotes();
         this.renderChapters();
-        
+
         // Update episode list to show active episode
         this.updateEpisodeListActive();
     }
@@ -318,14 +371,14 @@ class PodcastPlayerApp {
     selectEpisode(episode, autoPlay = false) {
         this.currentEpisode = episode;
         this.player.loadEpisode(episode, autoPlay);
-        
+
         // Update Now Playing UI
         this.updateNowPlayingUI();
-        
+
         // Render show notes, chapters, etc.
         this.renderShowNotes();
         this.renderChapters();
-        
+
         // Update episode list to show active episode
         this.updateEpisodeListActive();
     }
@@ -334,35 +387,35 @@ class PodcastPlayerApp {
      * Update Now Playing UI
      */
     updateNowPlayingUI() {
-        const artworkContainer = this.drawerContainer.querySelector('#now-playing-artwork-container');
-        const placeholder = this.drawerContainer.querySelector('#artwork-placeholder');
-        const artwork = this.drawerContainer.querySelector('#now-playing-artwork');
-        
+        const artworkContainer = this.drawerContainer.querySelector('#' + this._id('now-playing-artwork-container'));
+        const placeholder = this.drawerContainer.querySelector('#' + this._id('artwork-placeholder'));
+        const artwork = this.drawerContainer.querySelector('#' + this._id('now-playing-artwork'));
+
         // Check if podcast is set
         const hasPodcastData = this.podcastData && (this.podcastData.name || this.podcastData.title);
-        
+
         if (!this.currentEpisode || !hasPodcastData) {
             // Show generic placeholder until podcast is set
             if (artwork) artwork.style.display = 'none';
             if (placeholder) placeholder.style.display = 'flex';
             return;
         }
-        
+
         // Only show artwork if podcast is set and we have an episode
         // Prioritize episode artwork, then saved cover image, then RSS feed cover image
         let episodeArtwork = this.currentEpisode.artwork || this.config.savedCoverImage || this.podcastData.coverImage || '';
-        
+
         // Update artwork container - show generic placeholder until podcast is set
         if (artworkContainer) {
             const containerImg = artworkContainer.querySelector('.episode-artwork-large');
             const containerPlaceholder = artworkContainer.querySelector('.artwork-placeholder');
-            
+
             if (episodeArtwork) {
                 // Show actual artwork when podcast is set and artwork is available
                 if (containerImg) {
                     containerImg.src = getProxiedImageUrl(episodeArtwork, this.config.imageProxyUrl);
                     containerImg.style.display = 'block';
-                    
+
                     // Handle image load errors - fallback to next available image source
                     containerImg.addEventListener('error', () => {
                         // Try fallback: if we used saved cover image, try RSS feed cover image
@@ -418,31 +471,31 @@ class PodcastPlayerApp {
      */
     renderShowNotes() {
         if (!this.currentEpisode) {
-            const content = this.drawerContainer.querySelector('#shownotes-content');
+            const content = this.drawerContainer.querySelector('#' + this._id('shownotes-content'));
             if (content) {
                 content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-info-circle"></i><p>No episode selected</p></div>';
             }
             return;
         }
-        
-        const content = this.drawerContainer.querySelector('#shownotes-content');
+
+        const content = this.drawerContainer.querySelector('#' + this._id('shownotes-content'));
         if (!content) return;
-        
+
         let html = this.currentEpisode.description || '<div class="empty-state-modern"><i class="fas fa-file-alt"></i><p>No show notes available</p></div>';
-        
+
         // Process timestamp links
         html = html.replace(/\[(\d{1,2}):(\d{2})\]/g, (match, mins, secs) => {
             const seconds = parseInt(mins) * 60 + parseInt(secs);
             return `<span class="timestamp-link" data-time="${seconds}">${mins}:${secs}</span>`;
         });
-        
+
         // Process timestamp links in anchor tags
         html = html.replace(/<a[^>]*href=["']#t=(\d+)["'][^>]*>(.*?)<\/a>/gi, (match, seconds, text) => {
             return `<span class="timestamp-link" data-time="${seconds}">${text}</span>`;
         });
-        
+
         content.innerHTML = html;
-        
+
         // Add click handlers to timestamp links
         content.querySelectorAll('.timestamp-link').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -457,33 +510,33 @@ class PodcastPlayerApp {
      */
     renderChapters() {
         if (!this.currentEpisode) {
-            const content = this.drawerContainer.querySelector('#chapters-list');
+            const content = this.drawerContainer.querySelector('#' + this._id('chapters-list'));
             if (content) {
                 content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-list"></i><p>No chapters available</p></div>';
             }
             return;
         }
-        
+
         const content = this.drawerContainer.querySelector('#chapters-list');
         if (!content) return;
-        
+
         if (!this.currentEpisode.chapters || this.currentEpisode.chapters.length === 0) {
             content.innerHTML = '<div class="empty-state-modern"><i class="fas fa-list"></i><p>No chapters available</p></div>';
             return;
         }
         content.innerHTML = '';
-        
+
         this.currentEpisode.chapters.forEach((chapter, index) => {
             const item = createElement('div', {
                 className: 'chapter-item-modern',
                 dataset: { index: index, time: chapter.startTime }
             });
-            
+
             const chapterNumber = createElement('div', { className: 'chapter-number' }, (index + 1).toString().padStart(2, '0'));
             item.appendChild(chapterNumber);
-            
+
             const chapterContent = createElement('div', { className: 'chapter-content' });
-            
+
             if (chapter.imageUrl) {
                 const img = createElement('img', {
                     className: 'chapter-image-modern',
@@ -492,24 +545,24 @@ class PodcastPlayerApp {
                 });
                 chapterContent.appendChild(img);
             }
-            
+
             const info = createElement('div', { className: 'chapter-info-modern' });
             const title = createElement('div', { className: 'chapter-title-modern' }, chapter.title);
             const time = createElement('div', { className: 'chapter-time-modern' }, formatTime(chapter.startTime));
-            
+
             info.appendChild(title);
             info.appendChild(time);
             chapterContent.appendChild(info);
-            
+
             item.appendChild(chapterContent);
-            
+
             const chevron = createElement('i', { className: 'fas fa-chevron-right chapter-chevron' });
             item.appendChild(chevron);
-            
+
             item.addEventListener('click', () => {
                 this.player.seekTo(chapter.startTime);
             });
-            
+
             content.appendChild(item);
         });
     }
@@ -519,10 +572,10 @@ class PodcastPlayerApp {
      */
     updateActiveChapter(currentTime) {
         if (!this.currentEpisode || !this.currentEpisode.chapters) return;
-        
-        const content = this.drawerContainer.querySelector('#chapters-list');
+
+        const content = this.drawerContainer.querySelector('#' + this._id('chapters-list'));
         if (!content) return;
-        
+
         // Find active chapter
         let activeChapter = null;
         for (let i = this.currentEpisode.chapters.length - 1; i >= 0; i--) {
@@ -531,13 +584,13 @@ class PodcastPlayerApp {
                 break;
             }
         }
-        
+
         // Update UI
         const items = content.querySelectorAll('.chapter-item-modern');
         items.forEach((item, index) => {
             item.classList.toggle('active', index === activeChapter);
         });
-        
+
         // Auto-scroll to active chapter
         if (activeChapter !== null && activeChapter !== this.activeChapter) {
             this.activeChapter = activeChapter;
@@ -553,23 +606,23 @@ class PodcastPlayerApp {
      */
     initEventListeners() {
         // Now Playing controls
-        const playPauseBtn = this.drawerContainer.querySelector('#play-pause-large-now');
+        const playPauseBtn = this.drawerContainer.querySelector('#' + this._id('play-pause-large-now'));
         if (playPauseBtn) {
             playPauseBtn.addEventListener('click', () => this.player.togglePlayPause());
         }
-        
-        const skipBackBtn = this.drawerContainer.querySelector('#skip-back-large');
+
+        const skipBackBtn = this.drawerContainer.querySelector('#' + this._id('skip-back-large'));
         if (skipBackBtn) {
             skipBackBtn.addEventListener('click', () => this.player.skipBackward(10));
         }
-        
-        const skipForwardBtn = this.drawerContainer.querySelector('#skip-forward-large');
+
+        const skipForwardBtn = this.drawerContainer.querySelector('#' + this._id('skip-forward-large'));
         if (skipForwardBtn) {
             skipForwardBtn.addEventListener('click', () => this.player.skipForward(45));
         }
-        
+
         // Progress bar scrubbing
-        const progressBar = this.drawerContainer.querySelector('#progress-bar-now-playing');
+        const progressBar = this.drawerContainer.querySelector('#' + this._id('progress-bar-now-playing'));
         if (progressBar) {
             progressBar.addEventListener('click', (e) => {
                 if (this.player.audio.duration) {
@@ -580,32 +633,32 @@ class PodcastPlayerApp {
                 }
             });
         }
-        
+
         // Secondary controls
-        const speedBtn = this.drawerContainer.querySelector('#speed-control-btn');
+        const speedBtn = this.drawerContainer.querySelector('#' + this._id('speed-control-btn'));
         if (speedBtn) {
             speedBtn.addEventListener('click', () => this.toggleSpeedSelector());
         }
-        
-        const timerBtn = this.drawerContainer.querySelector('#timer-control-btn');
+
+        const timerBtn = this.drawerContainer.querySelector('#' + this._id('timer-control-btn'));
         if (timerBtn) {
             timerBtn.addEventListener('click', () => this.toggleTimerSelector());
         }
-        
-        const shareBtn = this.drawerContainer.querySelector('#share-control-btn');
+
+        const shareBtn = this.drawerContainer.querySelector('#' + this._id('share-control-btn'));
         if (shareBtn) {
             shareBtn.addEventListener('click', () => this.handleShare());
         }
-        
+
         // Retry button
-        const retryButton = this.drawerContainer.querySelector('#retry-button');
+        const retryButton = this.drawerContainer.querySelector('#' + this._id('retry-button'));
         if (retryButton) {
             retryButton.addEventListener('click', () => this.loadFeed());
         }
-        
+
         // Setup modal close handlers
         this.setupModalHandlers();
-        
+
         // Listen to player events for UI updates
         this.setupPlayerEventListeners();
     }
@@ -615,7 +668,7 @@ class PodcastPlayerApp {
      */
     setupModalHandlers() {
         // Speed modal backdrop click
-        const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        const speedModal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
         if (speedModal) {
             const speedModalContainer = speedModal.querySelector('.podcast-modal-container');
             speedModal.addEventListener('click', (e) => {
@@ -633,7 +686,7 @@ class PodcastPlayerApp {
         }
 
         // Timer modal backdrop click
-        const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        const timerModal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
         if (timerModal) {
             const timerModalContainer = timerModal.querySelector('.podcast-modal-container');
             timerModal.addEventListener('click', (e) => {
@@ -653,9 +706,9 @@ class PodcastPlayerApp {
         // Escape key to close modals
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
-                const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
-                
+                const speedModal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
+                const timerModal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
+
                 if (speedModal && speedModal.style.display !== 'none') {
                     this.closeSpeedModal();
                 } else if (timerModal && timerModal.style.display !== 'none') {
@@ -671,28 +724,28 @@ class PodcastPlayerApp {
     setupPlayerEventListeners() {
         // Update play/pause button
         this.player.audio.addEventListener('play', () => {
-            const btn = this.drawerContainer.querySelector('#play-pause-large-now');
+            const btn = this.drawerContainer.querySelector('#' + this._id('play-pause-large-now'));
             if (btn) {
                 const icon = btn.querySelector('i');
                 if (icon) icon.className = 'fas fa-pause';
             }
         });
-        
+
         this.player.audio.addEventListener('pause', () => {
-            const btn = this.drawerContainer.querySelector('#play-pause-large-now');
+            const btn = this.drawerContainer.querySelector('#' + this._id('play-pause-large-now'));
             if (btn) {
                 const icon = btn.querySelector('i');
                 if (icon) icon.className = 'fas fa-play';
             }
         });
-        
+
         // Update progress
         this.player.audio.addEventListener('timeupdate', () => {
             this.updateProgress();
             // Always update active chapter (now in now-playing tab)
             this.updateActiveChapter(this.player.audio.currentTime);
         });
-        
+
         // Update time displays
         this.player.audio.addEventListener('loadedmetadata', () => {
             this.updateTimeDisplays();
@@ -705,14 +758,14 @@ class PodcastPlayerApp {
     updateProgress() {
         const audio = this.player.audio;
         if (!audio.duration) return;
-        
+
         const percent = (audio.currentTime / audio.duration) * 100;
-        const fill = this.drawerContainer.querySelector('#progress-fill-now-playing');
-        const scrubber = this.drawerContainer.querySelector('#progress-scrubber-now-playing');
-        
+        const fill = this.drawerContainer.querySelector('#' + this._id('progress-fill-now-playing'));
+        const scrubber = this.drawerContainer.querySelector('#' + this._id('progress-scrubber-now-playing'));
+
         if (fill) fill.style.width = percent + '%';
         if (scrubber) scrubber.style.left = percent + '%';
-        
+
         this.updateTimeDisplays();
     }
 
@@ -723,8 +776,8 @@ class PodcastPlayerApp {
         const audio = this.player.audio;
         if (!audio.duration) return;
 
-        const currentTimeDisplay = this.drawerContainer.querySelector('#current-time-display');
-        const remainingTimeDisplay = this.drawerContainer.querySelector('#remaining-time-display');
+        const currentTimeDisplay = this.drawerContainer.querySelector('#' + this._id('current-time-display'));
+        const remainingTimeDisplay = this.drawerContainer.querySelector('#' + this._id('remaining-time-display'));
 
         if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audio.currentTime || 0);
         if (remainingTimeDisplay) {
@@ -738,8 +791,8 @@ class PodcastPlayerApp {
      */
     initSpeedSelector() {
         const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-        const speedOptions = this.drawerContainer.querySelector('#speed-options-modal');
-        
+        const speedOptions = this.drawerContainer.querySelector('#' + this._id('speed-options-modal'));
+
         if (speedOptions) {
             speedOptions.classList.add('speed-options');
             speeds.forEach(speed => {
@@ -747,35 +800,35 @@ class PodcastPlayerApp {
                     className: `podcast-modal-option ${speed === this.player.playbackSpeed ? 'active' : ''}`,
                     dataset: { speed: speed }
                 }, `${speed}x`);
-                
+
                 option.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.player.setPlaybackSpeed(speed);
                     this.updateSpeedDisplay();
                     this.closeSpeedModal();
                 });
-                
+
                 speedOptions.appendChild(option);
             });
         }
     }
 
     updateSpeedDisplay() {
-        const display = this.drawerContainer.querySelector('#speed-display');
+        const display = this.drawerContainer.querySelector('#' + this._id('speed-display'));
         if (display) {
             display.textContent = this.player.playbackSpeed + 'x';
         }
     }
 
     showSpeedModal() {
-        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
-        const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
-        
+        const modal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
+        const timerModal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
+
         // Close timer modal if open
         if (timerModal) {
             this.closeTimerModal();
         }
-        
+
         if (modal) {
             modal.style.display = 'flex';
             // Update active option
@@ -788,11 +841,11 @@ class PodcastPlayerApp {
     }
 
     closeSpeedModal() {
-        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        const modal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
         if (modal) {
             modal.style.display = 'none';
             // Restore body scroll if no other modal is open
-            const timerModal = this.drawerContainer.querySelector('#timer-modal-overlay');
+            const timerModal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
             if (!timerModal || timerModal.style.display === 'none') {
                 document.body.style.overflow = '';
             }
@@ -800,7 +853,7 @@ class PodcastPlayerApp {
     }
 
     toggleSpeedSelector() {
-        const modal = this.drawerContainer.querySelector('#speed-modal-overlay');
+        const modal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
         if (modal) {
             const isVisible = modal.style.display !== 'none';
             if (isVisible) {
@@ -815,7 +868,7 @@ class PodcastPlayerApp {
      * Initialize timer selector
      */
     initTimerSelector() {
-        const timerOptions = this.drawerContainer.querySelector('#timer-options-modal');
+        const timerOptions = this.drawerContainer.querySelector('#' + this._id('timer-options-modal'));
         const times = [
             { label: '15 minutes', value: 15 },
             { label: '30 minutes', value: 30 },
@@ -823,7 +876,7 @@ class PodcastPlayerApp {
             { label: '60 minutes', value: 60 },
             { label: 'End of episode', value: -1 }
         ];
-        
+
         if (timerOptions) {
             timerOptions.classList.add('timer-options');
             times.forEach(time => {
@@ -831,21 +884,21 @@ class PodcastPlayerApp {
                     className: 'podcast-modal-option timer-option',
                     dataset: { minutes: time.value }
                 }, time.label);
-                
+
                 option.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.player.setSleepTimer(time.value);
                     this.updateTimerDisplay();
                     this.closeTimerModal();
                 });
-                
+
                 timerOptions.appendChild(option);
             });
         }
     }
 
     updateTimerDisplay() {
-        const display = this.drawerContainer.querySelector('#timer-display');
+        const display = this.drawerContainer.querySelector('#' + this._id('timer-display'));
         if (display) {
             if (this.player.sleepTimerEndTime) {
                 const remaining = Math.ceil((this.player.sleepTimerEndTime - Date.now()) / 1000 / 60);
@@ -857,14 +910,14 @@ class PodcastPlayerApp {
     }
 
     showTimerModal() {
-        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
-        const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
-        
+        const modal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
+        const speedModal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
+
         // Close speed modal if open
         if (speedModal) {
             this.closeSpeedModal();
         }
-        
+
         if (modal) {
             modal.style.display = 'flex';
             // Prevent body scroll
@@ -873,11 +926,11 @@ class PodcastPlayerApp {
     }
 
     closeTimerModal() {
-        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        const modal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
         if (modal) {
             modal.style.display = 'none';
             // Restore body scroll if no other modal is open
-            const speedModal = this.drawerContainer.querySelector('#speed-modal-overlay');
+            const speedModal = this.drawerContainer.querySelector('#' + this._id('speed-modal-overlay'));
             if (!speedModal || speedModal.style.display === 'none') {
                 document.body.style.overflow = '';
             }
@@ -885,7 +938,7 @@ class PodcastPlayerApp {
     }
 
     toggleTimerSelector() {
-        const modal = this.drawerContainer.querySelector('#timer-modal-overlay');
+        const modal = this.drawerContainer.querySelector('#' + this._id('timer-modal-overlay'));
         if (modal) {
             const isVisible = modal.style.display !== 'none';
             if (isVisible) {
@@ -901,7 +954,7 @@ class PodcastPlayerApp {
      */
     initSharing() {
         // Sharing is now handled inline via handleShare()
-        
+
         this.setupSharePlatforms();
     }
 
@@ -913,36 +966,36 @@ class PodcastPlayerApp {
             { name: 'Email', icon: 'fas fa-envelope', url: 'mailto:' },
             { name: 'Copy Link', icon: 'fas fa-link', action: 'copy' }
         ];
-        
-        const sharePlatforms = this.drawerContainer.querySelector('#share-platforms');
+
+        const sharePlatforms = this.drawerContainer.querySelector('#' + this._id('share-platforms'));
         if (!sharePlatforms) return;
-        
+
         sharePlatforms.innerHTML = '';
-        
+
         platforms.forEach(platform => {
             const platformEl = createElement('div', { className: 'share-platform' });
             const icon = createElement('i', { className: platform.icon });
             const label = createElement('span', {}, platform.name);
-            
+
             platformEl.appendChild(icon);
             platformEl.appendChild(label);
-            
+
             platformEl.addEventListener('click', () => {
                 this.handleShare(platform);
             });
-            
+
             sharePlatforms.appendChild(platformEl);
         });
     }
 
     handleShare(platform) {
         if (!this.currentEpisode) return;
-        
+
         const episodeTitle = this.currentEpisode.title;
         const podcastName = this.podcastData?.title || this.podcastData?.name || 'Podcast';
         const shareText = `Check out "${episodeTitle}" from ${podcastName}`;
         const shareUrl = this.currentEpisode.enclosure?.url || window.location.href;
-        
+
         // Use Web Share API if available
         if (navigator.share) {
             navigator.share({
@@ -968,7 +1021,7 @@ class PodcastPlayerApp {
             } else if (platform.name === 'Email') {
                 url += `?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareUrl)}`;
             }
-            
+
             window.open(url, '_blank');
         } else {
             // Fallback: try to copy to clipboard
@@ -979,7 +1032,7 @@ class PodcastPlayerApp {
             });
         }
     }
-    
+
     /**
      * Show toast notification (scoped to drawer)
      */
@@ -993,20 +1046,20 @@ class PodcastPlayerApp {
      * Email subscription section is hidden (TODO: Integrate email subscription feature at a later date)
      */
     initFollowSection() {
-        const followContent = this.drawerContainer.querySelector('#follow-content');
+        const followContent = this.drawerContainer.querySelector('#' + this._id('follow-content'));
         if (!followContent) return;
-        
+
         let html = '';
-        
+
         // Listen On section with Social Icons layout
         const hasPlatformLinks = this.config.platformLinks && Object.keys(this.config.platformLinks).length > 0;
         const hasSocialIcons = this.config.socialIcons && this.config.socialIcons.length > 0;
-        
+
         if (hasPlatformLinks || hasSocialIcons) {
             html += '<div class="follow-section listen-on-section">';
             html += '<div class="section-header">Listen On</div>';
             html += '<div class="platform-buttons-container">';
-            
+
             // Platform buttons
             if (hasPlatformLinks) {
                 const platforms = [
@@ -1014,7 +1067,7 @@ class PodcastPlayerApp {
                     { key: 'spotify', name: 'Spotify', icon: 'fab fa-spotify' },
                     { key: 'google', name: 'Google Podcasts', icon: 'fab fa-google' }
                 ];
-                
+
                 platforms.forEach(platform => {
                     const url = this.config.platformLinks[platform.key];
                     if (url) {
@@ -1028,9 +1081,29 @@ class PodcastPlayerApp {
                     }
                 });
             }
-            
+
             html += '</div>'; // Close platform-buttons-container
-            
+
+            // RSS Button - Now styled as a platform button and included (appended to grid via JS manipulation or separate container if preferred, but user asked to include with others)
+            // Actually, we closed the container. Let's re-open or just append to the previous string before closing.
+            // Wait, I can't easily "re-open" since I'm building a string.
+            // Let's rewrite the block to include RSS inside the loop or right after.
+
+            // Re-doing the whole block logic in ReplacementContent is cleaner.
+
+            // ... (previous loop logic) ...
+
+            // RSS Button inside the same container
+            html += `
+                <button class="platform-button" id="rss-copy-button">
+                    <div class="platform-icon"><i class="fas fa-rss"></i></div>
+                    <div class="platform-name">Copy RSS Link</div>
+                    <i class="fas fa-copy chevron"></i>
+                </button>
+            `;
+
+            html += '</div>'; // Close platform-buttons-container
+
             // Social Icons to the right
             if (hasSocialIcons) {
                 html += '<div class="social-icons-container">';
@@ -1038,7 +1111,7 @@ class PodcastPlayerApp {
                     // Map platform names to icons (Font Awesome or custom SVG)
                     const platformName = icon.platform_name.toLowerCase();
                     let iconHtml = '';
-                    
+
                     // Custom SVG icons for podcast platforms (inline SVG for color control)
                     if (platformName === 'pocket_casts') {
                         iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" class="social-icon-svg"><circle cx="16" cy="15" r="15" fill="currentColor" opacity="0.1" /><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z"/></svg>';
@@ -1071,7 +1144,7 @@ class PodcastPlayerApp {
                         const iconClass = platformIcons[platformName] || 'fas fa-link';
                         iconHtml = `<i class="${iconClass}"></i>`;
                     }
-                    
+
                     html += `
                         <a href="${icon.url}" target="_blank" rel="noopener noreferrer" class="social-icon" title="${icon.platform_name}">
                             ${iconHtml}
@@ -1080,21 +1153,13 @@ class PodcastPlayerApp {
                 });
                 html += '</div>'; // Close social-icons-container
             }
-            
+
             html += '</div>'; // Close listen-on-section
         }
-        
-        // RSS Feed
-        html += `
-            <div class="follow-section">
-                <div class="section-header">Subscribe via RSS</div>
-                <button class="rss-button" id="rss-copy-button">
-                    <i class="fas fa-rss"></i>
-                    <span>Copy RSS Link</span>
-                </button>
-            </div>
-        `;
-        
+
+        // RSS Feed Section REMOVED (integrated above)
+        // html += ...
+
         // Email signup - HIDDEN FOR NOW
         // TODO: Integrate email subscription feature at a later date
         // html += `
@@ -1107,7 +1172,7 @@ class PodcastPlayerApp {
         //         </div>
         //     </div>
         // `;
-        
+
         // Review section
         html += `
             <div class="review-section">
@@ -1115,23 +1180,47 @@ class PodcastPlayerApp {
                 <div class="review-subtext">Your feedback helps us grow</div>
                 <div class="review-buttons">
         `;
-        
+
         if (this.config.reviewLinks?.apple) {
-            html += `<a href="${this.config.reviewLinks.apple}" target="_blank" class="review-button apple">Apple Podcasts</a>`;
+            html += `
+                <a href="${this.config.reviewLinks.apple}" target="_blank" class="platform-button review-button apple">
+                    <div class="platform-icon"><i class="fab fa-apple"></i></div>
+                    <div class="platform-name">Review on Apple Podcasts</div>
+                    <div class="review-stars">★★★★★</div>
+                </a>`;
         }
         if (this.config.reviewLinks?.spotify) {
-            html += `<a href="${this.config.reviewLinks.spotify}" target="_blank" class="review-button spotify">Spotify</a>`;
+            html += `
+                <a href="${this.config.reviewLinks.spotify}" target="_blank" class="platform-button review-button spotify">
+                    <div class="platform-icon"><i class="fab fa-spotify"></i></div>
+                    <div class="platform-name">Rate on Spotify</div>
+                    <div class="review-stars">★★★★★</div>
+                </a>`;
         }
-        if (this.config.reviewLinks?.google) {
-            html += `<a href="${this.config.reviewLinks.google}" target="_blank" class="review-button google">Google Podcasts</a>`;
+        // Check for YouTube Music specifically now
+        if (this.config.reviewLinks?.youtube_music) {
+            html += `
+                <a href="${this.config.reviewLinks.youtube_music}" target="_blank" class="platform-button review-button youtube">
+                    <div class="platform-icon"><i class="fab fa-youtube"></i></div>
+                    <div class="platform-name">Review on YouTube Music</div>
+                    <div class="review-stars">★★★★★</div>
+                </a>`;
+        } else if (this.config.reviewLinks?.google) {
+            // Fallback for legacy Google Podcasts if needed, but YT Music is preferred
+            html += `
+                <a href="${this.config.reviewLinks.google}" target="_blank" class="platform-button review-button google">
+                    <div class="platform-icon"><i class="fab fa-google"></i></div>
+                    <div class="platform-name">Review on Google Podcasts</div>
+                    <div class="review-stars">★★★★★</div>
+                </a>`;
         }
-        
+
         html += '</div></div>';
-        
+
         followContent.innerHTML = html;
-        
+
         // RSS copy button
-        const rssCopyBtn = this.drawerContainer.querySelector('#rss-copy-button');
+        const rssCopyBtn = this.drawerContainer.querySelector('#' + this._id('rss-copy-button'));
         if (rssCopyBtn) {
             rssCopyBtn.addEventListener('click', () => {
                 const rssLink = this.config.rssFeedUrl;
