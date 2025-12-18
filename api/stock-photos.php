@@ -10,7 +10,11 @@
 // Load core configuration
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../config/local.php';
+
+// Conditionally load local configuration (git-ignored)
+if (file_exists(__DIR__ . '/../config/local.php')) {
+    require_once __DIR__ . '/../config/local.php';
+}
 
 // Start session securely
 if (session_status() === PHP_SESSION_NONE) {
