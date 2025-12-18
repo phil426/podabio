@@ -3,9 +3,8 @@
  * Settings for page description/bio only
  */
 
-import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
-import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
-import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
+import { TypographyControl, TypographyValue } from '../controls/TypographyControl';
+import { usePageSnapshot } from '../../../../api/page';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './page-customization-section.module.css';
 
@@ -22,10 +21,37 @@ export function PageDescriptionSection({
   activeColor,
   palette
 }: PageDescriptionSectionProps): JSX.Element {
+  const { data: snapshot } = usePageSnapshot();
   const pageBioColor = (uiState['page-bio-color'] as string) ?? '#4b5563';
   const pageBioFont = (uiState['page-bio-font'] as string) ?? 'Inter';
   const pageBioSize = (uiState['page-bio-size'] as number) ?? 16;
   const pageBioWeight = (uiState['page-bio-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
+  const pageBioSpacing = (uiState['page-bio-spacing'] as number) ?? 1.5;
+  const pageBioAlignment = (uiState['page-bio-alignment'] as 'left' | 'center' | 'right') ?? snapshot?.page?.bio_alignment ?? 'center';
+
+  const typographyValue = {
+    font: pageBioFont,
+    size: pageBioSize,
+    spacing: pageBioSpacing,
+    color: pageBioColor,
+    weight: {
+      bold: !!pageBioWeight.bold,
+      italic: !!pageBioWeight.italic
+    },
+    alignment: pageBioAlignment,
+    borderColor: 'transparent', // Not currently supported for bio, using default
+    borderWidth: 0
+  };
+
+  const handleTypographyChange = (updates: Partial<TypographyValue>) => {
+    if (updates.font !== undefined) onFieldChange('page-bio-font', updates.font);
+    if (updates.size !== undefined) onFieldChange('page-bio-size', updates.size);
+    if (updates.spacing !== undefined) onFieldChange('page-bio-spacing', updates.spacing);
+    if (updates.color !== undefined) onFieldChange('page-bio-color', updates.color);
+    if (updates.weight !== undefined) onFieldChange('page-bio-weight', updates.weight);
+    if (updates.alignment !== undefined) onFieldChange('page-bio-alignment', updates.alignment);
+    // Border props ignored for now as they weren't in original, but control handles them if we want to add later
+  };
 
   return (
     <div className={styles.section}>
@@ -33,55 +59,11 @@ export function PageDescriptionSection({
       <div className={styles.subsection}>
         <h4 className={styles.subsectionTitle}>Page Description</h4>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Color</label>
-          <BackgroundColorSwatch
-            value={pageBioColor}
-            onChange={(value) => onFieldChange('page-bio-color', value)}
-            label="Page bio color"
-            palette={palette}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Font</label>
-          <FontSelect
-            value={pageBioFont}
-            onChange={(value) => onFieldChange('page-bio-font', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Size</label>
-          <SliderInput
-            value={pageBioSize}
-            min={10}
-            max={24}
-            step={1}
-            unit="px"
-            onChange={(value) => onFieldChange('page-bio-size', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Style</label>
-          <div className={styles.toggleGroup}>
-            <button
-              type="button"
-              className={`${styles.toggleButton} ${pageBioWeight.bold ? styles.active : ''}`}
-              onClick={() => onFieldChange('page-bio-weight', { ...pageBioWeight, bold: !pageBioWeight.bold })}
-            >
-              Bold
-            </button>
-            <button
-              type="button"
-              className={`${styles.toggleButton} ${pageBioWeight.italic ? styles.active : ''}`}
-              onClick={() => onFieldChange('page-bio-weight', { ...pageBioWeight, italic: !pageBioWeight.italic })}
-            >
-              Italic
-            </button>
-          </div>
-        </div>
+        <TypographyControl
+          value={typographyValue}
+          onChange={handleTypographyChange}
+          palette={palette}
+        />
       </div>
     </div>
   );

@@ -1,0 +1,41 @@
+/* Mobile Collapse Handle */
+.handle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%) translateX(100%);
+    width: 32px;
+    height: 64px;
+    display: none;
+    /* Hidden by default, shown only on mobile */
+    align-items: center;
+    justify-content: center;
+    background: var(--pod-semantic-bg-primary, #ffffff);
+    border: 2px solid var(--active-tab-border, rgba(15, 23, 42, 0.3));
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    color: var(--pod-semantic-text-primary, #0f172a);
+}
+
+.handle:hover {
+    background: var(--active-tab-light, #e0f2fe);
+    color: var(--pod-semantic-text-primary, #0f172a);
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) translateX(calc(100% + 2px));
+}
+
+.handle:active {
+    transform: translateY(-50%) translateX(100%) scale(0.95);
+}
+
+/* Show handle on mobile breakpoint */
+@media (max-width: 768px) {
+    .handle {
+        display: flex !important;
+        /* Force display on mobile */
+    }
+}

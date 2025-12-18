@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { X } from '@phosphor-icons/react';
+import { CheckCircle, CircleNotch, List } from '@phosphor-icons/react';
 
 import { usePageSnapshot, updateSocialIcon, deleteSocialIcon, toggleSocialIconVisibility, addSocialIcon } from '../../api/page';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { queryKeys } from '../../api/utils';
 import { type TabColorTheme } from '../layout/tab-colors';
+import { useDebouncedCallback } from './themes/hooks/useDebouncedCallback';
+import { SocialIconsManagerModal } from '../modals/SocialIconsManagerModal';
 
 import styles from './social-icon-inspector.module.css';
 
@@ -39,8 +41,10 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
   const [platformName, setPlatformName] = useState('');
   const [url, setUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (isAdding && addingPlatform) {
@@ -49,6 +53,7 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
       setIsActive(true);
       setSaveStatus('idle');
       setStatusMessage(null);
+      isInitialMount.current = true;
       return;
     }
 
@@ -58,24 +63,48 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
       setIsActive(true);
       setSaveStatus('idle');
       setStatusMessage(null);
+      isInitialMount.current = true;
       return;
     }
 
-    setPlatformName(selectedIcon.platform_name);
-    setUrl(selectedIcon.url || '');
-    setIsActive(selectedIcon.is_active !== 0);
-    setSaveStatus('idle');
-    setStatusMessage(null);
-  }, [selectedIcon, isAdding, addingPlatform]);
+    // Only update state if we are not currently saving (to avoid overwriting typing)
+    // But autosave happens in background, so we should be careful.
+    // If IDs match, we assume we are editing the same thing.
+    // We update local state only if the selectedIcon CHANGED (i.e. user selected a different one)
+    // OR if it's the first load.
+    // We shouldn't overwrite local state with prop updates while user is typing.
+    // But we need to detect id change.
+    // The dependency array `[selectedIcon, isAdding, addingPlatform]` handles ID changes.
+    // But `selectedIcon` changes on every mutation because snapshot updates.
+    // We need to compare IDs.
+  }, [isAdding, addingPlatform]);
 
-  const handleSave = async () => {
+  // Handle selectedIcon updates safely
+  const prevSelectedIconId = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const newId = selectedIcon ? String(selectedIcon.id) : undefined;
+    if (newId !== prevSelectedIconId.current) {
+      // ID changed, update form
+      if (selectedIcon) {
+        setPlatformName(selectedIcon.platform_name);
+        setUrl(selectedIcon.url || '');
+        setIsActive(selectedIcon.is_active !== 0);
+      }
+      setSaveStatus('idle');
+      setStatusMessage(null);
+      isInitialMount.current = true;
+      prevSelectedIconId.current = newId;
+    }
+  }, [selectedIcon]);
+
+
+  const handleAdd = async () => {
     if (!platformName || !url) {
       setSaveStatus('error');
       setStatusMessage('Platform name and URL are required.');
       return;
     }
 
-    // Basic URL validation
     try {
       new URL(url);
     } catch {
@@ -85,37 +114,81 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
     }
 
     try {
-      if (isAdding) {
-        await addSocialIcon({
-          platform_name: platformName,
-          url: url
-        });
-        setStatusMessage('Social icon added successfully.');
-      } else if (selectedIcon) {
-        await updateSocialIcon({
-          directory_id: String(selectedIcon.id),
-          platform_name: platformName,
-          url: url
-        });
-        setStatusMessage('Social icon updated successfully.');
-      }
-
-      setSaveStatus('success');
+      setSaveStatus('saving');
+      await addSocialIcon({
+        platform_name: platformName,
+        url: url
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      setSaveStatus('saved');
+      setStatusMessage('Social icon added successfully.');
 
       setTimeout(() => {
         setSaveStatus('idle');
         setStatusMessage(null);
-        // If we just added, we should probably close or select the new one, but closing is safer for now
-        if (isAdding) {
-          selectSocialIcon(null);
-        }
+        selectSocialIcon(null);
       }, 1500);
     } catch (error) {
       setSaveStatus('error');
       setStatusMessage(error instanceof Error ? error.message : 'Failed to save social icon.');
     }
   };
+
+  const performUpdate = async () => {
+    if (!selectedIcon) return;
+
+    // Allow saving empty URL? Probably not.
+    if (!url) return;
+
+    try {
+      setSaveStatus('saving');
+      await updateSocialIcon({
+        directory_id: String(selectedIcon.id),
+        platform_name: platformName,
+        url: url
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      setSaveStatus('saved');
+      setStatusMessage('Saved');
+    } catch (error) {
+      setSaveStatus('error');
+      setStatusMessage('Error saving');
+    }
+  };
+
+  const debouncedUpdate = useDebouncedCallback(performUpdate, 1000);
+
+  // Autosave trigger for updates
+  useEffect(() => {
+    if (isAdding || !selectedIcon) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const hasChanges =
+      platformName !== selectedIcon.platform_name ||
+      url !== (selectedIcon.url || '');
+
+    if (hasChanges) {
+      if (saveStatus !== 'saving') {
+        // Optional: setStatusMessage('Saving...');
+      }
+      debouncedUpdate();
+    }
+  }, [platformName, url, isAdding, selectedIcon, debouncedUpdate, saveStatus]);
+
+  // Clear success status after delay
+  useEffect(() => {
+    if (saveStatus === 'saved' && !isAdding) {
+      const timer = setTimeout(() => {
+        setSaveStatus('idle');
+        setStatusMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveStatus, isAdding]);
+
 
   const handleDelete = async () => {
     if (!selectedIcon) return;
@@ -152,12 +225,29 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
     }
   };
 
+  // State for manager modal
+  const [isManagerOpen, setIsManagerOpen] = useState(false);
+
   if (!selectedIcon && !isAdding) {
     return (
       <section className={styles.wrapper}>
         <div className={styles.emptyState}>
           <p>Select a social icon to edit</p>
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setIsManagerOpen(true)}
+              className={styles.manageButton}
+            >
+              <List size={16} weight="bold" />
+              Manage All Icons
+            </button>
+          </div>
         </div>
+        <SocialIconsManagerModal
+          isOpen={isManagerOpen}
+          onClose={() => setIsManagerOpen(false)}
+        />
       </section>
     );
   }
@@ -181,17 +271,9 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
             <p>{isAdding ? 'Configure new social link' : 'Edit social icon settings'}</p>
           </div>
         </div>
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={() => selectSocialIcon(null)}
-          aria-label="Close inspector"
-        >
-          <X size={16} weight="regular" aria-hidden="true" />
-        </button>
       </header>
 
-      {statusMessage && (
+      {statusMessage && saveStatus === 'error' && (
         <div className={styles[`status_${saveStatus}`]}>
           {statusMessage}
         </div>
@@ -246,22 +328,43 @@ export function SocialIconInspector({ activeColor, selectedId, onSelect }: Socia
       </div>
 
       <footer className={styles.footer}>
-        <button
-          type="button"
-          onClick={handleSave}
-          className={styles.saveButton}
-          disabled={!platformName || !url}
-        >
-          {isAdding ? 'Add' : 'Save'}
-        </button>
-        {!isAdding && (
+        {isAdding ? (
           <button
             type="button"
-            onClick={handleDelete}
-            className={styles.deleteButton}
+            onClick={handleAdd}
+            className={styles.saveButton}
+            disabled={!platformName || !url || saveStatus === 'saving'}
           >
-            Delete
+            {saveStatus === 'saving' ? 'Adding...' : 'Add'}
           </button>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 500 }}>
+              {saveStatus === 'saving' && (
+                <>
+                  <CircleNotch size={16} weight="bold" className="icon-spin" />
+                  <span>Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <CheckCircle size={16} weight="fill" color="#22c55e" />
+                  <span style={{ color: '#22c55e' }}>Saved</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <span style={{ color: '#ef4444' }}>Error</span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDelete}
+              className={styles.deleteButton}
+            >
+              Delete
+            </button>
+          </div>
         )}
       </footer>
     </section>

@@ -92,6 +92,9 @@ export function useEasyMode({ uiState, onFieldChange, profileImageUrl }: UseEasy
         const preset = COLOR_PRESETS.find(p => p.id === presetId);
         if (!preset) return;
 
+        // Clear any existing background image so the color preset takes precedence
+        onFieldChange('page_background_image_url', '');
+
         Object.entries(preset.tokens).forEach(([key, value]) => {
             onFieldChange(key, value);
         });
@@ -207,10 +210,17 @@ export function useEasyMode({ uiState, onFieldChange, profileImageUrl }: UseEasy
                     'page-title-color': headingColor,
                     // Also set page description color if available
                     'page-bio-color': bodyColor,
-                    'social-icon-color': highContrastPrimary
+                    'social-icon-color': highContrastPrimary,
+                    // Reset borders for clean look
+                    'profile-image-border-width': 0,
+                    'page-title-border-width': 0
                 };
 
                 console.log('AutoVibe: Applying rich tokens', autoTokens);
+
+                // Clear background image for auto-vibe
+                onFieldChange('page_background_image_url', '');
+
                 Object.entries(autoTokens).forEach(([key, value]) => {
                     onFieldChange(key, value);
                 });

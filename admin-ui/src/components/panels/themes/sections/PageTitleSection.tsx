@@ -3,11 +3,10 @@
  * Settings for page title only
  */
 
-import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
 import { PodaColorPicker } from '../../../controls/PodaColorPicker';
-import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
 import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
 import { SpecialTextSelect } from '../../ultimate-theme-modifier/SpecialTextSelect';
+import { TypographyControl, TypographyValue } from '../controls/TypographyControl';
 import { usePageSnapshot } from '../../../../api/page';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import { getThemeColors } from '../utils/colorUtils';
@@ -89,17 +88,43 @@ export function PageTitleSection({
   const pageTitleSize = (uiState['page-title-size'] as number) ?? 24;
   const pageTitleSpacing = (uiState['page-title-spacing'] as number) ?? 1.2;
   const pageTitleWeight = (uiState['page-title-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
+  const pageTitleAlignment = (uiState['page-title-alignment'] as 'left' | 'center' | 'right') ?? snapshot?.page?.name_alignment ?? 'center';
+
+  const typographyValue = {
+    font: pageTitleFont,
+    size: pageTitleSize,
+    spacing: pageTitleSpacing,
+    color: pageTitleColor,
+    weight: {
+      bold: !!pageTitleWeight.bold,
+      italic: !!pageTitleWeight.italic
+    },
+    alignment: pageTitleAlignment,
+    borderColor: borderColor,
+    borderWidth: borderWidth
+  };
+
+  const handleTypographyChange = (updates: Partial<TypographyValue>) => {
+    if (updates.font !== undefined) onFieldChange('page-title-font', updates.font);
+    if (updates.size !== undefined) onFieldChange('page-title-size', updates.size);
+    if (updates.spacing !== undefined) onFieldChange('page-title-spacing', updates.spacing);
+    if (updates.color !== undefined) onFieldChange('page-title-color', updates.color);
+    if (updates.weight !== undefined) onFieldChange('page-title-weight', updates.weight);
+    if (updates.alignment !== undefined) onFieldChange('page-title-alignment', updates.alignment);
+    if (updates.borderColor !== undefined) onFieldChange('page-title-border-color', updates.borderColor);
+    if (updates.borderWidth !== undefined) onFieldChange('page-title-border-width', updates.borderWidth);
+  };
 
   return (
     <div className={styles.section}>
       {/* Page Title */}
       <div className={styles.subsection}>
-        <h4 className={styles.subsectionTitle}>Page Title</h4>
         {/* Live Preview */}
         <div className={styles.previewBox}>
           <h1 className={styles.previewText} style={{
             fontFamily: pageTitleFont.split(',')[0],
             fontSize: `${pageTitleSize}px`,
+            textAlign: pageTitleAlignment,
             color: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'transparent' : pageTitleColor,
             fontWeight: pageTitleWeight.bold ? 'bold' : 'normal',
             fontStyle: pageTitleWeight.italic ? 'italic' : 'normal',
@@ -114,12 +139,22 @@ export function PageTitleSection({
             WebkitBackgroundClip: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'text' : 'border-box',
             WebkitTextFillColor: (pageTitleEffectValue === 'none' && pageTitleColor.includes('gradient')) ? 'transparent' : 'initial',
             WebkitTextStroke: borderWidth > 0 ? `${borderWidth}px ${borderColor}` : '0px',
+            paintOrder: 'stroke fill',
           }}>
             {pageTitleText}
           </h1>
         </div>
 
+        {/* Reusable Typography Control */}
+        <TypographyControl
+          value={typographyValue}
+          onChange={handleTypographyChange}
+          palette={palette}
+        />
 
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '8px 0' }}></div>
+
+        {/* Special Effects */}
         <div className={styles.fieldGroup}>
           <label className={styles.label}>Special Effect</label>
           <SpecialTextSelect
@@ -131,51 +166,54 @@ export function PageTitleSection({
           />
         </div>
 
-        {/* Shadow Controls - Color is automated based on background */}
+        {/* Shadow Controls */}
         {pageTitleEffectValue === 'shadow' && (
           <>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Shadow Intensity</label>
-              <SliderInput
-                value={shadowIntensity}
-                min={0}
-                max={1}
-                step={0.1}
-                onChange={(value) => onFieldChange('page-title-shadow-intensity', value)}
-              />
+            <div className={styles.controlRow}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Intensity</label>
+                <SliderInput
+                  value={shadowIntensity}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  onChange={(value) => onFieldChange('page-title-shadow-intensity', value)}
+                />
+              </div>
             </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Shadow Depth</label>
-              <SliderInput
-                value={shadowDepth}
-                min={0}
-                max={20}
-                step={1}
-                unit="px"
-                onChange={(value) => onFieldChange('page-title-shadow-depth', value)}
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Shadow Blur</label>
-              <SliderInput
-                value={shadowBlur}
-                min={0}
-                max={50}
-                step={1}
-                unit="px"
-                onChange={(value) => onFieldChange('page-title-shadow-blur', value)}
-              />
+            <div className={styles.controlRow}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Depth</label>
+                <SliderInput
+                  value={shadowDepth}
+                  min={0}
+                  max={20}
+                  step={1}
+                  unit="px"
+                  onChange={(value) => onFieldChange('page-title-shadow-depth', value)}
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Blur</label>
+                <SliderInput
+                  value={shadowBlur}
+                  min={0}
+                  max={50}
+                  step={1}
+                  unit="px"
+                  onChange={(value) => onFieldChange('page-title-shadow-blur', value)}
+                />
+              </div>
             </div>
           </>
         )}
 
-        {/* Glow Controls - Only show when glow is selected */}
+        {/* Glow Controls */}
         {pageTitleEffectValue === 'glow' && (
-          <>
+          <div className={styles.controlRow}>
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>Glow Color</label>
+              <label className={styles.label}>Color</label>
               <PodaColorPicker
                 value={glowColor}
                 onChange={(value) => onFieldChange('page-title-glow-color', value)}
@@ -185,7 +223,7 @@ export function PageTitleSection({
             </div>
 
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>Glow Width</label>
+              <label className={styles.label}>Width</label>
               <SliderInput
                 value={glowWidth}
                 min={0}
@@ -195,94 +233,8 @@ export function PageTitleSection({
                 onChange={(value) => onFieldChange('page-title-glow-width', value)}
               />
             </div>
-          </>
-        )}
-
-        {/* Page Title Color - Always visible */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Color</label>
-          <BackgroundColorSwatch
-            value={pageTitleColor}
-            onChange={(value) => onFieldChange('page-title-color', value)}
-            label="Page title color"
-            solidOnly={true}
-            palette={palette}
-          />
-        </div>
-
-        {/* Font Border/Stroke Controls - Always visible */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Font Border Color</label>
-          <BackgroundColorSwatch
-            value={borderColor}
-            onChange={(value) => onFieldChange('page-title-border-color', value)}
-            label="Font border color"
-            palette={palette}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Font Border Width</label>
-          <SliderInput
-            value={borderWidth}
-            min={0}
-            max={10}
-            step={0.5}
-            unit="px"
-            onChange={(value) => onFieldChange('page-title-border-width', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Font</label>
-          <FontSelect
-            value={pageTitleFont}
-            onChange={(value) => onFieldChange('page-title-font', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Size</label>
-          <SliderInput
-            value={pageTitleSize}
-            min={14}
-            max={48}
-            step={1}
-            unit="px"
-            onChange={(value) => onFieldChange('page-title-size', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Spacing</label>
-          <SliderInput
-            value={pageTitleSpacing}
-            min={1}
-            max={2}
-            step={0.1}
-            onChange={(value) => onFieldChange('page-title-spacing', value)}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Style</label>
-          <div className={styles.toggleGroup}>
-            <button
-              type="button"
-              className={`${styles.toggleButton} ${pageTitleWeight.bold ? styles.active : ''}`}
-              onClick={() => onFieldChange('page-title-weight', { ...pageTitleWeight, bold: !pageTitleWeight.bold })}
-            >
-              Bold
-            </button>
-            <button
-              type="button"
-              className={`${styles.toggleButton} ${pageTitleWeight.italic ? styles.active : ''}`}
-              onClick={() => onFieldChange('page-title-weight', { ...pageTitleWeight, italic: !pageTitleWeight.italic })}
-            >
-              Italic
-            </button>
           </div>
-        </div>
+        )}
       </div>
     </div >
   );

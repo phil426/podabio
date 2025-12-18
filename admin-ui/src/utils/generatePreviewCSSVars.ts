@@ -99,6 +99,10 @@ export function generatePreviewCSSVars(
     '--widget-heading-size': '20px',
     '--widget-body-size': '14px',
 
+    // Alignment
+    '--page-title-alignment': (themeData as any)['page-title-alignment'] || (themeData as any)['header_alignment'] || 'center',
+    '--page-description-alignment': (themeData as any)['page-description-alignment'] || (themeData as any)['bio_alignment'] || (themeData as any)['page-bio-alignment'] || 'center',
+
     // Accent colors - CRITICAL: Clear previous theme accents
     '--icon-color': accentPrimary,
     '--social-icon-color': accentPrimary,

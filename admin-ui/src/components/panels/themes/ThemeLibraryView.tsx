@@ -8,8 +8,8 @@ import { Sparkle } from '@phosphor-icons/react';
 import type { ThemeRecord } from '../../../api/types';
 import type { ThemeLibraryResult } from '../../../api/themes';
 import type { TabColorTheme } from '../../layout/tab-colors';
-import { usePodcastThemePrompt } from '../../../hooks/usePodcastThemePrompt';
-import { PodcastThemeGeneratorModal } from './PodcastThemeGeneratorModal';
+// import { usePodcastThemePrompt } from '../../../hooks/usePodcastThemePrompt';
+// import { PodcastThemeGeneratorModal } from './PodcastThemeGeneratorModal';
 import { ThemePreviewCard } from '../ThemePreviewCard';
 import styles from './theme-library-view.module.css';
 
@@ -41,98 +41,79 @@ export function ThemeLibraryView({
     return { activeSystemTheme: null, otherSystemThemes: themes };
   }, [themeLibrary?.system, activeTheme]);
 
-  const {
-    openGenerator,
-    closeGenerator,
-    isGeneratorOpen,
-    generatorProps,
-  } = usePodcastThemePrompt();
+  // const {
+  //   openGenerator,
+  //   closeGenerator,
+  //   isGeneratorOpen,
+  //   generatorProps,
+  // } = usePodcastThemePrompt();
 
-  const hasPodcastData = Boolean(generatorProps.coverImageUrl);
+  const hasPodcastData = false; // logic removed
 
   return (
     <>
       <div className={styles.container}>
         <div className={styles.mainContent}>
           <header className={styles.header}>
-          <div>
-            <h2>Themes</h2>
-            <p>Select a theme to apply and customize</p>
-          </div>
-          <div className={styles.headerActions}>
-            {hasPodcastData && (
-              <button
-                type="button"
-                className={styles.podcastButton}
-                onClick={openGenerator}
-                style={{
-                  '--button-bg': activeColor.primary,
-                  '--button-color': activeColor.text,
-                  '--button-border': activeColor.border
-                } as React.CSSProperties}
-              >
-                <Sparkle aria-hidden="true" size={16} weight="regular" />
-                Theme Wizard
-              </button>
-            )}
-          </div>
-        </header>
+            <div>
+              <h2>Themes</h2>
+              <p>Select a theme to apply and customize</p>
+            </div>
+            <div className={styles.headerActions}>
+              {/* Theme Wizard button removed */}
+            </div>
+          </header>
 
-      {/* Active Theme Section */}
-      {activeSystemTheme && (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Active Theme</h3>
-          <div className={styles.themeGrid}>
-            <ThemePreviewCard
-              key={activeTheme?.id}
-              theme={activeSystemTheme || activeTheme!}
-              selected={true}
-              onSelect={() => {
-                const theme = activeSystemTheme || activeTheme!;
-                // Don't call onApplyTheme for the active theme - it's already applied
-                // Just open the editor
-                onSelectTheme(theme);
-              }}
-            />
-          </div>
-        </section>
-      )}
+          {/* Active Theme Section */}
+          {activeSystemTheme && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>Active Theme</h3>
+              <div className={styles.themeGrid}>
+                <ThemePreviewCard
+                  key={activeTheme?.id}
+                  theme={activeSystemTheme || activeTheme!}
+                  selected={true}
+                  onSelect={() => {
+                    const theme = activeSystemTheme || activeTheme!;
+                    // Don't call onApplyTheme for the active theme - it's already applied
+                    // Just open the editor
+                    onSelectTheme(theme);
+                  }}
+                />
+              </div>
+            </section>
+          )}
 
-      {otherSystemThemes.length > 0 && (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Theme Library</h3>
-          <div className={styles.themeGrid}>
-            {otherSystemThemes.map(theme => (
-              <ThemePreviewCard
-                key={theme.id}
-                theme={theme}
-                selected={false}
-                onSelect={() => {
-                  if (onApplyTheme) {
-                    onApplyTheme(theme);
-                  }
-                  onSelectTheme(theme);
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+          {otherSystemThemes.length > 0 && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>Theme Library</h3>
+              <div className={styles.themeGrid}>
+                {otherSystemThemes.map(theme => (
+                  <ThemePreviewCard
+                    key={theme.id}
+                    theme={theme}
+                    selected={false}
+                    onSelect={() => {
+                      if (onApplyTheme) {
+                        onApplyTheme(theme);
+                      }
+                      onSelectTheme(theme);
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {otherSystemThemes.length === 0 && !activeTheme && (
-        <div className={styles.empty}>
-          <p>No themes available.</p>
-        </div>
-      )}
+          {otherSystemThemes.length === 0 && !activeTheme && (
+            <div className={styles.empty}>
+              <p>No themes available.</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Podcast Theme Generator Modal */}
-      <PodcastThemeGeneratorModal
-        coverImageUrl={generatorProps.coverImageUrl}
-        isOpen={isGeneratorOpen}
-        onClose={closeGenerator}
-      />
+      {/* Podcast Theme Generator Modal removed */}
     </>
   );
 }

@@ -1,11 +1,11 @@
 // Legacy tabs for backward compatibility
 export type LegacyTabValue = 'structure' | 'design' | 'analytics' | 'integrations' | 'settings';
 
-// New Lefty tabs
-export type LeftyTabValue = 'podcast' | 'integration' | 'analytics' | 'themes' | 'account' | 'page-editor';
+// New App Sidebar tabs
+export type AppSidebarTabValue = 'podcast' | 'integration' | 'analytics' | 'themes' | 'account' | 'page-editor';
 
 // Combined type for all tabs
-export type TabValue = LegacyTabValue | LeftyTabValue;
+export type TabValue = LegacyTabValue | AppSidebarTabValue;
 
 export interface TabColorTheme {
   primary: string;
@@ -28,7 +28,7 @@ export const tabColors: Record<TabValue, TabColorTheme> = {
   design: unifiedAccent,
   integrations: unifiedAccent,
   settings: unifiedAccent,
-  // New Lefty tabs
+  // New App Sidebar tabs
   'podcast': unifiedAccent,
   'integration': unifiedAccent,
   'analytics': unifiedAccent,

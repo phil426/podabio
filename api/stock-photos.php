@@ -238,7 +238,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // Handle POST requests (Import/Download)
+// Handle POST requests (Import/Download)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Load MediaLibrary class
+    require_once __DIR__ . '/../classes/MediaLibrary.php';
+
     $input = json_decode(file_get_contents('php://input'), true);
     $image_url = $input['url'] ?? '';
     $provider = $input['provider'] ?? 'external';
@@ -248,69 +252,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         send_json_response(false, [], 'Image URL is required', 400);
     }
 
-    // Generate unique filename
-    $extension = 'jpg'; // Assume JPG for now, could be improved by checking headers first
-    $filename = uniqid('stock_' . $provider . '_') . '.' . $extension;
-    $upload_dir = __DIR__ . '/../uploads/';
-    $filepath = $upload_dir . $filename;
-    $public_url = '/uploads/' . $filename;
+    $mediaLib = new MediaLibrary();
 
-    // Create uploads dir if it doesn't exist
-    if (!file_exists($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
+    // Generate a filename prefix based on provider
+    // We don't pass a specific filename, letting MediaLibrary generate a secure one, 
+    // but default generation uses timestamp. 
+    // MediaLibrary::downloadAndSaveImage handles downloading, validation, saving, and DB insertion.
+
+    $result = $mediaLib->downloadAndSaveImage($image_url, $_SESSION['user_id']);
+
+    if (!$result['success']) {
+        send_json_response(false, [], $result['error'] ?? 'Failed to download image', 500);
     }
 
-    // Download file
-    $image_data = file_get_contents($image_url);
-    if ($image_data === false) {
-        send_json_response(false, [], 'Failed to download image', 502);
+    // Success! Fetch the full media item to return to frontend
+    $media_item = $mediaLib->getMediaItem($result['media_id'], $_SESSION['user_id']);
+
+    if (!$media_item) {
+        // Should not happen if save was success
+        send_json_response(false, [], 'Image saved but failed to retrieve details', 500);
     }
 
-    if (file_put_contents($filepath, $image_data) === false) {
-        send_json_response(false, [], 'Failed to save image locally', 500);
-    }
+    // Add stock photo metadata if needed (optional, as user_media doesn't usually store provider/author)
+    // If we wanted to store provider/author, we'd need extra columns or a JSON field in user_media.
+    // For now, we just return it so the UI might use it effectively (though UI re-fetches from DB usually).
+    $media_item['provider'] = $provider;
+    $media_item['author'] = $author;
 
-    // Verify it's actually an image
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime_type = $finfo->file($filepath);
-    if (!str_starts_with($mime_type, 'image/')) {
-        unlink($filepath);
-        send_json_response(false, [], 'Invalid image file', 400);
-    }
-
-    $file_size = filesize($filepath);
-
-    // Add to database so it appears in Media Library
-    try {
-        $db = getDB();
-        $stmt = $db->prepare("
-            INSERT INTO media (user_id, filename, file_path, file_url, file_size, mime_type)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
-
-        $stmt->execute([
-            $_SESSION['user_id'],
-            $filename, // Store just filename or relative path? Media library seems to use full relative path or filename
-            $public_url, // file_path column seems to store the URL path in some contexts, let's verify media.php consumption
-            $public_url,
-            $file_size,
-            $mime_type
-        ]);
-
-        $media_id = $db->lastInsertId();
-
-        // Fetch the new media item to return standard format
-        $stmt = $db->prepare("SELECT * FROM media WHERE id = ?");
-        $stmt->execute([$media_id]);
-        $media_item = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        send_json_response(true, ['media' => $media_item]);
-
-    } catch (PDOException $e) {
-        // Clean up file if DB insert fails
-        if (file_exists($filepath)) {
-            unlink($filepath);
-        }
-        send_json_response(false, [], 'Database error: ' . $e->getMessage(), 500);
-    }
+    send_json_response(true, ['media' => $media_item]);
 }

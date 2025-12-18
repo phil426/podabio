@@ -269,7 +269,19 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
       // Note: This field can be null (for 'none' or empty), which is valid in the database
       const pageTitleEffect = currentUIState['page-title-effect'];
       if (pageTitleEffect !== undefined) {
-        pageFields['page_name_effect'] = pageTitleEffect === 'none' || pageTitleEffect === '' ? null : String(pageTitleEffect);
+        // Send empty string to clear value (buildFormData drops null/undefined)
+        pageFields['page_name_effect'] = pageTitleEffect === 'none' || pageTitleEffect === '' ? '' : String(pageTitleEffect);
+      }
+
+      // Page alignment (page-level fields)
+      const pageTitleAlignment = currentUIState['page-title-alignment'];
+      if (pageTitleAlignment !== undefined) {
+        pageFields['name_alignment'] = String(pageTitleAlignment);
+      }
+
+      const pageBioAlignment = currentUIState['page-bio-alignment'];
+      if (pageBioAlignment !== undefined) {
+        pageFields['bio_alignment'] = String(pageBioAlignment);
       }
 
       // Page background animation (page-level field)
@@ -283,6 +295,8 @@ export function ThemesPanel({ activeColor }: ThemesPanelProps): JSX.Element {
         const payload: Record<string, FormDataEntryValue | undefined> = {};
         for (const [key, value] of Object.entries(pageFields)) {
           if (value === null) {
+            // Explicit nulls are dropped by buildFormData, so we shouldn't use them here for clearing
+            // unless we want to skip the field. Ideally we used '' above for clearing.
             payload[key] = undefined;
           } else {
             payload[key] = String(value);

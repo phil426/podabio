@@ -81,10 +81,10 @@ export function MarketingNav(): JSX.Element {
 
   const handleLinkClick = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!href.startsWith('#')) return; // Let external links work normally
-    
+
     e.preventDefault();
     const targetId = href.replace('#', '');
-    
+
     // Check if this is a tab navigation link (features, pricing, examples, about)
     const tabNames = ['features', 'pricing', 'examples', 'about'];
     if (tabNames.includes(targetId)) {
@@ -103,18 +103,18 @@ export function MarketingNav(): JSX.Element {
             top: offsetPosition,
             behavior: 'smooth',
           });
-          
+
           // Update URL hash - the hash change handler will switch the tab
           window.history.pushState(null, '', href);
           window.dispatchEvent(new HashChangeEvent('hashchange'));
         }
       }
-      
+
       setActiveLink(href);
       setMobileMenuOpen(false);
       return;
     }
-    
+
     // For other anchor links, scroll to the element
     const targetElement = document.getElementById(targetId);
     if (targetElement) {
@@ -126,7 +126,7 @@ export function MarketingNav(): JSX.Element {
         top: offsetPosition,
         behavior: 'smooth',
       });
-      
+
       // Update URL without triggering scroll
       window.history.pushState(null, '', href);
       setActiveLink(href);
@@ -146,9 +146,9 @@ export function MarketingNav(): JSX.Element {
         href="/"
         className={styles.logo}
       >
-        <img 
-          src="/assets/images/logo/marketing_logo.png" 
-          alt="PodaBio" 
+        <img
+          src="/assets/images/logo/marketing_logo.png"
+          alt="PodaBio"
           className={styles.logoImage}
         />
       </a>
@@ -184,22 +184,24 @@ export function MarketingNav(): JSX.Element {
           </NavigationMenu.Indicator>
         </div>
       </NavigationMenu.Root>
-      <motion.a
-        href="/login.php"
-        className={styles.btnSecondary}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        Login
-      </motion.a>
-      <motion.a
-        href="/signup.php"
-        className={styles.btnPrimary}
-        whileHover={{ scale: 1.05, boxShadow: '0 0 24px rgba(0, 255, 127, 0.6)' }}
-        whileTap={{ scale: 0.95 }}
-      >
-        Get Started<span className={styles.cursor}>_</span>
-      </motion.a>
+      <div className={styles.navActions}>
+        <motion.a
+          href="/login.php"
+          className={styles.btnSecondary}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Login
+        </motion.a>
+        <motion.a
+          href="/signup.php"
+          className={styles.btnPrimary}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 24px rgba(0, 255, 127, 0.6)' }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Get Started<span className={styles.cursor}>_</span>
+        </motion.a>
+      </div>
       <motion.button
         className={styles.mobileMenuButton}
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

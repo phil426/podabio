@@ -1,7 +1,7 @@
 import { Moon, Sun } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { useAdminTheme } from '../../design-system/admin-theme/AdminThemeProvider';
-import { useLeftRailExpanded } from '../../state/leftRailExpanded';
+import { useAppSidebarExpanded } from '../../state/appSidebarExpanded';
 import styles from './theme-toggle.module.css';
 
 /**
@@ -12,7 +12,7 @@ import styles from './theme-toggle.module.css';
  */
 export function ThemeToggle(): JSX.Element {
   const { mode, toggleMode } = useAdminTheme();
-  const { isExpanded } = useLeftRailExpanded();
+  const { isExpanded } = useAppSidebarExpanded();
   const isDark = mode === 'dark';
 
   return (

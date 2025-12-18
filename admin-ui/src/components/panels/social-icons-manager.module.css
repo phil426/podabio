@@ -1,0 +1,318 @@
+/* Social Icons Manager Modal Styles
+ * Explicit high-contrast dark theme overrides
+ */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    color: #00FF7F;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Add User feedback styles */
+.statusBanner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    font-size: 0.875rem;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.statusBanner:has(svg[aria-hidden="true"]:last-child) {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.iconsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Card Styles */
+.iconCard {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 0.85rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    /* Glassy dark */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 150ms ease;
+    cursor: pointer;
+}
+
+.iconCard:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.iconCard[data-dnd-kit-dragging='true'] {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    cursor: grabbing;
+}
+
+.iconCardSelected {
+    background: rgba(0, 255, 127, 0.08);
+    /* Highlight with accent */
+    border-color: rgba(0, 255, 127, 0.3);
+}
+
+/* Drag Handle */
+.gripIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: grab;
+    transition: color 150ms ease;
+    flex-shrink: 0;
+}
+
+.iconCard:hover .gripIcon {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Platform Icon */
+.iconIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    /* Dimmed by default */
+    transition: color 150ms ease;
+}
+
+.iconIcon[data-active='true'] {
+    color: rgba(0, 255, 127, 1);
+    /* Active neon green */
+}
+
+/* Text Content */
+.iconDetails {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.iconName {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #ffffff;
+    /* Explicit white */
+}
+
+.iconUrl {
+    margin: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    /* Readable grey */
+    word-break: break-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Actions Container */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Visibility Toggle */
+.visibilityButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 150ms ease;
+    flex-shrink: 0;
+}
+
+.visibilityButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.visibilityButton[data-active='true'] {
+    color: #00FF7F;
+    /* Neon green */
+}
+
+/* Add Card Section */
+.addCard {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 6px;
+    background: rgba(0, 255, 127, 0.05);
+    border: 1px dashed rgba(0, 255, 127, 0.3);
+    margin-bottom: 0.5rem;
+}
+
+.addCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.addCardIcon {
+    color: #00FF7F;
+}
+
+.addCardTitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #00FF7F;
+}
+
+.addCardForm {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.addCardField {
+    display: grid;
+    gap: 0.35rem;
+}
+
+/* Inputs */
+.addCardSelect,
+.addCardInput {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: rgba(0, 0, 0, 0.3);
+    /* Dark input background */
+    color: #ffffff;
+    /* White text */
+    transition: all 150ms ease;
+}
+
+.addCardSelect:focus,
+.addCardInput:focus {
+    outline: none;
+    border-color: #00FF7F;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 2px rgba(0, 255, 127, 0.15);
+}
+
+.addCardSelect {
+    cursor: pointer;
+    appearance: none;
+    /* Might want to add custom arrow later, but standard is readable on dark usually */
+}
+
+/* Placeholder contrast attempt */
+.addCardInput::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Add Button */
+.addCardButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: #00FF7F;
+    /* Neon green */
+    color: #000000;
+    /* Dark text for contrast on neon */
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease;
+    margin-top: 0.25rem;
+}
+
+.addCardButton:hover:not(:disabled) {
+    background: #00e070;
+    transform: translateY(-1px);
+}
+
+.addCardButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.emptyList {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.allAdded {
+    margin: 1rem 0 0 0;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}

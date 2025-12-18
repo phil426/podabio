@@ -1,0 +1,112 @@
+/* Styling tabs as individual floating buttons - Matching Floating Action Button Style */
+.tabTrigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* width: calc(100% - 16px); */
+  /* keep full width layout for sidebar */
+  height: 44px;
+  /* maintain touch target size */
+  /* maintain touch target size */
+  padding: 0 12px;
+  margin: 3px 8px;
+  /* Reduced vertical spacing */
+
+  /* Floating Action Button Style Match */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 127, 0.15);
+  /* Subtle green border match */
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  /* Match floating button radius */
+
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Match springy transition */
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  text-align: left;
+  overflow: hidden;
+}
+
+.tabTrigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  /* Match floating hover bg */
+  border-color: rgba(255, 255, 255, 0.1);
+  /* Match floating hover border */
+  color: #ffffff;
+  transform: translateY(-2px);
+  /* Match list */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  /* Match shadow */
+}
+
+.tabTrigger[data-active='true'] {
+  background: rgba(255, 255, 255, 0.03);
+  /* Keep dark glass base */
+  color: #00FF7F;
+  /* Signal Green */
+  border-color: rgba(0, 255, 127, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 127, 0.15);
+  /* Green Glow */
+
+  /* Override any gradient background */
+  background-image: none;
+  text-shadow: none;
+}
+
+/* Subtle inner gradient for buttons */
+.tabTrigger::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tabTrigger:hover::before {
+  opacity: 1;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  z-index: 1;
+  /* Ensure icon is above gradient */
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Collapsed state - center icon, keep button shape */
+.tabTrigger:not([data-expanded='true']) {
+  justify-content: center;
+  padding: 0;
+}
+
+.tabTrigger:not([data-expanded='true']) .label {
+  display: none;
+}

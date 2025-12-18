@@ -1,6 +1,6 @@
 {
-  "_Sparkle.es-D3PJffQb.js": {
-    "file": "Sparkle.es-D3PJffQb.js",
+  "_Sparkle.es-Bdk9kCy9.js": {
+    "file": "Sparkle.es-Bdk9kCy9.js",
     "name": "Sparkle.es",
     "imports": [
       "_client-BXqoWhE4.js",
@@ -18,11 +18,12 @@
     "file": "client-BXqoWhE4.js",
     "name": "client"
   },
-  "_index-B-F6DCQI.js": {
-    "file": "index-B-F6DCQI.js",
+  "_index-BumEzTm-.js": {
+    "file": "index-BumEzTm-.js",
     "name": "index",
     "imports": [
-      "_client-BXqoWhE4.js"
+      "_client-BXqoWhE4.js",
+      "_X.es-D2DRrnce.js"
     ]
   },
   "src/main.tsx": {
@@ -32,12 +33,12 @@
     "isEntry": true,
     "imports": [
       "_client-BXqoWhE4.js",
-      "_index-B-F6DCQI.js",
+      "_index-BumEzTm-.js",
       "_X.es-D2DRrnce.js",
-      "_Sparkle.es-D3PJffQb.js"
+      "_Sparkle.es-Bdk9kCy9.js"
     ],
     "css": [
-      "assets/main-Fr4oeRhF.css"
+      "assets/main-d5xSjZxt.css"
     ]
   },
   "src/marketing-icons.tsx": {
@@ -48,7 +49,7 @@
     "imports": [
       "_client-BXqoWhE4.js",
       "_X.es-D2DRrnce.js",
-      "_Sparkle.es-D3PJffQb.js"
+      "_Sparkle.es-Bdk9kCy9.js"
     ]
   },
   "src/marketing-nav.tsx": {
@@ -58,11 +59,11 @@
     "isEntry": true,
     "imports": [
       "_client-BXqoWhE4.js",
-      "_index-B-F6DCQI.js",
+      "_index-BumEzTm-.js",
       "_X.es-D2DRrnce.js"
     ],
     "css": [
-      "assets/marketingNav-Drq1AvIk.css"
+      "assets/marketingNav-T60BQhQC.css"
     ]
   },
   "src/smooth-scroll.tsx": {

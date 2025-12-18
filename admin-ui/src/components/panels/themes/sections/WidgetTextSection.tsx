@@ -3,9 +3,7 @@
  * Settings for widget heading and body text
  */
 
-import { BackgroundColorSwatch } from '../../../controls/BackgroundColorSwatch';
-import { FontSelect } from '../../ultimate-theme-modifier/FontSelect';
-import { SliderInput } from '../../ultimate-theme-modifier/SliderInput';
+import { TypographyControl, TypographyValue } from '../controls/TypographyControl';
 import type { TabColorTheme } from '../../../layout/tab-colors';
 import styles from './widget-text-section.module.css';
 
@@ -28,6 +26,7 @@ export function WidgetTextSection({
   const widgetHeadingSize = (uiState['widget-heading-size'] as number) ?? 20;
   const widgetHeadingSpacing = (uiState['widget-heading-spacing'] as number) ?? 1.3;
   const widgetHeadingWeight = (uiState['widget-heading-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
+  const widgetHeadingAlignment = (uiState['widget-heading-alignment'] as 'left' | 'center' | 'right') ?? 'left';
 
   // Body values
   const widgetBodyColor = (uiState['widget-body-color'] as string) ?? '#4b5563';
@@ -35,6 +34,53 @@ export function WidgetTextSection({
   const widgetBodySize = (uiState['widget-body-size'] as number) ?? 16;
   const widgetBodySpacing = (uiState['widget-body-spacing'] as number) ?? 1.5;
   const widgetBodyWeight = (uiState['widget-body-weight'] as { bold?: boolean; italic?: boolean }) ?? { bold: false, italic: false };
+  const widgetBodyAlignment = (uiState['widget-body-alignment'] as 'left' | 'center' | 'right') ?? 'left';
+
+  const headingTypography: TypographyValue = {
+    font: widgetHeadingFont,
+    size: widgetHeadingSize,
+    spacing: widgetHeadingSpacing,
+    color: widgetHeadingColor,
+    weight: {
+      bold: !!widgetHeadingWeight.bold,
+      italic: !!widgetHeadingWeight.italic
+    },
+    alignment: widgetHeadingAlignment,
+    borderColor: 'transparent',
+    borderWidth: 0
+  };
+
+  const bodyTypography: TypographyValue = {
+    font: widgetBodyFont,
+    size: widgetBodySize,
+    spacing: widgetBodySpacing,
+    color: widgetBodyColor,
+    weight: {
+      bold: !!widgetBodyWeight.bold,
+      italic: !!widgetBodyWeight.italic
+    },
+    alignment: widgetBodyAlignment,
+    borderColor: 'transparent',
+    borderWidth: 0
+  };
+
+  const handleHeadingChange = (updates: Partial<TypographyValue>) => {
+    if (updates.font !== undefined) onFieldChange('widget-heading-font', updates.font);
+    if (updates.size !== undefined) onFieldChange('widget-heading-size', updates.size);
+    if (updates.spacing !== undefined) onFieldChange('widget-heading-spacing', updates.spacing);
+    if (updates.color !== undefined) onFieldChange('widget-heading-color', updates.color);
+    if (updates.weight !== undefined) onFieldChange('widget-heading-weight', updates.weight);
+    if (updates.alignment !== undefined) onFieldChange('widget-heading-alignment', updates.alignment);
+  };
+
+  const handleBodyChange = (updates: Partial<TypographyValue>) => {
+    if (updates.font !== undefined) onFieldChange('widget-body-font', updates.font);
+    if (updates.size !== undefined) onFieldChange('widget-body-size', updates.size);
+    if (updates.spacing !== undefined) onFieldChange('widget-body-spacing', updates.spacing);
+    if (updates.color !== undefined) onFieldChange('widget-body-color', updates.color);
+    if (updates.weight !== undefined) onFieldChange('widget-body-weight', updates.weight);
+    if (updates.alignment !== undefined) onFieldChange('widget-body-alignment', updates.alignment);
+  };
 
   return (
     <div className={styles.section}>
@@ -42,133 +88,21 @@ export function WidgetTextSection({
         {/* Heading Column */}
         <div className={styles.column}>
           <h4 className={styles.columnTitle}>Heading Text</h4>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Color</label>
-            <BackgroundColorSwatch
-              value={widgetHeadingColor}
-              onChange={(value) => onFieldChange('widget-heading-color', value)}
-              label="Widget heading color"
-              palette={palette}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Font</label>
-            <FontSelect
-              value={widgetHeadingFont}
-              onChange={(value) => onFieldChange('widget-heading-font', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Size</label>
-            <SliderInput
-              value={widgetHeadingSize}
-              min={14}
-              max={48}
-              step={1}
-              unit="px"
-              onChange={(value) => onFieldChange('widget-heading-size', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Spacing</label>
-            <SliderInput
-              value={widgetHeadingSpacing}
-              min={1}
-              max={2}
-              step={0.1}
-              onChange={(value) => onFieldChange('widget-heading-spacing', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Style</label>
-            <div className={styles.toggleGroup}>
-              <button
-                type="button"
-                className={`${styles.toggleButton} ${widgetHeadingWeight.bold ? styles.active : ''}`}
-                onClick={() => onFieldChange('widget-heading-weight', { ...widgetHeadingWeight, bold: !widgetHeadingWeight.bold })}
-              >
-                Bold
-              </button>
-              <button
-                type="button"
-                className={`${styles.toggleButton} ${widgetHeadingWeight.italic ? styles.active : ''}`}
-                onClick={() => onFieldChange('widget-heading-weight', { ...widgetHeadingWeight, italic: !widgetHeadingWeight.italic })}
-              >
-                Italic
-              </button>
-            </div>
-          </div>
+          <TypographyControl
+            value={headingTypography}
+            onChange={handleHeadingChange}
+            palette={palette}
+          />
         </div>
 
         {/* Body Column */}
         <div className={styles.column}>
           <h4 className={styles.columnTitle}>Body Text</h4>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Color</label>
-            <BackgroundColorSwatch
-              value={widgetBodyColor}
-              onChange={(value) => onFieldChange('widget-body-color', value)}
-              label="Widget body color"
-              palette={palette}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Font</label>
-            <FontSelect
-              value={widgetBodyFont}
-              onChange={(value) => onFieldChange('widget-body-font', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Size</label>
-            <SliderInput
-              value={widgetBodySize}
-              min={14}
-              max={48}
-              step={1}
-              unit="px"
-              onChange={(value) => onFieldChange('widget-body-size', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Spacing</label>
-            <SliderInput
-              value={widgetBodySpacing}
-              min={1}
-              max={2}
-              step={0.1}
-              onChange={(value) => onFieldChange('widget-body-spacing', value)}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Style</label>
-            <div className={styles.toggleGroup}>
-              <button
-                type="button"
-                className={`${styles.toggleButton} ${widgetBodyWeight.bold ? styles.active : ''}`}
-                onClick={() => onFieldChange('widget-body-weight', { ...widgetBodyWeight, bold: !widgetBodyWeight.bold })}
-              >
-                Bold
-              </button>
-              <button
-                type="button"
-                className={`${styles.toggleButton} ${widgetBodyWeight.italic ? styles.active : ''}`}
-                onClick={() => onFieldChange('widget-body-weight', { ...widgetBodyWeight, italic: !widgetBodyWeight.italic })}
-              >
-                Italic
-              </button>
-            </div>
-          </div>
+          <TypographyControl
+            value={bodyTypography}
+            onChange={handleBodyChange}
+            palette={palette}
+          />
         </div>
       </div>
     </div>

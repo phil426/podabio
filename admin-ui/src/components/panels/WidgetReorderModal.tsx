@@ -35,8 +35,7 @@ const widgetIconMap: Record<string, JSX.Element> = {
   heading_block: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
   text_note: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
   divider_rule: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
-  people: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
-  rolodex: <AlignLeft aria-hidden="true" size={24} weight="regular" />
+
 };
 
 export function WidgetReorderModal({ isOpen, onClose }: WidgetReorderModalProps): JSX.Element {
@@ -66,8 +65,8 @@ export function WidgetReorderModal({ isOpen, onClose }: WidgetReorderModalProps)
         const derivedYouTubeThumbnail =
           widget.widget_type === 'youtube_video'
             ? getYouTubeThumbnail(
-                typeof config.video_url === 'string' ? (config.video_url as string) : undefined
-              ) ?? undefined
+              typeof config.video_url === 'string' ? (config.video_url as string) : undefined
+            ) ?? undefined
             : undefined;
         const thumbnail = rawThumbnail ?? derivedYouTubeThumbnail;
 
@@ -95,7 +94,7 @@ export function WidgetReorderModal({ isOpen, onClose }: WidgetReorderModalProps)
   const handleReorder = (items: LayerItem[]) => {
     // Filter out any non-widget items (shouldn't be any, but just in case)
     const widgetItems = items.filter((layer) => !layer.id.startsWith('page:'));
-    
+
     reorderMutation.mutate({
       widget_orders: JSON.stringify(
         widgetItems.map((layer, index) => ({

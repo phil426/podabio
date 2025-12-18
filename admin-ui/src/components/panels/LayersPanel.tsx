@@ -12,9 +12,9 @@ import {
   Star,
   Lock,
   Plus,
-  X,
-  Cards
+  X
 } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import {
   useAddWidgetMutation,
   useAvailableWidgetsQuery,
@@ -29,14 +29,14 @@ import { queryKeys, normalizeImageUrl } from '../../api/utils';
 import { useWidgetSelection } from '../../state/widgetSelection';
 import { DraggableLayerList, type LayerItem } from '../system/DraggableLayerList';
 import { getYouTubeThumbnail } from '../../utils/media';
-import type { TabColorTheme, LeftyTabValue } from '../layout/tab-colors';
+import type { TabColorTheme, AppSidebarTabValue } from '../layout/tab-colors';
 import { AddingContentPanel } from './AddingContentPanel';
 import { WidgetInspectorModal } from './WidgetInspectorModal';
 import styles from './layers-panel.module.css';
 
 interface LayersPanelProps {
   activeColor: TabColorTheme;
-  onTabChange?: (tab: LeftyTabValue) => void;
+  onTabChange?: (tab: AppSidebarTabValue) => void;
 }
 
 const widgetIconMap: Record<string, JSX.Element> = {
@@ -53,8 +53,7 @@ const widgetIconMap: Record<string, JSX.Element> = {
   heading_block: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
   text_note: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
   divider_rule: <AlignLeft aria-hidden="true" size={24} weight="regular" />,
-  people: <Cards aria-hidden="true" size={24} weight="regular" />,
-  rolodex: <Cards aria-hidden="true" size={24} weight="regular" />
+
 };
 
 export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX.Element {
@@ -106,8 +105,8 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
         const derivedYouTubeThumbnail =
           widget.widget_type === 'youtube_video'
             ? getYouTubeThumbnail(
-                typeof config.video_url === 'string' ? (config.video_url as string) : undefined
-              ) ?? undefined
+              typeof config.video_url === 'string' ? (config.video_url as string) : undefined
+            ) ?? undefined
             : undefined;
         const thumbnail = rawThumbnail ?? derivedYouTubeThumbnail;
 
@@ -144,7 +143,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
 
   const handleReorder = (items: LayerItem[]) => {
     const widgetItems = items.filter((layer) => !layer.id.startsWith('page:'));
-    
+
     reorderMutation.mutate({
       widget_orders: JSON.stringify(
         widgetItems.map((layer, index) => ({
@@ -200,14 +199,19 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
     const widget = widgets?.find((entry) => String(entry.id) === id);
     if (!widget) return;
 
-    const confirmDelete = window.confirm(`Delete "${widget.title}"? This cannot be undone.`);
-    if (!confirmDelete) return;
-
-    deleteMutation.mutate({ widget_id: id });
-
-    if (selectedWidgetId === id) {
-      selectWidget(null);
-    }
+    toast.promise(
+      (async () => {
+        await deleteMutation.mutateAsync({ widget_id: id });
+        if (selectedWidgetId === id) {
+          selectWidget(null);
+        }
+      })(),
+      {
+        loading: 'Deleting...',
+        success: 'Widget deleted',
+        error: 'Error deleting widget'
+      }
+    );
   };
 
   const handleToggleLock = (id: string) => {
@@ -234,7 +238,7 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
       event.stopPropagation();
       event.preventDefault();
     }
-    
+
     const widget = widgets?.find((entry) => String(entry.id) === id);
     if (!widget) return;
 
@@ -314,59 +318,59 @@ export function LayersPanel({ activeColor, onTabChange }: LayersPanelProps): JSX
                           className={styles.layerActionButton}
                           onClick={() => handleToggleLock(item.id)}
                           aria-label={isLocked ? `Unlock ${item.label}` : `Lock ${item.label}`}
-                            title={isLocked ? 'Unlock this block so it can move' : 'Lock this block to prevent accidental moves'}
-                            data-locked={isLocked ? 'true' : 'false'}
-                          >
-                            <Lock aria-hidden="true" size={16} weight="regular" />
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className={styles.layerActionButton}
-                          onClick={() => handleToggleVisibility(item.id)}
-                          aria-label={item.isActive ? `Hide ${item.label}` : `Show ${item.label}`}
-                          title={item.isActive ? 'Hide this block on your live page' : 'Show this block on your live page'}
-                          disabled={isPageItem ? pageSettingsMutation.isPending : updateMutation.isPending}
-                          data-active={item.isActive ? 'true' : 'false'}
+                          title={isLocked ? 'Unlock this block so it can move' : 'Lock this block to prevent accidental moves'}
+                          data-locked={isLocked ? 'true' : 'false'}
                         >
-                          <VisibilityIcon aria-hidden="true" size={16} weight="regular" />
+                          <Lock aria-hidden="true" size={16} weight="regular" />
                         </button>
-                        {!isPageItem && (
-                          <>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={() => handleEditLayer(item.id)}
-                              aria-label={`Edit ${item.label}`}
-                              title="Open settings for this block in a modal"
-                              disabled={updateMutation.isPending}
-                            >
-                              <Pencil aria-hidden="true" size={16} weight="regular" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={() => handleDeleteLayer(item.id)}
-                              aria-label={`Delete ${item.label}`}
-                              title="Delete this block from your page"
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash aria-hidden="true" size={16} weight="regular" />
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.layerActionButton}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                handleToggleFeatured(item.id, e);
-                              }}
-                              aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
-                              title={item.isFeatured ? 'Stop highlighting this block on your page' : 'Highlight this block with a featured effect'}
-                              disabled={updateMutation.isPending}
-                              data-featured={item.isFeatured ? 'true' : 'false'}
-                            >
-                              <Star aria-hidden="true" size={16} weight="regular" />
+                      )}
+                      <button
+                        type="button"
+                        className={styles.layerActionButton}
+                        onClick={() => handleToggleVisibility(item.id)}
+                        aria-label={item.isActive ? `Hide ${item.label}` : `Show ${item.label}`}
+                        title={item.isActive ? 'Hide this block on your live page' : 'Show this block on your live page'}
+                        disabled={isPageItem ? pageSettingsMutation.isPending : updateMutation.isPending}
+                        data-active={item.isActive ? 'true' : 'false'}
+                      >
+                        <VisibilityIcon aria-hidden="true" size={16} weight="regular" />
+                      </button>
+                      {!isPageItem && (
+                        <>
+                          <button
+                            type="button"
+                            className={styles.layerActionButton}
+                            onClick={() => handleEditLayer(item.id)}
+                            aria-label={`Edit ${item.label}`}
+                            title="Open settings for this block in a modal"
+                            disabled={updateMutation.isPending}
+                          >
+                            <Pencil aria-hidden="true" size={16} weight="regular" />
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.layerActionButton}
+                            onClick={() => handleDeleteLayer(item.id)}
+                            aria-label={`Delete ${item.label}`}
+                            title="Delete this block from your page"
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash aria-hidden="true" size={16} weight="regular" />
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.layerActionButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleToggleFeatured(item.id, e);
+                            }}
+                            aria-label={item.isFeatured ? 'Unmark as featured' : 'Mark as featured'}
+                            title={item.isFeatured ? 'Stop highlighting this block on your page' : 'Highlight this block with a featured effect'}
+                            disabled={updateMutation.isPending}
+                            data-featured={item.isFeatured ? 'true' : 'false'}
+                          >
+                            <Star aria-hidden="true" size={16} weight="regular" />
                           </button>
                         </>
                       )}

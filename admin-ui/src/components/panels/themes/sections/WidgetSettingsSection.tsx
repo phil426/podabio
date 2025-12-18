@@ -13,6 +13,7 @@ import { useUpdateWidgetMutation } from '../../../../api/widgets';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../../api/utils';
 import styles from './widget-button-section.module.css';
+import { WidgetTextSection } from './WidgetTextSection';
 
 interface WidgetSettingsSectionProps {
   uiState: Record<string, unknown>;
@@ -207,6 +208,8 @@ export function WidgetSettingsSection({
         )}
       </div>
 
+
+
       {/* Featured Widget Properties - Only show if widget is featured */}
       {isFeatured && (
         <div className={styles.subsection}>
@@ -228,6 +231,17 @@ export function WidgetSettingsSection({
           </div>
         </div>
       )}
+
+      {/* Text Settings */}
+      <div className={styles.subsection}>
+        <h4 className={styles.subsectionTitle}>Typography</h4>
+        <WidgetTextSection
+          uiState={uiState}
+          onFieldChange={onFieldChange}
+          activeColor={activeColor}
+          palette={palette}
+        />
+      </div>
     </div>
   );
 }

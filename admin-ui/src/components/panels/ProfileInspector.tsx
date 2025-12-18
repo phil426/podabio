@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { TextB, TextItalic, TextUnderline, UploadSimple, X, Images } from '@phosphor-icons/react';
+import { TextB, TextItalic, TextUnderline, CheckCircle, CircleNotch } from '@phosphor-icons/react';
 
-import { usePageSnapshot, updatePageSettings, updatePageAppearance, removeProfileImage } from '../../api/page';
-import { uploadProfileImage } from '../../api/uploads';
-import { queryKeys, normalizeImageUrl } from '../../api/utils';
-import { MediaLibraryDrawer } from '../overlays/MediaLibraryDrawer';
-import { ImageCropModal } from '../overlays/ImageCropModal';
-import type { MediaItem } from '../../api/media';
+import { usePageSnapshot, updatePageSettings } from '../../api/page';
+import { queryKeys } from '../../api/utils';
+import { useDebouncedCallback } from './themes/hooks/useDebouncedCallback';
 
 import { type TabColorTheme } from '../layout/tab-colors';
 
@@ -38,35 +35,20 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   const [footerPrivacyLink, setFooterPrivacyLink] = useState(page?.footer_privacy_link ?? '');
   const [footerTermsLink, setFooterTermsLink] = useState(page?.footer_terms_link ?? '');
   const [footerVisible, setFooterVisible] = useState(page?.footer_visible !== false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<'success' | 'error'>('success');
-  const [isSavingProfile, setSavingProfile] = useState(false);
-  const [isUploading, setUploading] = useState(false);
-  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'idle'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
   const nameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bioTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isInitialMount = useRef(true);
 
-  const profileImage = page?.profile_image ?? null;
   const nameTextLength = useMemo(() => name.replace(/<[^>]*>/g, '').length, [name]);
   const bioTextLength = useMemo(() => bio.replace(/<[^>]*>/g, '').length, [bio]);
   const footerTextLength = useMemo(() => footerText.replace(/<[^>]*>/g, '').length, [footerText]);
   const maxBioLength = 150;
   const maxNameLength = 30;
   const maxFooterLength = 200;
-
-  const previewName = name.trim() || page?.podcast_name || 'Your show name';
-  const previewBio = bio.trim() || page?.podcast_description || 'Give listeners a one-line reason to follow your show.';
-
-  const previewInitials = useMemo(() => {
-    const source = previewName.replace(/<[^>]*>/g, '');
-    const words = source.split(/\s+/).filter(Boolean);
-    if (!words.length) return 'PB';
-    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }, [previewName]);
 
   // Decode HTML entities in text
   const decodeHtmlEntities = (text: string): string => {
@@ -76,6 +58,9 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
   };
 
   useEffect(() => {
+    // Only update state from props if we're not currently saving to avoid overwriting user input
+    if (saveStatus === 'saving') return;
+
     setName(page?.podcast_name ?? '');
     setNameAlignment(page?.name_alignment ?? 'center');
     setNameTextSize(page?.name_text_size ?? 'large');
@@ -92,221 +77,47 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
     setFooterPrivacyLink(page?.footer_privacy_link ?? '');
     setFooterTermsLink(page?.footer_terms_link ?? '');
     setFooterVisible(page?.footer_visible !== false);
-  }, [page?.podcast_name, page?.name_alignment, page?.name_text_size, page?.podcast_description, page?.profile_image_shape, page?.profile_image_shadow, page?.profile_image_size, page?.profile_image_border, page?.bio_alignment, page?.bio_text_size, page?.footer_text, page?.footer_copyright, page?.footer_privacy_link, page?.footer_terms_link, page?.footer_visible]);
+  }, [page?.podcast_name, page?.name_alignment, page?.name_text_size, page?.podcast_description, page?.profile_image_shape, page?.profile_image_shadow, page?.profile_image_size, page?.profile_image_border, page?.bio_alignment, page?.bio_text_size, page?.footer_text, page?.footer_copyright, page?.footer_privacy_link, page?.footer_terms_link, page?.footer_visible, saveStatus]);
 
   useEffect(() => {
-    if (!status) return;
-    const timer = window.setTimeout(() => setStatus(null), 3500);
-    return () => window.clearTimeout(timer);
-  }, [status]);
-
-  const handleChooseFile = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setStatusTone('error');
-      setStatus('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
+    if (saveStatus === 'saved' || saveStatus === 'error') {
+      const timer = window.setTimeout(() => {
+        setSaveStatus('idle');
+        setStatusMessage(null);
+      }, 3000);
+      return () => window.clearTimeout(timer);
     }
+  }, [saveStatus]);
 
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setStatusTone('error');
-      setStatus(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Create preview URL and show crop modal
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageSrc = e.target?.result as string;
-      setImageToCrop(imageSrc);
-      setCropModalOpen(true);
-    };
-    reader.readAsDataURL(file);
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleCropComplete = async (croppedImageBlob: Blob) => {
-    try {
-      setUploading(true);
-      // Convert blob to File
-      const croppedFile = new File([croppedImageBlob], 'profile-image.jpg', { type: 'image/jpeg' });
-      await uploadProfileImage(croppedFile);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      setStatusTone('success');
-      setStatus('Profile image updated.');
-    } catch (error) {
-      setStatusTone('error');
-      setStatus(error instanceof Error ? error.message : 'Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-      setCropModalOpen(false);
-      setImageToCrop(null);
-    }
-  };
-
-  const handleRemoveImage = async () => {
-    try {
-      setUploading(true);
-      await removeProfileImage();
-      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      setStatusTone('success');
-      setStatus('Profile image removed.');
-    } catch (error) {
-      setStatusTone('error');
-      setStatus(error instanceof Error ? error.message : 'Unable to remove profile image.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleSelectFromLibrary = async (mediaItem: MediaItem) => {
-    try {
-      setUploading(true);
-      await updatePageAppearance({ profile_image: mediaItem.file_url });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      setMediaLibraryOpen(false);
-      setStatusTone('success');
-      setStatus('Profile image updated.');
-    } catch (error) {
-      setStatusTone('error');
-      setStatus(error instanceof Error ? error.message : 'Unable to update profile image.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFormatName = (format: 'bold' | 'italic' | 'underline') => {
-    const textarea = nameTextareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = name.substring(start, end);
-    
-    if (!selectedText) return;
-
-    const tags: Record<string, { open: string; close: string }> = {
-      bold: { open: '<strong>', close: '</strong>' },
-      italic: { open: '<em>', close: '</em>' },
-      underline: { open: '<u>', close: '</u>' }
-    };
-
-    const formattedText = `${tags[format].open}${selectedText}${tags[format].close}`;
-    const newName = name.substring(0, start) + formattedText + name.substring(end);
-    
-    // Check character limit (count only text, not HTML tags)
-    const textOnly = newName.replace(/<[^>]*>/g, '');
-    if (textOnly.length > maxNameLength) {
-      setStatusTone('error');
-      setStatus(`Name cannot exceed ${maxNameLength} characters.`);
-      return;
-    }
-
-    setName(newName);
-    
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + tags[format].open.length + selectedText.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
-
-  const handleFormatBio = (format: 'bold' | 'italic' | 'underline') => {
-    const textarea = bioTextareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = bio.substring(start, end);
-    
-    if (!selectedText) return;
-
-    const tags: Record<string, { open: string; close: string }> = {
-      bold: { open: '<strong>', close: '</strong>' },
-      italic: { open: '<em>', close: '</em>' },
-      underline: { open: '<u>', close: '</u>' }
-    };
-
-    const formattedText = `${tags[format].open}${selectedText}${tags[format].close}`;
-    const newBio = bio.substring(0, start) + formattedText + bio.substring(end);
-    
-    // Check character limit (count only text, not HTML tags)
-    const textOnly = newBio.replace(/<[^>]*>/g, '');
-    if (textOnly.length > maxBioLength) {
-      setStatusTone('error');
-      setStatus(`Bio cannot exceed ${maxBioLength} characters.`);
-      return;
-    }
-
-    setBio(newBio);
-    
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + tags[format].open.length + selectedText.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
-
-  const handleSaveProfile = async () => {
+  const performSave = async () => {
     if (!page) return;
-    
+
     // Check character limits for profile
     const nameTextOnly = name.replace(/<[^>]*>/g, '');
     const bioTextOnly = bio.replace(/<[^>]*>/g, '');
     const footerTextOnly = footerText.replace(/<[^>]*>/g, '');
-    if (nameTextOnly.length > maxNameLength) {
-      setStatusTone('error');
-      setStatus(`Name cannot exceed ${maxNameLength} characters.`);
-      return;
-    }
-    if (bioTextOnly.length > maxBioLength) {
-      setStatusTone('error');
-      setStatus(`Bio cannot exceed ${maxBioLength} characters.`);
-      return;
-    }
-    if (footerTextOnly.length > maxFooterLength) {
-      setStatusTone('error');
-      setStatus(`Footer text cannot exceed ${maxFooterLength} characters.`);
+
+    if (nameTextOnly.length > maxNameLength || bioTextOnly.length > maxBioLength || footerTextOnly.length > maxFooterLength) {
+      setSaveStatus('error');
+      setStatusMessage('Character limit exceeded');
       return;
     }
 
     // Validate URLs if provided
     if (footerPrivacyLink && !footerPrivacyLink.match(/^https?:\/\//)) {
-      setStatusTone('error');
-      setStatus('Privacy Policy link must be a valid URL (starting with http:// or https://)');
+      setSaveStatus('error');
+      setStatusMessage('Privacy Policy link must be a valid URL');
       return;
     }
 
     if (footerTermsLink && !footerTermsLink.match(/^https?:\/\//)) {
-      setStatusTone('error');
-      setStatus('Terms of Service link must be a valid URL (starting with http:// or https://)');
+      setSaveStatus('error');
+      setStatusMessage('Terms of Service link must be a valid URL');
       return;
     }
 
     try {
-      setSavingProfile(true);
+      setSaveStatus('saving');
       const response = await updatePageSettings({
         podcast_name: name,
         name_alignment: nameAlignment,
@@ -324,29 +135,140 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
         footer_terms_link: footerTermsLink,
         footer_visible: footerVisible ? '1' : '0'
       });
-      
-      // Check if the response was successful
+
       if (!response.success) {
-        throw new Error(response.error || 'Failed to save profile settings');
+        throw new Error(response.error || 'Failed to save');
       }
-      
+
       await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-      setStatusTone('success');
-      setStatus('Profile updated.');
+      setSaveStatus('saved');
+      setStatusMessage('Changes saved');
     } catch (error) {
-      setStatusTone('error');
-      setStatus(error instanceof Error ? error.message : 'Unable to save profile.');
-    } finally {
-      setSavingProfile(false);
+      setSaveStatus('error');
+      setStatusMessage(error instanceof Error ? error.message : 'Error saving changes');
     }
   };
 
+  const debouncedSave = useDebouncedCallback(performSave, 1000);
+
+  // Autosave trigger
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Check if values actually changed from props to avoid redundant saves/loops
+    // We check against the decoded/normalized values of the props
+    const hasChanges =
+      name !== (page?.podcast_name ?? '') ||
+      nameAlignment !== (page?.name_alignment ?? 'center') ||
+      nameTextSize !== (page?.name_text_size ?? 'large') ||
+      bio !== decodeHtmlEntities(page?.podcast_description ?? '') ||
+      imageShape !== (page?.profile_image_shape ?? 'circle') ||
+      imageShadow !== (page?.profile_image_shadow ?? 'subtle') ||
+      imageSize !== (page?.profile_image_size ?? 'medium') ||
+      imageBorder !== (page?.profile_image_border ?? 'none') ||
+      bioAlignment !== (page?.bio_alignment ?? 'center') ||
+      bioTextSize !== (page?.bio_text_size ?? 'medium') ||
+      footerText !== (page?.footer_text ?? '') ||
+      footerCopyright !== (page?.footer_copyright ?? '') ||
+      footerPrivacyLink !== (page?.footer_privacy_link ?? '') ||
+      footerTermsLink !== (page?.footer_terms_link ?? '') ||
+      footerVisible !== (page?.footer_visible !== false);
+
+    if (hasChanges) {
+      if (saveStatus !== 'saving') {
+        setStatusMessage('Saving...');
+        // We don't set 'saving' state here because 'saving' blocks inputs in our first useEffect.
+        // We just rely on debouncedSave eventually calling performSave which sets 'saving'.
+        // But maybe we want a visual indicator "Unsaved" or "Pending"?
+        // For now, let's just let it be silent until save starts, or 'saving' when performSave runs.
+      }
+      debouncedSave();
+    }
+  }, [
+    name, bio, nameAlignment, nameTextSize, imageShape, imageShadow, imageSize, imageBorder, bioAlignment, bioTextSize, footerText, footerCopyright, footerPrivacyLink, footerTermsLink, footerVisible,
+    page, debouncedSave, saveStatus
+  ]);
+
+  const handleFormatName = (format: 'bold' | 'italic' | 'underline') => {
+    const textarea = nameTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = name.substring(start, end);
+
+    if (!selectedText) return;
+
+    const tags: Record<string, { open: string; close: string }> = {
+      bold: { open: '<strong>', close: '</strong>' },
+      italic: { open: '<em>', close: '</em>' },
+      underline: { open: '<u>', close: '</u>' }
+    };
+
+    const formattedText = `${tags[format].open}${selectedText}${tags[format].close}`;
+    const newName = name.substring(0, start) + formattedText + name.substring(end);
+
+    // Check character limit (count only text, not HTML tags)
+    const textOnly = newName.replace(/<[^>]*>/g, '');
+    if (textOnly.length > maxNameLength) {
+      setSaveStatus('error');
+      setStatusMessage(`Name cannot exceed ${maxNameLength} characters.`);
+      return;
+    }
+
+    setName(newName);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + tags[format].open.length + selectedText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const handleFormatBio = (format: 'bold' | 'italic' | 'underline') => {
+    const textarea = bioTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = bio.substring(start, end);
+
+    if (!selectedText) return;
+
+    const tags: Record<string, { open: string; close: string }> = {
+      bold: { open: '<strong>', close: '</strong>' },
+      italic: { open: '<em>', close: '</em>' },
+      underline: { open: '<u>', close: '</u>' }
+    };
+
+    const formattedText = `${tags[format].open}${selectedText}${tags[format].close}`;
+    const newBio = bio.substring(0, start) + formattedText + bio.substring(end);
+
+    const textOnly = newBio.replace(/<[^>]*>/g, '');
+    if (textOnly.length > maxBioLength) {
+      setSaveStatus('error');
+      setStatusMessage(`Bio cannot exceed ${maxBioLength} characters.`);
+      return;
+    }
+
+    setBio(newBio);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + tags[format].open.length + selectedText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   return (
-    <section 
-      className={styles.wrapper} 
+    <section
+      className={styles.wrapper}
       aria-label="Profile settings"
       data-active={focus === 'image' || focus === 'bio' || focus === 'profile'}
-      style={{ 
+      style={{
         '--active-tab-color': activeColor.text,
         '--active-tab-bg': activeColor.primary,
         '--active-tab-light': activeColor.light,
@@ -356,103 +278,9 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       <header className={styles.header}>
         <div>
           <h3>Profile</h3>
-          <p>Preview and fine‑tune how your avatar, name, and bio appear on your page.</p>
+          <p>Preview and fine‑tune how your name and bio appear on your page.</p>
         </div>
       </header>
-
-      {/* Compact live preview */}
-      <div className={styles.previewCard} aria-label="Profile preview">
-        <div className={styles.previewAvatar}>
-          {profileImage ? (
-            <img src={normalizeImageUrl(profileImage)} alt="" aria-hidden="true" />
-          ) : (
-            <span aria-hidden="true">{previewInitials}</span>
-          )}
-        </div>
-        <div className={styles.previewText}>
-          <p className={styles.previewName}>{previewName.replace(/<[^>]*>/g, '')}</p>
-          <p className={styles.previewBio}>{previewBio.replace(/<[^>]*>/g, '')}</p>
-        </div>
-      </div>
-
-      <div className={styles.fieldset}>
-        {/* Profile Image Section */}
-        <div
-          className={styles.imagePreview}
-          data-shape={imageShape}
-          data-shadow={imageShadow}
-          data-size={imageSize}
-          data-border={imageBorder}
-          data-has-image={profileImage ? 'true' : 'false'}
-        >
-          {profileImage ? <img src={normalizeImageUrl(profileImage)} alt="Current profile" /> : <span>PB</span>}
-          <div className={styles.imageOverlay}>
-            <div className={styles.segmentedBar}>
-              <button
-                type="button"
-                className={styles.segmentedButton}
-                onClick={handleChooseFile}
-                disabled={isUploading}
-                title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-              >
-                <UploadSimple size={16} weight="regular" aria-hidden="true" />
-              </button>
-              <div className={styles.segmentedDivider} />
-              <button
-                type="button"
-                className={styles.segmentedButton}
-                onClick={() => setMediaLibraryOpen(true)}
-                disabled={isUploading}
-                title="Choose from library"
-              >
-                <Images size={16} weight="regular" aria-hidden="true" />
-              </button>
-              {profileImage && (
-                <>
-                  <div className={styles.segmentedDivider} />
-                  <button
-                    type="button"
-                    className={`${styles.segmentedButton} ${styles.segmentedButtonDanger}`}
-                    onClick={handleRemoveImage}
-                    disabled={isUploading}
-                    title="Remove image"
-                  >
-                    <X size={16} weight="regular" aria-hidden="true" />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          className={styles.hiddenInput}
-          onChange={handleFileChange}
-        />
-        <MediaLibraryDrawer
-          open={mediaLibraryOpen}
-          onClose={() => setMediaLibraryOpen(false)}
-          onSelect={handleSelectFromLibrary}
-        />
-        {imageToCrop && (
-          <ImageCropModal
-            open={cropModalOpen}
-            onClose={() => {
-              setCropModalOpen(false);
-              setImageToCrop(null);
-            }}
-            imageSrc={imageToCrop}
-            onCropComplete={handleCropComplete}
-            aspectRatio={1} // Square for profile images
-            cropShape="round" // Round crop for profile images
-            minZoom={1}
-            maxZoom={3}
-            initialZoom={1}
-          />
-        )}
-      </div>
 
       <div className={styles.fieldset}>
         {/* Name Section */}
@@ -540,40 +368,6 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       <div className={styles.fieldset}>
         <div className={styles.footerFields}>
           <div className={styles.fieldGroup}>
-            <label htmlFor="footer-copyright">Copyright Text</label>
-            <input
-              type="text"
-              id="footer-copyright"
-              value={footerCopyright}
-              onChange={(event) => setFooterCopyright(event.target.value)}
-              placeholder="e.g., © 2024 Your Name"
-              maxLength={100}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="footer-privacy-link">Privacy Policy Link</label>
-            <input
-              type="url"
-              id="footer-privacy-link"
-              value={footerPrivacyLink}
-              onChange={(event) => setFooterPrivacyLink(event.target.value)}
-              placeholder="https://example.com/privacy"
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="footer-terms-link">Terms of Service Link</label>
-            <input
-              type="url"
-              id="footer-terms-link"
-              value={footerTermsLink}
-              onChange={(event) => setFooterTermsLink(event.target.value)}
-              placeholder="https://example.com/terms"
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
@@ -587,14 +381,23 @@ export function ProfileInspector({ focus, activeColor }: ProfileInspectorProps):
       </div>
 
       <div className={styles.footer}>
-        <button type="button" className={styles.saveButton} onClick={handleSaveProfile} disabled={isSavingProfile}>
-          {isSavingProfile ? 'Saving…' : 'Save changes'}
-        </button>
-        {status && (
-          <span className={statusTone === 'success' ? styles.statusOk : styles.statusError} role="status">
-            {status}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.9, fontSize: '0.9rem', fontWeight: 500 }}>
+          {saveStatus === 'saving' && (
+            <>
+              <CircleNotch size={16} weight="bold" className="icon-spin" /> {/* Assuming global icon-spin or similar animation exists, or static for now */}
+              <span>Saving...</span>
+            </>
+          )}
+          {saveStatus === 'saved' && (
+            <>
+              <CheckCircle size={16} weight="fill" color="#22c55e" />
+              <span style={{ color: '#22c55e' }}>Saved</span>
+            </>
+          )}
+          {saveStatus === 'error' && (
+            <span style={{ color: '#ef4444' }}>{statusMessage || 'Error saving'}</span>
+          )}
+        </div>
       </div>
     </section>
   );

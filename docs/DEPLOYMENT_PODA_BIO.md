@@ -154,6 +154,13 @@ mysql -h srv775.hstgr.io -u u925957603_pab -p u925957603_podabio < database/seed
    - Test database connectivity
    - Verify file uploads work
 
+5. **Sync User Uploads (Images)**
+   If you have local user images (in `uploads/`) that need to be on production:
+   ```bash
+   # Sync uploads directory to server (avoids overwriting existing server files unless newer)
+   scp -P 65002 -r uploads/* u925957603@195.179.237.142:/home/u925957603/domains/poda.bio/public_html/uploads/
+   ```
+
 ## React/Vite Build Process
 
 The React admin-ui is built using Vite:

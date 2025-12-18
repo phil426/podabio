@@ -222,3 +222,47 @@ h6 {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
+
+/* =========================================
+   SONNER TOAST OVERRIDES
+   ========================================= */
+
+[data-sonner-toaster] {
+  z-index: 10001 !important;
+  /* Ensure it sits above navbar overlays */
+}
+
+/* Base Toast Style Overrides */
+[data-sonner-toast] {
+  border-radius: 12px !important;
+  /* Rounded Square */
+  font-family: var(--admin-font-body) !important;
+  font-weight: 500 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Success Toast */
+[data-sonner-toast][data-type="success"] {
+  background: rgba(16, 185, 129, 0.9) !important;
+  /* Greenish */
+  backdrop-filter: blur(8px);
+  color: white !important;
+}
+
+/* Error Toast */
+[data-sonner-toast][data-type="error"] {
+  background: rgba(239, 68, 68, 0.9) !important;
+  /* Reddish */
+  backdrop-filter: blur(8px);
+  color: white !important;
+}
+
+/* Info/Default Toast */
+[data-sonner-toast][data-type="default"],
+[data-sonner-toast][data-type="info"] {
+  background: rgba(30, 41, 59, 0.9) !important;
+  /* Dark Blue/Grey */
+  backdrop-filter: blur(8px);
+  color: white !important;
+}

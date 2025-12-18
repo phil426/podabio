@@ -55,7 +55,7 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   }
 
   // If it's already a full URL with different domain, return as-is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
     return url;
   }
 

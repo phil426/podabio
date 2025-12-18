@@ -1,11 +1,11 @@
 .wrapper {
-  padding: 0.45rem 0.55rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 0;
   background: transparent;
   border: none;
   display: grid;
-  gap: 0.5rem;
-  margin: 0 0 0.6rem;
+  gap: 0.4rem;
+  margin: 0 0 0.4rem;
 }
 
 .header {
@@ -30,42 +30,42 @@
 }
 
 .header p {
-  margin: 0.2rem 0 0;
+  margin: 0.1rem 0 0;
   font-size: var(--admin-font-size-md, 0.95rem);
   color: rgba(255, 255, 255, 0.6);
 }
 
 .closeButton {
-  padding: 0.4rem 0.85rem;
+  padding: 0.3rem 0.65rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--admin-border-default, rgba(15, 23, 42, 0.12));
   background: var(--admin-border-subtle, rgba(15, 23, 42, 0.04));
   color: var(--admin-text-primary, #0f172a);
-  font-size: var(--admin-font-size-md, 0.95rem);
+  font-size: 0.9rem;
 }
 
 .controlGroup {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .control {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .control span {
-  font-size: var(--admin-font-size-md, 0.95rem);
+  font-size: 0.95rem;
   font-weight: 600;
   color: #ffffff;
 }
 
 .input,
 select {
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.2));
-  font-size: var(--admin-font-size-base, 1rem);
+  font-size: 0.95rem;
   background: rgba(0, 0, 0, 0.2);
   color: #ffffff !important;
   transition: border-color 150ms ease;
@@ -73,10 +73,10 @@ select {
 }
 
 .textarea {
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.2));
-  font-size: var(--admin-font-size-base, 1rem);
+  font-size: 0.95rem;
   background: transparent;
   color: #ffffff !important;
   transition: border-color 150ms ease;
@@ -131,23 +131,22 @@ select {
 .toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: var(--admin-font-size-base, 1rem);
+  gap: 0.5rem;
+  font-size: 0.95rem;
   color: #ffffff;
 }
 
 .checkboxRow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: var(--admin-font-size-base, 1rem);
+  gap: 0.4rem;
+  font-size: 0.95rem;
   color: #ffffff;
-  /* Added color */
 }
 
 .fieldset {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.4rem;
   border-radius: 0;
   background: transparent;
   border: none;
@@ -155,13 +154,13 @@ select {
 }
 
 .placeholder {
-  font-size: var(--admin-font-size-md, 0.95rem);
+  font-size: 0.9rem;
   color: var(--admin-text-secondary, #475569);
 }
 
 .help {
   margin: 0;
-  font-size: var(--admin-font-size-sm, 0.9rem);
+  font-size: 0.85rem;
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -173,17 +172,32 @@ select {
 .footer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.statusIconSuccess {
+  color: var(--admin-brand-accent-signal-green, #00FF7F);
+}
+
 .saveButton {
-  padding: 0.55rem 1rem;
+  display: none;
+  padding: 0.4rem 0.8rem;
   border-radius: var(--pod-core-shape-radius-md, 12px);
   border: none;
   background: var(--admin-brand-accent-signal-green, #00FF7F);
   color: var(--admin-text-inverse, #ffffff);
-  font-size: var(--admin-font-size-base, 1rem);
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 150ms ease;
@@ -201,46 +215,46 @@ select {
 }
 
 .resetButton {
-  padding: 0.5rem 0.95rem;
+  padding: 0.4rem 0.75rem;
   border-radius: var(--pod-core-shape-radius-sm, 6px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
   color: #ffffff;
-  font-size: var(--admin-font-size-base, 1rem);
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .statusOk {
-  font-size: var(--admin-font-size-sm, 0.9rem);
+  font-size: 0.85rem;
   color: var(--admin-text-success, #16a34a);
 }
 
 .statusError {
-  font-size: var(--admin-font-size-sm, 0.9rem);
+  font-size: 0.85rem;
   color: var(--admin-text-error, #dc2626);
 }
 
 .error {
   margin: 0;
-  font-size: var(--admin-font-size-base, 1rem);
+  font-size: 0.95rem;
   color: var(--admin-text-error, #dc2626);
 }
 
 .thumbnailSection {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .thumbnailLabel {
-  font-size: var(--admin-font-size-md, 0.95rem);
+  font-size: 0.95rem;
   font-weight: 600;
   color: #ffffff;
 }
 
 .thumbnailPreview {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(241, 245, 249, 0.9) 100%);
   display: grid;
@@ -266,7 +280,7 @@ select {
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease;
-  padding: 0.5rem;
+  padding: 0.4rem;
   z-index: 10;
   display: flex;
   align-items: flex-start;
@@ -289,13 +303,13 @@ select {
   display: flex;
   align-items: stretch;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: 32px;
-  height: 32px;
+  min-height: 28px;
+  height: 28px;
 }
 
 .segmentedButton {
@@ -338,14 +352,14 @@ select {
 
 /* First button - rounded left corners only */
 .segmentedButton:first-child::before {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 /* Last button - rounded right corners only */
 .segmentedButton:last-child::before {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .segmentedButton:disabled {
@@ -354,8 +368,8 @@ select {
 }
 
 .segmentedButton svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   display: block;
   position: relative;
@@ -397,7 +411,7 @@ select {
 }
 
 .thumbnailPlaceholder {
-  font-size: var(--admin-font-size-xs, 0.75rem);
+  font-size: 0.75rem;
   color: var(--admin-text-secondary, #475569);
 }
 
@@ -415,17 +429,18 @@ select {
 
 .thumbnailError {
   margin: 0;
-  font-size: var(--admin-font-size-xs, 0.75rem);
+  font-size: 0.75rem;
   color: var(--admin-text-error, #dc2626);
 }
 
 /* Profile Carousel Images Field */
 .carouselImagesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  margin: 12px 0;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
 }
+
 
 .carouselImageItem {
   position: relative;

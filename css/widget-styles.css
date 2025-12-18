@@ -3,6 +3,29 @@
    ============================================================================ */
 
 /* ----------------------------------------------------------------------------
+   TYPOGRAPHY & COLORS
+   Explicitly apply theme variables to widget elements with higher specificity
+   ---------------------------------------------------------------------------- */
+
+.widget-item .widget-title,
+.widget-item .widget-heading-text,
+.widget-item .instagram-carousel-video-badge {
+    font-family: var(--widget-heading-font, var(--font-family-heading, inherit)) !important;
+    color: var(--widget-heading-font-color, var(--heading-font-color, inherit));
+}
+
+.widget-item .widget-description,
+.widget-item .widget-text-content,
+.widget-item .widget-body-text,
+.widget-item .instagram-carousel-caption,
+.widget-item .instagram-carousel-timestamp {
+    font-family: var(--widget-body-font, var(--font-family-body, inherit)) !important;
+    color: var(--widget-body-font-color, var(--body-font-color, inherit));
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ----------------------------------------------------------------------------
    DRAWER COMPONENT (Generic)
    Used for Contact Form, etc.
    ---------------------------------------------------------------------------- */
@@ -26,13 +49,22 @@
 }
 
 .drawer {
-    position: fixed;
+    position: absolute;
+    /* Changed from fixed to confine to parent container */
     z-index: 10000;
     background: var(--color-background-base, #ffffff);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+    transform: translateY(100%);
+    /* Start off-screen */
+    /* Added display: none to prevent empty layout space when closed */
+    display: none;
     flex-direction: column;
+    width: 100%;
+    /* Ensure it fills the width of the container */
+    max-width: 100%;
+    visibility: hidden;
+    /* Hide when not in use */
 }
 
 /* Bottom Drawer (Mobile Default) */
@@ -49,6 +81,8 @@
 
 .drawer-bottom.visible {
     transform: translateY(0);
+    visibility: visible;
+    /* Show when active */
 }
 
 .drawer-header {
@@ -59,12 +93,43 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+
 .drawer-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-text-primary, #0f172a);
     margin: 0;
 }
+
+/* ----------------------------------------------------------------------------
+   FULL SCREEN GALLERY DRAWER
+   Overrides standard bottom-drawer behavior to fill the whole screen
+   ---------------------------------------------------------------------------- */
+.gallery-drawer {
+    /* Reverting from Full Screen to Standard Modal Height (85vh) */
+    /* top: 0 !important; */
+    height: 85vh !important;
+    max-height: 85vh !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-radius: 20px 20px 0 0 !important;
+}
+
+/* PhotoSwipe Counter Styling */
+.pswp__counter {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #E5E5E5 !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    left: 20px !important;
+    /* Move it slightly right */
+    top: 20px !important;
+    /* Move it slightly down */
+}
+
+/* ... (skipping unchanged lines) ... */
 
 .drawer-close {
     background: transparent;
@@ -102,7 +167,8 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
-    z-index: 9999;
+    z-index: 2147483647 !important;
+    /* Max Z-Index to beat Podcast Player (10000+) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,80 +281,20 @@
     transform: scale(1.05);
 }
 
-/* Swipe Deck (Full Screen) */
-.gallery-swipe-deck {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #000;
-    z-index: 10001;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.gallery-swipe-deck.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-.gallery-deck-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    display: flex;
-    justify-content: flex-end;
-    z-index: 10;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
-}
-
-.gallery-deck-close {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-}
-
-.gallery-deck-viewport {
-    flex: 1;
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    align-items: center;
-    height: 100%;
-}
-
-.gallery-deck-item {
-    flex: 0 0 100%;
+/* PhotoSwipe Support */
+.gallery-grid-item a {
+    display: block;
     width: 100%;
     height: 100%;
-    scroll-snap-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+    cursor: zoom-in;
 }
 
-.gallery-deck-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+/* Ensure images fill the anchor */
+.gallery-grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* ----------------------------------------------------------------------------
@@ -320,6 +326,7 @@
     background: var(--color-background-surface, #f8fafc);
     transition: all 0.2s;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-control:focus {
@@ -362,7 +369,460 @@ textarea.form-control {
     color: var(--color-success, #10b981);
 }
 
+/* PhotoSwipe Confinement & Styling */
+/* Ensure the lightbox stays within the phone frame on desktop */
+.pswp {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 99999 !important;
+    /* Above everything inside the frame */
+}
+
+/* Fix Aspect Ratio: Ensure images are not cropped */
+.pswp__img {
+    object-fit: contain !important;
+    /* Let PhotoSwipe handle width/height calc, only restrict max to viewport */
+    /* width: auto !important;  <-- REMOVED: Breaks PhotoSwipe positioning */
+    /* height: auto !important; <-- REMOVED: Breaks PhotoSwipe positioning */
+    max-width: none !important;
+    /* Allow PS to scale it up if needed */
+    max-height: none !important;
+}
+
+
+/* Ensure Close Button is visible and clickable */
+.pswp__button--close {
+    opacity: 1 !important;
+    z-index: 100000 !important;
+    cursor: pointer !important;
+}
+
+/* OVERLAY NAVIGATION ARROWS */
+/* Force arrows to be visible, large, and white over the image */
+.pswp__button--arrow--left,
+.pswp__button--arrow--right {
+    background: none !important;
+    top: 50% !important;
+    margin-top: -25px !important;
+    width: 50px !important;
+    height: 50px !important;
+    position: absolute !important;
+    z-index: 100005 !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+.pswp__button--arrow--left::before,
+.pswp__button--arrow--right::before {
+    content: '' !important;
+    display: block !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-top: 4px solid #ffffff !important;
+    border-right: 4px solid #ffffff !important;
+    box-shadow: 1px -1px 2px rgba(0, 0, 0, 0.5);
+    /* Shadow for contrast */
+}
+
+/* Rotate for Left Arrow */
+.pswp__button--arrow--left::before {
+    transform: rotate(-135deg) !important;
+    margin-left: 15px !important;
+}
+
+/* Rotate for Right Arrow */
+.pswp__button--arrow--right {
+    right: 10px !important;
+}
+
+.pswp__button--arrow--right::before {
+    transform: rotate(45deg) !important;
+    margin-right: 15px !important;
+}
+
+/* Left position */
+.pswp__button--arrow--left {
+    left: 10px !important;
+}
+
+/* Thumbnail Grid Styling */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Changed to 1 column for Full Width */
+    gap: 2px;
+    width: 100%;
+}
+
+/* Remove padding from drawer content specifically for gallery to allow full-width grid */
+.gallery-drawer .drawer-content {
+    padding: 0 !important;
+}
+
+.gallery-grid-item {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.gallery-grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.gallery-grid-item:hover .gallery-grid-image {
+    transform: scale(1.05);
+    /* Subtle zoom on hover */
+}
+
 .form-success-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
+}
+
+/* Marquee Styles */
+.marquee {
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    display: block;
+    /* Ensure block context */
+    max-width: 100%;
+}
+
+.marquee-content {
+    display: inline-block !important;
+    white-space: nowrap !important;
+    will-change: transform;
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    animation: widgetMarquee var(--marquee-duration, 10s) linear infinite !important;
+    /* Ensure content width is respected */
+    min-width: 100% !important;
+}
+
+.marquee-text {
+    display: inline-block;
+    padding-right: var(--widget-space-lg, 2rem);
+    /* Add spacing between duplicates */
+}
+
+@keyframes widgetMarquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        /* Move by 50% of the content width (since content is doubled) */
+        transform: translateX(-50%);
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   TABLET & DESKTOP INTERACTION DISABLE (Per User Request)
+   "Deactivate links from widgets" on non-mobile screens
+   ---------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+
+    /* Disable interactions on widgets, social icons, and header actions */
+    .widget-item,
+    .social-icon,
+    .btn-action,
+    .header-actions a,
+    .widget-link,
+    .gallery-grid-item {
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+
+    /* Optional: Hide hover effects to indicate disabled state */
+    .widget-item:hover,
+    .social-icon:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        background: var(--color-background-surface) !important;
+        /* Fallback to default */
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   DESKTOP PREVIEW OVERRIDES
+   Confine drawers to mobile preview frame on desktop
+   ---------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+
+    /* Contact Drawer confinement - NOW MODAL */
+    /* Target specifically inside desktop-frame-container */
+    .desktop-frame-container .contact-overlay,
+    .desktop-frame-container .drawer-overlay,
+    .desktop-frame-container .gallery-swipe-deck {
+        position: absolute !important;
+        /* Sticky/Absolute relative to phone frame */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 47px !important;
+        /* Match iPhone screen radius */
+        z-index: 2147483647 !important;
+        /* Max Z-Index */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /*
+       End of Desktop Media Query
+       (styles below this line apply globaly or handle their own scoping)
+    */
+}
+
+/* Footer/Button Area if needed */
+
+/*
+   -------------------------------------------------------------------------
+   CONTACT MODAL - HIGH END CHAROCAL DESIGN (GLOBAL & DENSE)
+   -------------------------------------------------------------------------
+   Applied globally to ensure it renders in mobile-width previews (iframes)
+*/
+
+/* Overlay */
+.contact-overlay,
+.drawer-overlay {
+    /* Ensure it covers properly */
+    background: rgba(0, 0, 0, 0.5);
+    /* Dimmed backdrop */
+}
+
+/* Modal Container (The Card) */
+.contact-modal {
+    background: #1F1F1F !important;
+    /* Dark Charcoal Frame */
+    color: #E5E5E5 !important;
+    /* Soft White */
+    border-radius: 0 !important;
+    /* Full screen feel in frame */
+    box-shadow: none !important;
+}
+
+/* Ensure full coverage context if needed */
+.desktop-frame-container .contact-modal,
+.iphone-content .contact-modal {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Header */
+/* Apply same styles to drawer-header since Gallery uses that class */
+.contact-modal .modal-header,
+.contact-modal .drawer-header {
+    background: #1F1F1F !important;
+    border: none !important;
+    /* Force REMOVE all borders */
+    border-bottom: none !important;
+    box-shadow: none !important;
+    /* Kill any shadow that looks like a line */
+    outline: none !important;
+    padding: 1.25rem 0.85rem !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Manually styled title text (DIV not H3) to avoid theme inheritance */
+.contact-modal .modal-header .gallery-drawer-title,
+.contact-modal .modal-header h3,
+.contact-modal .drawer-header .gallery-drawer-title,
+.contact-modal .drawer-header h3 {
+    color: #E5E5E5 !important;
+    /* FORCE WHITE TEXT */
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    /* Remove uppercase enforcement if desired, or keep as per user pref */
+    letter-spacing: -0.02em !important;
+    font-size: 24px !important;
+    /* Size 24px as requested */
+    margin: 0 !important;
+    -webkit-text-fill-color: #E5E5E5 !important;
+    border: none !important;
+}
+
+/* Close Button */
+.contact-modal .drawer-close {
+    width: 2rem !important;
+    height: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: #E5E5E5 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transition: background 0.2s !important;
+}
+
+.contact-modal .drawer-close:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Content Area - WIDER */
+.contact-modal .modal-content {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    padding: 1.25rem 0.85rem !important;
+    /* WIDER: Reduced side padding */
+    background: #1F1F1F !important;
+    /* Dark Charcoal */
+    color: #E5E5E5 !important;
+}
+
+/* Form Styling - Fill Space */
+.contact-modal form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 1 !important;
+    height: 100% !important;
+}
+
+/* Form Elements */
+.contact-modal .form-group {
+    margin-bottom: 1rem !important;
+    /* Tighter spacing (was 1.5rem) */
+    position: relative !important;
+    flex-shrink: 0 !important;
+}
+
+/* Special handling for Textarea Group to Grow */
+.contact-modal .form-group:has(textarea),
+.contact-modal .form-group.textarea-group {
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 1rem !important;
+}
+
+.contact-modal label {
+    display: block !important;
+    margin-bottom: 0.35rem !important;
+    /* Tighter label margin */
+    font-size: 0.7rem !important;
+    /* Compact label */
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-weight: 600 !important;
+    color: #A3A3A3 !important;
+    /* Slightly dimmer soft white */
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Inputs */
+.contact-modal .form-control {
+    width: 100% !important;
+    padding: 0.85rem 1rem !important;
+    /* Compact but comfortable */
+    font-size: 0.95rem !important;
+    color: #FFFFFF !important;
+    background: #2A2A2A !important;
+    /* Lighter charcoal */
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    /* Slightly tighter radius */
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Inter', sans-serif !important;
+    box-shadow: none !important;
+}
+
+.contact-modal .form-control:focus {
+    background: #333333 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05) !important;
+    outline: none !important;
+}
+
+/* Textarea - Fill Remaining Space */
+.contact-modal textarea.form-control {
+    min-height: 200px !important;
+    /* Significantly taller */
+    flex-grow: 1 !important;
+    /* Fill available space */
+    resize: none !important;
+    line-height: 1.5 !important;
+    height: 100% !important;
+    /* Force height if flex fails */
+}
+
+/* Links reset */
+.contact-modal a,
+.contact-modal a:visited,
+.contact-modal a:hover {
+    color: #E5E5E5 !important;
+    text-decoration: underline !important;
+}
+
+/* Primary Button - Bottom Anchored Feel */
+.contact-modal .btn-primary {
+    width: 100% !important;
+    padding: 1.125rem !important;
+    background: #E5E5E5 !important;
+    /* Soft White */
+    color: #1F1F1F !important;
+    /* Dark Charcoal Text */
+    border: none !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    cursor: pointer !important;
+    margin-top: auto !important;
+    /* Push to bottom if space permits */
+    font-family: 'Inter', sans-serif !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+    flex-shrink: 0 !important;
+}
+
+.contact-modal .btn-primary:hover {
+    background: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.contact-modal .btn-primary:active {
+    transform: scale(0.98) !important;
+}
+
+/* Force Font Inheritance Global */
+.contact-modal h3,
+.contact-modal input,
+.contact-modal textarea,
+.contact-modal label,
+.contact-modal button,
+.form-control {
+    font-family: 'Inter', sans-serif !important;
 }

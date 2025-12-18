@@ -15,10 +15,12 @@ import { ThemeModeProvider } from './design-system/theme/ThemeModeProvider';
 import { AdminThemeProvider } from './design-system/admin-theme/AdminThemeProvider';
 import { defaultTokenPreset } from './design-system/tokens';
 import { FeatureFlagProvider } from './store/featureFlags';
+import { Toaster } from 'sonner';
 
 export default function App(): JSX.Element {
   return (
     <AdminThemeProvider defaultMode="dark">
+      <Toaster position="top-center" richColors theme="system" />
       <TokenProvider initialTokens={defaultTokenPreset}>
         <ThemeModeProvider>
           <FeatureFlagProvider>

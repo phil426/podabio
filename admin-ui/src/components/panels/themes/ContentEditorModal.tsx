@@ -10,6 +10,7 @@ import { ProfileInspector } from '../ProfileInspector';
 import { PodcastPlayerInspector } from '../PodcastPlayerInspector';
 import { SocialIconInspector } from '../SocialIconInspector';
 import { WidgetInspector } from '../WidgetInspector';
+import { SocialIconsUnifiedEditor } from '../SocialIconsUnifiedEditor';
 import { useSocialIconSelection } from '../../../state/socialIconSelection';
 import { usePageSnapshot } from '../../../api/page';
 import type { TabColorTheme } from '../../layout/tab-colors';
@@ -83,7 +84,7 @@ export function ContentEditorModal({ activeColor, editor, onClose }: ContentEdit
       case 'podcast-player':
         return <PodcastPlayerInspector activeColor={activeColor} />;
       case 'social-icons':
-        return <SocialIconInspector activeColor={activeColor} />;
+        return <SocialIconsUnifiedEditor activeColor={activeColor} />;
       default:
         return null;
     }

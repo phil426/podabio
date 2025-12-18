@@ -16,3 +16,28 @@
   color: var(--admin-text-primary, #0f172a);
 }
 
+
+.manageButton {
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  /* Glass */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  /* Explicit white for dark theme */
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.manageButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}

@@ -2,23 +2,26 @@
 
 ## High Priority
 
-- [ ] Review and test recent changes to social icons accordion and drag-and-drop
-- [ ] Verify preview alignment with center column horizontal rule
-- [ ] Test mobile hamburger menu functionality
+(None)
 
 ## Medium Priority
 
-- [ ] Review toast notification system (recently simplified)
-- [ ] Check spatial effects (glass and floating removed)
-- [ ] Verify all accordion animations are consistent
 
 ## Low Priority
 
 - [ ] Documentation updates
-- [ ] Code cleanup and optimization opportunities
 
 ## Completed ✓
+- [x] Removed deprecated Rolodex and People widgets (Codebase & UI cleanup)
 
+- [x] Review and update toast notification system (Updated position to Top-Center, added custom styling)
+- [x] Verify background image focal point logic
+- [x] Fix Page Title/Description alignment (Unified CSS Variables + Removed Inline Style Conflicts)
+- [x] Housekeeping: Removed temporary test files and unused widgets (Instagram, Shopify, Giphy)
+- [x] Clean Up: Archived "Special Effects" CSS and scrubbed ThemeCSSGenerator
+- [x] Test mobile sidebar collapse functionality
+- [x] Verify preview alignment with center column horizontal rule
+- [x] Implement unified social icons management with drag-and-drop reordering and inline editing
 - [x] Make social icons editable with accordion interface
 - [x] Restore drag and drop reorder functionality for social icons
 - [x] Remove preview header and align preview top with center column

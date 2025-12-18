@@ -10,6 +10,9 @@ export const SHAPE_PRESETS: ShapePreset[] = [
             'widget-border-width': 0,
             'widget-border-effect': 'none', // clean look
             'widget-shadow-depth': 1,
+            'profile-image-radius': 50,
+            'profile-image-border-width': 0,
+            'page-title-border-width': 0,
         }
     },
     {
@@ -20,6 +23,9 @@ export const SHAPE_PRESETS: ShapePreset[] = [
             'widget-rounding': 0,
             'widget-border-width': 2,
             'widget-border-effect': 'none',
+            'profile-image-radius': 0,
+            'profile-image-border-width': 0,
+            'page-title-border-width': 0,
         }
     },
     {
@@ -31,6 +37,9 @@ export const SHAPE_PRESETS: ShapePreset[] = [
             'widget-border-width': 1,
             'widget-border-effect': 'shadow',
             'widget-shadow-depth': 2,
+            'profile-image-radius': 20,
+            'profile-image-border-width': 0,
+            'page-title-border-width': 0,
         }
     }
 ];

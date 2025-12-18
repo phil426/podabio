@@ -142,7 +142,10 @@ export function PageBackgroundSection({
 
   useEffect(() => {
     let newMode: 'solid' | 'gradient' | 'image';
-    if (bgImageUrl && bgImageUrl !== 'none') {
+    // Check if background specifically asks to ignore image via CSS comment
+    const ignoreImage = pageBackground && (pageBackground.includes('/* no-image */') || pageBackground.includes('no-image'));
+
+    if (bgImageUrl && bgImageUrl !== 'none' && !ignoreImage) {
       newMode = 'image';
     } else if (pageBackground && pageBackground.includes('gradient')) {
       newMode = 'gradient';
@@ -167,19 +170,26 @@ export function PageBackgroundSection({
     }
 
     if (newMode === 'solid') {
-      onFieldChange('page-background', '#ffffff');
+      // Append comment to tell backend to ignore any existing image URL
+      onFieldChange('page-background', '#ffffff /* no-image */');
       onFieldChange('page-background-animate', false);
-      onFieldChange('page_background_image_url', null); // Clear image
+      // DO NOT clear image URL - preserve it
     } else if (newMode === 'gradient') {
-      onFieldChange('page-background', 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%)');
-      onFieldChange('page_background_image_url', null); // Clear image
+      // Append comment to tell backend to ignore any existing image URL
+      onFieldChange('page-background', 'linear-gradient(140deg, #02040d 0%, #0a1331 45%, #1a2151 100%) /* no-image */');
+      // DO NOT clear image URL - preserve it
     } else if (newMode === 'image') {
-      // Don't overwrite background color/gradient, just set image
+      // Clean the background value (remove no-image marker) so image shows up
+      const cleanBg = pageBackground ? pageBackground.replace('/* no-image */', '').replace('no-image', '').trim() : '#ffffff';
+      onFieldChange('page-background', cleanBg);
     }
   };
 
   const handleSelectFromLibrary = (mediaItem: MediaItem) => {
     onFieldChange('page_background_image_url', mediaItem.file_url);
+    // Also ensure we remove the no-image marker if we are selecting an image
+    const cleanBg = pageBackground ? pageBackground.replace('/* no-image */', '').replace('no-image', '').trim() : '#ffffff';
+    onFieldChange('page-background', cleanBg);
     setMediaLibraryOpen(false);
   };
 
@@ -544,9 +554,13 @@ export function PageBackgroundSection({
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Page Background</label>
             <BackgroundColorSwatch
-              value={pageBackground}
+              value={pageBackground ? pageBackground.replace('/* no-image */', '').replace('no-image', '').trim() : pageBackground}
               backgroundType={mode === 'gradient' ? 'gradient' : 'solid'}
-              onChange={(value) => onFieldChange('page-background', value)}
+              onChange={(value) => {
+                // Always append marker in this mode to ensure image remains hidden if present
+                const finalValue = `${value} /* no-image */`;
+                onFieldChange('page-background', finalValue);
+              }}
               solidOnly={mode === 'solid'}
               label="Page background"
               palette={palette}

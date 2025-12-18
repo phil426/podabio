@@ -71,7 +71,7 @@ const TAB_DEFINITIONS: Record<TabValue, TabDefinition> = {
     label: 'Settings',
     icon: <LuSettings className={styles.tabIcon} aria-hidden="true" />
   },
-  // New Lefty tabs
+  // New App Sidebar tabs
   themes: {
     value: 'themes',
     label: 'Themes',

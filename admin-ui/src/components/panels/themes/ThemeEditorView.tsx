@@ -1,6 +1,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowLeft, Eye, EyeSlash, CheckCircle, Circle, XCircle, Spinner, ArrowsDownUp, Plus, Sparkle, Link, ArrowSquareOut, Check, Layout, Cube, ArrowsInLineHorizontal, Palette, TextT } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import type { ThemeRecord } from '../../../api/types';
 import type { TabColorTheme } from '../../layout/tab-colors';
@@ -52,6 +53,8 @@ export function ThemeEditorView({
   const [isGalleryOpen, setGalleryOpen] = useState<boolean>(false);
   const [hotspotsVisible, setHotspotsVisible] = useState<boolean>(true);
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
+  const [pendingWidgetId, setPendingWidgetId] = useState<string | null>(null);
+  const [loadingToastId, setLoadingToastId] = useState<string | number | null>(null);
 
   // Widget mutations for layer actions
   const { data: snapshot } = usePageSnapshot();
@@ -100,6 +103,36 @@ export function ThemeEditorView({
       setCombinedModalWidgetId(null);
     }
   }, [contentEditor]);
+
+  // Watch for pending widget availability
+  useEffect(() => {
+    if (pendingWidgetId && snapshot?.widgets) {
+      console.log('[ThemeEditorView] Checking for pending widget:', pendingWidgetId);
+      console.log('[ThemeEditorView] Current widgets:', snapshot.widgets.map((w) => w.id));
+
+      const found = snapshot.widgets.find((w) => String(w.id) === pendingWidgetId);
+      if (found) {
+        console.log('[ThemeEditorView] Found pending widget!', found);
+
+        // Clear pending state first to avoid loops
+        setPendingWidgetId(null);
+
+        // Dismiss loading toast
+        if (loadingToastId) {
+          toast.dismiss(loadingToastId);
+          setLoadingToastId(null);
+        }
+
+        // Open the editor
+        // We need to prioritize: if it's a widget that needs the inspector, we use handleEditContent
+        // But we need to make sure the inspector handles the 'loading' state if data isn't fully ready yet?
+        // Actually found is truthy, so data is ready in snapshot.
+        handleEditContent('widget-settings', pendingWidgetId);
+      } else {
+        console.log('[ThemeEditorView] Pending widget not found yet...');
+      }
+    }
+  }, [snapshot?.widgets, pendingWidgetId, loadingToastId]);
 
   const handleHotspotClick = (sectionId: string, widgetId?: string | null) => {
     // Redirect social-icons to combined modal
@@ -195,6 +228,8 @@ export function ThemeEditorView({
     setCombinedModalWidgetId(null);
   };
 
+
+
   const handleToggleVisibility = (widgetId: string) => {
     const widget = widgets.find((w) => String(w.id) === widgetId);
     if (!widget) return;
@@ -213,19 +248,20 @@ export function ThemeEditorView({
     const widget = widgets.find((w) => String(w.id) === widgetId);
     if (!widget) return;
 
-    const confirmDelete = window.confirm(`Delete "${widget.title}" ? This cannot be undone.`);
-    if (!confirmDelete) return;
-
-    deleteWidgetMutation.mutate(
-      { widget_id: widgetId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-          // Close content editor if it was open for this widget
-          if (contentEditor?.type === 'widget' && contentEditor.widgetId === widgetId) {
-            setContentEditor(null);
-          }
+    toast.promise(
+      (async () => {
+        await deleteWidgetMutation.mutateAsync({ widget_id: widgetId });
+        // Close content editor if it was open for this widget
+        if (contentEditor?.type === 'widget' && contentEditor.widgetId === widgetId) {
+          setContentEditor(null);
         }
+        // Invalidate queries to ensure UI updates immediately
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
+      })(),
+      {
+        loading: 'Deleting...',
+        success: 'Widget deleted',
+        error: 'Error deleting widget'
       }
     );
   };
@@ -301,9 +337,13 @@ export function ThemeEditorView({
             const widgetId = typed.widget_id ?? typed.data?.widget_id;
             if (widgetId) {
               const idString = String(widgetId);
-              selectWidget(idString);
-              // Open content editor (properties) instead of style editor
-              handleEditContent('widget-settings', idString);
+              // Show loading toast and wait for data
+              const tid = toast.loading('Loading widget details...');
+              setLoadingToastId(tid);
+              setPendingWidgetId(idString);
+
+              // selectWidget(idString); // Don't select globally to avoid opening the sidebar drawer
+              // handleEditContent('widget-settings', idString); // Delayed until data is ready
             }
             queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
           }
@@ -355,10 +395,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 Easy Mode
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -380,10 +420,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 Add Widget
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -411,9 +451,9 @@ export function ThemeEditorView({
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content side="left" align="center" className={styles.tooltip}>
+              <Tooltip.Content side="left" align="center" className="glassTooltip">
                 Shape
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -437,9 +477,9 @@ export function ThemeEditorView({
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content side="left" align="center" className={styles.tooltip}>
+              <Tooltip.Content side="left" align="center" className="glassTooltip">
                 Vibe
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -463,9 +503,9 @@ export function ThemeEditorView({
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content side="left" align="center" className={styles.tooltip}>
+              <Tooltip.Content side="left" align="center" className="glassTooltip">
                 Typography
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -489,9 +529,9 @@ export function ThemeEditorView({
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content side="left" align="center" className={styles.tooltip}>
+              <Tooltip.Content side="left" align="center" className="glassTooltip">
                 Spacing
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -548,10 +588,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 Reorder Widgets
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -577,10 +617,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 {hotspotsVisible ? 'Hide hotspots' : 'Show hotspots'}
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -609,10 +649,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 {linkCopied ? 'Copied!' : 'Copy Share Link'}
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -635,10 +675,10 @@ export function ThemeEditorView({
               <Tooltip.Content
                 side="left"
                 align="center"
-                className={styles.tooltip}
+                className="glassTooltip"
               >
                 Open Live Page
-                <Tooltip.Arrow className={styles.tooltipArrow} />
+                <Tooltip.Arrow className="glassTooltipArrow" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>

@@ -117,7 +117,8 @@ export function ModalPreview({ sectionId, theme, uiState, hidden }: ModalPreview
               fontWeight: cssVars['--page-title-weight'] || '600',
               fontStyle: cssVars['--page-title-style'] || 'normal',
               lineHeight: cssVars['--page-title-spacing'] || '1.2',
-              textShadow: cssVars['--page-title-text-shadow'] || 'none'
+              textShadow: cssVars['--page-title-text-shadow'] || 'none',
+              textAlign: (cssVars['--page-title-alignment'] as any) || 'center'
             }}
           >
             {pageTitle}
@@ -139,7 +140,8 @@ export function ModalPreview({ sectionId, theme, uiState, hidden }: ModalPreview
         fontWeight: cssVars['--page-bio-weight'] || '400',
         fontStyle: cssVars['--page-bio-style'] || 'normal',
         marginTop: cssVars['--page-spacing'] || '16px',
-        marginBottom: '0'
+        marginBottom: '0',
+        textAlign: (cssVars['--page-description-alignment'] as any) || 'center'
       };
 
       if (isGradient) {

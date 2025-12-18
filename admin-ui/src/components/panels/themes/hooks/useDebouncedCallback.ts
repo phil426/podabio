@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-type DebouncedFn<T extends any[]> = (...args: T) => void;
+type DebouncedFn<T extends any[]> = ((...args: T) => void) & { cancel: () => void };
 
 export function useDebouncedCallback<T extends any[]>(
   callback: (...args: T) => void,
@@ -21,7 +21,14 @@ export function useDebouncedCallback<T extends any[]>(
     };
   }, []);
 
-  return useCallback((...args: T) => {
+  const cancel = useCallback(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const debounced = useCallback((...args: T) => {
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
     }
@@ -29,6 +36,10 @@ export function useDebouncedCallback<T extends any[]>(
       callbackRef.current(...args);
     }, delayMs);
   }, [delayMs]);
+
+  (debounced as any).cancel = cancel;
+
+  return debounced as DebouncedFn<T>;
 }
 
 

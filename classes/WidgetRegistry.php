@@ -26,7 +26,7 @@ class WidgetRegistry
                     'url' => ['type' => 'url', 'label' => 'URL', 'required' => true],
                     'description' => ['type' => 'textarea', 'label' => 'Description', 'required' => false, 'help' => 'Optional description text that will scroll if it overflows'],
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Thumbnail Image URL', 'required' => false],
-                    'icon' => ['type' => 'select', 'label' => 'Icon', 'required' => false, 'options' => 'fontawesome_icons']
+                    'icon' => ['type' => 'select', 'label' => 'Icon', 'required' => false, 'default' => 'fas fa-link', 'options' => 'fontawesome_icons']
                 ]
             ],
 
@@ -94,7 +94,7 @@ class WidgetRegistry
             ],
 
             // PodNBio Player - Custom compact podcast widget
-            'podcast_player_custom' => [
+            /* 'podcast_player_custom' => [
                 'widget_id' => 'podcast_player_custom',
                 'name' => 'PodNBio Player',
                 'description' => 'Compact podcast player with bottom sheet drawer, chapters, and episode navigation',
@@ -106,7 +106,7 @@ class WidgetRegistry
                     'thumbnail_image' => ['type' => 'url', 'label' => 'Cover Image (auto-filled from RSS)', 'required' => false, 'help' => 'Cover image from RSS feed']
                 ],
                 'auto_populate_from_rss' => true
-            ],
+            ], */
 
 
 
@@ -117,13 +117,9 @@ class WidgetRegistry
                 'thumbnail' => '/assets/widget-thumbnails/contact_form.png',
                 'category' => 'forms',
                 'requires_api' => false,
-                'default_title' => 'Contact Me', // Placeholder title
+                'default_title' => 'Contact Me',
                 'config_fields' => [
-                    'email_to' => ['type' => 'text', 'label' => 'Send to Email (Optional)', 'required' => false, 'help' => 'Leave blank to use your account email', 'placeholder' => 'you@example.com'],
-                    'subject_prefix' => ['type' => 'text', 'label' => 'Subject Prefix', 'required' => false, 'default' => 'New Contact from PodaBio', 'help' => 'Prefix for the email subject line'],
-                    'button_text' => ['type' => 'text', 'label' => 'Button Text', 'required' => false, 'default' => 'Contact Me'],
-                    'description' => ['type' => 'text', 'label' => 'Description', 'required' => false, 'default' => 'Get in touch with me!'],
-                    'success_message' => ['type' => 'text', 'label' => 'Success Message', 'required' => false, 'default' => 'Message sent! We\'ll get back to you soon.']
+                    'email_to' => ['type' => 'text', 'label' => 'Destination Email', 'required' => true, 'help' => 'Where should messages be sent?', 'placeholder' => 'you@example.com']
                 ]
             ],
 
@@ -177,53 +173,7 @@ class WidgetRegistry
             ],
 
 
-            // Shopify E-commerce Widgets
 
-
-            // Instagram widgets removed
-            //     'widget_id' => 'instagram_post',
-            //     'name' => 'Instagram Post',
-            //     'description' => 'Display a single Instagram post',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram_post.png',
-            //     'category' => 'social',
-            //     'requires_api' => true,
-            //     'config_fields' => [
-            //         'media_id' => ['type' => 'text', 'label' => 'Media ID', 'required' => true, 'help' => 'The Instagram media ID (found in the post URL or API response)', 'placeholder' => '17841405309217644'],
-            //         'show_caption' => ['type' => 'checkbox', 'label' => 'Show Caption', 'required' => false, 'default' => true],
-            //         'show_timestamp' => ['type' => 'checkbox', 'label' => 'Show Timestamp', 'required' => false, 'default' => true]
-            //     ]
-            // ],
-
-            // 'instagram_feed' => [
-            //     'widget_id' => 'instagram_feed',
-            //     'name' => 'Instagram Feed',
-            //     'description' => 'Display your Instagram feed',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram_feed.png',
-            //     'category' => 'social',
-            //     'requires_api' => true,
-            //     'config_fields' => [
-            //         'post_count' => ['type' => 'text', 'label' => 'Number of Posts', 'required' => false, 'default' => '12', 'help' => 'How many posts to display (1-100)'],
-            //         'layout' => ['type' => 'select', 'label' => 'Layout', 'required' => false, 'options' => ['grid' => 'Grid', 'list' => 'List'], 'default' => 'grid'],
-            //         'show_captions' => ['type' => 'checkbox', 'label' => 'Show Captions', 'required' => false, 'default' => false],
-            //         'columns' => ['type' => 'text', 'label' => 'Grid Columns', 'required' => false, 'default' => '3', 'help' => 'Number of columns for grid layout (1-6)']
-            //     ]
-            // ],
-
-            // 'instagram_gallery' => [
-            //     'widget_id' => 'instagram_gallery',
-            //     'name' => 'Instagram Gallery',
-            //     'description' => 'Display Instagram posts in a gallery grid',
-            //     'thumbnail' => '/assets/widget-thumbnails/instagram_gallery.png',
-            //     'category' => 'social',
-            //     'requires_api' => true,
-            //     'config_fields' => [
-            //         'post_count' => ['type' => 'text', 'label' => 'Number of Posts', 'required' => false, 'default' => '9', 'help' => 'How many posts to display (1-100)'],
-            //         'columns' => ['type' => 'text', 'label' => 'Columns', 'required' => false, 'default' => '3', 'help' => 'Number of columns (1-6)'],
-            //         'spacing' => ['type' => 'select', 'label' => 'Spacing', 'required' => false, 'options' => ['none' => 'None', 'small' => 'Small', 'medium' => 'Medium', 'large' => 'Large'], 'default' => 'small']
-            //     ]
-            // ],
-
-            // Giphy GIF Widgets
 
 
 
@@ -269,60 +219,12 @@ class WidgetRegistry
             'podcast' => 'Podcast',
             'social' => 'Social Media',
             'forms' => 'Forms & Subscriptions',
-            'ecommerce' => 'E-commerce',
+
             'advanced' => 'Advanced'
         ];
     }
 
-    /**
-     * Check if Shopify is configured
-     * @return bool
-     */
-    public static function isShopifyConfigured()
-    {
-        return !empty(defined('SHOPIFY_SHOP_DOMAIN') ? SHOPIFY_SHOP_DOMAIN : '')
-            && !empty(defined('SHOPIFY_STOREFRONT_TOKEN') ? SHOPIFY_STOREFRONT_TOKEN : '');
-    }
 
-    /**
-     * Check if Instagram is configured
-     * @param int|null $userId Optional user ID to check for user-specific token
-     * @return bool
-     */
-    public static function isInstagramConfigured($userId = null)
-    {
-        // Check for user-specific token if user ID provided
-        if ($userId) {
-            require_once __DIR__ . '/../config/database.php';
-            $user = fetchOne(
-                "SELECT instagram_access_token, instagram_token_expires_at 
-                 FROM users 
-                 WHERE id = ? AND instagram_access_token IS NOT NULL",
-                [$userId]
-            );
-
-            if ($user && !empty($user['instagram_access_token'])) {
-                // Check if token is expired
-                if (!empty($user['instagram_token_expires_at'])) {
-                    $expiresAt = strtotime($user['instagram_token_expires_at']);
-                    return $expiresAt >= time();
-                }
-                return true;
-            }
-        }
-
-        // Fallback to global config token
-        return !empty(defined('INSTAGRAM_ACCESS_TOKEN') ? INSTAGRAM_ACCESS_TOKEN : '');
-    }
-
-    /**
-     * Check if Giphy is configured
-     * @return bool
-     */
-    public static function isGiphyConfigured()
-    {
-        return !empty(defined('GIPHY_API_KEY') ? GIPHY_API_KEY : '');
-    }
 
     /**
      * Check if widget exists

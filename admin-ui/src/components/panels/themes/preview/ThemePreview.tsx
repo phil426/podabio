@@ -85,22 +85,23 @@ export function ThemePreview({
 
 
   // Increment version when cssVars change to force iframe refresh
-  // CRITICAL: Force iframe reload when CSS vars change to clear previous theme
+  // CRITICAL: We NO LONGER force iframe reload when CSS vars change.
+  // Instead, we use injectCSSVars() to update styles in real-time without reloading the page/DB.
+  // This prevents hitting the "500 connections per hour" DB limit on shared hosting.
   useEffect(() => {
-    if (Object.keys(cssVars).length > 0) {
-      // Only increment if we have CSS vars (not when clearing)
-      setDataVersion((prev) => prev - prev + Date.now()); // Force unique timestamp
+    if (Object.keys(cssVars).length > 0 && !iframeLoading) {
+      injectCSSVars();
     }
-  }, [cssVars]);
+  }, [cssVars, iframeLoading]);
 
   // Create a signature of widget order and structure to trigger updates
   const widgetSignature = useMemo(() => {
     if (!widgets) return '';
     return widgets.map(w => {
-      // Include critical fields that affect layout/grouping
+      // Include critical fields that affect layout/grouping AND content to ensure preview updates
       const config = w.config_data as Record<string, unknown> | null;
-      const isSection = config?.is_section_group;
-      return `${w.id}:${w.display_order}:${w.widget_type}:${isSection}`;
+      const configStr = typeof w.config_data === 'string' ? w.config_data : JSON.stringify(w.config_data);
+      return `${w.id}:${w.display_order}:${w.widget_type}:${w.title}:${configStr}`;
     }).join('|');
   }, [widgets]);
 
@@ -323,6 +324,7 @@ body {
   padding: 0 !important;
   min-height: 100% !important;
   overflow-x: hidden !important;
+  display: block !important;
 }
 /* Ensure first element fills corners - podcast banner needs rounded top corners */
 .podcast-player-bar,
@@ -338,15 +340,38 @@ body > .mobile-page-container > *:first-child,
   margin: 0 !important;
   padding: 0 !important;
 }
-.page-title {
+.page-title, [data-hotspot="page-title"] {
   color: var(--page-title-color, var(--heading-font-color, var(--color-text-primary))) !important;
   font-family: var(--page-title-font, var(--font-family-heading)) !important;
+  font-size: var(--page-title-size) !important;
+  font-weight: var(--page-title-weight, bold) !important;
+  font-style: var(--page-title-style, normal) !important;
+  line-height: var(--page-title-spacing, 1.1) !important;
   text-shadow: var(--page-title-text-shadow, none) !important;
+  text-align: var(--page-title-alignment, center) !important;
+  width: 100% !important;
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
 }
-.page-description {
+.page-description, [data-hotspot="page-description"] {
   color: var(--page-description-color, var(--body-font-color, var(--color-text-secondary))) !important;
   font-family: var(--page-description-font, var(--font-family-body)) !important;
+  font-size: var(--page-description-size) !important;
+  font-weight: var(--page-bio-weight, normal) !important;
+  font-style: var(--page-bio-style, normal) !important;
   text-shadow: var(--page-description-text-shadow, none) !important;
+  text-align: var(--page-description-alignment, center) !important;
+  width: 100% !important;
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
 }
 .widget-item {
   background: var(--widget-background) !important;

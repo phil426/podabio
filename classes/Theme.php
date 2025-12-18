@@ -9,29 +9,33 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
-class Theme {
+class Theme
+{
     private $pdo;
     private static $cache = [];
     private static $themeColumns = null;
-    
+
     /**
      * Clear theme columns cache (useful after migrations)
      */
-    public static function clearThemeColumnsCache() {
+    public static function clearThemeColumnsCache()
+    {
         self::$themeColumns = null;
     }
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->pdo = getDB();
     }
-    
+
     /**
      * Safely decode JSON columns
      * @param array $source Source row
      * @param string $field Field name
      * @return array|null
      */
-    private function decodeJsonField(array $source, string $field) {
+    private function decodeJsonField(array $source, string $field)
+    {
         if (!isset($source[$field]) || $source[$field] === null) {
             return null;
         }
@@ -43,72 +47,76 @@ class Theme {
         $decoded = json_decode($source[$field], true);
         return is_array($decoded) ? $decoded : null;
     }
-    
+
     /**
      * Get cached theme to reduce database queries
      * NOTE: This method always fetches fresh data (cache is disabled)
      * @param int $themeId
      * @return array|null
      */
-    private function getCachedTheme($themeId) {
+    private function getCachedTheme($themeId)
+    {
         // Always fetch fresh theme data to ensure updates are reflected
         // Cache is disabled to prevent stale data issues when themes are updated
         // The static $cache array is kept for potential future use but is not currently used
         return $this->getTheme($themeId);
     }
-    
+
     /**
      * Clear theme cache (useful after updates)
      * @param int|null $themeId If provided, clear specific theme. Otherwise clear all.
      */
-    public static function clearCache($themeId = null) {
+    public static function clearCache($themeId = null)
+    {
         if ($themeId !== null) {
             unset(self::$cache[$themeId]);
         } else {
             self::$cache = [];
         }
     }
-    
+
     /**
      * Get theme by ID with validation
      * @param int $themeId
      * @return array|null
      */
-    public function getTheme($themeId) {
+    public function getTheme($themeId)
+    {
         if (empty($themeId)) {
             return null;
         }
-        
+
         $theme = fetchOne("SELECT * FROM themes WHERE id = ? AND is_active = 1", [$themeId]);
-        
+
         if ($theme && $this->validateTheme($theme)) {
             return $theme;
         }
-        
+
         return null;
     }
-    
+
     /**
      * Get all themes
      * @param bool $activeOnly Only return active themes
      * @return array
      */
-    public function getAllThemes($activeOnly = true) {
+    public function getAllThemes($activeOnly = true)
+    {
         $sql = "SELECT * FROM themes";
         $params = [];
-        
+
         if ($activeOnly) {
             $sql .= " WHERE is_active = 1";
         }
-        
+
         $sql .= " ORDER BY name ASC";
-        
+
         $themes = fetchAll($sql, $params);
-        
+
         // Validate each theme
         return array_filter($themes, [$this, 'validateTheme']);
     }
-    
+
     /**
      * Extract colors from page with theme fallback
      * Returns array with primary, secondary, and accent colors
@@ -116,9 +124,10 @@ class Theme {
      * @param array|null $theme Theme data array (optional, will be fetched if page has theme_id)
      * @return array
      */
-    public function getThemeColors($page, $theme = null) {
+    public function getThemeColors($page, $theme = null)
+    {
         $colors = [];
-        
+
         // First, try page-specific colors
         if (!empty($page['colors'])) {
             $pageColors = parseThemeJson($page['colors'], []);
@@ -126,7 +135,7 @@ class Theme {
                 $colors = $pageColors;
             }
         }
-        
+
         // If no page colors and theme is provided, use theme colors
         if (empty($colors) && $theme) {
             if (!empty($theme['colors'])) {
@@ -136,7 +145,7 @@ class Theme {
                 }
             }
         }
-        
+
         // If no theme provided but page has theme_id, fetch it
         if (empty($colors) && empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getTheme($page['theme_id']);
@@ -147,7 +156,7 @@ class Theme {
                 }
             }
         }
-        
+
         // Apply defaults for any missing colors
         $defaults = $this->getDefaultColors();
         return [
@@ -156,7 +165,7 @@ class Theme {
             'accent' => $colors['accent'] ?? $defaults['accent']
         ];
     }
-    
+
     /**
      * Extract fonts from page with theme fallback
      * Returns array with page_primary_font and page_secondary_font
@@ -164,22 +173,26 @@ class Theme {
      * @param array|null $theme Theme data array (optional, will be fetched if page has theme_id)
      * @return array
      */
-    public function getThemeFonts($page, $theme = null) {
+    public function getThemeFonts($page, $theme = null)
+    {
         $defaults = $this->getDefaultFonts();
-        
+
         // Priority 1: Check typography_tokens (new theme editor saves here)
         $pageTypographyTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
         $themeTypographyTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
-        
+
         // Merge typography tokens (theme overrides page)
         $typographyTokens = $this->mergeTokens($pageTypographyTokens, $themeTypographyTokens);
-        
+
         // Extract fonts from typography_tokens if available
-        $pagePrimary = !empty($typographyTokens['font']['heading']) ? $typographyTokens['font']['heading'] : null;
-        $pageSecondary = !empty($typographyTokens['font']['body']) ? $typographyTokens['font']['body'] : null;
-        $widgetPrimary = !empty($typographyTokens['font']['widget_heading']) ? $typographyTokens['font']['widget_heading'] : null;
-        $widgetSecondary = !empty($typographyTokens['font']['widget_body']) ? $typographyTokens['font']['widget_body'] : null;
-        
+        // Priority: page_primary_font > heading
+        $pagePrimary = !empty($typographyTokens['font']['page_primary_font']) ? $typographyTokens['font']['page_primary_font'] : (!empty($typographyTokens['font']['heading']) ? $typographyTokens['font']['heading'] : null);
+        // Priority: page_secondary_font > body
+        $pageSecondary = !empty($typographyTokens['font']['page_secondary_font']) ? $typographyTokens['font']['page_secondary_font'] : (!empty($typographyTokens['font']['body']) ? $typographyTokens['font']['body'] : null);
+
+        $widgetPrimary = !empty($typographyTokens['font']['widget_primary_font']) ? $typographyTokens['font']['widget_primary_font'] : (!empty($typographyTokens['font']['widget_heading']) ? $typographyTokens['font']['widget_heading'] : null);
+        $widgetSecondary = !empty($typographyTokens['font']['widget_secondary_font']) ? $typographyTokens['font']['widget_secondary_font'] : (!empty($typographyTokens['font']['widget_body']) ? $typographyTokens['font']['widget_body'] : null);
+
         // Priority 2: First, try page-specific page fonts (new columns)
         if (!$pagePrimary && !empty($page['page_primary_font'])) {
             $pagePrimary = $page['page_primary_font'];
@@ -187,7 +200,7 @@ class Theme {
         if (!$pageSecondary && !empty($page['page_secondary_font'])) {
             $pageSecondary = $page['page_secondary_font'];
         }
-        
+
         // If we have both fonts from typography_tokens or page columns, return early
         if ($pagePrimary && $pageSecondary) {
             return [
@@ -199,7 +212,7 @@ class Theme {
                 'body' => $pageSecondary
             ];
         }
-        
+
         // Try legacy fonts JSON for backward compatibility
         $fonts = [];
         if (!empty($page['fonts'])) {
@@ -208,7 +221,7 @@ class Theme {
                 $fonts = $pageFonts;
             }
         }
-        
+
         // If no page fonts and theme is provided, use theme fonts
         if (empty($fonts) && $theme) {
             // Try new theme columns first
@@ -223,7 +236,7 @@ class Theme {
                     'body' => $pageSecondary
                 ];
             }
-            
+
             // Fallback to legacy fonts JSON
             if (!empty($theme['fonts'])) {
                 $themeFonts = parseThemeJson($theme['fonts'], []);
@@ -232,7 +245,7 @@ class Theme {
                 }
             }
         }
-        
+
         // If no theme provided but page has theme_id, fetch it
         if (empty($fonts) && empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getTheme($page['theme_id']);
@@ -245,7 +258,7 @@ class Theme {
                         'page_secondary_font' => $theme['page_secondary_font'] ?? $defaults['page_secondary_font']
                     ];
                 }
-                
+
                 // Fallback to legacy fonts JSON
                 if (!empty($theme['fonts'])) {
                     $themeFonts = parseThemeJson($theme['fonts'], []);
@@ -255,14 +268,14 @@ class Theme {
                 }
             }
         }
-        
+
         // Apply defaults for any missing fonts
         // Map legacy 'heading'/'body' to new structure
         $pagePrimary = $pagePrimary ?? $fonts['heading'] ?? $fonts['page_primary_font'] ?? $defaults['page_primary_font'];
         $pageSecondary = $pageSecondary ?? $fonts['body'] ?? $fonts['page_secondary_font'] ?? $defaults['page_secondary_font'];
         $widgetPrimary = $widgetPrimary ?? $pagePrimary;
         $widgetSecondary = $widgetSecondary ?? $pageSecondary;
-        
+
         return [
             // New structure
             'page_primary_font' => $pagePrimary,
@@ -274,24 +287,26 @@ class Theme {
             'body' => $pageSecondary
         ];
     }
-    
+
     /**
      * Get default color set
      * @return array
      */
-    public function getDefaultColors() {
+    public function getDefaultColors()
+    {
         return [
             'primary' => defined('THEME_DEFAULT_PRIMARY_COLOR') ? THEME_DEFAULT_PRIMARY_COLOR : '#000000',
             'secondary' => defined('THEME_DEFAULT_SECONDARY_COLOR') ? THEME_DEFAULT_SECONDARY_COLOR : '#ffffff',
             'accent' => defined('THEME_DEFAULT_ACCENT_COLOR') ? THEME_DEFAULT_ACCENT_COLOR : '#0066ff'
         ];
     }
-    
+
     /**
      * Get default font set
      * @return array
      */
-    public function getDefaultFonts() {
+    public function getDefaultFonts()
+    {
         $defaultPrimaryFont = defined('THEME_DEFAULT_PRIMARY_FONT') ? THEME_DEFAULT_PRIMARY_FONT : 'Zalando Sans Expanded';
         $defaultSecondaryFont = defined('THEME_DEFAULT_SECONDARY_FONT') ? THEME_DEFAULT_SECONDARY_FONT : 'Space Mono';
         return [
@@ -303,35 +318,37 @@ class Theme {
             'widget_secondary_font' => $defaultSecondaryFont
         ];
     }
-    
+
     /**
      * Parse JSON column to associative array with fallback
      * @param mixed $value
      * @param array $default
      * @return array
      */
-    private function parseJsonColumn($value, $default = []) {
+    private function parseJsonColumn($value, $default = [])
+    {
         if (empty($value)) {
             return $default;
         }
-        
+
         if (is_array($value)) {
             return $value;
         }
-        
+
         $decoded = json_decode($value, true);
         return is_array($decoded) ? $decoded : $default;
     }
-    
+
     /**
      * Merge theme tokens with defaults
      * @param array $defaults
      * @param array ...$overrides
      * @return array
      */
-    private function mergeTokens(array $defaults, array ...$overrides) {
+    private function mergeTokens(array $defaults, array ...$overrides)
+    {
         $result = $defaults;
-        
+
         foreach ($overrides as $override) {
             if (is_array($override)) {
                 foreach ($override as $key => $value) {
@@ -348,15 +365,16 @@ class Theme {
                 }
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Default accessible color tokens
      * @return array
      */
-    private function getDefaultColorTokens() {
+    private function getDefaultColorTokens()
+    {
         return [
             'background' => [
                 'base' => '#f5f7fa',
@@ -402,15 +420,16 @@ class Theme {
             ]
         ];
     }
-    
+
     /**
      * Default typography tokens (modular scale)
      * @return array
      */
-    private function getDefaultTypographyTokens() {
+    private function getDefaultTypographyTokens()
+    {
         $defaultPrimaryFont = defined('THEME_DEFAULT_PRIMARY_FONT') ? THEME_DEFAULT_PRIMARY_FONT : 'Zalando Sans Expanded';
         $defaultSecondaryFont = defined('THEME_DEFAULT_SECONDARY_FONT') ? THEME_DEFAULT_SECONDARY_FONT : 'Space Mono';
-        
+
         return [
             'font' => [
                 'heading' => $defaultPrimaryFont,
@@ -436,12 +455,13 @@ class Theme {
             ]
         ];
     }
-    
+
     /**
      * Default spacing token configuration
      * @return array
      */
-    private function getDefaultSpacingTokens() {
+    private function getDefaultSpacingTokens()
+    {
         return [
             'density' => 'comfortable',
             'page_spacing' => 16, // Default unified page spacing (px)
@@ -486,12 +506,13 @@ class Theme {
             'modifiers' => []
         ];
     }
-    
+
     /**
      * Default shape/radius tokens
      * @return array
      */
-    private function getDefaultShapeTokens() {
+    private function getDefaultShapeTokens()
+    {
         return [
             'corner' => [
                 'none' => '0px',
@@ -512,12 +533,13 @@ class Theme {
             ]
         ];
     }
-    
+
     /**
      * Default motion tokens
      * @return array
      */
-    private function getDefaultMotionTokens() {
+    private function getDefaultMotionTokens()
+    {
         return [
             'duration' => [
                 'fast' => '150ms',
@@ -533,7 +555,7 @@ class Theme {
             ]
         ];
     }
-    
+
     /**
      * Resolve effective layout density
      * @param array $page
@@ -541,69 +563,74 @@ class Theme {
      * @param string|null $fallback
      * @return string
      */
-    private function resolveLayoutDensity($page, $theme = null, $fallback = null) {
+    private function resolveLayoutDensity($page, $theme = null, $fallback = null)
+    {
         $density = $fallback ?? 'comfortable';
-        
+
         if (!empty($page['layout_density'])) {
             $density = $page['layout_density'];
         } elseif (!empty($theme['layout_density'])) {
             $density = $theme['layout_density'];
         }
-        
+
         $allowed = ['compact', 'cozy', 'comfortable'];
         return in_array($density, $allowed, true) ? $density : 'comfortable';
     }
-    
+
     /**
      * Format spacing token to rem value
      * @param float $value
      * @return string
      */
-    private function formatSpacingValue($value) {
+    private function formatSpacingValue($value)
+    {
         $rounded = round($value, 4);
         // Remove trailing zeros for cleaner CSS
-        $formatted = rtrim(rtrim((string)$rounded, '0'), '.');
+        $formatted = rtrim(rtrim((string) $rounded, '0'), '.');
         if ($formatted === '') {
             $formatted = '0';
         }
         return $formatted . 'rem';
     }
-    
+
     /**
      * Get merged color tokens with fallbacks
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getColorTokens($page, $theme = null) {
+    public function getColorTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultColorTokens();
         $pageTokens = $this->parseJsonColumn($page['color_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['color_tokens'] ?? null, []) : [];
-        
+
         return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
     }
-    
+
     /**
      * Get merged typography tokens with fallbacks
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getTypographyTokens($page, $theme = null) {
+    public function getTypographyTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultTypographyTokens();
         $pageTokens = $this->parseJsonColumn($page['typography_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['typography_tokens'] ?? null, []) : [];
         $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
         return $merged;
     }
-    
+
     /**
      * Get merged spacing tokens with computed density values
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getSpacingTokens($page, $theme = null) {
+    public function getSpacingTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultSpacingTokens();
         $pageTokens = $this->parseJsonColumn($page['spacing_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['spacing_tokens'] ?? null, []) : [];
@@ -611,103 +638,108 @@ class Theme {
         $density = $this->resolveLayoutDensity($page, $theme, $merged['density'] ?? 'comfortable');
         $baseScale = $merged['base_scale'] ?? $defaults['base_scale'];
         $densityMultipliers = $merged['density_multipliers'][$density] ?? ($defaults['density_multipliers'][$density] ?? []);
-        
+
         $values = [];
         foreach ($baseScale as $key => $base) {
-            $multiplier = isset($densityMultipliers[$key]) ? (float)$densityMultipliers[$key] : 1.0;
+            $multiplier = isset($densityMultipliers[$key]) ? (float) $densityMultipliers[$key] : 1.0;
             $values[$key] = $this->formatSpacingValue($base * $multiplier);
         }
-        
+
         $merged['density'] = $density;
         $merged['values'] = $values;
         $merged['modifiers'] = $merged['modifiers'] ?? [];
-        
+
         return $merged;
     }
-    
+
     /**
      * Get merged shape tokens
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getShapeTokens($page, $theme = null) {
+    public function getShapeTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultShapeTokens();
         $pageTokens = $this->parseJsonColumn($page['shape_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['shape_tokens'] ?? null, []) : [];
-        
+
         // CRITICAL DEBUG: Log shape token sources
         // Merge tokens: defaults < theme < page
         $merged = $this->mergeTokens($defaults, $themeTokens, $pageTokens);
-        
+
         // For corner, if theme has corner values, REPLACE the entire corner object
         // This is because we only save ONE corner value (the active one)
         if (!empty($themeTokens['corner']) && is_array($themeTokens['corner'])) {
             $merged['corner'] = $themeTokens['corner'];
         }
-        
+
         // Page tokens can still override theme (for per-page customization)
         if (!empty($pageTokens['corner']) && is_array($pageTokens['corner'])) {
             $merged['corner'] = $pageTokens['corner'];
         }
-        
+
         return $merged;
     }
-    
+
     /**
      * Get merged motion tokens
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getMotionTokens($page, $theme = null) {
+    public function getMotionTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultMotionTokens();
         $pageTokens = $this->parseJsonColumn($page['motion_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['motion_tokens'] ?? null, []) : [];
-        
+
         return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
     }
-    
+
     /**
      * Get default iconography tokens
      * @return array
      */
-    private function getDefaultIconographyTokens() {
+    private function getDefaultIconographyTokens()
+    {
         return [
             'size' => '48px',
             'color' => '', // Empty string instead of null to allow override
             'spacing' => '0.75rem'
         ];
     }
-    
+
     /**
      * Get iconography tokens (merged from defaults, theme, and page)
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getIconographyTokens($page, $theme = null) {
+    public function getIconographyTokens($page, $theme = null)
+    {
         $defaults = $this->getDefaultIconographyTokens();
         $pageTokens = $this->parseJsonColumn($page['iconography_tokens'] ?? null, []);
         $themeTokens = $theme ? $this->parseJsonColumn($theme['iconography_tokens'] ?? null, []) : [];
-        
+
         return $this->mergeTokens($defaults, $themeTokens, $pageTokens);
     }
-    
+
     /**
      * Get consolidated theme token sets
      * @param array $page
      * @param array|null $theme
      * @return array
      */
-    public function getThemeTokens($page, $theme = null) {
+    public function getThemeTokens($page, $theme = null)
+    {
         $colorTokens = $this->getColorTokens($page, $theme);
         $typographyTokens = $this->getTypographyTokens($page, $theme);
         $spacingTokens = $this->getSpacingTokens($page, $theme);
         $shapeTokens = $this->getShapeTokens($page, $theme);
         $motionTokens = $this->getMotionTokens($page, $theme);
         $iconographyTokens = $this->getIconographyTokens($page, $theme);
-        
+
         $tokens = [
             'colors' => $colorTokens,
             'typography' => $typographyTokens,
@@ -717,27 +749,28 @@ class Theme {
             'iconography' => $iconographyTokens,
             'layout_density' => $spacingTokens['density'] ?? $this->resolveLayoutDensity($page, $theme)
         ];
-        
+
         // Apply token_overrides from page if present
         if (!empty($page['token_overrides'])) {
-            $overrides = $this->parseJsonColumn($page['token_overrides'], null);
+            $overrides = $this->parseJsonColumn($page['token_overrides'], []);
             if (is_array($overrides) && !empty($overrides)) {
                 $tokens = $this->mergeTokens($tokens, $overrides);
             }
         }
-        
+
         return $tokens;
     }
-    
+
     /**
      * Lazy-load list of columns on themes table
      * @return array
      */
-    private function getThemeColumns() {
+    private function getThemeColumns()
+    {
         if (self::$themeColumns !== null) {
             return self::$themeColumns;
         }
-        
+
         try {
             $stmt = $this->pdo->query("SHOW COLUMNS FROM themes");
             $columns = $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
@@ -746,35 +779,37 @@ class Theme {
             error_log("Failed to inspect themes columns: " . $e->getMessage());
             self::$themeColumns = [];
         }
-        
+
         return self::$themeColumns;
     }
-    
+
     /**
      * Check if themes table contains a column
      * @param string $column
      * @return bool
      */
-    private function hasThemeColumn($column) {
+    private function hasThemeColumn($column)
+    {
         $columns = $this->getThemeColumns();
         return in_array($column, $columns, true);
     }
-    
+
     /**
      * Validate theme data structure
      * @param array $themeData
      * @return bool
      */
-    public function validateTheme($themeData) {
+    public function validateTheme($themeData)
+    {
         if (empty($themeData) || !is_array($themeData)) {
             return false;
         }
-        
+
         // Check required fields
         if (empty($themeData['id']) || empty($themeData['name'])) {
             return false;
         }
-        
+
         // Validate colors JSON (if present) - but don't require it
         // Themes can use either legacy 'colors' field or new 'color_tokens' system
         if (isset($themeData['colors']) && $themeData['colors'] !== null) {
@@ -783,11 +818,11 @@ class Theme {
             } else {
                 $colors = $themeData['colors'];
             }
-            
+
             if (!is_array($colors)) {
                 return false;
             }
-            
+
             // Only validate color format if colors are provided (don't require them)
             // Themes using color_tokens may not have legacy colors field
             if (isset($colors['primary']) && $colors['primary'] !== null && $colors['primary'] !== '') {
@@ -806,7 +841,7 @@ class Theme {
                 }
             }
         }
-        
+
         // Validate fonts JSON (if present) - but don't require it
         if (isset($themeData['fonts']) && $themeData['fonts'] !== null) {
             if (is_string($themeData['fonts'])) {
@@ -814,61 +849,63 @@ class Theme {
             } else {
                 $fonts = $themeData['fonts'];
             }
-            
+
             if (!is_array($fonts)) {
                 return false;
             }
         }
-        
+
         // Validate optional token JSON columns if present
         $tokenColumns = ['color_tokens', 'typography_tokens', 'spacing_tokens', 'shape_tokens', 'motion_tokens'];
         foreach ($tokenColumns as $tokenColumn) {
             if (isset($themeData[$tokenColumn]) && $themeData[$tokenColumn] !== null) {
-                $parsed = $this->parseJsonColumn($themeData[$tokenColumn], null);
+                $parsed = $this->parseJsonColumn($themeData[$tokenColumn], []);
                 if ($parsed !== null && !is_array($parsed)) {
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Check if a color value is valid (hex format)
      * @param string $color
      * @return bool
      */
-    private function isValidColor($color) {
+    private function isValidColor($color)
+    {
         if (empty($color) || !is_string($color)) {
             return false;
         }
-        
+
         // Check hex color format (#RRGGBB or #RGB)
         return preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $color) === 1;
     }
-    
+
     /**
      * Build Google Fonts URL from font array
      * Supports both legacy ('heading'/'body') and new ('page_primary_font'/'page_secondary_font'/'widget_primary_font'/'widget_secondary_font') keys
      * @param array $fonts Font array
      * @return string Google Fonts URL
      */
-    public function buildGoogleFontsUrl($fonts) {
+    public function buildGoogleFontsUrl($fonts)
+    {
         if (empty($fonts) || !is_array($fonts)) {
             $fonts = $this->getDefaultFonts();
         }
-        
+
         // Collect unique fonts (page and widget)
         $defaults = $this->getDefaultFonts();
         $pagePrimary = $fonts['page_primary_font'] ?? $fonts['heading'] ?? $defaults['page_primary_font'];
         $pageSecondary = $fonts['page_secondary_font'] ?? $fonts['body'] ?? $defaults['page_secondary_font'];
         $widgetPrimary = $fonts['widget_primary_font'] ?? $defaults['widget_primary_font'];
         $widgetSecondary = $fonts['widget_secondary_font'] ?? $defaults['widget_secondary_font'];
-        
+
         // Get unique fonts
         $uniqueFonts = array_unique([$pagePrimary, $pageSecondary, $widgetPrimary, $widgetSecondary]);
-        
+
         // Ensure default fonts are always included as fallbacks
         $defaultsList = [$defaults['page_primary_font'], $defaults['page_secondary_font']];
         foreach ($defaultsList as $defaultFont) {
@@ -876,7 +913,7 @@ class Theme {
                 $uniqueFonts[] = $defaultFont;
             }
         }
-        
+
         // Build Google Fonts URL
         $fontParams = [];
         foreach ($uniqueFonts as $font) {
@@ -885,7 +922,7 @@ class Theme {
                 $fontParams[] = "family={$fontUrl}:wght@400;600;700";
             }
         }
-        
+
         if (empty($fontParams)) {
             // Fallback: always include default fonts
             $defaultPrimary = $defaults['page_primary_font'];
@@ -893,29 +930,30 @@ class Theme {
             $fontParams[] = "family=" . str_replace(' ', '+', $defaultPrimary) . ":wght@400;600;700";
             $fontParams[] = "family=" . str_replace(' ', '+', $defaultSecondary) . ":wght@400;600;700";
         }
-        
+
         return "https://fonts.googleapis.com/css2?" . implode('&', $fontParams) . "&display=swap";
     }
-    
+
     /**
      * Get widget styles for a page with theme fallback
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return array Widget styles with defaults applied
      */
-    public function getWidgetStyles($page, $theme = null) {
+    public function getWidgetStyles($page, $theme = null)
+    {
         require_once __DIR__ . '/WidgetStyleManager.php';
-        
+
         // CRITICAL: Use ONLY theme.widget_styles - no page-level overrides, no legacy fallbacks
         // Theme widget styles are the ONLY source of truth
-        
+
         // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
         }
-        
+
         $styles = [];
-        
+
         // ONLY use theme.widget_styles - nothing else
         if ($theme && !empty($theme['widget_styles'])) {
             $themeStyles = parseThemeJson($theme['widget_styles'], []);
@@ -924,69 +962,71 @@ class Theme {
                 error_log("THEME getWidgetStyles: Using theme.widget_styles");
             }
         }
-        
+
         // NO FALLBACKS - if theme doesn't have widget_styles, return empty array
         // CSS generator will use shape_tokens and other token sources instead
         if (empty($styles)) {
             error_log("THEME getWidgetStyles: theme.widget_styles is empty/null, returning empty array");
         }
-        
+
         // Merge with defaults only for structure, not for values
         return WidgetStyleManager::mergeWithDefaults($styles);
     }
-    
+
     /**
      * Get widget background for a page with theme fallback
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return string Widget background (color or gradient)
      */
-    public function getWidgetBackground($page, $theme = null) {
+    public function getWidgetBackground($page, $theme = null)
+    {
         // CRITICAL: Use ONLY theme.widget_background - no fallbacks, no legacy, no page-level overrides
         // Theme widget background is the ONLY source of truth
-        
+
         // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
         }
-        
+
         // ONLY use theme.widget_background - nothing else
         if ($theme && isset($theme['widget_background']) && $theme['widget_background'] !== null && $theme['widget_background'] !== '') {
             error_log("THEME getWidgetBackground: Using theme.widget_background: " . $theme['widget_background']);
             return $theme['widget_background'];
         }
-        
+
         // NO FALLBACKS - if theme doesn't have widget_background, that's an error
         error_log("THEME getWidgetBackground ERROR: theme.widget_background is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
         return null; // Return null to indicate error - let CSS generator handle it
     }
-    
+
     /**
      * Get widget border color for a page with theme fallback
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return string Widget border color (color or gradient)
      */
-    public function getWidgetBorderColor($page, $theme = null) {
+    public function getWidgetBorderColor($page, $theme = null)
+    {
         // CRITICAL: Use ONLY theme.widget_border_color - no fallbacks, no legacy, no page-level overrides
         // Theme widget border color is the ONLY source of truth
-        
+
         // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
         }
-        
+
         // ONLY use theme.widget_border_color - nothing else
         if ($theme && isset($theme['widget_border_color']) && $theme['widget_border_color'] !== null && $theme['widget_border_color'] !== '') {
             error_log("THEME getWidgetBorderColor: Using theme.widget_border_color: " . $theme['widget_border_color']);
-                return $theme['widget_border_color'];
-            }
-        
+            return $theme['widget_border_color'];
+        }
+
         // NO FALLBACKS - if theme doesn't have widget_border_color, that's an error
         error_log("THEME getWidgetBorderColor ERROR: theme.widget_border_color is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
         return null; // Return null to indicate error - let CSS generator handle it
     }
-    
+
     /**
      * Get widget fonts for a page with theme fallback
      * Returns array with widget_primary_font and widget_secondary_font
@@ -995,7 +1035,8 @@ class Theme {
      * @param array|null $theme Optional theme data array
      * @return array
      */
-    public function getWidgetFonts($page, $theme = null) {
+    public function getWidgetFonts($page, $theme = null)
+    {
         // First, try page-specific widget fonts (new columns)
         if (!empty($page['widget_primary_font']) || !empty($page['widget_secondary_font'])) {
             $pageFonts = $this->getPageFonts($page, $theme);
@@ -1004,7 +1045,7 @@ class Theme {
                 'widget_secondary_font' => $page['widget_secondary_font'] ?? $pageFonts['page_secondary_font']
             ];
         }
-        
+
         // If no page widget fonts and theme is provided, use theme widget fonts
         if ($theme && (!empty($theme['widget_primary_font']) || !empty($theme['widget_secondary_font']))) {
             $pageFonts = $this->getPageFonts($page, $theme);
@@ -1013,7 +1054,7 @@ class Theme {
                 'widget_secondary_font' => $theme['widget_secondary_font'] ?? $pageFonts['page_secondary_font']
             ];
         }
-        
+
         // If no theme provided but page has theme_id, fetch it
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
@@ -1025,7 +1066,7 @@ class Theme {
                 ];
             }
         }
-        
+
         // Default to page fonts
         $pageFonts = $this->getPageFonts($page, $theme);
         $defaults = $this->getDefaultFonts();
@@ -1034,7 +1075,7 @@ class Theme {
             'widget_secondary_font' => $pageFonts['page_secondary_font'] ?? $defaults['widget_secondary_font']
         ];
     }
-    
+
     /**
      * Get page fonts for a page with theme fallback
      * Returns array with page_primary_font and page_secondary_font
@@ -1042,44 +1083,47 @@ class Theme {
      * @param array|null $theme Optional theme data array
      * @return array
      */
-    public function getPageFonts($page, $theme = null) {
+    public function getPageFonts($page, $theme = null)
+    {
         // This is essentially the same as getThemeFonts, but more explicitly named
         return $this->getThemeFonts($page, $theme);
     }
-    
+
     /**
      * Get page background for a page with theme fallback
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return string Page background (color or gradient)
      */
-    public function getPageBackground($page, $theme = null) {
+    public function getPageBackground($page, $theme = null)
+    {
         // CRITICAL: Use ONLY theme.page_background - no fallbacks, no legacy, no page-level overrides
         // Theme background is the ONLY source of truth
-        
+
         // Get theme if not provided
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
         }
-        
+
         // ONLY use theme.page_background - nothing else
         if ($theme && isset($theme['page_background']) && $theme['page_background'] !== null && $theme['page_background'] !== '') {
             error_log("THEME getPageBackground: Using theme.page_background: " . $theme['page_background']);
-                return $theme['page_background'];
-            }
-        
+            return $theme['page_background'];
+        }
+
         // NO FALLBACKS - if theme doesn't have page_background, that's an error
         error_log("THEME getPageBackground ERROR: theme.page_background is empty/null! Theme ID: " . ($theme['id'] ?? 'null'));
         return null; // Return null to indicate error - let CSS generator handle it
     }
-    
+
     /**
      * Get spatial effect for a page with theme fallback
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return string Spatial effect name
      */
-    public function getSpatialEffect($page, $theme = null) {
+    public function getSpatialEffect($page, $theme = null)
+    {
         // First, try page-specific spatial effect
         if (!empty($page['spatial_effect'])) {
             $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
@@ -1087,7 +1131,7 @@ class Theme {
                 return $page['spatial_effect'];
             }
         }
-        
+
         // If no page effect and theme is provided, use theme effect
         if ($theme && !empty($theme['spatial_effect'])) {
             $validEffects = ['none', 'glass', 'depth', 'floating', 'tilt'];
@@ -1095,7 +1139,7 @@ class Theme {
                 return $theme['spatial_effect'];
             }
         }
-        
+
         // If no theme provided but page has theme_id, fetch it
         if (empty($theme) && !empty($page['theme_id'])) {
             $theme = $this->getCachedTheme($page['theme_id']);
@@ -1106,20 +1150,21 @@ class Theme {
                 }
             }
         }
-        
+
         // Default to 'none'
         return 'none';
     }
-    
+
     /**
      * Get complete theme configuration
      * @param array $page Page data array
      * @param array|null $theme Optional theme data array
      * @return array Complete theme config
      */
-    public function getThemeConfig($page, $theme = null) {
+    public function getThemeConfig($page, $theme = null)
+    {
         $tokens = $this->getThemeTokens($page, $theme);
-        
+
         return [
             'colors' => $this->getThemeColors($page, $theme),
             'fonts' => $this->getThemeFonts($page, $theme),
@@ -1134,41 +1179,43 @@ class Theme {
             'layout_density' => $tokens['layout_density'] ?? 'comfortable'
         ];
     }
-    
+
     /**
      * Get all themes for a specific user (user-created themes)
      * @param int $userId User ID
      * @return array Array of user themes
      */
-    public function getUserThemes($userId) {
+    public function getUserThemes($userId)
+    {
         $sql = "SELECT * FROM themes WHERE user_id = ? AND is_active = 1 ORDER BY name ASC";
         $themes = fetchAll($sql, [$userId]);
-        
+
         // Validate each theme
         return array_filter($themes, [$this, 'validateTheme']);
     }
-    
+
     /**
      * Get all system themes (themes with user_id = NULL)
      * @param bool $activeOnly Only return active themes
      * @return array Array of system themes
      */
-    public function getSystemThemes($activeOnly = true) {
+    public function getSystemThemes($activeOnly = true)
+    {
         $sql = "SELECT * FROM themes WHERE user_id IS NULL";
         $params = [];
-        
+
         if ($activeOnly) {
             $sql .= " AND is_active = 1";
         }
-        
+
         $sql .= " ORDER BY name ASC";
-        
+
         $themes = fetchAll($sql, $params);
-        
+
         // Validate each theme
         return array_filter($themes, [$this, 'validateTheme']);
     }
-    
+
     /**
      * Clone an existing theme into the current user's library
      * @param int $themeId Theme to clone
@@ -1176,7 +1223,8 @@ class Theme {
      * @param string|null $name Optional new name
      * @return array ['success' => bool, 'theme_id' => int|null, 'error' => string|null]
      */
-    public function cloneTheme($themeId, $userId, $name = null) {
+    public function cloneTheme($themeId, $userId, $name = null)
+    {
         $theme = fetchOne("SELECT * FROM themes WHERE id = ?", [$themeId]);
 
         if (!$theme) {
@@ -1230,14 +1278,14 @@ class Theme {
         if ($this->hasThemeColumn('categories') && isset($theme['categories'])) {
             $themeData['categories'] = $this->decodeJsonField($theme, 'categories');
         }
-        
+
         if ($this->hasThemeColumn('tags') && isset($theme['tags'])) {
             $themeData['tags'] = $this->decodeJsonField($theme, 'tags');
         }
 
         return $this->createTheme($userId, $cloneName, $themeData);
     }
-    
+
     /**
      * Create a new user theme
      * @param int $userId User ID
@@ -1245,14 +1293,15 @@ class Theme {
      * @param array $themeData Theme data (colors, fonts, page_background, widget_styles, spatial_effect)
      * @return array ['success' => bool, 'theme_id' => int|null, 'error' => string|null]
      */
-    public function createTheme($userId, $name, $themeData) {
+    public function createTheme($userId, $name, $themeData)
+    {
         require_once __DIR__ . '/WidgetStyleManager.php';
-        
+
         // Validate theme data
         if (empty($name) || strlen($name) > 100) {
             return ['success' => false, 'theme_id' => null, 'error' => 'Theme name must be 1-100 characters'];
         }
-        
+
         // SINGLE USER THEME: Check if user already has a theme
         // If exists, update it instead of creating a new one
         $existingUserTheme = fetchOne("SELECT id FROM themes WHERE user_id = ? AND is_active = 1 ORDER BY id ASC LIMIT 1", [$userId]);
@@ -1265,7 +1314,7 @@ class Theme {
                 return ['success' => false, 'theme_id' => null, 'error' => 'Failed to update existing user theme'];
             }
         }
-        
+
         // If multiple user themes exist, delete extras (keep the first one)
         $allUserThemes = fetchAll("SELECT id FROM themes WHERE user_id = ? AND is_active = 1 ORDER BY id ASC", [$userId]);
         if (count($allUserThemes) > 1) {
@@ -1282,12 +1331,12 @@ class Theme {
                 return ['success' => false, 'theme_id' => null, 'error' => 'Failed to update existing user theme'];
             }
         }
-        
+
         // Sanitize widget styles if provided
         if (isset($themeData['widget_styles'])) {
             $themeData['widget_styles'] = WidgetStyleManager::sanitize($themeData['widget_styles']);
         }
-        
+
         try {
             // CRITICAL FIX: 'colors' and 'fonts' columns are NOT NULL, so provide empty JSON objects if not set
             // (We use color_tokens and typography_tokens now, but legacy columns are still required)
@@ -1302,7 +1351,7 @@ class Theme {
             $widgetSecondaryFont = $themeData['widget_secondary_font'] ?? null;
             $pagePrimaryFont = $themeData['page_primary_font'] ?? null;
             $pageSecondaryFont = $themeData['page_secondary_font'] ?? null;
-            
+
             $columns = [
                 'user_id',
                 'name',
@@ -1312,7 +1361,7 @@ class Theme {
                 'widget_styles',
                 'spatial_effect'
             ];
-            
+
             $params = [
                 $userId,
                 $name,
@@ -1322,7 +1371,7 @@ class Theme {
                 $widgetStyles,
                 $spatialEffect
             ];
-            
+
             // Store widget_background in color_tokens if column doesn't exist
             if ($this->hasThemeColumn('widget_background')) {
                 $columns[] = 'widget_background';
@@ -1360,7 +1409,7 @@ class Theme {
                 $columns[] = 'page_secondary_font';
                 $params[] = $pageSecondaryFont;
             }
-            
+
             if ($this->hasThemeColumn('color_tokens')) {
                 $columns[] = 'color_tokens';
                 $params[] = isset($themeData['color_tokens']) ? (is_array($themeData['color_tokens']) ? json_encode($themeData['color_tokens']) : $themeData['color_tokens']) : null;
@@ -1389,63 +1438,64 @@ class Theme {
                 $columns[] = 'layout_density';
                 $params[] = $themeData['layout_density'] ?? null;
             }
-            
+
             if ($this->hasThemeColumn('categories')) {
                 $columns[] = 'categories';
                 $params[] = isset($themeData['categories']) ? (is_array($themeData['categories']) ? json_encode($themeData['categories']) : $themeData['categories']) : null;
             }
-            
+
             if ($this->hasThemeColumn('tags')) {
                 $columns[] = 'tags';
                 $params[] = isset($themeData['tags']) ? (is_array($themeData['tags']) ? json_encode($themeData['tags']) : $themeData['tags']) : null;
             }
-            
+
             $columns[] = 'is_active';
             $params[] = 1;
-            
+
             $placeholders = array_fill(0, count($columns), '?');
             $sql = "INSERT INTO themes (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
-            
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
-            
+
             $themeId = $this->pdo->lastInsertId();
-            
+
             return ['success' => true, 'theme_id' => $themeId, 'error' => null];
         } catch (PDOException $e) {
             error_log("Theme creation failed: " . $e->getMessage());
             return ['success' => false, 'theme_id' => null, 'error' => 'Failed to create theme'];
         }
     }
-    
+
     /**
      * Delete a user's theme
      * @param int $themeId Theme ID
      * @param int $userId User ID (for authorization)
      * @return bool True if deleted successfully
      */
-    public function deleteUserTheme($themeId, $userId) {
+    public function deleteUserTheme($themeId, $userId)
+    {
         try {
             // Verify theme belongs to user
             $theme = fetchOne("SELECT id FROM themes WHERE id = ? AND user_id = ?", [$themeId, $userId]);
-            
+
             if (!$theme) {
                 return false;
             }
-            
+
             // Delete theme
             executeQuery("DELETE FROM themes WHERE id = ? AND user_id = ?", [$themeId, $userId]);
-            
+
             // Clear cache
             self::clearCache($themeId);
-            
+
             return true;
         } catch (PDOException $e) {
             error_log("Theme deletion failed: " . $e->getMessage());
             return false;
         }
     }
-    
+
     /**
      * Update a user theme
      * @param int $themeId Theme ID
@@ -1454,35 +1504,36 @@ class Theme {
      * @param array $themeData Theme data updates (optional)
      * @return bool True if updated successfully
      */
-    public function updateUserTheme($themeId, $userId, $name = null, $themeData = []) {
+    public function updateUserTheme($themeId, $userId, $name = null, $themeData = [])
+    {
         require_once __DIR__ . '/WidgetStyleManager.php';
-        
+
         try {
             // Verify theme belongs to user
             $theme = fetchOne("SELECT id FROM themes WHERE id = ? AND user_id = ?", [$themeId, $userId]);
-            
+
             if (!$theme) {
                 return false;
             }
-            
+
             $updates = [];
             $params = [];
-            
+
             if ($name !== null) {
                 $updates[] = "name = ?";
                 $params[] = $name;
             }
-            
+
             if (isset($themeData['colors'])) {
                 $updates[] = "colors = ?";
                 $params[] = is_array($themeData['colors']) ? json_encode($themeData['colors']) : $themeData['colors'];
             }
-            
+
             if (isset($themeData['fonts'])) {
                 $updates[] = "fonts = ?";
                 $params[] = is_array($themeData['fonts']) ? json_encode($themeData['fonts']) : $themeData['fonts'];
             }
-            
+
             if (isset($themeData['page_background'])) {
                 // Allow null to clear page_background (so color_tokens are used)
                 // But also allow empty string to be saved if explicitly provided
@@ -1494,18 +1545,18 @@ class Theme {
                     $params[] = $pageBgValue;
                 }
             }
-            
+
             if (isset($themeData['widget_styles'])) {
                 $sanitized = WidgetStyleManager::sanitize($themeData['widget_styles']);
                 $updates[] = "widget_styles = ?";
                 $params[] = json_encode($sanitized);
             }
-            
+
             if (isset($themeData['spatial_effect'])) {
                 $updates[] = "spatial_effect = ?";
                 $params[] = $themeData['spatial_effect'];
             }
-            
+
             if (isset($themeData['widget_background'])) {
                 $widgetBgValue = $themeData['widget_background'];
                 if ($this->hasThemeColumn('widget_background')) {
@@ -1517,92 +1568,92 @@ class Theme {
                     }
                 }
             }
-            
+
             if (isset($themeData['widget_border_color'])) {
                 $updates[] = "widget_border_color = ?";
                 $params[] = $themeData['widget_border_color'];
             }
-            
+
             if (isset($themeData['page_primary_font'])) {
                 $updates[] = "page_primary_font = ?";
                 $params[] = $themeData['page_primary_font'];
             }
-            
+
             if (isset($themeData['page_secondary_font'])) {
                 $updates[] = "page_secondary_font = ?";
                 $params[] = $themeData['page_secondary_font'];
             }
-            
+
             if (isset($themeData['widget_primary_font'])) {
                 $updates[] = "widget_primary_font = ?";
                 $params[] = $themeData['widget_primary_font'];
             }
-            
+
             if (isset($themeData['widget_secondary_font'])) {
                 $updates[] = "widget_secondary_font = ?";
                 $params[] = $themeData['widget_secondary_font'];
             }
-            
+
             if ($this->hasThemeColumn('color_tokens') && isset($themeData['color_tokens'])) {
                 $updates[] = "color_tokens = ?";
                 $params[] = is_array($themeData['color_tokens']) ? json_encode($themeData['color_tokens']) : $themeData['color_tokens'];
             }
-            
+
             if ($this->hasThemeColumn('typography_tokens') && isset($themeData['typography_tokens'])) {
                 $typographyJson = is_array($themeData['typography_tokens']) ? json_encode($themeData['typography_tokens']) : $themeData['typography_tokens'];
                 $updates[] = "typography_tokens = ?";
                 $params[] = $typographyJson;
             }
-            
+
             if ($this->hasThemeColumn('spacing_tokens') && isset($themeData['spacing_tokens'])) {
                 $updates[] = "spacing_tokens = ?";
                 $params[] = is_array($themeData['spacing_tokens']) ? json_encode($themeData['spacing_tokens']) : $themeData['spacing_tokens'];
             }
-            
+
             if ($this->hasThemeColumn('shape_tokens') && isset($themeData['shape_tokens'])) {
                 $shapeTokensJson = is_array($themeData['shape_tokens']) ? json_encode($themeData['shape_tokens']) : $themeData['shape_tokens'];
                 $updates[] = "shape_tokens = ?";
                 $params[] = $shapeTokensJson;
             }
-            
+
             if ($this->hasThemeColumn('motion_tokens') && isset($themeData['motion_tokens'])) {
                 $updates[] = "motion_tokens = ?";
                 $params[] = is_array($themeData['motion_tokens']) ? json_encode($themeData['motion_tokens']) : $themeData['motion_tokens'];
             }
-            
+
             if ($this->hasThemeColumn('iconography_tokens') && isset($themeData['iconography_tokens'])) {
                 $updates[] = "iconography_tokens = ?";
                 $params[] = is_array($themeData['iconography_tokens']) ? json_encode($themeData['iconography_tokens']) : $themeData['iconography_tokens'];
             }
-            
+
             if ($this->hasThemeColumn('layout_density') && isset($themeData['layout_density'])) {
                 $updates[] = "layout_density = ?";
                 $params[] = $themeData['layout_density'];
             }
-            
+
             if ($this->hasThemeColumn('categories') && isset($themeData['categories'])) {
                 $updates[] = "categories = ?";
                 $params[] = is_array($themeData['categories']) ? json_encode($themeData['categories']) : $themeData['categories'];
             }
-            
+
             if ($this->hasThemeColumn('tags') && isset($themeData['tags'])) {
                 $updates[] = "tags = ?";
                 $params[] = is_array($themeData['tags']) ? json_encode($themeData['tags']) : $themeData['tags'];
             }
-            
+
             if (empty($updates)) {
                 return false; // Nothing to update
             }
-            
+
             $sql = "UPDATE themes SET " . implode(', ', $updates) . " WHERE id = ? AND user_id = ?";
             $params[] = $themeId;
             $params[] = $userId;
-            
+
             executeQuery($sql, $params);
-            
+
             // Clear cache
             self::clearCache($themeId);
-            
+
             return true;
         } catch (PDOException $e) {
             error_log("Theme update failed: " . $e->getMessage());

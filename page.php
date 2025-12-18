@@ -178,9 +178,171 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             href="/css/podcast-player.css?v=<?php echo filemtime(__DIR__ . '/css/podcast-player.css'); ?>">
     <?php endif; ?>
 
-    <!-- Special Effects CSS (extracted for better caching) -->
-    <link rel="stylesheet"
-        href="/css/special-effects.css?v=<?php echo filemtime(__DIR__ . '/css/special-effects.css'); ?>">
+    <!-- PhotoSwipe (Gallery) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css">
+    <script type="module">
+        import PhotoSwipeLightbox from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe-lightbox.esm.min.js';
+        import PhotoSwipe from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.esm.min.js';
+
+        // Expose to window for global usage if needed, or init directly
+        window.PhotoSwipeLightbox = PhotoSwipeLightbox;
+        window.PhotoSwipe = PhotoSwipe;
+
+        // Auto-Initialize on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: '.gallery-grid',
+                children: 'a',
+                pswpModule: PhotoSwipe
+            });
+
+            // Dynamic Image Sizing: Handle unknown dimensions on the fly
+            lightbox.on('uiRegister', function () {
+                const pswp = lightbox.pswp;
+                pswp.on('contentLoad', (e) => {
+                    const { content, isLazy } = e;
+                    console.log("PhotoSwipe Content Load:", content.data.src);
+
+                    if (content.data.src) {
+                        // Prevent infinite loop if we already have correct dims
+                        if (content.data.w > 0 && content.data.h > 0 && content.data.loaded) return;
+
+                        const img = new Image();
+                        img.src = content.data.src;
+                        img.onload = () => {
+                            // Check loop condition relative to the object state
+                            if (content.data.w === img.naturalWidth && content.data.h === img.naturalHeight) {
+                                console.log("Dimensions match, skipping update:", img.naturalWidth);
+                                return;
+                            }
+
+                            console.log("Image Loaded with new dimensions:", img.naturalWidth, img.naturalHeight);
+
+                            // 1. Update the JS object
+                            content.data.w = img.naturalWidth;
+                            content.data.h = img.naturalHeight;
+                            content.data.loaded = true;
+
+                            // 2. IMPORTANT: Update the DOM element to persist this knowledge!
+                            if (content.data.element) {
+                                console.log("Updating DOM attributes for element:", content.data.element);
+                                content.data.element.setAttribute('data-pswp-width', img.naturalWidth);
+                                content.data.element.setAttribute('data-pswp-height', img.naturalHeight);
+                            } else {
+                                console.warn("No DOM element found for slide content!");
+                            }
+
+                            console.log("Refreshing slide content...");
+                            pswp.refreshSlideContent(content.index);
+                        };
+                    }
+                });
+            });
+
+            lightbox.init();
+        });
+    </script>
+
+    <!-- Global Gallery Functions (Event Delegation) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Gallery Manager: Initialized");
+
+            // Event Delegation: Handle all gallery clicks centrally
+            document.addEventListener('click', (e) => {
+                // 1. OPENING: Find closest gallery button
+                const btn = e.target.closest('.widget-gallery-btn');
+                if (btn) {
+                    console.log("Gallery Manager: Open Click Detected", btn);
+                    e.preventDefault();
+                    const widgetId = btn.dataset.widgetId;
+                    const suffix = btn.dataset.suffix || "";
+                    if (widgetId) openGalleryDrawer(widgetId, suffix);
+                    return;
+                }
+
+                // 2. CLOSING: Find close button OR overlay
+                const closeBtn = e.target.closest('.gallery-close-btn');
+                const closeOverlay = e.target.closest('.gallery-overlay-close');
+                const closer = closeBtn || closeOverlay;
+
+                if (closer) {
+                    console.log("Gallery Manager: Close Click Detected", closer);
+                    const widgetId = closer.dataset.widgetId;
+                    const suffix = closer.dataset.suffix || "";
+                    if (widgetId) closeGalleryModal(widgetId, suffix);
+                }
+            });
+        });
+
+        // Core Logic
+        function openGalleryDrawer(id, suffix) {
+            console.log("Opening Gallery Drawer:", id);
+            const drawerId = "gallery-drawer-" + id + suffix;
+            const overlayId = "gallery-drawer-overlay-" + id + suffix;
+
+            const d = document.getElementById(drawerId);
+            const o = document.getElementById(overlayId);
+
+            if (d && o) {
+                // 1. Un-hide from layout (display: flex) so it exists
+                // Use flex for BOTH to ensure proper centering (Overlay is parent, Container is child)
+                d.style.display = 'flex';
+                o.style.display = 'flex';
+
+                // 2. Force reflow to ensure browser registers "display: flex" before adding "visible" class
+                // ensuring the transition happens
+                void d.offsetWidth;
+
+                // 3. Add visible class to trigger CSS transforms/opacity
+                d.classList.add("visible");
+                d.classList.add("open");
+                o.classList.add("visible");
+                o.classList.add("active");
+                document.body.style.overflow = "hidden";
+            } else {
+                console.error("Gallery Manager: Elements not found", { drawerId, overlayId });
+            }
+        }
+
+        window.closeGalleryModal = function (id, suffix = "") {
+            console.log("Global closeGalleryModal Executing", { id, suffix });
+            const drawerId = "gallery-drawer-" + id + suffix;
+            const overlayId = "gallery-drawer-overlay-" + id + suffix;
+
+            const d = document.getElementById(drawerId);
+            const o = document.getElementById(overlayId);
+
+            if (d) {
+                console.log("Found Drawer, removing classes");
+                d.classList.remove("visible");
+                d.classList.remove("open");
+
+                // Wait for transition to finish before hiding from layout
+                d.addEventListener('transitionend', function () {
+                    // Check if it's still closed (in case user re-opened quickly)
+                    if (!d.classList.contains("visible")) {
+                        d.style.display = 'none';
+                    }
+                }, { once: true });
+            } else {
+                console.error("Close Error: Drawer not found", drawerId);
+            }
+
+            if (o) {
+                o.classList.remove("visible");
+                o.classList.remove("active");
+                // Overlay transition logic
+                setTimeout(() => {
+                    if (!o.classList.contains("visible")) o.style.display = 'none';
+                }, 300); // Fallback timeout matches CSS transition 0.3s
+            }
+
+            document.body.style.overflow = "";
+        };
+    </script>
+
+
 
     <!-- QR Code Morphing Animation CSS -->
     <link rel="stylesheet" href="/css/qr-code-modal.css?v=<?php echo filemtime(__DIR__ . '/css/qr-code-modal.css'); ?>">
@@ -218,7 +380,9 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
             /* Enable pointer events on specific hotspot elements that should be fully clickable */
             body.preview-mode .profile-image-container[data-hotspot],
-            body.preview-mode .page-description[data-hotspot] {
+            body.preview-mode .page-description[data-hotspot],
+            body.preview-mode .pswp,
+            body.preview-mode .pswp * {
                 pointer-events: auto !important;
                 cursor: pointer !important;
             }
@@ -402,8 +566,12 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
+            border: none;
+            /* No border directly on container */
             padding: var(--page-padding-vertical, 1rem) var(--page-padding-horizontal, 16px);
             box-sizing: border-box;
+            position: relative;
+            /* Critical for confining absolute-positioned drawers */
         }
 
         <?php if ($previewWidth): ?>
@@ -416,7 +584,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
         <?php endif; ?>
 
-        /* Add top padding when podcast banner is present */
+        /* Add top padding when podcast banner is present (Desktop Only override happens later) */
         <?php if ($showPodcastPlayer): ?>
             body:has(.podcast-top-banner) .page-container {
                 padding-top: calc(var(--page-padding, 1rem) + 60px);
@@ -469,12 +637,40 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             .iphone-screen {
                 width: 100% !important;
                 height: 100% !important;
-                background: var(--color-background-base, #ffffff) !important;
+                background: var(--page-screen-background, var(--color-background-base, #ffffff)) !important;
                 border-radius: 47px !important;
                 overflow: hidden !important;
                 position: relative !important;
                 display: flex !important;
                 flex-direction: column !important;
+            }
+
+            /* Background Image inside iPhone Frame */
+            .iphone-background-image {
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: var(--page-background-image-active, 0);
+            }
+
+            .iphone-background-image::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-image: var(--page-background-image-url);
+                background-size: cover;
+                background-position: var(--page-background-image-focal-x, 50%) var(--page-background-image-focal-y, 50%);
+                transform: scale(var(--page-background-image-scale, 1));
+                filter: blur(var(--page-background-image-blur, 0px));
+                transform-origin: var(--page-background-image-focal-x, 50%) var(--page-background-image-focal-y, 50%);
+            }
+
+            .iphone-background-image::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-color: var(--page-background-image-overlay, rgba(0, 0, 0, 0.4));
             }
 
             .iphone-content {
@@ -636,9 +832,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
         /* Tablet: Hide desktop frame container and buttons, use darker background */
         @media (min-width: 768px) and (max-width: 1023px) {
-            body {
-                background: var(--page-background-dark, var(--page-background)) !important;
-            }
+            /* body background removed to allow image to show through (standard mobile behavior) */
 
             .desktop-frame-container {
                 display: none !important;
@@ -755,543 +949,11 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <!-- Mobile: Normal single column layout -->
     <div class="mobile-page-container">
         <div class="page-container">
-            <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
-                <div class="profile-header">
-                    <?php if ($page['profile_image']): ?>
-                        <div class="profile-image-container"
-                            data-qr-url="/api/qr-code.php?username=<?php echo h($page['username']); ?>" <?php if ($enablePreviewMode): ?> data-hotspot="profile-image" <?php endif; ?>>
-                            <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile"
-                                class="profile-image" style="
-                            width: var(--profile-image-size, 120px);
-                            height: var(--profile-image-size, 120px);
-                            border-radius: var(--profile-image-radius, 16%);
-                            border-width: var(--profile-image-border-width, 0px);
-                            border-color: var(--profile-image-border-color, transparent);
-                            border-style: <?php echo (!empty($page['profile_image_border_width']) && $page['profile_image_border_width'] > 0) ? 'solid' : 'none'; ?>;
-                            box-shadow: var(--profile-image-box-shadow, none);
-                            object-fit: cover;
-                        " onerror="this.onerror=null; this.style.display='none';" />
-                            <img src="/api/qr-code.php?username=<?php echo h($page['username']); ?>" alt="QR Code"
-                                class="profile-qr-code" style="
-                            width: var(--profile-image-size, 120px);
-                            height: var(--profile-image-size, 120px);
-                            border-radius: 0;
-                            border: none !important;
-                            box-shadow: none;
-                            object-fit: contain;
-                            background: #ffffff;
-                            box-sizing: border-box;
-                        " onerror="this.onerror=null; this.style.display='none';" />
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if ($page['podcast_name']):
-                        $nameAlignment = $page['name_alignment'] ?? 'center';
-                        $nameTextSize = $page['name_text_size'] ?? 'large';
-                        $alignmentStyle = 'text-align: ' . h($nameAlignment) . '; ';
-                        $sizeClass = 'name-size-' . h($nameTextSize);
-
-                        $effectClass = '';
-                        if (!empty($page['page_name_effect'])) {
-                            $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
-                        }
-
-                        $nameContent = $page['podcast_name'];
-                        $nameContent = nl2br($nameContent);
-                        $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
-                        ?>
-                        <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>"
-                            style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);" <?php if ($enablePreviewMode): ?> data-hotspot="page-title" <?php endif; ?>><?php echo $nameContent; ?></h1>
-                    <?php elseif ($page['username']):
-                        $effectClass = '';
-                        if (!empty($page['page_name_effect'])) {
-                            $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
-                        }
-                        ?>
-                        <h1 class="page-title <?php echo $effectClass; ?>"
-                            style="font-family: var(--font-family-heading, inherit);" <?php if ($enablePreviewMode): ?>
-                                data-hotspot="page-title" <?php endif; ?>><?php echo h($page['username']); ?></h1>
-                    <?php endif; ?>
-
-                    <?php if ($page['podcast_description']):
-                        $bioAlignment = $page['bio_alignment'] ?? 'center';
-                        $bioTextSize = $page['bio_text_size'] ?? 'medium';
-                        $alignmentStyle = 'text-align: ' . h($bioAlignment) . '; ';
-                        $sizeClass = 'bio-size-' . h($bioTextSize);
-
-                        // Get bio color from theme typography tokens
-                        $bioColor = null;
-                        if ($theme && !empty($theme['typography_tokens'])) {
-                            $typographyTokens = is_string($theme['typography_tokens'])
-                                ? json_decode($theme['typography_tokens'], true)
-                                : $theme['typography_tokens'];
-                            // Check if json_decode succeeded and result is an array before accessing
-                            if (is_array($typographyTokens) && isset($typographyTokens['color']['body'])) {
-                                $bioColor = $typographyTokens['color']['body'];
-                            }
-                        }
-
-                        // Build style with color/gradient support
-                        $colorStyle = '';
-                        if ($bioColor && $bioColor !== '') {
-                            if (strpos($bioColor, 'gradient') !== false || strpos($bioColor, 'linear-gradient') !== false || strpos($bioColor, 'radial-gradient') !== false) {
-                                // Gradient: use background-image with text clipping
-                                $colorStyle = 'background-image: ' . h($bioColor) . '; ';
-                                $colorStyle .= '-webkit-background-clip: text; ';
-                                $colorStyle .= 'background-clip: text; ';
-                                $colorStyle .= '-webkit-text-fill-color: transparent; ';
-                                $colorStyle .= 'color: transparent; '; // Fallback
-                            } else {
-                                // Solid color: use color property
-                                $colorStyle = 'color: ' . h($bioColor) . '; ';
-                            }
-                        }
-
-                        $bioContent = $page['podcast_description'];
-                        $bioContent = nl2br($bioContent);
-                        $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
-                        ?>
-                        <p class="page-description <?php echo $sizeClass; ?>"
-                            style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"
-                            <?php if ($enablePreviewMode): ?> data-hotspot="page-description" <?php endif; ?>>
-                            <?php echo $bioContent; ?>
-                        </p>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
-
-            <!-- Page Background Hotspot (positioned below podcast bar) -->
-            <?php if ($enablePreviewMode): ?>
-                <div class="page-background-hotspot" data-hotspot="page-background"
-                    style="position: absolute; top: <?php echo $showPodcastPlayer ? '60px' : '16px'; ?>; left: 16px; width: 24px; height: 24px; z-index: 99999; pointer-events: auto; cursor: pointer;">
-                </div>
-            <?php endif; ?>
-
-            <!-- Podcast Player Top Banner -->
-            <?php if ($showPodcastPlayer): ?>
-                <div class="podcast-top-banner" id="podcast-top-banner" <?php if ($enablePreviewMode): ?>
-                        data-hotspot="podcast-player-bar" <?php endif; ?>>
-                    <button class="podcast-banner-toggle" id="podcast-drawer-toggle" aria-label="Open Podcast Player"
-                        title="Open Podcast Player">
-                        <i class="fas fa-podcast"></i>
-                        <span>Tap to Listen</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-            <?php endif; ?>
-
-            <!-- Podcast Player Top Drawer -->
-            <?php if ($showPodcastPlayer): ?>
-                <div class="podcast-top-drawer" id="podcast-top-drawer">
-                    <!-- Tab Navigation -->
-                    <nav class="tab-navigation" id="tab-navigation">
-                        <button class="tab-button active" data-tab="now-playing" id="tab-now-playing">Now Playing</button>
-                        <button class="tab-button" data-tab="follow" id="tab-follow">Follow</button>
-                        <button class="tab-button" data-tab="details" id="tab-details">Details</button>
-                        <button class="tab-button" data-tab="episodes" id="tab-episodes">Episodes</button>
-                    </nav>
-
-                    <!-- Tab Content Container -->
-                    <div class="tab-content-container" id="tab-content-container">
-                        <!-- Now Playing Tab -->
-                        <div class="tab-panel active" id="now-playing-panel">
-                            <div class="now-playing-content">
-                                <!-- Full Width Cover Artwork -->
-                                <div class="episode-artwork-fullwidth" id="now-playing-artwork-container">
-                                    <?php if (!empty($page['cover_image_url'])): ?>
-                                        <img class="episode-artwork-large" id="now-playing-artwork"
-                                            src="<?php echo h(normalizeImageUrl($page['cover_image_url'])); ?>"
-                                            alt="Podcast Cover">
-                                        <div class="artwork-placeholder" id="artwork-placeholder" style="display: none;">
-                                            <i class="fas fa-music"></i>
-                                        </div>
-                                    <?php else: ?>
-                                        <img class="episode-artwork-large" id="now-playing-artwork" src="" alt="Episode Artwork"
-                                            style="display: none;">
-                                        <div class="artwork-placeholder" id="artwork-placeholder">
-                                            <i class="fas fa-music"></i>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- Progress Section Overlay -->
-                                    <div class="progress-section-large" id="progress-section-now-playing">
-                                        <div class="time-display">
-                                            <span id="current-time-display">0:00</span>
-                                            <span id="remaining-time-display">-0:00</span>
-                                        </div>
-                                        <div class="progress-bar-now-playing" id="progress-bar-now-playing">
-                                            <div class="progress-fill-now-playing" id="progress-fill-now-playing"></div>
-                                            <div class="progress-scrubber-now-playing" id="progress-scrubber-now-playing">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Player Controls -->
-                                <div class="player-controls-section">
-                                    <div class="primary-controls">
-                                        <button class="control-button-large skip-back-large" id="skip-back-large"
-                                            aria-label="Skip back 10 seconds">
-                                            <span class="skip-label-large">10</span>
-                                            <i class="fas fa-backward"></i>
-                                        </button>
-                                        <button class="control-button-large play-pause-large-now" id="play-pause-large-now"
-                                            aria-label="Play/Pause">
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <button class="control-button-large skip-forward-large" id="skip-forward-large"
-                                            aria-label="Skip forward 45 seconds">
-                                            <span class="skip-label-large">45</span>
-                                            <i class="fas fa-forward"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="secondary-controls-bar">
-                                        <button class="secondary-control-btn speed-control-btn" id="speed-control-btn"
-                                            aria-label="Playback Speed">
-                                            <span id="speed-display">1x</span>
-                                        </button>
-                                        <button class="secondary-control-btn timer-control-btn" id="timer-control-btn"
-                                            aria-label="Sleep Timer">
-                                            <i class="fas fa-moon"></i>
-                                            <span id="timer-display">Off</span>
-                                        </button>
-                                        <button class="secondary-control-btn share-control-btn" id="share-control-btn"
-                                            aria-label="Share">
-                                            <i class="fas fa-share-alt"></i>
-                                        </button>
-                                        <button class="secondary-control-btn close-player-btn" id="close-player-btn"
-                                            aria-label="Close Player">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-
-                                    <!-- Speed Modal -->
-                                    <div class="podcast-modal-overlay" id="speed-modal-overlay" style="display: none;">
-                                        <div class="podcast-modal-container">
-                                            <div class="podcast-modal-content">
-                                                <h3 class="podcast-modal-title">Playback Speed</h3>
-                                                <div class="podcast-modal-options" id="speed-options-modal"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Timer Modal -->
-                                    <div class="podcast-modal-overlay" id="timer-modal-overlay" style="display: none;">
-                                        <div class="podcast-modal-container">
-                                            <div class="podcast-modal-content">
-                                                <h3 class="podcast-modal-title">Sleep Timer</h3>
-                                                <div class="podcast-modal-options" id="timer-options-modal"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Follow Tab -->
-                        <div class="tab-panel" id="follow-panel">
-                            <div class="follow-tab-content">
-                                <div id="follow-content"></div>
-                            </div>
-                        </div>
-
-                        <!-- Details Tab -->
-                        <div class="tab-panel" id="details-panel">
-                            <div class="details-tab-content">
-                                <div class="details-section-modern" id="shownotes-section">
-                                    <div class="section-header-modern">
-                                        <i class="fas fa-file-alt section-icon"></i>
-                                        <h2 class="section-title-modern">Show Notes</h2>
-                                    </div>
-                                    <div class="shownotes-content-modern" id="shownotes-content">
-                                        <div class="empty-state-modern">
-                                            <i class="fas fa-info-circle"></i>
-                                            <p>No episode selected</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="details-section-modern" id="chapters-section">
-                                    <div class="section-header-modern">
-                                        <i class="fas fa-list-ul section-icon"></i>
-                                        <h2 class="section-title-modern">Chapters</h2>
-                                    </div>
-                                    <div class="chapters-list-modern" id="chapters-list">
-                                        <div class="empty-state-modern">
-                                            <i class="fas fa-list"></i>
-                                            <p>No chapters available</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Episodes Tab -->
-                        <div class="tab-panel" id="episodes-panel">
-                            <div class="episodes-tab-content">
-                                <div class="episodes-header" id="episodes-header" style="display: none;">
-                                    <h2 class="episodes-title">All Episodes</h2>
-                                    <span class="episodes-count" id="episodes-count"></span>
-                                </div>
-
-                                <div class="loading-skeleton-modern" id="loading-skeleton">
-                                    <div class="skeleton-item-modern">
-                                        <div class="skeleton-artwork"></div>
-                                        <div class="skeleton-text">
-                                            <div class="skeleton-line skeleton-line-title"></div>
-                                            <div class="skeleton-line skeleton-line-meta"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skeleton-item-modern">
-                                        <div class="skeleton-artwork"></div>
-                                        <div class="skeleton-text">
-                                            <div class="skeleton-line skeleton-line-title"></div>
-                                            <div class="skeleton-line skeleton-line-meta"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skeleton-item-modern">
-                                        <div class="skeleton-artwork"></div>
-                                        <div class="skeleton-text">
-                                            <div class="skeleton-line skeleton-line-title"></div>
-                                            <div class="skeleton-line skeleton-line-meta"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skeleton-item-modern">
-                                        <div class="skeleton-artwork"></div>
-                                        <div class="skeleton-text">
-                                            <div class="skeleton-line skeleton-line-title"></div>
-                                            <div class="skeleton-line skeleton-line-meta"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="episodes-list-modern" id="episodes-list" style="display: none;"></div>
-
-                                <div class="error-state-modern" id="error-state" style="display: none;">
-                                    <div class="error-icon-wrapper">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
-                                    <h3 class="error-title">Failed to load episodes</h3>
-                                    <p class="error-message">Please check your connection and try again.</p>
-                                    <button class="retry-button-modern" id="retry-button">
-                                        <i class="fas fa-redo"></i>
-                                        <span>Retry</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="toast" id="toast" style="display: none;">
-                        <span id="toast-message"></span>
-                    </div>
-
-                    <audio id="podcast-audio-player" preload="metadata"></audio>
-
-                    <div class="podcast-drawer-footer">
-                        <button type="button" class="podcast-drawer-footer-button" id="podcast-drawer-close"
-                            aria-label="Close Podcast Player">
-                            <i class="fas fa-chevron-up"></i>
-                            <span>Close Player</span>
-                        </button>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <!-- Social Icons -->
-            <?php if (!empty($socialIcons)): ?>
-                <div class="social-icons" <?php if ($enablePreviewMode): ?> data-hotspot="social-icons" <?php endif; ?>>
-                    <?php foreach ($socialIcons as $icon): ?>
-                        <a href="<?php echo h($icon['url']); ?>" class="social-icon" target="_blank" rel="noopener noreferrer"
-                            title="<?php echo h($icon['platform_name']); ?>">
-                            <?php
-                            $platformName = strtolower($icon['platform_name']);
-                            $iconHtml = '';
-
-                            if ($platformName === 'pocket_casts') {
-                                $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><circle cx="16" cy="15" r="15" fill="currentColor" opacity="0.1" /><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z"/></svg>';
-                            } elseif ($platformName === 'castro') {
-                                $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z"/></svg>';
-                            } elseif ($platformName === 'overcast') {
-                                $iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clip-rule="evenodd"/></svg>';
-                            } else {
-                                $platformIcons = [
-                                    'apple_podcasts' => '<i class="fas fa-podcast"></i>',
-                                    'spotify' => '<i class="fab fa-spotify"></i>',
-                                    'youtube_music' => '<i class="fab fa-youtube"></i>',
-                                    'iheart_radio' => '<i class="fas fa-heart"></i>',
-                                    'amazon_music' => '<i class="fab fa-amazon"></i>',
-                                    'facebook' => '<i class="fab fa-facebook"></i>',
-                                    'twitter' => '<i class="fab fa-twitter"></i>',
-                                    'instagram' => '<i class="fab fa-instagram"></i>',
-                                    'linkedin' => '<i class="fab fa-linkedin"></i>',
-                                    'youtube' => '<i class="fab fa-youtube"></i>',
-                                    'tiktok' => '<i class="fab fa-tiktok"></i>',
-                                    'snapchat' => '<i class="fab fa-snapchat"></i>',
-                                    'pinterest' => '<i class="fab fa-pinterest"></i>',
-                                    'reddit' => '<i class="fab fa-reddit"></i>',
-                                    'discord' => '<i class="fab fa-discord"></i>',
-                                    'twitch' => '<i class="fab fa-twitch"></i>',
-                                    'github' => '<i class="fab fa-github"></i>',
-                                    'behance' => '<i class="fab fa-behance"></i>',
-                                    'dribbble' => '<i class="fab fa-dribbble"></i>',
-                                    'medium' => '<i class="fab fa-medium"></i>',
-                                    'substack' => '<i class="fas fa-newspaper"></i>'
-                                ];
-                                $iconHtml = $platformIcons[$platformName] ?? '<i class="fas fa-link"></i>';
-                            }
-                            echo $iconHtml;
-                            ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-
-            <div class="widgets-container">
-                <?php
-                if (!empty($widgets)) {
-                    $inSection = false; // Track if we are inside a section container
-                
-                    foreach ($widgets as $widget):
-                        $widget['page_id'] = $page['id'];
-                        $isFeatured = !empty($widget['is_featured']);
-                        $featuredEffect = $widget['featured_effect'] ?? '';
-
-                        // Check if this is a section header
-                        $config = $widget['config_data'] ? (is_array($widget['config_data']) ? $widget['config_data'] : json_decode($widget['config_data'], true)) : [];
-                        $isSectionHeader = $widget['widget_type'] === 'section_header' || ($widget['widget_type'] === 'heading_block' && !empty($config['is_section_group']));
-
-                        // DEBUG TRACE
-                        echo '<!-- PROCESSING WIDGET ID: ' . $widget['id'] . ' TITLE: ' . $widget['title'] . ' TYPE: ' . $widget['widget_type'] . ' -->';
-
-                        // IF NEW SECTION HEADER:
-                        // 1. Close previous section if any
-                        if ($isSectionHeader) {
-                            if ($inSection) {
-                                echo '</div>'; // Close previous .widget-section-container
-                                $inSection = false;
-                            }
-
-                            // 2. Open new section container
-                            echo '<div class="widget-section-container">';
-                            $inSection = true;
-
-                            // 3. Render Custom Header (skip default renderer)
-                            echo '<div class="widget-section-header">';
-                            echo h($widget['title'] ?: 'Group');
-                            echo '</div>';
-
-                            // 4. Skip default rendering for this widget
-                            continue;
-                        }
-
-                        // Special Logic: Divider OR Invisible Spacer closes a section (Ungroup items below it)
-                        if (($widget['widget_type'] === 'divider_rule' || $widget['widget_type'] === 'invisible_spacer') && $inSection) {
-                            echo '</div>'; // Close .widget-section-container
-                            $inSection = false;
-                            // Continue to render the spacer itself (outside the group)
-                        }
-
-                        // STANDARD WIDGET RENDERING
-                        try {
-                            $rendered = WidgetRenderer::render($widget, $page);
-                            if (!empty($rendered)) {
-                                // Wrap widget with hotspot attributes in preview mode
-                                if ($enablePreviewMode) {
-                                    echo '<div class="widget-wrapper" data-hotspot="widget-settings" data-widget-id="' . htmlspecialchars($widget['id']) . '">';
-                                }
-                                if ($isFeatured && $featuredEffect) {
-                                    echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
-                                }
-                                // Add hotspot to widget text content
-                                if ($enablePreviewMode) {
-                                    // Inject hotspot into widget-item elements and text content
-                                    $rendered = preg_replace(
-                                        '/(<div[^>]*class="[^"]*widget-item[^"]*"[^>]*)(>)/i',
-                                        '$1 data-hotspot-text="widget-text"$2',
-                                        $rendered
-                                    );
-                                    // Also add to widget title and heading text elements
-                                    $rendered = preg_replace(
-                                        '/(<(div|h1|h2|h3|p)[^>]*class="[^"]*(widget-title|widget-heading-text|widget-text-content)[^"]*"[^>]*)(>)/i',
-                                        '$1 data-hotspot-text="widget-text"$4',
-                                        $rendered
-                                    );
-                                }
-                                echo $rendered;
-                                if ($isFeatured && $featuredEffect) {
-                                    echo '</div>';
-                                }
-                                if ($enablePreviewMode) {
-                                    echo '</div>';
-                                }
-                            }
-                        } catch (Exception $e) {
-                            echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
-                        }
-                    endforeach;
-
-                    // Close final section if open
-                    if (isset($inSection) && $inSection) {
-                        echo '</div>';
-                    }
-                } elseif (!empty($links)) {
-                    foreach ($links as $link): ?>
-                        <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>"
-                            class="widget-item" <?php if ($enablePreviewMode): ?>data-hotspot="widget-settings" <?php endif; ?>
-                            target="_blank" rel="noopener noreferrer">
-                            <?php if ($link['thumbnail_image']): ?>
-                                <div class="widget-thumbnail-wrapper">
-                                    <img src="<?php echo h(normalizeImageUrl($link['thumbnail_image'])); ?>"
-                                        alt="<?php echo h($link['title']); ?>" class="widget-thumbnail"
-                                        onerror="this.onerror=null; this.style.display='none'; var wrapper=this.closest('.widget-thumbnail-wrapper'); if(wrapper){var fallback=wrapper.querySelector('.widget-thumbnail-fallback'); if(fallback)fallback.style.display='flex';}">
-                                    <div class="widget-thumbnail-fallback"
-                                        style="display:none; width:100%; height:100%; background:rgba(0,0,0,0.05); border-radius:inherit; align-items:center; justify-content:center; color:rgba(0,0,0,0.3); font-size:1.5rem;">
-                                        <i class="fas fa-link"></i>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                            <div class="widget-content">
-                                <div class="widget-title"><?php echo h($link['title']); ?></div>
-                            </div>
-                        </a>
-                    <?php endforeach;
-                } ?>
-            </div>
+            <?php
+            $idSuffix = '-mobile';
+            require __DIR__ . '/templates/page-content.php';
+            ?>
         </div>
-
-        <!-- Footer -->
-        <?php
-        $footerVisible = !isset($page['footer_visible']) || $page['footer_visible'];
-        $hasFooterContent = !empty($page['footer_text']) || !empty($page['footer_copyright']) || !empty($page['footer_privacy_link']) || !empty($page['footer_terms_link']);
-
-        if ($footerVisible && $hasFooterContent): ?>
-            <footer class="page-footer"
-                style="margin-top: auto; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid rgba(15, 23, 42, 0.1);">
-                <?php if (!empty($page['footer_text'])): ?>
-                    <p style="margin: 0 0 1rem 0; color: var(--color-text-secondary, #6b7280); font-size: 0.9rem;">
-                        <?php echo nl2br(h($page['footer_text'])); ?>
-                    </p>
-                <?php endif; ?>
-                <div
-                    style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--color-text-secondary, #6b7280);">
-                    <?php if (!empty($page['footer_copyright'])): ?>
-                        <span><?php echo h($page['footer_copyright']); ?></span>
-                    <?php endif; ?>
-                    <?php if (!empty($page['footer_privacy_link'])): ?>
-                        <a href="<?php echo h($page['footer_privacy_link']); ?>" target="_blank" rel="noopener noreferrer"
-                            style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Privacy Policy</a>
-                    <?php endif; ?>
-                    <?php if (!empty($page['footer_terms_link'])): ?>
-                        <a href="<?php echo h($page['footer_terms_link']); ?>" target="_blank" rel="noopener noreferrer"
-                            style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Terms of
-                            Service</a>
-                    <?php endif; ?>
-                </div>
-            </footer>
-        <?php endif; ?>
-    </div>
     </div>
 
     <!-- Desktop/Tablet: iPhone Frame Layout -->
@@ -1299,261 +961,13 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
         <!-- Left iPhone: Page Content -->
         <div class="iphone-frame">
             <div class="iphone-screen">
+                <div class="iphone-background-image"></div>
                 <div class="iphone-content">
                     <div class="page-container">
-                        <?php if (!isset($page['profile_visible']) || $page['profile_visible']): ?>
-                            <div class="profile-header">
-                                <?php if ($page['profile_image']): ?>
-                                    <div class="profile-image-container"
-                                        data-qr-url="/api/qr-code.php?username=<?php echo h($page['username']); ?>">
-                                        <img src="<?php echo h(normalizeImageUrl($page['profile_image'])); ?>" alt="Profile"
-                                            class="profile-image" style="
-                                            width: var(--profile-image-size, 120px);
-                                            height: var(--profile-image-size, 120px);
-                                            border-radius: var(--profile-image-radius, 16%);
-                                            border-width: var(--profile-image-border-width, 0px);
-                                            border-color: var(--profile-image-border-color, transparent);
-                                            border-style: <?php echo (!empty($page['profile_image_border_width']) && $page['profile_image_border_width'] > 0) ? 'solid' : 'none'; ?>;
-                                            box-shadow: var(--profile-image-box-shadow, none);
-                                            object-fit: cover;
-                                        " onerror="this.onerror=null; this.style.display='none';" />
-                                        <img src="/api/qr-code.php?username=<?php echo h($page['username']); ?>" alt="QR Code"
-                                            class="profile-qr-code" style="
-                                            width: var(--profile-image-size, 120px);
-                                            height: var(--profile-image-size, 120px);
-                                            border-radius: 0;
-                                            border: none !important;
-                                            box-shadow: none;
-                                            object-fit: contain;
-                                            background: #ffffff;
-                                            box-sizing: border-box;
-                                        " onerror="this.onerror=null; this.style.display='none';" />
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($page['podcast_name']):
-                                    $nameAlignment = $page['name_alignment'] ?? 'center';
-                                    $nameTextSize = $page['name_text_size'] ?? 'large';
-                                    $alignmentStyle = 'text-align: ' . h($nameAlignment) . '; ';
-                                    $sizeClass = 'name-size-' . h($nameTextSize);
-
-                                    $effectClass = '';
-                                    if (!empty($page['page_name_effect'])) {
-                                        $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
-                                    }
-
-                                    $nameContent = $page['podcast_name'];
-                                    $nameContent = nl2br($nameContent);
-                                    $nameContent = strip_tags($nameContent, '<strong><em><u><br>');
-                                    ?>
-                                    <h1 class="page-title <?php echo trim($sizeClass . ' ' . $effectClass); ?>"
-                                        style="<?php echo $alignmentStyle; ?> font-family: var(--font-family-heading, inherit);"
-                                        <?php if ($enablePreviewMode): ?> data-hotspot="page-title" <?php endif; ?>>
-                                        <?php echo $nameContent; ?>
-                                    </h1>
-                                <?php elseif ($page['username']):
-                                    $effectClass = '';
-                                    if (!empty($page['page_name_effect'])) {
-                                        $effectClass = 'page-title-effect-' . h($page['page_name_effect']);
-                                    }
-                                    ?>
-                                    <h1 class="page-title <?php echo $effectClass; ?>"
-                                        style="font-family: var(--font-family-heading, inherit);" <?php if ($enablePreviewMode): ?> data-hotspot="page-title" <?php endif; ?>><?php echo h($page['username']); ?></h1>
-                                <?php endif; ?>
-
-                                <?php if ($page['podcast_description']):
-                                    $bioAlignment = $page['bio_alignment'] ?? 'center';
-                                    $bioTextSize = $page['bio_text_size'] ?? 'medium';
-                                    $alignmentStyle = 'text-align: ' . h($bioAlignment) . '; ';
-                                    $sizeClass = 'bio-size-' . h($bioTextSize);
-
-                                    // Get bio color from theme typography tokens
-                                    $bioColor = null;
-                                    if ($theme && !empty($theme['typography_tokens'])) {
-                                        $typographyTokens = is_string($theme['typography_tokens'])
-                                            ? json_decode($theme['typography_tokens'], true)
-                                            : $theme['typography_tokens'];
-                                        // Check if json_decode succeeded and result is an array before accessing
-                                        if (is_array($typographyTokens) && isset($typographyTokens['color']['body'])) {
-                                            $bioColor = $typographyTokens['color']['body'];
-                                        }
-                                    }
-
-                                    // Build style with color/gradient support
-                                    $colorStyle = '';
-                                    if ($bioColor && $bioColor !== '') {
-                                        if (strpos($bioColor, 'gradient') !== false || strpos($bioColor, 'linear-gradient') !== false || strpos($bioColor, 'radial-gradient') !== false) {
-                                            // Gradient: use background-image with text clipping
-                                            $colorStyle = 'background-image: ' . h($bioColor) . '; ';
-                                            $colorStyle .= '-webkit-background-clip: text; ';
-                                            $colorStyle .= 'background-clip: text; ';
-                                            $colorStyle .= '-webkit-text-fill-color: transparent; ';
-                                            $colorStyle .= 'color: transparent; '; // Fallback
-                                        } else {
-                                            // Solid color: use color property
-                                            $colorStyle = 'color: ' . h($bioColor) . '; ';
-                                        }
-                                    }
-
-                                    $bioContent = $page['podcast_description'];
-                                    $bioContent = nl2br($bioContent);
-                                    $bioContent = strip_tags($bioContent, '<strong><em><u><br>');
-                                    ?>
-                                    <p class="page-description <?php echo $sizeClass; ?>"
-                                        style="<?php echo $alignmentStyle . $colorStyle; ?> font-family: var(--font-family-body, inherit);"
-                                        <?php if ($enablePreviewMode): ?> data-hotspot="page-description" <?php endif; ?>>
-                                        <?php echo $bioContent; ?>
-                                    </p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Social Icons -->
-                        <?php if (!empty($socialIcons)): ?>
-                            <div class="social-icons" <?php if ($enablePreviewMode): ?> data-hotspot="social-icons" <?php endif; ?>>
-                                <?php foreach ($socialIcons as $icon): ?>
-                                    <a href="<?php echo h($icon['url']); ?>" class="social-icon" target="_blank"
-                                        rel="noopener noreferrer" title="<?php echo h($icon['platform_name']); ?>">
-                                        <?php
-                                        $platformName = strtolower($icon['platform_name']);
-                                        $iconHtml = '';
-
-                                        if ($platformName === 'pocket_casts') {
-                                            $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><circle cx="16" cy="15" r="15" fill="currentColor" opacity="0.1" /><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M16 32c8.837 0 16-7.163 16-16S24.837 0 16 0 0 7.163 0 16s7.163 16 16 16Zm0-28.444C9.127 3.556 3.556 9.127 3.556 16c0 6.873 5.571 12.444 12.444 12.444v-3.11A9.333 9.333 0 1 1 25.333 16h3.111c0-6.874-5.571-12.445-12.444-12.445ZM8.533 16A7.467 7.467 0 0 0 16 23.467v-2.715A4.751 4.751 0 1 1 20.752 16h2.715a7.467 7.467 0 0 0-14.934 0Z"/></svg>';
-                                        } elseif ($platformName === 'castro') {
-                                            $iconHtml = '<svg width="1em" height="1em" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" d="M16 0c-8.839 0-16 7.161-16 16s7.161 16 16 16c8.839 0 16-7.161 16-16s-7.161-16-16-16zM15.995 18.656c-3.645 0-3.645-5.473 0-5.473 3.651 0 3.651 5.473 0 5.473zM22.656 25.125l-2.683-3.719c5.303-3.876 2.553-12.267-4.009-12.256-6.568 0.016-9.281 8.417-3.964 12.271l-2.688 3.724c-3.995-2.891-5.676-8.025-4.161-12.719 1.521-4.687 5.891-7.869 10.823-7.864 6.277 0 11.365 5.088 11.365 11.364 0.005 3.641-1.735 7.063-4.683 9.199z"/></svg>';
-                                        } elseif ($platformName === 'overcast') {
-                                            $iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" style="display: block; width: 1em; height: 1em;"><path fill="currentColor" fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 0 0 2.25 12a9.753 9.753 0 0 0 6.238 9.098l2.26 -7.538a2 2 0 1 1 2.502 0l2.262 7.538A9.753 9.753 0 0 0 21.75 12 9.75 9.75 0 0 0 12 2.25Zm0 19.5a9.788 9.788 0 0 1 -2.076 -0.221l0.078 -0.258L12 19.473l1.998 1.798 0.078 0.258A9.788 9.788 0 0 1 12 21.75ZM0.75 12C0.75 5.787 5.787 0.75 12 0.75S23.25 5.787 23.25 12 18.213 23.25 12 23.25 0.75 18.213 0.75 12Zm12.695 7.428 -0.698 -0.628 0.402 -0.361 0.296 0.99ZM12 18.128l0.83 -0.748 -0.83 -2.77 -0.83 2.77 0.83 0.747Zm-1.445 1.3 0.698 -0.628 -0.402 -0.361 -0.296 0.99ZM6.95 6.9a0.75 0.75 0 0 1 0.15 1.05c-0.44 0.586 -1.35 2.265 -1.35 4.05 0 1.785 0.91 3.464 1.35 4.05a0.75 0.75 0 1 1 -1.2 0.9c-0.56 -0.747 -1.65 -2.735 -1.65 -4.95 0 -2.215 1.09 -4.203 1.65 -4.95a0.75 0.75 0 0 1 1.05 -0.15Zm2.08 2.07a0.75 0.75 0 0 1 0 1.06c-0.238 0.238 -0.78 1.025 -0.78 1.97 0 0.945 0.542 1.732 0.78 1.97a0.75 0.75 0 1 1 -1.06 1.06c-0.43 -0.428 -1.22 -1.575 -1.22 -3.03 0 -1.455 0.79 -2.602 1.22 -3.03a0.75 0.75 0 0 1 1.06 0Zm9.07 -1.92a0.75 0.75 0 0 0 -1.2 0.9c0.44 0.586 1.35 2.265 1.35 4.05 0 1.785 -0.91 3.464 -1.35 4.05a0.75 0.75 0 1 0 1.2 0.9c0.56 -0.747 1.65 -2.735 1.65 -4.95 0 -2.215 -1.09 -4.203 -1.65 -4.95Zm-3.13 1.92a0.75 0.75 0 0 1 1.06 0c0.43 0.428 1.22 1.575 1.22 3.03 0 1.455 -0.79 2.602 -1.22 3.03a0.75 0.75 0 1 1 -1.06 -1.06c0.238 -0.238 0.78 -1.025 0.78 -1.97 0 -0.945 -0.542 -1.732 -0.78 -1.97a0.75 0.75 0 0 1 0 -1.06Z" clip-rule="evenodd"/></svg>';
-                                        } else {
-                                            $platformIcons = [
-                                                'apple_podcasts' => '<i class="fas fa-podcast"></i>',
-                                                'spotify' => '<i class="fab fa-spotify"></i>',
-                                                'youtube_music' => '<i class="fab fa-youtube"></i>',
-                                                'iheart_radio' => '<i class="fas fa-heart"></i>',
-                                                'amazon_music' => '<i class="fab fa-amazon"></i>',
-                                                'facebook' => '<i class="fab fa-facebook"></i>',
-                                                'twitter' => '<i class="fab fa-twitter"></i>',
-                                                'instagram' => '<i class="fab fa-instagram"></i>',
-                                                'linkedin' => '<i class="fab fa-linkedin"></i>',
-                                                'youtube' => '<i class="fab fa-youtube"></i>',
-                                                'tiktok' => '<i class="fab fa-tiktok"></i>',
-                                                'snapchat' => '<i class="fab fa-snapchat"></i>',
-                                                'pinterest' => '<i class="fab fa-pinterest"></i>',
-                                                'reddit' => '<i class="fab fa-reddit"></i>',
-                                                'discord' => '<i class="fab fa-discord"></i>',
-                                                'twitch' => '<i class="fab fa-twitch"></i>',
-                                                'github' => '<i class="fab fa-github"></i>',
-                                                'behance' => '<i class="fab fa-behance"></i>',
-                                                'dribbble' => '<i class="fab fa-dribbble"></i>',
-                                                'medium' => '<i class="fab fa-medium"></i>',
-                                                'substack' => '<i class="fas fa-newspaper"></i>'
-                                            ];
-                                            $iconHtml = $platformIcons[$platformName] ?? '<i class="fas fa-link"></i>';
-                                        }
-                                        echo $iconHtml;
-                                        ?>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="widgets-container">
-                            <?php
-                            if (!empty($widgets)):
-                                foreach ($widgets as $widget):
-                                    $widget['page_id'] = $page['id'];
-                                    $isFeatured = !empty($widget['is_featured']);
-                                    $featuredEffect = $widget['featured_effect'] ?? '';
-
-                                    try {
-                                        $rendered = WidgetRenderer::render($widget, $page);
-                                        if (!empty($rendered)) {
-                                            // Wrap widget with hotspot attributes in preview mode
-                                            if ($enablePreviewMode) {
-                                                echo '<div class="widget-wrapper" data-hotspot="widget-settings" data-widget-id="' . htmlspecialchars($widget['id']) . '">';
-                                            }
-                                            if ($isFeatured && $featuredEffect) {
-                                                echo '<div class="featured-widget featured-effect-' . h($featuredEffect) . '">';
-                                            }
-                                            // Add hotspot to widget text content
-                                            if ($enablePreviewMode) {
-                                                // Inject hotspot into widget-item elements
-                                                $rendered = preg_replace(
-                                                    '/(<div[^>]*class="[^"]*widget-item[^"]*"[^>]*)(>)/i',
-                                                    '$1 data-hotspot-text="widget-text"$2',
-                                                    $rendered
-                                                );
-                                            }
-                                            echo $rendered;
-                                            if ($isFeatured && $featuredEffect) {
-                                                echo '</div>';
-                                            }
-                                            if ($enablePreviewMode) {
-                                                echo '</div>';
-                                            }
-                                        }
-                                    } catch (Exception $e) {
-                                        echo '<!-- Widget render error: ' . htmlspecialchars($e->getMessage()) . ' -->';
-                                    }
-                                endforeach;
-                            elseif (!empty($links)):
-                                foreach ($links as $link): ?>
-                                    <a href="/click.php?link_id=<?php echo $link['id']; ?>&page_id=<?php echo $page['id']; ?>"
-                                        class="widget-item" <?php if ($enablePreviewMode): ?>data-hotspot="widget-settings"
-                                        <?php endif; ?> target="_blank" rel="noopener noreferrer">
-                                        <?php if ($link['thumbnail_image']): ?>
-                                            <div class="widget-thumbnail-wrapper">
-                                                <img src="<?php echo h(normalizeImageUrl($link['thumbnail_image'])); ?>"
-                                                    alt="<?php echo h($link['title']); ?>" class="widget-thumbnail"
-                                                    onerror="this.onerror=null; this.style.display='none'; var wrapper=this.closest('.widget-thumbnail-wrapper'); if(wrapper){var fallback=wrapper.querySelector('.widget-thumbnail-fallback'); if(fallback)fallback.style.display='flex';}">
-                                                <div class="widget-thumbnail-fallback"
-                                                    style="display:none; width:100%; height:100%; background:rgba(0,0,0,0.05); border-radius:inherit; align-items:center; justify-content:center; color:rgba(0,0,0,0.3); font-size:1.5rem;">
-                                                    <i class="fas fa-link"></i>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div class="widget-content">
-                                            <div class="widget-title"><?php echo h($link['title']); ?></div>
-                                        </div>
-                                    </a>
-                                <?php endforeach;
-                            endif; ?>
-                        </div>
-
-                        <!-- Footer -->
                         <?php
-                        $footerVisible = !isset($page['footer_visible']) || $page['footer_visible'];
-                        $hasFooterContent = !empty($page['footer_text']) || !empty($page['footer_copyright']) || !empty($page['footer_privacy_link']) || !empty($page['footer_terms_link']);
-
-                        if ($footerVisible && $hasFooterContent): ?>
-                            <footer class="page-footer"
-                                style="margin-top: auto; padding: 1.5rem 1rem; text-align: center; border-top: 1px solid rgba(15, 23, 42, 0.1);">
-                                <?php if (!empty($page['footer_text'])): ?>
-                                    <p
-                                        style="margin: 0 0 1rem 0; color: var(--color-text-secondary, #6b7280); font-size: 0.9rem;">
-                                        <?php echo nl2br(h($page['footer_text'])); ?>
-                                    </p>
-                                <?php endif; ?>
-                                <div
-                                    style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--color-text-secondary, #6b7280);">
-                                    <?php if (!empty($page['footer_copyright'])): ?>
-                                        <span><?php echo h($page['footer_copyright']); ?></span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($page['footer_privacy_link'])): ?>
-                                        <a href="<?php echo h($page['footer_privacy_link']); ?>" target="_blank"
-                                            rel="noopener noreferrer"
-                                            style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Privacy
-                                            Policy</a>
-                                    <?php endif; ?>
-                                    <?php if (!empty($page['footer_terms_link'])): ?>
-                                        <a href="<?php echo h($page['footer_terms_link']); ?>" target="_blank"
-                                            rel="noopener noreferrer"
-                                            style="color: var(--color-text-secondary, #6b7280); text-decoration: underline;">Terms
-                                            of Service</a>
-                                    <?php endif; ?>
-                                </div>
-                            </footer>
-                        <?php endif; ?>
+                        $idSuffix = '-desktop';
+                        require __DIR__ . '/templates/page-content.php';
+                        ?>
                     </div>
                 </div>
             </div>
@@ -1564,223 +978,15 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             <div class="iphone-frame iphone-podcast-frame">
                 <div class="iphone-screen">
                     <div class="iphone-content">
-                        <div class="podcast-top-drawer" id="podcast-top-drawer-desktop"
-                            style="position: relative; transform: none; height: 100%; display: flex; flex-direction: column; background: #000;">
-                            <!-- Tab Navigation -->
-                            <nav class="tab-navigation" id="tab-navigation-desktop">
-                                <button class="tab-button active" data-tab="now-playing" id="tab-now-playing-desktop">Now
-                                    Playing</button>
-                                <button class="tab-button" data-tab="follow" id="tab-follow-desktop">Follow</button>
-                                <button class="tab-button" data-tab="details" id="tab-details-desktop">Details</button>
-                                <button class="tab-button" data-tab="episodes" id="tab-episodes-desktop">Episodes</button>
-                            </nav>
-
-                            <!-- Tab Content Container -->
-                            <div class="tab-content-container" id="tab-content-container-desktop"
-                                style="flex: 1; overflow-y: auto;">
-                                <!-- Now Playing Tab -->
-                                <div class="tab-panel active" id="now-playing-panel-desktop">
-                                    <div class="now-playing-content">
-                                        <!-- Full Width Cover Artwork -->
-                                        <div class="episode-artwork-fullwidth" id="now-playing-artwork-container-desktop">
-                                            <?php if (!empty($page['cover_image_url'])): ?>
-                                                <img class="episode-artwork-large" id="now-playing-artwork-desktop"
-                                                    src="<?php echo h(normalizeImageUrl($page['cover_image_url'])); ?>"
-                                                    alt="Podcast Cover">
-                                                <div class="artwork-placeholder" id="artwork-placeholder-desktop"
-                                                    style="display: none;">
-                                                    <i class="fas fa-music"></i>
-                                                </div>
-                                            <?php else: ?>
-                                                <img class="episode-artwork-large" id="now-playing-artwork-desktop" src=""
-                                                    alt="Episode Artwork" style="display: none;">
-                                                <div class="artwork-placeholder" id="artwork-placeholder-desktop">
-                                                    <i class="fas fa-music"></i>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <!-- Progress Section Overlay -->
-                                            <div class="progress-section-large" id="progress-section-now-playing-desktop">
-                                                <div class="time-display">
-                                                    <span id="current-time-display-desktop">0:00</span>
-                                                    <span id="remaining-time-display-desktop">-0:00</span>
-                                                </div>
-                                                <div class="progress-bar-now-playing" id="progress-bar-now-playing-desktop">
-                                                    <div class="progress-fill-now-playing"
-                                                        id="progress-fill-now-playing-desktop"></div>
-                                                    <div class="progress-scrubber-now-playing"
-                                                        id="progress-scrubber-now-playing-desktop"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Player Controls -->
-                                        <div class="player-controls-section">
-                                            <div class="primary-controls">
-                                                <button class="control-button-large skip-back-large"
-                                                    id="skip-back-large-desktop" aria-label="Skip back 10 seconds">
-                                                    <span class="skip-label-large">10</span>
-                                                    <i class="fas fa-backward"></i>
-                                                </button>
-                                                <button class="control-button-large play-pause-large-now"
-                                                    id="play-pause-large-now-desktop" aria-label="Play/Pause">
-                                                    <i class="fas fa-play"></i>
-                                                </button>
-                                                <button class="control-button-large skip-forward-large"
-                                                    id="skip-forward-large-desktop" aria-label="Skip forward 45 seconds">
-                                                    <span class="skip-label-large">45</span>
-                                                    <i class="fas fa-forward"></i>
-                                                </button>
-                                            </div>
-
-                                            <div class="secondary-controls-bar">
-                                                <button class="secondary-control-btn speed-control-btn"
-                                                    id="speed-control-btn-desktop" aria-label="Playback Speed">
-                                                    <span id="speed-display-desktop">1x</span>
-                                                </button>
-                                                <button class="secondary-control-btn timer-control-btn"
-                                                    id="timer-control-btn-desktop" aria-label="Sleep Timer">
-                                                    <i class="fas fa-moon"></i>
-                                                    <span id="timer-display-desktop">Off</span>
-                                                </button>
-                                                <button class="secondary-control-btn share-control-btn"
-                                                    id="share-control-btn-desktop" aria-label="Share">
-                                                    <i class="fas fa-share-alt"></i>
-                                                </button>
-                                                <button class="secondary-control-btn close-player-btn"
-                                                    id="close-player-btn-desktop" aria-label="Close Player">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-
-                                            <!-- Speed Modal -->
-                                            <div class="podcast-modal-overlay" id="speed-modal-overlay-desktop"
-                                                style="display: none;">
-                                                <div class="podcast-modal-container">
-                                                    <div class="podcast-modal-content">
-                                                        <h3 class="podcast-modal-title">Playback Speed</h3>
-                                                        <div class="podcast-modal-options" id="speed-options-modal-desktop">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Timer Modal -->
-                                            <div class="podcast-modal-overlay" id="timer-modal-overlay-desktop"
-                                                style="display: none;">
-                                                <div class="podcast-modal-container">
-                                                    <div class="podcast-modal-content">
-                                                        <h3 class="podcast-modal-title">Sleep Timer</h3>
-                                                        <div class="podcast-modal-options" id="timer-options-modal-desktop">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Follow Tab -->
-                                <div class="tab-panel" id="follow-panel-desktop">
-                                    <div class="follow-tab-content">
-                                        <div id="follow-content-desktop"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Details Tab -->
-                                <div class="tab-panel" id="details-panel-desktop">
-                                    <div class="details-tab-content">
-                                        <div class="details-section-modern" id="shownotes-section-desktop">
-                                            <div class="section-header-modern">
-                                                <i class="fas fa-file-alt section-icon"></i>
-                                                <h2 class="section-title-modern">Show Notes</h2>
-                                            </div>
-                                            <div class="shownotes-content-modern" id="shownotes-content-desktop">
-                                                <div class="empty-state-modern">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    <p>No episode selected</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="details-section-modern" id="chapters-section-desktop">
-                                            <div class="section-header-modern">
-                                                <i class="fas fa-list-ul section-icon"></i>
-                                                <h2 class="section-title-modern">Chapters</h2>
-                                            </div>
-                                            <div class="chapters-list-modern" id="chapters-list-desktop">
-                                                <div class="empty-state-modern">
-                                                    <i class="fas fa-list"></i>
-                                                    <p>No chapters available</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Episodes Tab -->
-                                <div class="tab-panel" id="episodes-panel-desktop">
-                                    <div class="episodes-tab-content">
-                                        <div class="episodes-header" id="episodes-header-desktop" style="display: none;">
-                                            <h2 class="episodes-title">All Episodes</h2>
-                                            <span class="episodes-count" id="episodes-count-desktop"></span>
-                                        </div>
-
-                                        <div class="loading-skeleton-modern" id="loading-skeleton-desktop">
-                                            <div class="skeleton-item-modern">
-                                                <div class="skeleton-artwork"></div>
-                                                <div class="skeleton-text">
-                                                    <div class="skeleton-line skeleton-line-title"></div>
-                                                    <div class="skeleton-line skeleton-line-meta"></div>
-                                                </div>
-                                            </div>
-                                            <div class="skeleton-item-modern">
-                                                <div class="skeleton-artwork"></div>
-                                                <div class="skeleton-text">
-                                                    <div class="skeleton-line skeleton-line-title"></div>
-                                                    <div class="skeleton-line skeleton-line-meta"></div>
-                                                </div>
-                                            </div>
-                                            <div class="skeleton-item-modern">
-                                                <div class="skeleton-artwork"></div>
-                                                <div class="skeleton-text">
-                                                    <div class="skeleton-line skeleton-line-title"></div>
-                                                    <div class="skeleton-line skeleton-line-meta"></div>
-                                                </div>
-                                            </div>
-                                            <div class="skeleton-item-modern">
-                                                <div class="skeleton-artwork"></div>
-                                                <div class="skeleton-text">
-                                                    <div class="skeleton-line skeleton-line-title"></div>
-                                                    <div class="skeleton-line skeleton-line-meta"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="episodes-list-modern" id="episodes-list-desktop" style="display: none;">
-                                        </div>
-
-                                        <div class="error-state-modern" id="error-state-desktop" style="display: none;">
-                                            <div class="error-icon-wrapper">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </div>
-                                            <h3 class="error-title">Failed to load episodes</h3>
-                                            <p class="error-message">Please check your connection and try again.</p>
-                                            <button class="retry-button-modern" id="retry-button-desktop">
-                                                <i class="fas fa-redo"></i>
-                                                <span>Retry</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="toast" id="toast-desktop" style="display: none;">
-                                <span id="toast-message-desktop"></span>
-                            </div>
-
-                            <audio id="podcast-audio-player-desktop" preload="metadata"></audio>
-                        </div>
+                        <?php
+                        $idSuffix = '-desktop';
+                        $drawerStyles = 'position: relative; transform: none; height: 100%; display: flex; flex-direction: column; background: #000;';
+                        $showCloseButton = false;
+                        require __DIR__ . '/templates/podcast-player.php';
+                        $idSuffix = '';
+                        $drawerStyles = '';
+                        $showCloseButton = true;
+                        ?>
                     </div>
                 </div>
             </div>
@@ -2330,8 +1536,48 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
     <script src="js/contact-form.js"></script>
     <script src="js/email-subscription.js"></script>
     <script src="js/embed-code.js"></script>
-    <script src="js/image-gallery.js"></script>
+    <!-- PhotoSwipe Root Element (Moved inside structure for confinement) -->
+    <!-- Ideally this should be inside .page-container if we want it confined to the "phone" -->
+    <!-- But standard PhotoSwipe expects body. We will use CSS overrides to confine it. -->
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true"
+        style="position: absolute !important; height: 100% !important;">
+        <div class="pswp__bg"></div>
+        <div class="pswp__scroll-wrap">
+            <div class="pswp__container">
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+            </div>
+            <div class="pswp__ui pswp__ui--hidden">
+                <div class="pswp__top-bar">
+                    <div class="pswp__counter"></div>
+                    <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                    <button class="pswp__button pswp__button--share" title="Share"></button>
+                    <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                    <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                    <div class="pswp__preloader">
+                        <div class="pswp__preloader__icn">
+                            <div class="pswp__preloader__cut">
+                                <div class="pswp__preloader__donut"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                    <div class="pswp__share-tooltip"></div>
+                </div>
+                <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+                <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+                <div class="pswp__caption">
+                    <div class="pswp__caption__center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    </div> <!-- Close .page-container -->
+
+    <!-- JavaScript Includes -->
 </body>
 
 </html>

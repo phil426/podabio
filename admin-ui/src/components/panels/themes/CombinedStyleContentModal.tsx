@@ -21,6 +21,7 @@ import { ProfileInspector } from '../ProfileInspector';
 import { PodcastPlayerInspector } from '../PodcastPlayerInspector';
 import { SocialIconInspector } from '../SocialIconInspector';
 import { WidgetInspector } from '../WidgetInspector';
+import { SocialIconsUnifiedEditor } from '../SocialIconsUnifiedEditor';
 import { usePageSnapshot } from '../../../api/page';
 import { sectionRegistry } from './utils/sectionRegistry';
 import { getThemeColors } from './utils/colorUtils';
@@ -111,10 +112,8 @@ export function CombinedStyleContentModal({
         return <PodcastPlayerInspector activeColor={activeColor} />;
       case 'social-icons':
         return (
-          <SocialIconInspector
+          <SocialIconsUnifiedEditor
             activeColor={activeColor}
-            selectedId={localSelectedSocialIconId}
-            onSelect={setLocalSelectedSocialIconId}
           />
         );
       default:
@@ -195,23 +194,29 @@ export function CombinedStyleContentModal({
           {/* Tab Content */}
           <div className={styles.body}>
             {/* Tabs */}
-            <SegmentedControl
-              options={[
+            {(() => {
+              const tabOptions = [
                 {
                   value: 'style',
                   label: 'Style',
                   icon: <Palette size={18} weight="regular" />
                 },
-                ...(contentEditor ? [{
+                ...(contentEditor && sectionId !== 'profile-image' ? [{
                   value: 'content',
                   label: 'Content',
                   icon: <Pencil size={18} weight="regular" />
                 }] : [])
-              ]}
-              value={activeTab}
-              onChange={(value) => setActiveTab(value as TabType)}
-              className={styles.tabs}
-            />
+              ];
+
+              return tabOptions.length > 1 ? (
+                <SegmentedControl
+                  options={tabOptions}
+                  value={activeTab}
+                  onChange={(value) => setActiveTab(value as TabType)}
+                  className={styles.tabs}
+                />
+              ) : null;
+            })()}
 
             {activeTab === 'style' ? (
               <div className={styles.stylePanel}>

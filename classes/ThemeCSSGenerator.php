@@ -13,7 +13,7 @@ class ThemeCSSGenerator
     private $page;
     private $theme;
     private $themeObj;
-    // REMOVED: $colors and $fonts - legacy code removed
+
     private $pageFonts;
     private $widgetFonts;
     private $pageBackground;
@@ -31,7 +31,7 @@ class ThemeCSSGenerator
     private $iconographyTokens;
     private $layoutDensity;
     private $spacingValues;
-    // REMOVED: legacyColorOverridesApplied - legacy code removed
+
     private $resolvedPageBackgroundValue = null;
     private $resolvedWidgetBackgroundValue = null;
     private $resolvedWidgetBorderColor = null;
@@ -45,7 +45,7 @@ class ThemeCSSGenerator
         $this->themeObj = new Theme();
 
         // Load all theme data
-        // REMOVED: Legacy colors and fonts - not needed
+
         $this->pageFonts = $this->themeObj->getPageFonts($page, $theme);
         $this->widgetFonts = $this->themeObj->getWidgetFonts($page, $theme);
         $this->pageBackground = $this->themeObj->getPageBackground($page, $theme);
@@ -64,7 +64,7 @@ class ThemeCSSGenerator
         $this->layoutDensity = $this->tokens['layout_density'] ?? 'comfortable';
         $this->spacingValues = $this->spacingTokens['values'] ?? [];
 
-        // REMOVED: Legacy color overrides - no longer needed
+
     }
 
     /**
@@ -591,7 +591,9 @@ class ThemeCSSGenerator
         $widgetHeadingFont = $this->typographyTokens['font']['widget_heading'] ?? $headingFont;
         $widgetBodyFont = $this->typographyTokens['font']['widget_body'] ?? $bodyFont;
         $css .= "    --widget-heading-font: '" . h($widgetHeadingFont) . "', sans-serif;\n";
-        $css .= "    --widget-body-font: '" . h($widgetBodyFont) . "', sans-serif;\n";
+        $css .= "    --widget-body-font: '" . h($widgetBodyFont) . "', sans-serif;
+    --widget-primary-font: var(--widget-heading-font);
+    --widget-secondary-font: var(--widget-body-font);\n";
 
         // Typography color variables (for page typography)
         // Check if colors are gradients and handle accordingly
@@ -695,7 +697,7 @@ class ThemeCSSGenerator
         $css .= "    --focus-ring-offset: " . h($this->motionTokens['focus']['ring_offset'] ?? '2px') . ";\n";
         $css .= "    --focus-ring-color: " . h($borderFocusColor) . ";\n";
 
-        // REMOVED: Legacy color variables - no longer needed
+
 
         // Text colors with guaranteed contrast
         $css .= "    --page-title-color: " . h($pageTitleColor) . ";\n";
@@ -709,6 +711,15 @@ class ThemeCSSGenerator
         // Page description/bio spacing - now handled by unified --page-spacing variable
         // Legacy --page-bio-spacing removed - use --page-spacing instead
         $css .= "    --social-icon-color: " . h($socialIconColor) . ";\n";
+
+        // Page Alignment Variables (Connects Theme Settings with Page Columns)
+        // Priority: Theme Token > Typography Token > Page Column > Default
+        $pageTitleAlignment = $this->tokens['page-title-alignment'] ?? $this->typographyTokens['alignment']['heading'] ?? $this->page['name_alignment'] ?? 'center';
+        // Note: Description alignment might not have a legacy column, defaulting to center or token
+        $pageDescriptionAlignment = $this->tokens['page-bio-alignment'] ?? $this->tokens['page-description-alignment'] ?? $this->typographyTokens['alignment']['body'] ?? 'center';
+
+        $css .= "    --page-title-alignment: " . h($pageTitleAlignment) . ";\n";
+        $css .= "    --page-description-alignment: " . h($pageDescriptionAlignment) . ";\n";
 
         // Iconography tokens - Always generate variables (use fallbacks if not set)
         $iconSizeRaw = $this->iconographyTokens['size'] ?? '48px';
@@ -728,7 +739,7 @@ class ThemeCSSGenerator
         }
 
         // Legacy font variables for backward compatibility
-        // REMOVED: Legacy font variables - no longer needed
+
 
         // Page font variables
         $css .= "    --page-primary-font: '" . h($this->pageFonts['page_primary_font']) . "';\n";
@@ -742,15 +753,32 @@ class ThemeCSSGenerator
         $css .= "    --page-background: " . h($pageBackgroundValue) . ";\n";
 
         // Generate darker version of page background for desktop/tablet mode
-        $pageBackgroundDark = $this->darkenBackground($pageBackgroundValue, 0.15); // 15% darker
+        $bgImageUrl = $this->page['page_background_image_url'] ?? '';
+        // Check for no-image marker or fallback logic
+        $shouldIgnoreImage = strpos($pageBackgroundValue, 'no-image') !== false;
+
+        if (!empty($bgImageUrl) && !$shouldIgnoreImage) {
+            // Image active: User requested a "gradient off of the palette with two similar colors"
+            // We use the surface color and a slightly altered version to create a subtle premium gradient
+            $gradColor1 = $backgroundSurface; // Main surface (e.g. off-white or dark gray)
+            $gradColor2 = $this->darkenBackground($backgroundSurface, 0.15); // 15% darker for depth
+            $pageBackgroundDark = "linear-gradient(135deg, {$gradColor1}, {$gradColor2})";
+        } else {
+            // No Image: Just darken the main background color (solid or gradient)
+            $pageBackgroundDark = $this->darkenBackground($pageBackgroundValue, 0.15); // 15% darker
+        }
         $css .= "    --page-background-dark: " . h($pageBackgroundDark) . ";\n";
 
         // Page background animation flag (for gradient animation)
         $css .= "    --page-background-animate: " . ($this->pageBackgroundAnimate ? 'true' : 'false') . ";\n";
 
-        // Page Background Image
+        // Page Background Image logic
+        // Check if we should ignore the image (e.g. solid/gradient mode selected but image URL persists in DB)
+        $shouldIgnoreImage = strpos($pageBackgroundValue, 'no-image') !== false;
+
         $bgImageUrl = $this->page['page_background_image_url'] ?? '';
-        if (!empty($bgImageUrl)) {
+
+        if (!empty($bgImageUrl) && !$shouldIgnoreImage) {
             $css .= "    --page-background-image-url: url('" . h($bgImageUrl) . "');\n";
             $css .= "    --page-background-image-active: 1;\n";
             $css .= "    --page-screen-background: transparent;\n";
@@ -761,7 +789,12 @@ class ThemeCSSGenerator
             $css .= "    --page-background-image-blur: " . h($this->page['page_background_image_blur'] ?? '0px') . ";\n";
         } else {
             $css .= "    --page-background-image-active: 0;\n";
-            $css .= "    --page-screen-background: " . h($pageBackgroundValue) . ";\n";
+            // Clean the no-image marker from the CSS output if present
+            $cleanBackgroundValue = str_replace('/* no-image */', '', $pageBackgroundValue);
+            $cleanBackgroundValue = str_replace('no-image', '', $cleanBackgroundValue); // Fallback cleanup
+            $cleanBackgroundValue = trim($cleanBackgroundValue);
+
+            $css .= "    --page-screen-background: " . h($cleanBackgroundValue) . ";\n";
         }
 
         // Widget Background - synced with Live Preview
@@ -959,7 +992,7 @@ class ThemeCSSGenerator
             $css .= "    padding: 2rem;\n";
             $css .= "}\n\n";
             $css .= "body.spatial-floating .page-container {\n";
-            // REMOVED: Legacy --secondary-color reference
+
             $css .= "    background: var(--color-background-surface);\n";
             $css .= "    border-radius: 24px;\n";
             $css .= "    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);\n";
@@ -2012,7 +2045,7 @@ class ThemeCSSGenerator
         return $attrs;
     }
 
-    // REMOVED: All legacy color override methods - no longer needed
+
 
     private function normalizeHexColor($color)
     {

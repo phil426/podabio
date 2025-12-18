@@ -15,9 +15,10 @@ class WidgetRenderer
      * Render a widget
      * @param array $widget Widget data from database
      * @param array|null $page Optional page data (for getting user_id)
+     * @param string $suffix Optional suffix for HTML IDs (e.g. '-desktop')
      * @return string HTML output
      */
-    public static function render($widget, $page = null)
+    public static function render($widget, $page = null, $suffix = '')
     {
         if (!$widget || !isset($widget['widget_type'])) {
             return '';
@@ -90,16 +91,15 @@ class WidgetRenderer
 
 
             case 'contact_form':
-                return self::renderContactForm($widget, $configData);
+                return self::renderContactForm($widget, $configData, $page['id'] ?? 0, $suffix);
 
             case 'embed_code':
                 return self::renderEmbedCode($widget, $configData);
 
             case 'image_gallery':
-                return self::renderImageGallery($widget, $configData);
+                return self::renderImageGallery($widget, $configData, $suffix);
 
-            case 'rolodex':
-                return self::renderRolodex($widget, $configData); // Legacy support
+
 
             default:
                 // Fallback rendering
@@ -1133,102 +1133,34 @@ class WidgetRenderer
 
 
 
-    /**
-     * Render Rolodex widget - expandable content cards
-     */
-    private static function renderRolodex($widget, $configData)
-    {
-        $title = $widget['title'] ?? 'Rolodex';
-        $itemsJson = $configData['items'] ?? '[]';
-        $defaultExpanded = isset($configData['default_expanded']) && $configData['default_expanded'];
 
-        // Parse items JSON
-        $items = json_decode($itemsJson, true);
-        if (!is_array($items) || empty($items)) {
-            return '<div class="widget-item widget-rolodex"><div class="widget-content"><div class="widget-title">' . htmlspecialchars($title) . '</div><div class="widget-note" style="color: #dc3545;">No items configured. Please add items in JSON format.</div></div></div>';
-        }
-
-        $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
-        $containerId = 'rolodex-' . $widgetId;
-
-        $html = '<div class="widget-item widget-rolodex" id="' . htmlspecialchars($containerId) . '">';
-        $html .= '<div class="widget-content">';
-        $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
-        $html .= '<div class="rolodex-items">';
-
-        foreach ($items as $index => $item) {
-            $itemTitle = $item['title'] ?? 'Untitled';
-            $itemDescription = $item['description'] ?? '';
-            $itemUrl = $item['url'] ?? null;
-            $itemId = 'rolodex-item-' . $widgetId . '-' . $index;
-            $isExpanded = $defaultExpanded ? 'true' : 'false';
-
-            $html .= '<div class="rolodex-item" data-item-id="' . htmlspecialchars($itemId) . '">';
-            $html .= '<button type="button" class="rolodex-item-header" onclick="toggleRolodexItem(\'' . htmlspecialchars($itemId) . '\')" aria-expanded="' . $isExpanded . '">';
-            $html .= '<span class="rolodex-item-title">' . htmlspecialchars($itemTitle) . '</span>';
-            $html .= '<span class="rolodex-item-toggle"><i class="fas fa-chevron-down"></i></span>';
-            $html .= '</button>';
-            $html .= '<div class="rolodex-item-content" id="' . htmlspecialchars($itemId) . '-content" style="display: ' . ($defaultExpanded ? 'block' : 'none') . ';">';
-
-            if ($itemDescription) {
-                $html .= '<div class="rolodex-item-description">' . self::sanitizeHtml($itemDescription) . '</div>';
-            }
-
-            if ($itemUrl) {
-                $pageId = $widget['page_id'] ?? 0;
-                $clickUrl = "/click.php?link_id={$widgetId}&page_id={$pageId}&item_index={$index}";
-                $html .= '<a href="' . htmlspecialchars($clickUrl) . '" class="rolodex-item-link" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($itemUrl) . '</a>';
-            }
-
-            $html .= '</div>';
-            $html .= '</div>';
-        }
-
-        $html .= '</div>'; // Close rolodex-items
-        $html .= '</div>'; // Close widget-content
-        $html .= '</div>'; // Close widget-item
-
-        // Add inline JavaScript for toggle functionality
-        $html .= '<script>
-(function() {
-    window.toggleRolodexItem = function(itemId) {
-        const content = document.getElementById(itemId + "-content");
-        const button = document.querySelector("[data-item-id=\'" + itemId + "\'] .rolodex-item-header");
-        if (!content || !button) return;
-        
-        const isExpanded = content.style.display !== "none";
-        content.style.display = isExpanded ? "none" : "block";
-        button.setAttribute("aria-expanded", isExpanded ? "false" : "true");
-        
-        const icon = button.querySelector(".rolodex-item-toggle i");
-        if (icon) {
-            icon.style.transform = isExpanded ? "rotate(0deg)" : "rotate(180deg)";
-        }
-    };
-})();
-</script>';
-
-        return $html;
-    }
 
     /**
      * Render Contact Form Widget
      */
-    private static function renderContactForm($widget, $configData)
+    /**
+     * Render Contact Form Widget
+     */
+    private static function renderContactForm($widget, $configData, $pageId = 0, $suffix = '')
     {
         $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
-        $pageId = isset($widget['page_id']) ? (int) $widget['page_id'] : 0;
-        $buttonText = $configData['button_text'] ?? 'Contact Me';
         $title = $widget['title'] ?? 'Contact';
-        $drawerId = 'contact-drawer-' . $widgetId;
-        $description = $configData['description'] ?? 'Get in touch with me!';
-        $thumbnail = $configData['thumbnail_image'] ?? null; // Should come from config if user sets one, or default? 
-        // Note: New widgets might not have 'thumbnail_image' in config_data unless we add a field for it or use the registry thumbnail.
-        // For public render, we usually expect a specific thumbnail set by user. If not, maybe use default icon.
+        $description = $configData['description'] ?? '';
+        $thumbnail = $configData['thumbnail_image'] ?? null;
+
+        // Use unique drawer ID with suffix
+        $uniqueDrawerId = 'contact-drawer-' . $widgetId . $suffix;
+        $uniqueOverlayId = 'contact-overlay-' . $widgetId . $suffix;
+        $uniqueFormId = 'contact-form-' . $widgetId . $suffix;
+
+        // JS function uses base ID, we need to handle suffix in JS or pass unique ID
+        // Simplified: Pass the exact IDs to a new open function or update existing one?
+        // Let's pass the 'suffix' to the JS function
+        $jsSuffix = $suffix ? "'" . $suffix . "'" : "''";
 
         // Standard Widget Structure
         // Wrapper button (opens drawer) - use <a> to match custom link styling exactly
-        $html = '<a href="javascript:void(0)" onclick="openContactDrawer(' . $widgetId . ')" class="widget-item widget-contact-btn">';
+        $html = '<a href="javascript:;" onclick="openContactDrawer(' . $widgetId . ', ' . $jsSuffix . ')" class="widget-item widget-contact-btn">';
 
         // Left Side: Thumbnail or Icon
         if ($thumbnail) {
@@ -1249,45 +1181,53 @@ class WidgetRenderer
         }
         $html .= '</div>'; // widget-content
 
-        // Optional: Action Icon (e.g. arrow or chevron) - standard widgets don't always have it, but nice for interaction
-        //$html .= '<div class="widget-action"><i class="fas fa-chevron-right"></i></div>';
-
         $html .= '</a>';
 
-        // Hidden Drawer HTML
-        $html .= '<div id="' . $drawerId . '" class="drawer contact-drawer">';
-        $html .= '<div class="drawer-header">';
+        // Modal Structure (Hidden by default)
+        // Overlay serves as the wrapper/backdrop
+        $html .= '<div id="' . $uniqueOverlayId . '" class="modal-overlay contact-overlay" onclick="closeContactDrawer(' . $widgetId . ', ' . $jsSuffix . ')">';
+
+        // Modal Container (Centered Box)
+        // Stop propagation so clicking inside the form doesn't close the modal
+        $html .= '<div id="' . $uniqueDrawerId . '" class="modal-container contact-modal" onclick="event.stopPropagation()">';
+
+        $html .= '<div class="modal-header">'; // Switched from drawer-header to modal-header
         $html .= '<h3>' . htmlspecialchars($title) . '</h3>';
-        $html .= '<button class="drawer-close" onclick="closeContactDrawer(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
+        $html .= '<button class="drawer-close" onclick="closeContactDrawer(' . $widgetId . ', ' . $jsSuffix . ')"><i class="fas fa-times"></i></button>';
         $html .= '</div>';
 
-        $html .= '<div class="drawer-content">';
-        $html .= '<form id="contact-form-' . $widgetId . '" onsubmit="submitContactForm(event, ' . $widgetId . ', ' . $pageId . ')">';
+        $html .= '<div class="modal-content">'; // Switched from drawer-content to modal-content for styling consistency
+        $html .= '<form id="' . $uniqueFormId . '" onsubmit="submitContactForm(event, ' . $widgetId . ', ' . $pageId . ', ' . $jsSuffix . ')">';
 
         $html .= '<div class="form-group">';
-        $html .= '<label for="contact-name-' . $widgetId . '">Name</label>';
-        $html .= '<input type="text" id="contact-name-' . $widgetId . '" name="name" required placeholder="Your Name" class="form-control">';
-        $html .= '</div>';
-
-        $html .= '<div class="form-group">';
-        $html .= '<label for="contact-email-' . $widgetId . '">Email</label>';
-        $html .= '<input type="email" id="contact-email-' . $widgetId . '" name="email" required placeholder="your@email.com" class="form-control">';
+        $html .= '<label for="contact-name-' . $widgetId . $suffix . '">Name</label>';
+        $html .= '<input type="text" id="contact-name-' . $widgetId . $suffix . '" name="name" required placeholder="Your Name" class="form-control">';
         $html .= '</div>';
 
         $html .= '<div class="form-group">';
-        $html .= '<label for="contact-message-' . $widgetId . '">Message</label>';
-        $html .= '<textarea id="contact-message-' . $widgetId . '" name="message" required rows="5" placeholder="How can we help?" class="form-control"></textarea>';
+        $html .= '<label for="contact-email-' . $widgetId . $suffix . '">Email</label>';
+        $html .= '<input type="email" id="contact-email-' . $widgetId . $suffix . '" name="email" required placeholder="your@email.com" class="form-control">';
         $html .= '</div>';
 
-        $html .= '<div id="contact-message-' . $widgetId . '-status" class="form-status" style="display:none; margin-bottom: 15px;"></div>';
+        $html .= '<div class="form-group">';
+        $html .= '<label for="contact-subject-' . $widgetId . $suffix . '">Subject</label>';
+        $html .= '<input type="text" id="contact-subject-' . $widgetId . $suffix . '" name="subject" required placeholder="What is this about?" class="form-control">';
+        $html .= '</div>';
+
+        $html .= '<div class="form-group">';
+        $html .= '<label for="contact-message-' . $widgetId . $suffix . '">Message</label>';
+        $html .= '<textarea id="contact-message-' . $widgetId . $suffix . '" name="message" required rows="5" placeholder="How can we help?" class="form-control"></textarea>';
+        $html .= '</div>';
+
+        $html .= '<div id="contact-message-' . $widgetId . '-status' . $suffix . '" class="form-status" style="display:none; margin-bottom: 15px;"></div>';
 
         $html .= '<button type="submit" class="btn btn-primary btn-block">Send Message</button>';
 
         $html .= '</form>';
-        $html .= '</div>'; // drawer-content
-        $html .= '</div>'; // drawer
+        $html .= '</div>'; // modal-content
+        $html .= '</div>'; // modal-container
 
-        $html .= '<div id="contact-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeContactDrawer(' . $widgetId . ')"></div>';
+        $html .= '</div>'; // modal-overlay
 
         return $html;
     }
@@ -1295,10 +1235,11 @@ class WidgetRenderer
     /**
      * Render Embed Code Widget
      */
-    private static function renderEmbedCode($widget, $configData)
+    private static function renderEmbedCode($widget, $configData, $suffix = '')
     {
         $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
-        $codeContent = $configData['code_content'] ?? '';
+        // Decode potential entities if they were doubly encoded or just to be safe for "raw" output
+        $codeContent = isset($configData['code_content']) ? html_entity_decode($configData['code_content']) : '';
         $displayMode = $configData['display_mode'] ?? 'inline';
         $buttonLabel = $configData['button_label'] ?? 'View Content';
         $title = $widget['title'] ?? 'Embed Config'; // Usually hidden or used for button
@@ -1317,12 +1258,15 @@ class WidgetRenderer
         }
 
         // Modal Mode
-        $drawerId = 'embed-drawer-' . $widgetId;
+        $uniqueDrawerId = 'embed-drawer-' . $widgetId . $suffix;
+        $uniqueOverlayId = 'embed-overlay-' . $widgetId . $suffix;
+        $jsSuffix = $suffix ? "'" . $suffix . "'" : "''";
+
         $description = $configData['description'] ?? '';
         $thumbnail = $configData['thumbnail_image'] ?? null;
 
         // Button trigger with Standard Structure
-        $html = '<a href="javascript:void(0)" onclick="openEmbedDrawer(' . $widgetId . ')" class="widget-item widget-embed-btn">';
+        $html = '<a href="javascript:;" onclick="openEmbedDrawer(' . $widgetId . ', ' . $jsSuffix . ')" class="widget-item widget-embed-btn">';
 
         // Left Side
         if ($thumbnail) {
@@ -1346,20 +1290,20 @@ class WidgetRenderer
         $html .= '</a>';
 
         // Hidden Drawer
-        $html .= '<div id="' . $drawerId . '" class="drawer embed-drawer">';
+        $html .= '<div id="' . $uniqueDrawerId . '" class="drawer drawer-bottom embed-drawer">';
         $html .= '<div class="drawer-header">';
         $html .= '<h3>' . htmlspecialchars($buttonLabel) . '</h3>';
-        $html .= '<button class="drawer-close" onclick="closeEmbedDrawer(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
+        $html .= '<button class="drawer-close" onclick="closeEmbedDrawer(' . $widgetId . ', ' . $jsSuffix . ')"><i class="fas fa-times"></i></button>';
         $html .= '</div>';
         $html .= '<div class="drawer-content">';
         $html .= '<div class="embed-content-wrapper">';
-        $html .= $codeContent;
+        $html .= $codeContent; // Raw output here too
         $html .= '</div>';
         $html .= '</div>';
         $html .= '</div>';
 
         // Overlay
-        $html .= '<div id="embed-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeEmbedDrawer(' . $widgetId . ')"></div>';
+        $html .= '<div id="' . $uniqueOverlayId . '" class="drawer-overlay" onclick="closeEmbedDrawer(' . $widgetId . ', ' . $jsSuffix . ')"></div>';
 
         return $html;
     }
@@ -1367,17 +1311,15 @@ class WidgetRenderer
     /**
      * Render Photo Gallery Widget
      */
-    private static function renderImageGallery($widget, $configData)
+    private static function renderImageGallery($widget, $configData, $suffix = '')
     {
         $widgetId = isset($widget['id']) ? (int) $widget['id'] : 0;
         $title = $widget['title'] ?? 'Gallery';
-        // 'images' might be JSON string or array depending on how it's stored and retrieved
         $images = $configData['images'] ?? [];
         if (is_string($images)) {
             $images = json_decode($images, true);
         }
 
-        // Filter valid images
         $validImages = [];
         if (is_array($images)) {
             foreach ($images as $img) {
@@ -1392,26 +1334,22 @@ class WidgetRenderer
         }
 
         $gridColumns = isset($configData['grid_columns']) ? (int) $configData['grid_columns'] : 3;
-        // Strict bounds check: only 2, 3, or 4 allowed. Fallback to 3.
         if ($gridColumns < 2 || $gridColumns > 4) {
             $gridColumns = 3;
         }
-        $gridClass = 'gallery-grid-' . $gridColumns; // e.g., gallery-grid-2, gallery-grid-3
+        $gridClass = 'gallery-grid-' . $gridColumns;
 
-        // Encode images for JS
-        $imagesJson = htmlspecialchars(json_encode($validImages), ENT_QUOTES, 'UTF-8');
+        $uniqueDrawerId = 'gallery-drawer-' . $widgetId . $suffix;
+        $uniqueOverlayId = 'gallery-drawer-overlay-' . $widgetId . $suffix;
+        $jsSuffix = $suffix ? "'" . $suffix . "'" : "''";
 
-        $drawerId = 'gallery-drawer-' . $widgetId;
-        $description = $configData['description'] ?? ''; // Gallery description
-        // Use first image as thumbnail if no explicit thumbnail, or better yet, generic icon if no specific thumb?
-        // User wants "A thumbnail". If specific thumbnail set for widget, use it. Else, maybe use first gallery image? 
-        // For now, let's look for 'thumbnail_image' property (standard across widgets).
+        $description = $configData['description'] ?? '';
         $thumbnail = $configData['thumbnail_image'] ?? ($validImages[0] ?? null);
 
-        // Render Trigger Button (opening the thumbnails modal)
-        $html = '<a href="javascript:void(0)" onclick="openGalleryModal(' . $widgetId . ')" class="widget-item widget-gallery-btn" data-widget-id="' . $widgetId . '" data-images="' . $imagesJson . '">';
+        // Widget Button
+        // Added data attributes for Event Delegation (robust click handling)
+        $html = '<a href="javascript:;" class="widget-item widget-gallery-btn" data-widget-id="' . $widgetId . '" data-suffix="' . htmlspecialchars($suffix) . '">';
 
-        // Left Side: Thumbnail or Icon
         if ($thumbnail) {
             $html .= '<div class="widget-thumbnail-wrapper">';
             $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($thumbnail)) . '" alt="' . htmlspecialchars($title) . '" class="widget-thumbnail">';
@@ -1422,41 +1360,44 @@ class WidgetRenderer
             $html .= '</div>';
         }
 
-        // Right Side: Content
         $html .= '<div class="widget-content">';
         $html .= '<div class="widget-title">' . htmlspecialchars($title) . '</div>';
-        // Description
-        // Note: 'description' was added to registry, so it should be in configData if saved
         if ($description) {
             $html .= '<div class="widget-description">' . htmlspecialchars($description) . '</div>';
-        } else {
-            // Fallback description line if empty? Or just hide it. Standard is hide.
         }
         $html .= '</div>';
-
         $html .= '</a>';
 
-        // Hidden Drawer (The Thumbnails Modal)
-        $html .= '<div id="' . $drawerId . '" class="drawer gallery-drawer">';
-        $html .= '<div class="drawer-header">';
-        $html .= '<h3>' . htmlspecialchars($title) . '</h3>';
-        $html .= '<button class="drawer-close" onclick="closeGalleryModal(' . $widgetId . ')"><i class="fas fa-times"></i></button>';
-        $html .= '</div>'; // drawer-header
+        // Modal Overlay (Wrapper/Backdrop)
+        // Matches Contact Form structure: Overlay -> Container
+        $html .= '<div id="' . $uniqueOverlayId . '" class="modal-overlay gallery-overlay-close" data-widget-id="' . $widgetId . '" data-suffix="' . htmlspecialchars($suffix) . '" onclick="closeGalleryModal(' . $widgetId . ', ' . $jsSuffix . ')">';
 
-        $html .= '<div class="drawer-content">';
-        $html .= '<div class="gallery-grid ' . $gridClass . '">';
+        // Modal Container (Centered Box)
+        // Replaces .drawer .drawer-bottom
+        // Added contact-modal class to inherit styling
+        $html .= '<div id="' . $uniqueDrawerId . '" class="modal-container contact-modal" onclick="event.stopPropagation()">';
+
+        $html .= '<div class="modal-header">';
+        $html .= '<div class="gallery-drawer-title">' . htmlspecialchars($title) . '</div>';
+        $html .= '<button class="drawer-close gallery-close-btn" data-widget-id="' . $widgetId . '" data-suffix="' . htmlspecialchars($suffix) . '" onclick="closeGalleryModal(' . $widgetId . ', ' . $jsSuffix . ')"><i class="fas fa-times"></i></button>';
+        $html .= '</div>';
+
+        $html .= '<div class="modal-content">';
+        // PhotoSwipe Gallery Container
+        $html .= '<div class="gallery-grid ' . $gridClass . '" id="gallery-grid-' . $widgetId . $suffix . '">';
         foreach ($validImages as $index => $imageUrl) {
-            // Click thumb -> Open Swipe Deck
-            $html .= '<div class="gallery-grid-item" onclick="openSwipeDeck(' . $widgetId . ', ' . $index . ')">';
-            $html .= '<img src="' . htmlspecialchars(normalizeImageUrl($imageUrl)) . '" alt="Gallery Image ' . ($index + 1) . '" class="gallery-grid-image" loading="lazy">';
+            $fullUrl = htmlspecialchars(normalizeImageUrl($imageUrl));
+            $html .= '<div class="gallery-grid-item">';
+            $html .= '<a href="' . $fullUrl . '" data-pswp-width="1200" data-pswp-height="900" target="_blank">';
+            $html .= '<img src="' . $fullUrl . '" alt="Gallery Image" class="gallery-grid-image" loading="lazy">';
+            $html .= '</a>';
             $html .= '</div>';
         }
         $html .= '</div>'; // gallery-grid
-        $html .= '</div>'; // drawer-content
-        $html .= '</div>'; // drawer
+        $html .= '</div>'; // modal-content
 
-        // Overlay for the drawer
-        $html .= '<div id="gallery-drawer-overlay-' . $widgetId . '" class="drawer-overlay" onclick="closeGalleryModal(' . $widgetId . ')"></div>';
+        $html .= '</div>'; // modal-container
+        $html .= '</div>'; // modal-overlay
 
         return $html;
     }

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { LeftRailNav } from './LeftRailNav';
-import { LeftyContentPanel } from './LeftyContentPanel';
+import { AppSidebarNav } from './AppSidebarNav';
+import { ContentPanel } from './ContentPanel';
 import { CanvasViewport, type DevicePreset } from './CanvasViewport';
-import { PropertiesPanel } from './PropertiesPanel';
-import { LeftyInformationPanel } from '../panels/lefty/LeftyInformationPanel';
 import { WelcomeOnboardingModal } from '../overlays/WelcomeOnboardingModal';
-import { tabColors, type LeftyTabValue } from './tab-colors';
+import { tabColors, type AppSidebarTabValue } from './tab-colors';
 import { useSocialIconSelection } from '../../state/socialIconSelection';
 import { useIntegrationSelection } from '../../state/integrationSelection';
 import { useWidgetSelection } from '../../state/widgetSelection';
@@ -16,7 +14,7 @@ import { SocialIconModal } from '../modals/SocialIconModal';
 
 import './editor-shell.css';
 
-// Lefty is now the only admin panel
+// AppSidebar is now the admin panel layout
 
 export function EditorShell(): JSX.Element {
   const location = useLocation();
@@ -25,7 +23,7 @@ export function EditorShell(): JSX.Element {
   // Detect if we're on an account route and switch to account tab
   const isAccountRoute = location.pathname.startsWith('/account');
 
-  const [activeTab, setActiveTab] = useState<LeftyTabValue>(() => {
+  const [activeTab, setActiveTab] = useState<AppSidebarTabValue>(() => {
     // If on account route, default to account tab
     if (isAccountRoute) {
       return 'account';
@@ -71,7 +69,7 @@ export function EditorShell(): JSX.Element {
   const selectWidget = useWidgetSelection((state) => state.selectWidget);
 
   // Handle tab change
-  const handleTabChange = (tab: LeftyTabValue) => {
+  const handleTabChange = (tab: AppSidebarTabValue) => {
     setActiveTab(tab);
   };
 
@@ -88,8 +86,8 @@ export function EditorShell(): JSX.Element {
   return (
     <div className="editor-shell" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <EditorPanels
-        activeTab={activeTab as LeftyTabValue}
-        onTabChange={handleTabChange as (tab: LeftyTabValue) => void}
+        activeTab={activeTab as AppSidebarTabValue}
+        onTabChange={handleTabChange as (tab: AppSidebarTabValue) => void}
         selectedDevice={selectedDevice}
       />
     </div>
@@ -97,8 +95,8 @@ export function EditorShell(): JSX.Element {
 }
 
 interface EditorPanelsProps {
-  activeTab: LeftyTabValue;
-  onTabChange: (tab: LeftyTabValue) => void;
+  activeTab: AppSidebarTabValue;
+  onTabChange: (tab: AppSidebarTabValue) => void;
   selectedDevice: DevicePreset;
 }
 
@@ -114,13 +112,13 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
       width: '100%',
       overflow: 'hidden'
     }}>
-      {/* Left Rail Column - Auto width based on content (animating rail) */}
+      {/* App Sidebar Column - Auto width based on content (animating sidebar) */}
       <div className="editor-shell__panel editor-shell__panel--left" style={{
         position: 'relative',
         height: '100%',
         zIndex: 10
       }}>
-        <LeftRailNav
+        <AppSidebarNav
           activeTab={activeTab}
           onTabChange={onTabChange}
         />
@@ -135,7 +133,7 @@ function EditorPanels({ activeTab, onTabChange, selectedDevice }: EditorPanelsPr
         minWidth: 0, /* CSS Grid blowout prevention */
         zIndex: 0
       }}>
-        <LeftyContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
+        <ContentPanel activeTab={activeTab} activeColor={activeColor} onTabChange={onTabChange} />
 
         {/* Info Panel conditionally rendered overlay or side-by-side if needed later */}
         {(activeTab === 'podcast' || activeTab === 'integration' || activeTab === 'analytics') && (

@@ -6,31 +6,55 @@
 (function () {
     'use strict';
 
-    window.openContactDrawer = function (widgetId) {
-        const drawer = document.getElementById('contact-drawer-' + widgetId);
-        const overlay = document.getElementById('contact-overlay-' + widgetId);
+    window.openContactDrawer = function (widgetId, suffix = '') {
+        const uniqueId = 'contact-drawer-' + widgetId + suffix;
+        const uniqueOverlayId = 'contact-overlay-' + widgetId + suffix;
+        const drawer = document.getElementById(uniqueId);
+        const overlay = document.getElementById(uniqueOverlayId);
+
         if (drawer && overlay) {
+            drawer.classList.add('visible'); // Use visible class instead of open for newer drawer styles if applicable, but sticky to open/active for now?
+            // Actually, newer styles in widget-styles.css use .visible for overlay and drawer-bottom transform
+            // Let's check what existing styles use. 
+            // drawers.css uses .open and .active
+            // widget-styles.css uses .visible
+            // Let's support BOTH to be safe or migrate to one. 
+            // The renderer added 'drawer-bottom' class which uses 'visible' in widget-styles.css
+            // But 'contact-drawer' might rely on 'open' from drawers.css?
+            // Let's just add ALL classes to be safe.
             drawer.classList.add('open');
+            drawer.classList.add('visible');
             overlay.classList.add('active');
+            overlay.classList.add('visible');
             document.body.style.overflow = 'hidden';
         }
     };
 
-    window.closeContactDrawer = function (widgetId) {
-        const drawer = document.getElementById('contact-drawer-' + widgetId);
-        const overlay = document.getElementById('contact-overlay-' + widgetId);
+    window.closeContactDrawer = function (widgetId, suffix = '') {
+        const uniqueId = 'contact-drawer-' + widgetId + suffix;
+        const uniqueOverlayId = 'contact-overlay-' + widgetId + suffix;
+        const drawer = document.getElementById(uniqueId);
+        const overlay = document.getElementById(uniqueOverlayId);
+
         if (drawer && overlay) {
             drawer.classList.remove('open');
+            drawer.classList.remove('visible');
             overlay.classList.remove('active');
+            overlay.classList.remove('visible');
             document.body.style.overflow = '';
         }
     };
 
-    window.submitContactForm = function (event, widgetId, pageId) {
+    window.submitContactForm = function (event, widgetId, pageId, suffix = '') {
         event.preventDefault();
 
-        const form = document.getElementById('contact-form-' + widgetId);
-        const statusDiv = document.getElementById('contact-message-' + widgetId + '-status');
+        const formId = 'contact-form-' + widgetId + suffix;
+        const form = document.getElementById(formId);
+        // Fallback if form not found with suffix
+        const formEl = form ? form : document.getElementById('contact-form-' + widgetId);
+
+        const statusId = 'contact-message-' + widgetId + '-status' + suffix;
+        const statusDiv = document.getElementById(statusId);
         const submitBtn = form.querySelector('button[type="submit"]');
 
         const formData = new FormData(form);

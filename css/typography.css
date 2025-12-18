@@ -6,10 +6,15 @@
     font-size: var(--page-title-size, var(--type-scale-xl, 2rem));
     line-height: var(--type-line-height-tight, 1.2);
     font-family: var(--font-family-heading);
-    font-weight: var(--type-weight-bold, 600);
+    font-weight: var(--type-weight-heading, var(--type-weight-bold, 600));
+    font-style: var(--type-style-heading, normal);
     margin-top: var(--page-spacing, 16px);
     margin-bottom: 0;
     color: var(--heading-font-color, var(--page-title-color, var(--color-text-primary)));
+    width: 100%;
+    text-align: var(--page-title-alignment, center);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .page-description {
@@ -22,6 +27,7 @@
     font-family: var(--font-family-body);
     width: 80%;
     max-width: 100%;
+    text-align: var(--page-description-alignment, center);
     margin-left: auto;
     margin-right: auto;
 }
@@ -30,27 +36,26 @@
 /* These classes are applied but the base .page-title already uses --type-scale-xl */
 /* The size classes can provide relative scaling if needed, but for now we'll let the scale variable handle it */
 .name-size-large {
-    font-size: var(--type-scale-xl, 2rem);
+    font-size: var(--page-title-size, var(--type-scale-xl, 2rem));
 }
 
 .name-size-xlarge {
-    font-size: var(--type-scale-xl, 2rem);
+    font-size: var(--type-scale-2xl, 3rem);
 }
 
 .name-size-xxlarge {
-    font-size: var(--type-scale-xl, 2rem);
+    font-size: calc(var(--type-scale-2xl, 3rem) * 1.25);
 }
 
 /* Bio size classes now use CSS variables from typography scale */
 .bio-size-small {
-    font-size: var(--type-scale-sm, 1rem);
+    font-size: var(--type-scale-xs, 0.75rem);
 }
 
 .bio-size-medium {
-    font-size: var(--type-scale-sm, 1rem);
+    font-size: var(--page-description-size, var(--type-scale-sm, 1rem));
 }
 
 .bio-size-large {
     font-size: var(--type-scale-sm, 1rem);
 }
-

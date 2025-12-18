@@ -1,0 +1,101 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.controlRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: end;
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.toggleGroup {
+    display: flex;
+    gap: 8px;
+}
+
+.toggleButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 127, 0.15);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    overflow: hidden;
+    min-width: 36px;
+}
+
+/* Subtle inner gradient */
+.toggleButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toggleButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.toggleButton:hover::before {
+    opacity: 1;
+}
+
+.toggleButton:active {
+    transform: scale(0.95) translateY(0);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+}
+
+.toggleButton.active {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(0, 255, 127, 0.4) !important;
+    color: #00FF7F !important;
+    box-shadow: 0 0 15px rgba(0, 255, 127, 0.15) !important;
+}
+
+.separator {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
+    align-self: center;
+}
+
+/* Ensure consistent height for swatches */
+.swatchContainer {
+    height: 36px;
+}

@@ -10,6 +10,7 @@ require_once __DIR__ . '/includes/helpers.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,22 +18,25 @@ require_once __DIR__ . '/includes/helpers.php';
     <meta name="description" content="Discover all the powerful features PodaBio offers for podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
     <style>
         /* Page-specific styles for features page - Dark Theme */
-        
+
         .content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 4rem 2rem;
             background: var(--poda-bg-primary);
         }
-        
+
         .feature-section {
             margin-bottom: 4rem;
         }
-        
+
         .feature-section h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
@@ -41,30 +45,30 @@ require_once __DIR__ . '/includes/helpers.php';
             align-items: center;
             gap: 1rem;
         }
-        
+
         .feature-section .icon {
             font-size: 2.5rem;
             color: var(--poda-accent-signal-green);
         }
-        
+
         .feature-section p {
             font-size: 1.1rem;
             color: var(--poda-text-secondary);
             margin-bottom: 1.5rem;
         }
-        
+
         .feature-list {
             list-style: none;
             padding-left: 0;
         }
-        
+
         .feature-list li {
             padding: 0.75rem 0;
             padding-left: 2rem;
             position: relative;
             color: var(--poda-text-secondary);
         }
-        
+
         .feature-list li:before {
             content: '✓';
             position: absolute;
@@ -73,7 +77,7 @@ require_once __DIR__ . '/includes/helpers.php';
             font-weight: bold;
             font-size: 1.2rem;
         }
-        
+
         .cta-box {
             background: var(--poda-bg-secondary);
             border: 1px solid var(--poda-accent-signal-green);
@@ -84,43 +88,43 @@ require_once __DIR__ . '/includes/helpers.php';
             margin-top: 4rem;
             box-shadow: 0 0 30px rgba(0, 255, 127, 0.2);
         }
-        
+
         .cta-box h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .cta-box p {
             font-size: 1.1rem;
             margin-bottom: 2rem;
             color: var(--poda-text-secondary);
         }
-        
+
         table {
             background: var(--poda-bg-secondary);
             border: 1px solid var(--poda-border-subtle);
         }
-        
+
         table th {
             background: var(--poda-bg-primary);
             color: var(--poda-text-primary);
             border-bottom: 1px solid var(--poda-border-subtle);
         }
-        
+
         table td {
             color: var(--poda-text-secondary);
             border-bottom: 1px solid var(--poda-border-subtle);
         }
-        
+
         .feature-section div[style*="background: #f9fafb"] {
             background: var(--poda-bg-primary) !important;
             border: 1px solid var(--poda-border-subtle) !important;
             color: var(--poda-text-secondary) !important;
         }
-        
     </style>
 </head>
+
 <body>
     <header class="header">
         <nav class="nav">
@@ -140,62 +144,114 @@ require_once __DIR__ . '/includes/helpers.php';
             </div>
         </nav>
     </header>
-    
+
     <div class="page-header">
         <h1>Powerful Features for Podcasters</h1>
         <p>Everything you need to showcase your podcast and grow your audience</p>
     </div>
-    
+
     <div class="content">
         <!-- Feature Comparison Table -->
         <section class="feature-section" style="margin-bottom: 4rem;">
             <h2 style="text-align: center; margin-bottom: 2rem;">Why PodaBio vs. Generic Link-in-Bio Tools</h2>
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; background: var(--poda-bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--poda-border-subtle);">
+                <table
+                    style="width: 100%; border-collapse: collapse; background: var(--poda-bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--poda-border-subtle);">
                     <thead>
                         <tr style="background: var(--poda-bg-primary);">
-                            <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Feature</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">PodaBio</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Linktree</th>
-                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Beacons</th>
+                            <th
+                                style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                Feature</th>
+                            <th
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                PodaBio</th>
+                            <th
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                Linktree</th>
+                            <th
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                Beacons</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">RSS Feed Auto-Sync</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td
+                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                RSS Feed Auto-Sync</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                ✓</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Built-in Podcast Player</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td
+                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Built-in Podcast Player</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                ✓</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast Directory Links</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">✓</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                            <td
+                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Podcast Directory Links</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                ✓</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                ✗</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast-Specific Themes</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">49+ Themes</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
+                            <td
+                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Podcast-Specific Themes</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                49+ Themes</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Limited</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Limited</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Email Subscription Integration</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">6 Services</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Basic</td>
-                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Basic</td>
+                            <td
+                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Email Subscription Integration</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                6 Services</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Basic</td>
+                            <td
+                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                Basic</td>
                         </tr>
                         <tr>
                             <td style="padding: 1rem; color: var(--poda-text-secondary);">Free Plan</td>
-                            <td style="padding: 1rem; text-align: center; color: var(--poda-accent-signal-green);">✓ Full Features</td>
-                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
-                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-accent-signal-green);">✓
+                                Full Features</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited
+                            </td>
+                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -205,10 +261,8 @@ require_once __DIR__ . '/includes/helpers.php';
         <section class="feature-section">
             <h2><span class="icon">🎙️</span> RSS Feed Integration</h2>
             <p>Automatically import your podcast information, episodes, and artwork from your RSS feed.</p>
-            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
-                <p style="margin-bottom: 0.5rem;">[Visual: RSS feed integration screenshot]</p>
-                <p style="font-size: 0.9rem;">AI Prompt: "Screenshot showing RSS feed URL input and auto-populated podcast information with cover art, name, and description fields filled automatically."</p>
-            </div>
+            <img src="/assets/images/features/rss-import.png" alt="RSS Feed Integration"
+                style="width: 100%; max-width: 600px; height: auto; border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 0.5rem; margin: 1.5rem 0; display: block; margin-left: auto; margin-right: auto;">
             <ul class="feature-list">
                 <li>Auto-populate podcast name, description, and cover art</li>
                 <li>Import recent episodes with titles and descriptions</li>
@@ -216,7 +270,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Episode duration and publish date tracking</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">🎵</span> Podcast Directory Links</h2>
             <p>Quick access links to your podcast on all major platforms.</p>
@@ -227,14 +281,12 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Overcast, Pocket Casts, and more</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">🎧</span> Podcast Player</h2>
             <p>Built-in audio player for your episodes using Shikwasa.js.</p>
-            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
-                <p style="margin-bottom: 0.5rem;">[Visual: Podcast player interface]</p>
-                <p style="font-size: 0.9rem;">AI Prompt: "Modern podcast player interface with waveform visualization, play/pause controls, and episode list drawer. Clean, minimalist design."</p>
-            </div>
+            <img src="/assets/images/features/player-interface.png" alt="Podcast Player Interface"
+                style="width: 100%; max-width: 600px; height: auto; border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 0.5rem; margin: 1.5rem 0; display: block; margin-left: auto; margin-right: auto;">
             <ul class="feature-list">
                 <li>Beautiful, accessible podcast player</li>
                 <li>Episode drawer for easy browsing</li>
@@ -242,14 +294,12 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Theme-aware player design</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">🎨</span> Complete Customization</h2>
             <p>Make your page truly yours with extensive customization options.</p>
-            <div style="background: var(--poda-bg-primary); border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; color: var(--poda-text-secondary);">
-                <p style="margin-bottom: 0.5rem;">[Visual: Theme preview grid]</p>
-                <p style="font-size: 0.9rem;">AI Prompt: "Grid showing 4 different beautiful website themes side by side. Each with different color schemes. Clean, modern design."</p>
-            </div>
+            <img src="/assets/images/features/themes-grid.png" alt="Theme Customization"
+                style="width: 100%; height: auto; border: 1px solid var(--poda-border-subtle); border-radius: 12px; padding: 0.5rem; margin: 1.5rem 0; display: block;">
             <ul class="feature-list">
                 <li>49+ professionally designed themes</li>
                 <li>15+ Google Fonts for headings and body text</li>
@@ -260,7 +310,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Drag-and-drop link reordering</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">🔗</span> Link Management</h2>
             <p>Add any type of link you need for your podcast.</p>
@@ -273,7 +323,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Shopify and Spring store links</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">📧</span> Email Subscription</h2>
             <p>Grow your email list with integrated subscription forms.</p>
@@ -286,7 +336,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Subscription analytics</li>
             </ul>
         </section>
-        
+
         <section class="feature-section">
             <h2><span class="icon">📊</span> Analytics</h2>
             <p>Track your page performance and audience engagement.</p>
@@ -298,7 +348,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>Advanced analytics on Pro plan</li>
             </ul>
         </section>
-        
+
         <!-- Custom Domain section - ON HOLD
         <section class="feature-section">
             <h2><span class="icon">🌐</span> Custom Domain</h2>
@@ -311,7 +361,7 @@ require_once __DIR__ . '/includes/helpers.php';
             </ul>
         </section>
         -->
-        
+
         <section class="feature-section">
             <h2><span class="icon">🔒</span> Security & Reliability</h2>
             <p>Built with security and performance in mind.</p>
@@ -322,21 +372,21 @@ require_once __DIR__ . '/includes/helpers.php';
                 <li>99.9% uptime guarantee</li>
             </ul>
         </section>
-        
+
         <div class="cta-box">
             <h2>Ready to Get Started?</h2>
             <p>Create your free account and start building your podcast's link-in-bio page today.</p>
             <a href="/signup.php" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Start Free</a>
         </div>
     </div>
-    
+
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h4><?php echo h(APP_NAME); ?></h4>
                 <p>The link-in-bio platform built for podcasters.</p>
             </div>
-            
+
             <div class="footer-section">
                 <h4>Product</h4>
                 <ul>
@@ -345,14 +395,14 @@ require_once __DIR__ . '/includes/helpers.php';
                     <li><a href="/support/">Support</a></li>
                 </ul>
             </div>
-            
+
             <div class="footer-section">
                 <h4>Company</h4>
                 <ul>
                     <li><a href="/about.php">About</a></li>
                 </ul>
             </div>
-            
+
             <div class="footer-section">
                 <h4>Legal</h4>
                 <ul>
@@ -368,30 +418,30 @@ require_once __DIR__ . '/includes/helpers.php';
 
     <script>
         // Segmented Control Navigation - Sliding Indicator
-        (function() {
+        (function () {
             const navLinksContainer = document.querySelector('.nav-links');
             if (!navLinksContainer) return;
-            
+
             const links = navLinksContainer.querySelectorAll('a');
             let activeLink = null;
-            
+
             function updateIndicator(target) {
                 const rect = target.getBoundingClientRect();
                 const containerRect = navLinksContainer.getBoundingClientRect();
-                
+
                 const left = rect.left - containerRect.left - 0.25rem; // Account for container padding
                 const width = rect.offsetWidth;
-                
+
                 navLinksContainer.style.setProperty('--indicator-left', left + 'px');
                 navLinksContainer.style.setProperty('--indicator-width', width + 'px');
                 navLinksContainer.classList.add('has-indicator');
             }
-            
+
             // Set initial active link based on current page
             const currentPath = window.location.pathname;
             links.forEach(link => {
                 const href = link.getAttribute('href');
-                if (href === currentPath || 
+                if (href === currentPath ||
                     (currentPath !== '/' && href !== '/' && currentPath.startsWith(href))) {
                     link.classList.add('active');
                     activeLink = link;
@@ -404,14 +454,14 @@ require_once __DIR__ . '/includes/helpers.php';
                     updateIndicator(activeLink);
                 });
             }
-            
+
             // Handle hover - indicator follows cursor
             links.forEach(link => {
                 link.addEventListener('mouseenter', () => {
                     updateIndicator(link);
                 });
             });
-            
+
             // Return to active link on mouse leave
             navLinksContainer.addEventListener('mouseleave', () => {
                 if (activeLink) {
@@ -420,7 +470,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     navLinksContainer.classList.remove('has-indicator');
                 }
             });
-            
+
             // Handle click - set as active
             links.forEach(link => {
                 link.addEventListener('click', (e) => {
@@ -432,20 +482,20 @@ require_once __DIR__ . '/includes/helpers.php';
             });
         })();
     </script>
-    
+
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
     </script>
     <!--End of Tawk.to Script-->
 </body>
-</html>
 
+</html>

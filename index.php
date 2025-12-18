@@ -11,32 +11,37 @@ require_once __DIR__ . '/includes/helpers.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo h(APP_NAME); ?> - The Link-in-Bio Platform Built for Podcasters</title>
-    <meta name="description" content="One beautiful page. All your links, episodes, and resources. Automatically synced from your RSS feed. Built specifically for podcasters.">
+    <meta name="description"
+        content="One beautiful page. All your links, episodes, and resources. Automatically synced from your RSS feed. Built specifically for podcasters.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Space+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="/css/marketing-dark.css?v=<?php echo filemtime(__DIR__ . '/css/marketing-dark.css'); ?>">
+
     <!-- CRITICAL: Define functions in HEAD so they're available immediately -->
     <script>
-        (function() {
+        (function () {
             'use strict';
             try {
                 // Accordion Toggle - MUST be available for onclick handlers
-                window.toggleAccordion = function(button) {
+                window.toggleAccordion = function (button) {
                     try {
                         if (!button) return;
                         const accordion = button.closest('.accordion');
                         if (!accordion) return;
-                        
+
                         const content = accordion.querySelector('.accordion-content');
                         const iconElement = button.querySelector('.accordion-icon');
                         const parent = accordion.parentElement;
-                        
+
                         // Close other accordions
                         if (parent) {
                             parent.querySelectorAll('.accordion').forEach(acc => {
@@ -53,11 +58,11 @@ require_once __DIR__ . '/includes/helpers.php';
                                 }
                             });
                         }
-                        
+
                         // Toggle current
                         button.classList.toggle('active');
                         if (content) content.classList.toggle('active');
-                        
+
                         if (iconElement) {
                             if (button.classList.contains('active')) {
                                 iconElement.classList.remove('icon-plus');
@@ -72,9 +77,9 @@ require_once __DIR__ . '/includes/helpers.php';
                         console.error('toggleAccordion error:', err);
                     }
                 };
-                
+
                 // Drawer functions
-                window.openDrawer = function(drawerId) {
+                window.openDrawer = function (drawerId) {
                     try {
                         const drawer = document.getElementById('drawer-' + drawerId);
                         const overlay = document.getElementById('drawer-overlay');
@@ -88,8 +93,8 @@ require_once __DIR__ . '/includes/helpers.php';
                         console.error('openDrawer error:', err);
                     }
                 };
-                
-                window.closeDrawer = function() {
+
+                window.closeDrawer = function () {
                     try {
                         document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
                         const overlay = document.getElementById('drawer-overlay');
@@ -106,20 +111,20 @@ require_once __DIR__ . '/includes/helpers.php';
                         document.body.style.overflowY = 'auto';
                     }
                 };
-                
+
                 // Tab switching
-                window.switchToTab = function(tabName, scrollToSection) {
+                window.switchToTab = function (tabName, scrollToSection) {
                     try {
                         const btn = document.querySelector('.tab-button[data-tab="' + tabName + '"]');
                         if (!btn) return false;
-                        
+
                         document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        
+
                         btn.classList.add('active');
                         const content = document.getElementById('content-' + tabName);
                         if (content) content.classList.add('active');
-                        
+
                         if (scrollToSection) {
                             const section = document.getElementById('main-content');
                             if (section) {
@@ -127,7 +132,7 @@ require_once __DIR__ . '/includes/helpers.php';
                                 window.scrollTo({ top: offset, behavior: 'smooth' });
                             }
                         }
-                        
+
                         if (window.location.hash !== '#' + tabName) {
                             history.pushState(null, null, '#' + tabName);
                         }
@@ -137,21 +142,21 @@ require_once __DIR__ . '/includes/helpers.php';
                         return false;
                     }
                 };
-                
+
                 console.log('✅ Core functions defined');
             } catch (err) {
                 console.error('❌ Failed to define core functions:', err);
             }
         })();
     </script>
-    
+
     <?php
     // Load React marketing navigation component
     require_once __DIR__ . '/config/spa-config.php';
-    
+
     $viteDevServerRunning = isViteDevServerRunning();
     $isDev = $viteDevServerRunning || isSPADevMode();
-    
+
     if ($isDev) {
         // Development: Load React Refresh and Vite client first, then the component
         $refreshUrl = getDevServerRefreshUrl();
@@ -160,7 +165,7 @@ require_once __DIR__ . '/includes/helpers.php';
         <script type="module">
             import RefreshRuntime from "<?php echo htmlspecialchars($refreshUrl, ENT_QUOTES, 'UTF-8'); ?>";
             RefreshRuntime.injectIntoGlobalHook(window);
-            window.$RefreshReg$ = () => {};
+            window.$RefreshReg$ = () => { };
             window.$RefreshSig$ = () => (type) => type;
             window.__vite_plugin_react_preamble_installed__ = true;
         </script>
@@ -212,10 +217,15 @@ require_once __DIR__ . '/includes/helpers.php';
     ?>
     <style>
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         /* CRITICAL: Ensure page is always scrollable - MUST override all other CSS */
         html {
             overflow-x: hidden !important;
@@ -224,7 +234,7 @@ require_once __DIR__ . '/includes/helpers.php';
             max-height: none !important;
             scroll-behavior: smooth !important;
         }
-        
+
         body {
             overflow-x: hidden !important;
             overflow-y: auto !important;
@@ -234,203 +244,259 @@ require_once __DIR__ . '/includes/helpers.php';
             position: relative !important;
             padding-top: 100px !important;
         }
-        
+
         /* Scroll Animation Styles */
         /* Progressive enhancement: visible by default, hidden only when JS runs */
         .scroll-animate {
-            opacity: 1; /* Visible by default - content is always accessible */
+            opacity: 1;
+            /* Visible by default - content is always accessible */
             transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        
+
+
         body.animations-ready .scroll-animate:not(.animate) {
             opacity: 0;
         }
-        
+
         .scroll-animate.animate {
             opacity: 1;
         }
-        
+
         /* Fade In */
         .scroll-animate[data-animate="fade"] {
-            opacity: 1; /* Visible by default */
+            opacity: 1;
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="fade"]:not(.animate) {
             opacity: 0;
         }
-        
+
         .scroll-animate[data-animate="fade"].animate {
             opacity: 1;
         }
-        
+
         /* Slide Up */
         .scroll-animate[data-animate="slide-up"] {
-            transform: translateY(0); /* Visible by default */
+            transform: translateY(0);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="slide-up"]:not(.animate) {
             transform: translateY(60px);
         }
-        
+
         .scroll-animate[data-animate="slide-up"].animate {
             transform: translateY(0);
         }
-        
+
         /* Slide Down */
         .scroll-animate[data-animate="slide-down"] {
-            transform: translateY(0); /* Visible by default */
+            transform: translateY(0);
+            /* Visible by default */
         }
-        
+
         body.animations-ready .scroll-animate[data-animate="slide-down"]:not(.animate) {
             transform: translateY(-60px);
         }
-        
+
         .scroll-animate[data-animate="slide-down"].animate {
             transform: translateY(0);
         }
-        
+
         /* Slide Left */
         .scroll-animate[data-animate="slide-left"] {
-            transform: translateX(0); /* Visible by default */
+            transform: translateX(0);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="slide-left"]:not(.animate) {
             transform: translateX(60px);
         }
-        
+
         .scroll-animate[data-animate="slide-left"].animate {
             transform: translateX(0);
         }
-        
+
         /* Slide Right */
         .scroll-animate[data-animate="slide-right"] {
-            transform: translateX(0); /* Visible by default */
+            transform: translateX(0);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="slide-right"]:not(.animate) {
             transform: translateX(-60px);
         }
-        
+
         .scroll-animate[data-animate="slide-right"].animate {
             transform: translateX(0);
         }
-        
+
         /* Scale */
         .scroll-animate[data-animate="scale"] {
-            transform: scale(1); /* Visible by default */
+            transform: scale(1);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="scale"]:not(.animate) {
             transform: scale(0.8);
         }
-        
+
         .scroll-animate[data-animate="scale"].animate {
             transform: scale(1);
         }
-        
+
         /* Reveal (clip-path) */
         .scroll-animate[data-animate="reveal"] {
-            clip-path: inset(0 0 0% 0); /* Visible by default */
+            clip-path: inset(0 0 0% 0);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="reveal"]:not(.animate) {
             clip-path: inset(0 0 100% 0);
         }
-        
+
         .scroll-animate[data-animate="reveal"].animate {
             clip-path: inset(0 0 0% 0);
         }
-        
+
         /* Fade + Slide Up (most common) */
         .scroll-animate[data-animate="fade-slide-up"] {
-            transform: translateY(0); /* Visible by default */
+            transform: translateY(0);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="fade-slide-up"]:not(.animate) {
             opacity: 0;
             transform: translateY(40px);
         }
-        
+
         .scroll-animate[data-animate="fade-slide-up"].animate {
             opacity: 1;
             transform: translateY(0);
         }
-        
+
         /* Rotate */
         .scroll-animate[data-animate="rotate"] {
-            transform: rotate(0deg) scale(1); /* Visible by default */
+            transform: rotate(0deg) scale(1);
+            /* Visible by default */
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="rotate"]:not(.animate) {
             transform: rotate(-5deg) scale(0.9);
         }
-        
+
         .scroll-animate[data-animate="rotate"].animate {
             transform: rotate(0deg) scale(1);
         }
-        
+
         /* Scale + Rotate */
         .scroll-animate[data-animate="scale-rotate"] {
-            opacity: 1; /* Visible by default */
+            opacity: 1;
+            /* Visible by default */
             transform: scale(1) rotate(0deg);
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="scale-rotate"]:not(.animate) {
             opacity: 0;
             transform: scale(0.8) rotate(10deg);
         }
-        
+
         .scroll-animate[data-animate="scale-rotate"].animate {
             opacity: 1;
             transform: scale(1) rotate(0deg);
         }
-        
+
         /* Slide from corner */
         .scroll-animate[data-animate="slide-corner"] {
-            opacity: 1; /* Visible by default */
+            opacity: 1;
+            /* Visible by default */
             transform: translate(0, 0);
         }
-        
-        
+
+
         body.animations-ready .scroll-animate[data-animate="slide-corner"]:not(.animate) {
             opacity: 0;
             transform: translate(60px, 60px);
         }
-        
+
         .scroll-animate[data-animate="slide-corner"].animate {
             opacity: 1;
             transform: translate(0, 0);
         }
-        
+
         /* Stagger delay classes for grid items */
-        .scroll-animate[data-delay="0"] { transition-delay: 0ms; }
-        .scroll-animate[data-delay="100"] { transition-delay: 100ms; }
-        .scroll-animate[data-delay="200"] { transition-delay: 200ms; }
-        .scroll-animate[data-delay="300"] { transition-delay: 300ms; }
-        .scroll-animate[data-delay="400"] { transition-delay: 400ms; }
-        .scroll-animate[data-delay="500"] { transition-delay: 500ms; }
-        .scroll-animate[data-delay="600"] { transition-delay: 600ms; }
-        .scroll-animate[data-delay="700"] { transition-delay: 700ms; }
-        .scroll-animate[data-delay="800"] { transition-delay: 800ms; }
-        .scroll-animate[data-delay="900"] { transition-delay: 900ms; }
-        .scroll-animate[data-delay="1000"] { transition-delay: 1000ms; }
-        .scroll-animate[data-delay="1100"] { transition-delay: 1100ms; }
-        .scroll-animate[data-delay="1200"] { transition-delay: 1200ms; }
-        .scroll-animate[data-delay="1300"] { transition-delay: 1300ms; }
-        .scroll-animate[data-delay="1400"] { transition-delay: 1400ms; }
-        
+        .scroll-animate[data-delay="0"] {
+            transition-delay: 0ms;
+        }
+
+        .scroll-animate[data-delay="100"] {
+            transition-delay: 100ms;
+        }
+
+        .scroll-animate[data-delay="200"] {
+            transition-delay: 200ms;
+        }
+
+        .scroll-animate[data-delay="300"] {
+            transition-delay: 300ms;
+        }
+
+        .scroll-animate[data-delay="400"] {
+            transition-delay: 400ms;
+        }
+
+        .scroll-animate[data-delay="500"] {
+            transition-delay: 500ms;
+        }
+
+        .scroll-animate[data-delay="600"] {
+            transition-delay: 600ms;
+        }
+
+        .scroll-animate[data-delay="700"] {
+            transition-delay: 700ms;
+        }
+
+        .scroll-animate[data-delay="800"] {
+            transition-delay: 800ms;
+        }
+
+        .scroll-animate[data-delay="900"] {
+            transition-delay: 900ms;
+        }
+
+        .scroll-animate[data-delay="1000"] {
+            transition-delay: 1000ms;
+        }
+
+        .scroll-animate[data-delay="1100"] {
+            transition-delay: 1100ms;
+        }
+
+        .scroll-animate[data-delay="1200"] {
+            transition-delay: 1200ms;
+        }
+
+        .scroll-animate[data-delay="1300"] {
+            transition-delay: 1300ms;
+        }
+
+        .scroll-animate[data-delay="1400"] {
+            transition-delay: 1400ms;
+        }
+
         /* Homepage-specific styles - Dark Theme */
-        
+
         .homepage-hero {
             background: var(--poda-bg-primary);
             color: var(--poda-text-primary);
@@ -439,7 +505,7 @@ require_once __DIR__ . '/includes/helpers.php';
             position: relative;
             overflow: visible;
         }
-        
+
         .homepage-hero::after {
             content: '';
             position: absolute;
@@ -451,7 +517,7 @@ require_once __DIR__ . '/includes/helpers.php';
             pointer-events: none;
             z-index: 1;
         }
-        
+
         .homepage-hero::before {
             content: '';
             position: absolute;
@@ -462,17 +528,17 @@ require_once __DIR__ . '/includes/helpers.php';
             background: radial-gradient(circle at 50% 50%, rgba(0, 255, 127, 0.05) 0%, transparent 70%);
             z-index: 0;
         }
-        
-        .homepage-hero > * {
+
+        .homepage-hero>* {
             position: relative;
             z-index: 2;
         }
-        
+
         .hero-content {
             max-width: 900px;
             margin: 0 auto;
         }
-        
+
         .hero-tagline {
             font-size: 0.9rem;
             color: var(--poda-accent-signal-green);
@@ -481,7 +547,7 @@ require_once __DIR__ . '/includes/helpers.php';
             margin-bottom: 1rem;
             font-weight: 600;
         }
-        
+
         .hero-headline {
             font-size: 4rem;
             font-weight: 500;
@@ -490,7 +556,7 @@ require_once __DIR__ . '/includes/helpers.php';
             color: var(--poda-text-primary);
             font-family: var(--poda-font-heading);
         }
-        
+
         .hero-subheadline {
             font-size: 1.5rem;
             margin-bottom: 2.5rem;
@@ -498,7 +564,7 @@ require_once __DIR__ . '/includes/helpers.php';
             line-height: 1.6;
             font-weight: 400;
         }
-        
+
         .username-claim-container {
             margin-bottom: 8rem;
             display: flex;
@@ -506,7 +572,7 @@ require_once __DIR__ . '/includes/helpers.php';
             align-items: center;
             gap: 1.5rem;
         }
-        
+
         .username-claim-box {
             background: rgba(26, 26, 26, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -521,12 +587,12 @@ require_once __DIR__ . '/includes/helpers.php';
             backdrop-filter: blur(10px);
             transition: all 0.3s;
         }
-        
+
         .username-claim-box:focus-within {
             border-color: var(--poda-accent-signal-green);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(0, 255, 127, 0.15);
         }
-        
+
         .username-input-group {
             display: flex;
             align-items: center;
@@ -536,7 +602,7 @@ require_once __DIR__ . '/includes/helpers.php';
             height: 100%;
             position: relative;
         }
-        
+
         .username-prefix {
             display: flex;
             align-items: center;
@@ -546,7 +612,7 @@ require_once __DIR__ . '/includes/helpers.php';
             line-height: 1;
             height: 100%;
         }
-        
+
         .poda-logo-text {
             font-family: var(--poda-font-heading);
             font-weight: 800;
@@ -556,7 +622,7 @@ require_once __DIR__ . '/includes/helpers.php';
             line-height: 1;
             display: inline-block;
         }
-        
+
         .username-slash {
             color: var(--poda-text-secondary);
             font-size: 1rem;
@@ -564,7 +630,7 @@ require_once __DIR__ . '/includes/helpers.php';
             line-height: 1;
             display: inline-block;
         }
-        
+
         .username-input {
             background: rgba(18, 18, 18, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -581,29 +647,29 @@ require_once __DIR__ . '/includes/helpers.php';
             line-height: 1.5;
             height: auto;
         }
-        
+
         .username-input::placeholder {
             color: var(--poda-text-muted);
         }
-        
+
         .username-input:focus {
             border-color: var(--poda-accent-signal-green);
             background: rgba(18, 18, 18, 0.9);
             box-shadow: 0 0 0 2px rgba(0, 255, 127, 0.1);
         }
-        
+
         .username-input.available {
             border-color: var(--poda-accent-signal-green);
         }
-        
+
         .username-input.unavailable {
             border-color: #ff4444;
         }
-        
+
         .username-input.checking {
             border-color: var(--poda-text-secondary);
         }
-        
+
         .username-status {
             position: absolute;
             right: 0.75rem;
@@ -617,7 +683,7 @@ require_once __DIR__ . '/includes/helpers.php';
             width: 20px;
             height: 20px;
         }
-        
+
         .username-claim-btn {
             background: var(--poda-accent-signal-green);
             color: var(--poda-bg-primary);
@@ -638,19 +704,19 @@ require_once __DIR__ . '/includes/helpers.php';
             justify-content: center;
             height: auto;
         }
-        
+
         .username-claim-btn:hover:not(:disabled) {
             background: var(--poda-accent-signal-green-hover);
             box-shadow: 0 0 20px rgba(0, 255, 127, 0.5);
             transform: translateY(-1px);
         }
-        
+
         .username-claim-btn:disabled {
             background: var(--poda-text-muted);
             cursor: not-allowed;
             opacity: 0.5;
         }
-        
+
         .username-claim-btn .btn-cursor {
             display: inline-block;
             margin-left: 0.2em;
@@ -658,22 +724,26 @@ require_once __DIR__ . '/includes/helpers.php';
             font-weight: 400;
             color: var(--poda-bg-primary);
         }
-        
+
         @keyframes blink-cursor {
-            0%, 49% {
+
+            0%,
+            49% {
                 opacity: 1;
             }
-            50%, 100% {
+
+            50%,
+            100% {
                 opacity: 0;
             }
         }
-        
+
         .hero-ctas-secondary {
             display: flex;
             gap: 1rem;
             justify-content: center;
         }
-        
+
         .hero-ctas {
             display: flex;
             gap: 1rem;
@@ -681,7 +751,7 @@ require_once __DIR__ . '/includes/helpers.php';
             flex-wrap: wrap;
             margin-bottom: 4rem;
         }
-        
+
         .hero-cta-primary {
             background: var(--poda-accent-signal-green);
             color: var(--poda-bg-primary);
@@ -691,11 +761,11 @@ require_once __DIR__ . '/includes/helpers.php';
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .hero-cta-primary:hover {
             box-shadow: 0 0 24px rgba(0, 255, 127, 0.6);
         }
-        
+
         .hero-cta-secondary {
             background: transparent;
             color: var(--poda-accent-signal-green);
@@ -703,7 +773,7 @@ require_once __DIR__ . '/includes/helpers.php';
             font-size: 1.1rem;
             padding: 1rem 2rem;
         }
-        
+
         .hero-phone-mockup {
             max-width: 300px;
             height: auto;
@@ -716,7 +786,7 @@ require_once __DIR__ . '/includes/helpers.php';
             position: relative;
             z-index: 3;
         }
-        
+
         .hero-phone-mockup::before {
             content: '';
             position: absolute;
@@ -730,31 +800,31 @@ require_once __DIR__ . '/includes/helpers.php';
             pointer-events: none;
             filter: blur(20px);
         }
-        
+
         .hero-phone-mockup img {
             width: 100%;
             height: auto;
             border-radius: 16px;
             display: block;
         }
-        
+
         .value-props {
             padding: 6rem 2rem;
             background: var(--poda-bg-primary);
         }
-        
+
         .value-props-container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .value-props-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 3rem;
             margin-top: 3rem;
         }
-        
+
         .value-prop-card {
             text-align: center;
             padding: 2rem;
@@ -763,12 +833,12 @@ require_once __DIR__ . '/includes/helpers.php';
             border-radius: 12px;
             transition: all 0.3s;
         }
-        
+
         .value-prop-card:hover {
             border-color: var(--poda-accent-signal-green);
             box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
         }
-        
+
         .value-prop-icon {
             width: 80px;
             height: 80px;
@@ -782,41 +852,41 @@ require_once __DIR__ . '/includes/helpers.php';
             font-size: 2.5rem;
             color: var(--poda-accent-signal-green);
         }
-        
+
         .value-prop-card h3 {
             font-size: 1.5rem;
             margin-bottom: 0.75rem;
             color: var(--poda-text-primary);
         }
-        
+
         .value-prop-card p {
             color: var(--poda-text-secondary);
             font-size: 1.1rem;
             line-height: 1.6;
         }
-        
+
         .testimonials-section {
             padding: 6rem 2rem;
             background: var(--poda-bg-primary);
             scroll-behavior: smooth;
         }
-        
+
         .testimonials-header {
             text-align: center;
             margin-bottom: 4rem;
         }
-        
+
         .testimonials-header h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .testimonials-header p {
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
         }
-        
+
         .testimonials-mosaic {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -824,7 +894,7 @@ require_once __DIR__ . '/includes/helpers.php';
             grid-auto-rows: auto;
             /* Add scroll snap points to cards for subtle resistance */
         }
-        
+
         .testimonial-card {
             background: var(--poda-bg-secondary);
             border: 1px solid var(--poda-border-subtle);
@@ -834,27 +904,27 @@ require_once __DIR__ . '/includes/helpers.php';
             will-change: transform;
             /* Scroll snap properties are set above in the scroll-in-testimonials section */
         }
-        
+
         .testimonial-card:hover {
             border-color: var(--poda-accent-signal-green);
             box-shadow: 0 8px 32px rgba(0, 255, 127, 0.1);
             transform: translateY(-4px) scale(1.02);
             z-index: 10;
         }
-        
+
         /* Card push effect - cards shift when neighbors animate */
         .testimonials-mosaic:has(.testimonial-card.animate) .testimonial-card:not(.animate) {
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        
+
+
         .testimonial-header {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .testimonial-avatar {
             width: 56px;
             height: 56px;
@@ -869,24 +939,24 @@ require_once __DIR__ . '/includes/helpers.php';
             color: var(--poda-accent-signal-green);
             flex-shrink: 0;
         }
-        
+
         .testimonial-info {
             flex: 1;
             min-width: 0;
         }
-        
+
         .testimonial-name {
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--poda-text-primary);
             margin-bottom: 0.25rem;
         }
-        
+
         .testimonial-role {
             font-size: 0.9rem;
             color: var(--poda-text-secondary);
         }
-        
+
         .testimonial-rating {
             display: flex;
             gap: 0.25rem;
@@ -894,59 +964,59 @@ require_once __DIR__ . '/includes/helpers.php';
             color: var(--poda-accent-signal-green);
             font-size: 0.9rem;
         }
-        
+
         .testimonial-text {
             color: var(--poda-text-secondary);
             line-height: 1.6;
             font-size: 1rem;
         }
-        
+
         /* Make some cards taller for mosaic effect */
         .testimonial-card:nth-child(3n+1) {
             grid-row: span 1;
         }
-        
+
         .testimonial-card:nth-child(3n+2) {
             grid-row: span 1;
         }
-        
+
         .testimonial-card:nth-child(3n+3) {
             grid-row: span 2;
         }
-        
+
         @media (max-width: 768px) {
             .testimonials-mosaic {
                 grid-template-columns: 1fr;
             }
-            
+
             .testimonial-card:nth-child(n) {
                 grid-row: span 1;
             }
         }
-        
+
         .demo-section {
             padding: 6rem 2rem;
             background: var(--poda-bg-secondary);
         }
-        
+
         .demo-container {
             max-width: 1200px;
             margin: 0 auto;
             text-align: center;
         }
-        
+
         .demo-container h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .demo-container p {
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
             margin-bottom: 3rem;
         }
-        
+
         .demo-preview {
             background: var(--poda-bg-primary);
             border: 1px solid var(--poda-border-subtle);
@@ -954,14 +1024,14 @@ require_once __DIR__ . '/includes/helpers.php';
             padding: 2rem;
             margin-top: 2rem;
         }
-        
+
         .demo-toggle {
             display: flex;
             gap: 1rem;
             justify-content: center;
             margin-bottom: 2rem;
         }
-        
+
         .demo-toggle button {
             padding: 0.75rem 1.5rem;
             border: 2px solid var(--poda-border-subtle);
@@ -972,49 +1042,49 @@ require_once __DIR__ . '/includes/helpers.php';
             color: var(--poda-text-secondary);
             transition: all 0.3s;
         }
-        
+
         .demo-toggle button.active {
             border-color: var(--poda-accent-signal-green);
             color: var(--poda-accent-signal-green);
             background: var(--poda-bg-primary);
         }
-        
+
         .demo-image {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
-        
+
         .features-section {
             padding: 6rem 2rem;
             background: var(--poda-bg-primary);
         }
-        
+
         .features-container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .features-container h2 {
             font-size: 2.5rem;
             text-align: center;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
-        .features-container > p {
+
+        .features-container>p {
             text-align: center;
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
             margin-bottom: 3rem;
         }
-        
+
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
         }
-        
+
         .feature-card {
             background: var(--poda-bg-secondary);
             border: 1px solid var(--poda-border-subtle);
@@ -1022,30 +1092,30 @@ require_once __DIR__ . '/includes/helpers.php';
             padding: 2rem;
             transition: all 0.3s;
         }
-        
+
         .feature-card:hover {
             transform: translateY(-5px);
             border-color: var(--poda-accent-signal-green);
             box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
         }
-        
+
         .feature-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
             color: var(--poda-accent-signal-green);
         }
-        
+
         .feature-card h3 {
             font-size: 1.5rem;
             margin-bottom: 0.75rem;
             color: var(--poda-text-primary);
         }
-        
+
         .feature-card p {
             color: var(--poda-text-secondary);
             line-height: 1.6;
         }
-        
+
         .feature-visual {
             width: 100%;
             height: 200px;
@@ -1059,31 +1129,31 @@ require_once __DIR__ . '/includes/helpers.php';
             color: var(--poda-text-secondary);
             font-size: 0.9rem;
         }
-        
+
         .social-proof {
             padding: 6rem 2rem;
             background: var(--poda-bg-secondary);
             color: var(--poda-text-primary);
         }
-        
+
         .social-proof-container {
             max-width: 1200px;
             margin: 0 auto;
             text-align: center;
         }
-        
+
         .social-proof-container h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .social-proof-container p {
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
             margin-bottom: 3rem;
         }
-        
+
         .platform-logos {
             display: flex;
             flex-wrap: wrap;
@@ -1092,14 +1162,14 @@ require_once __DIR__ . '/includes/helpers.php';
             align-items: center;
             margin: 3rem 0;
         }
-        
+
         .platform-logo {
             height: 40px;
             width: auto;
             filter: brightness(0) invert(1);
             opacity: 0.6;
         }
-        
+
         .pricing-teaser {
             padding: 6rem 2rem;
             background: var(--poda-bg-primary);
@@ -1107,127 +1177,128 @@ require_once __DIR__ . '/includes/helpers.php';
             text-align: center;
             border-top: 1px solid var(--poda-border-subtle);
         }
-        
+
         .pricing-teaser-container {
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .pricing-teaser h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .pricing-teaser p {
             font-size: 1.25rem;
             margin-bottom: 2rem;
             color: var(--poda-text-secondary);
         }
-        
+
         .final-cta {
             padding: 6rem 2rem;
             background: var(--poda-bg-secondary);
             text-align: center;
         }
-        
+
         .final-cta-container {
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .final-cta h2 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .final-cta p {
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
             margin-bottom: 2rem;
         }
-        
+
         .section-title {
             font-size: 2.5rem;
             text-align: center;
             margin-bottom: 1rem;
             color: var(--poda-text-primary);
         }
-        
+
         .section-subtitle {
             text-align: center;
             font-size: 1.25rem;
             color: var(--poda-text-secondary);
             margin-bottom: 3rem;
         }
-        
+
         @media (max-width: 768px) {
             .hero-headline {
                 font-size: 2.5rem;
             }
-            
+
             .username-claim-box {
                 flex-direction: column;
                 padding: 1rem;
                 gap: 0.75rem;
                 max-width: 100%;
             }
-            
+
             .username-input-group {
                 width: 100%;
                 padding: 0;
             }
-            
+
             .username-input {
                 width: 100%;
                 min-width: 0;
             }
-            
+
             .username-claim-btn {
                 width: 100%;
                 text-align: center;
                 padding: 0.875rem 1.5rem;
             }
-            
+
             .poda-logo-text {
                 font-size: 0.95rem;
             }
-            
+
             .username-input {
                 font-size: 0.95rem;
                 padding: 0.75rem 1rem;
             }
-            
+
             .hero-subheadline {
                 font-size: 1.25rem;
             }
-            
+
             .hero-ctas {
                 flex-direction: column;
                 align-items: center;
             }
-            
+
             .hero-ctas .btn {
                 width: 100%;
                 max-width: 300px;
             }
-            
+
             .value-props-grid {
                 grid-template-columns: 1fr;
                 gap: 2rem;
             }
-            
+
             .features-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .section-title {
                 font-size: 2rem;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- React Marketing Navigation Mount Point -->
     <div id="marketing-nav-root"></div>
@@ -1236,8 +1307,10 @@ require_once __DIR__ . '/includes/helpers.php';
     <section class="homepage-hero">
         <div class="hero-content">
             <p class="hero-tagline scroll-animate animate" data-animate="fade-slide-up">More signal, Less noise</p>
-            <h1 class="hero-headline scroll-animate animate" data-animate="fade-slide-up" data-delay="100">The link for listeners</h1>
-            <p class="hero-subheadline scroll-animate animate" data-animate="fade-slide-up" data-delay="200">A link-in-bio tool purpose built specifically for podcasters.</p>
+            <h1 class="hero-headline scroll-animate animate" data-animate="fade-slide-up" data-delay="100">The link for
+                listeners</h1>
+            <p class="hero-subheadline scroll-animate animate" data-animate="fade-slide-up" data-delay="200">A
+                link-in-bio tool purpose built specifically for podcasters.</p>
             <div class="username-claim-container scroll-animate animate" data-animate="fade-slide-up" data-delay="300">
                 <div class="username-claim-box">
                     <div class="username-input-group">
@@ -1245,25 +1318,17 @@ require_once __DIR__ . '/includes/helpers.php';
                             <span class="poda-logo-text">poda.bio</span>
                             <span class="username-slash">/</span>
                         </div>
-                        <input 
-                            type="text" 
-                            class="username-input" 
-                            placeholder="yourname" 
-                            id="hero-username-input"
-                        />
+                        <input type="text" class="username-input" placeholder="yourname" id="hero-username-input" />
                         <span class="username-status" id="username-status"></span>
                     </div>
                     <a href="/signup.php" class="btn username-claim-btn" id="hero-claim-btn">
                         Get your url<span class="btn-cursor">_</span>
                     </a>
-            </div>
+                </div>
             </div>
             <div class="hero-phone-mockup scroll-animate animate" data-animate="scale" data-delay="400">
-                <div style="padding: 3rem 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary);">
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/hero/</p>
-                    <p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p>
-                    <p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>
-                </div>
+                <img src="/assets/images/hero/page-preview-mobile.png" alt="PodaBio Mobile Preview"
+                    style="width: 100%; height: auto; border-radius: 16px; display: block;">
             </div>
         </div>
     </section>
@@ -1272,12 +1337,14 @@ require_once __DIR__ . '/includes/helpers.php';
     <section class="value-props">
         <div class="value-props-container">
             <h2 class="section-title scroll-animate" data-animate="fade-slide-up">Pod-First</h2>
-            <p class="section-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Built specifically for podcasters, not adapted for them</p>
+            <p class="section-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Built specifically
+                for podcasters, not adapted for them</p>
             <div class="value-props-grid">
                 <div class="value-prop-card scroll-animate" data-animate="fade-slide-up" data-delay="0">
                     <div class="value-prop-icon"><span class="icon-headphones"></span></div>
                     <h3>Pod-First</h3>
-                    <p>Every feature designed with podcasters in mind. RSS sync, built-in player, and episode management.</p>
+                    <p>Every feature designed with podcasters in mind. RSS sync, built-in player, and episode
+                        management.</p>
                 </div>
                 <div class="value-prop-card scroll-animate" data-animate="fade-slide-up" data-delay="200">
                     <div class="value-prop-icon"><span class="icon-sparkle"></span></div>
@@ -1287,7 +1354,8 @@ require_once __DIR__ . '/includes/helpers.php';
                 <div class="value-prop-card scroll-animate" data-animate="fade-slide-up" data-delay="400">
                     <div class="value-prop-icon"><span class="icon-broadcast"></span></div>
                     <h3>Clear Signals</h3>
-                    <p>One link. All your content. Automatically synced from your RSS feed. No manual updates needed.</p>
+                    <p>One link. All your content. Automatically synced from your RSS feed. No manual updates needed.
+                    </p>
                 </div>
             </div>
         </div>
@@ -1298,7 +1366,8 @@ require_once __DIR__ . '/includes/helpers.php';
         <div class="testimonials-container">
             <div class="testimonials-header">
                 <h2 class="scroll-animate" data-animate="fade-slide-up">Loved by Podcasters</h2>
-                <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">See what creators are saying about PodaBio</p>
+                <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">See what creators are saying
+                    about PodaBio</p>
             </div>
             <div class="testimonials-mosaic">
                 <!-- Testimonial 1 -->
@@ -1308,11 +1377,12 @@ require_once __DIR__ . '/includes/helpers.php';
                         <div class="testimonial-info">
                             <div class="testimonial-name">Sarah Martinez</div>
                             <div class="testimonial-role">Tech Talk Podcast</div>
-                </div>
-            </div>
+                        </div>
+                    </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"PodaBio has completely transformed how I share my podcast content. The RSS sync means I never have to manually update my page - it's always current!"</p>
-        </div>
+                    <p class="testimonial-text">"PodaBio has completely transformed how I share my podcast content. The
+                        RSS sync means I never have to manually update my page - it's always current!"</p>
+                </div>
 
                 <!-- Testimonial 2 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="100">
@@ -1321,12 +1391,13 @@ require_once __DIR__ . '/includes/helpers.php';
                         <div class="testimonial-info">
                             <div class="testimonial-name">James Davis</div>
                             <div class="testimonial-role">Business Insights</div>
-                </div>
-                </div>
+                        </div>
+                    </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"As a professional podcaster, I need a link-in-bio that actually understands podcasts. PodaBio delivers exactly that. The built-in player is a game-changer."</p>
+                    <p class="testimonial-text">"As a professional podcaster, I need a link-in-bio that actually
+                        understands podcasts. PodaBio delivers exactly that. The built-in player is a game-changer."</p>
                 </div>
-                
+
                 <!-- Testimonial 3 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-right" data-delay="200">
                     <div class="testimonial-header">
@@ -1334,12 +1405,15 @@ require_once __DIR__ . '/includes/helpers.php';
                         <div class="testimonial-info">
                             <div class="testimonial-name">Emma Rodriguez</div>
                             <div class="testimonial-role">True Crime Stories</div>
-                </div>
-                </div>
+                        </div>
+                    </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"I've tried every link-in-bio tool out there. PodaBio is the first one built specifically for podcasters. The themes are beautiful and the analytics actually matter for audio content. My listeners love the seamless experience when they click through from social media. The RSS integration saves me hours every week!"</p>
+                    <p class="testimonial-text">"I've tried every link-in-bio tool out there. PodaBio is the first one
+                        built specifically for podcasters. The themes are beautiful and the analytics actually matter
+                        for audio content. My listeners love the seamless experience when they click through from social
+                        media. The RSS integration saves me hours every week!"</p>
                 </div>
-                
+
                 <!-- Testimonial 4 -->
                 <div class="testimonial-card scroll-animate" data-animate="rotate" data-delay="300">
                     <div class="testimonial-header">
@@ -1350,9 +1424,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The minimalist design philosophy really shines. My content is the star, not the platform. The clean poda.bio URL gives me the professional look I need."</p>
+                    <p class="testimonial-text">"The minimalist design philosophy really shines. My content is the star,
+                        not the platform. The clean poda.bio URL gives me the professional look I need."</p>
                 </div>
-                
+
                 <!-- Testimonial 5 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-corner" data-delay="400">
                     <div class="testimonial-header">
@@ -1363,9 +1438,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Finally, a platform that gets it. The email subscription integration works flawlessly, and I've grown my list significantly since switching to PodaBio."</p>
+                    <p class="testimonial-text">"Finally, a platform that gets it. The email subscription integration
+                        works flawlessly, and I've grown my list significantly since switching to PodaBio."</p>
                 </div>
-                
+
                 <!-- Testimonial 6 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale" data-delay="500">
                     <div class="testimonial-header">
@@ -1376,9 +1452,11 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The Pro plan is incredibly affordable for what you get. I love having unlimited links and all the themes. The analytics help me understand what my audience engages with most. Best investment I've made for my podcast brand!"</p>
+                    <p class="testimonial-text">"The Pro plan is incredibly affordable for what you get. I love having
+                        unlimited links and all the themes. The analytics help me understand what my audience engages
+                        with most. Best investment I've made for my podcast brand!"</p>
                 </div>
-                
+
                 <!-- Testimonial 7 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-down" data-delay="600">
                     <div class="testimonial-header">
@@ -1389,9 +1467,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Custom colors and fonts let me match my brand perfectly. It looks like I spent thousands on a custom site."</p>
+                    <p class="testimonial-text">"Custom colors and fonts let me match my brand perfectly. It looks like
+                        I spent thousands on a custom site."</p>
                 </div>
-                
+
                 <!-- Testimonial 8 -->
                 <div class="testimonial-card scroll-animate" data-animate="fade-slide-up" data-delay="700">
                     <div class="testimonial-header">
@@ -1402,9 +1481,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Priority support is worth its weight in gold. Whenever I have a question, I get a response within hours. The team really cares about their users."</p>
+                    <p class="testimonial-text">"Priority support is worth its weight in gold. Whenever I have a
+                        question, I get a response within hours. The team really cares about their users."</p>
                 </div>
-                
+
                 <!-- Testimonial 9 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="800">
                     <div class="testimonial-header">
@@ -1415,9 +1495,12 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"I run multiple podcasts and PodaBio makes it so easy to manage everything in one place. The interface is intuitive, and everything just works. No more struggling with generic tools that weren't designed for audio content. This is exactly what the podcasting community needed - a tool built by podcasters, for podcasters!"</p>
+                    <p class="testimonial-text">"I run multiple podcasts and PodaBio makes it so easy to manage
+                        everything in one place. The interface is intuitive, and everything just works. No more
+                        struggling with generic tools that weren't designed for audio content. This is exactly what the
+                        podcasting community needed - a tool built by podcasters, for podcasters!"</p>
                 </div>
-                
+
                 <!-- Testimonial 10 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-left" data-delay="900">
                     <div class="testimonial-header">
@@ -1428,9 +1511,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The dark theme options are perfect for my brand. It looks professional and modern. My audience comments on how sleek my link-in-bio page looks."</p>
+                    <p class="testimonial-text">"The dark theme options are perfect for my brand. It looks professional
+                        and modern. My audience comments on how sleek my link-in-bio page looks."</p>
                 </div>
-                
+
                 <!-- Testimonial 11 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-right" data-delay="1000">
                     <div class="testimonial-header">
@@ -1441,9 +1525,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The dark theme options are perfect for my brand. It looks professional and modern. My audience comments on how sleek my link-in-bio page looks."</p>
+                    <p class="testimonial-text">"The dark theme options are perfect for my brand. It looks professional
+                        and modern. My audience comments on how sleek my link-in-bio page looks."</p>
                 </div>
-                
+
                 <!-- Testimonial 12 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="1100">
                     <div class="testimonial-header">
@@ -1454,9 +1539,11 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Switching from Linktree to PodaBio was the best decision. The podcast-specific features make all the difference. My engagement rates have improved significantly."</p>
+                    <p class="testimonial-text">"Switching from Linktree to PodaBio was the best decision. The
+                        podcast-specific features make all the difference. My engagement rates have improved
+                        significantly."</p>
                 </div>
-                
+
                 <!-- Testimonial 13 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-left" data-delay="1200">
                     <div class="testimonial-header">
@@ -1467,9 +1554,11 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The free plan got me started, and I quickly upgraded to Pro. The value is incredible. All 49+ themes give me so many options to showcase my brand. The clean poda.bio URL makes me look professional even though I'm just starting out!"</p>
+                    <p class="testimonial-text">"The free plan got me started, and I quickly upgraded to Pro. The value
+                        is incredible. All 49+ themes give me so many options to showcase my brand. The clean poda.bio
+                        URL makes me look professional even though I'm just starting out!"</p>
                 </div>
-                
+
                 <!-- Testimonial 14 -->
                 <div class="testimonial-card scroll-animate" data-animate="rotate" data-delay="1300">
                     <div class="testimonial-header">
@@ -1480,9 +1569,10 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"Advanced analytics help me understand my audience better. I can see what episodes get the most clicks and adjust my content strategy accordingly."</p>
+                    <p class="testimonial-text">"Advanced analytics help me understand my audience better. I can see
+                        what episodes get the most clicks and adjust my content strategy accordingly."</p>
                 </div>
-                
+
                 <!-- Testimonial 15 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale" data-delay="1400">
                     <div class="testimonial-header">
@@ -1493,7 +1583,9 @@ require_once __DIR__ . '/includes/helpers.php';
                         </div>
                     </div>
                     <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The no branding option is crucial for my professional image. PodaBio lets me showcase my content without any distracting logos. It's exactly what I needed to level up my podcast presence. The team has built something special here!"</p>
+                    <p class="testimonial-text">"The no branding option is crucial for my professional image. PodaBio
+                        lets me showcase my content without any distracting logos. It's exactly what I needed to level
+                        up my podcast presence. The team has built something special here!"</p>
                 </div>
             </div>
         </div>
@@ -1503,16 +1595,16 @@ require_once __DIR__ . '/includes/helpers.php';
     <section class="demo-section" id="demo">
         <div class="demo-container">
             <h2 class="scroll-animate" data-animate="fade-slide-up">See It In Action</h2>
-            <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Beautiful pages that represent your brand perfectly</p>
+            <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Beautiful pages that represent your
+                brand perfectly</p>
             <div class="demo-toggle scroll-animate" data-animate="fade-slide-up" data-delay="200">
                 <button class="active" data-demo-view="mobile">Mobile</button>
                 <button data-demo-view="desktop">Desktop</button>
             </div>
             <div class="demo-preview scroll-animate" data-animate="scale" data-delay="300">
-                <div id="demo-image-placeholder" style="padding: 3rem 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary);">
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p>
-                    <p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p>
-                    <p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>
+                <div id="demo-image-placeholder">
+                    <img src="/assets/images/demo/page-preview-mobile.png" alt="Mobile Preview"
+                        style="width: 100%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                 </div>
             </div>
         </div>
@@ -1522,19 +1614,30 @@ require_once __DIR__ . '/includes/helpers.php';
     <section class="social-proof">
         <div class="social-proof-container">
             <h2 class="scroll-animate" data-animate="fade-slide-up">Trusted by Podcasters Everywhere</h2>
-            <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Join thousands of creators using PodaBio to grow their audience</p>
+            <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Join thousands of creators using
+                PodaBio to grow their audience</p>
             <div class="platform-logos scroll-animate" data-animate="fade-slide-up" data-delay="200">
-                <div style="padding: 2rem; background: rgba(26, 26, 26, 0.5); border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; color: var(--poda-text-secondary); margin: 1rem;">
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/social-proof/</p>
-                    <p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">platform-logos.png</p>
-                    <p style="font-size: 0.85rem; line-height: 1.5; max-width: 500px; margin: 0 auto;">AI Prompt: "Row of podcast platform logos including Apple Podcasts, Spotify, YouTube Music, iHeart Radio, Amazon Music, Google Podcasts, Pocket Casts, Castro, and Overcast. Clean, modern logos on transparent or dark background. Consistent sizing and spacing. Professional appearance."</p>
+                <div class="platform-logos scroll-animate" data-animate="fade-slide-up" data-delay="200">
+                    <img src="/assets/images/hero/platform-logos.png" alt="Podcast Platforms"
+                        style="max-width: 100%; height: auto; margin: 0 auto; display: block; border-radius: 8px;">
                 </div>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Apple Podcasts</span>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Spotify</span>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">YouTube Music</span>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Amazon Music</span>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Google Podcasts</span>
-                <span style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem;">+ 20 more</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Apple
+                    Podcasts</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Spotify</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">YouTube
+                    Music</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Amazon
+                    Music</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Google
+                    Podcasts</span>
+                <span
+                    style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem;">+
+                    20 more</span>
             </div>
         </div>
     </section>
@@ -1547,14 +1650,15 @@ require_once __DIR__ . '/includes/helpers.php';
                 <button class="tab-button" data-tab="pricing" id="tab-pricing">Pricing</button>
                 <button class="tab-button" data-tab="examples" id="tab-examples">Examples</button>
                 <button class="tab-button" data-tab="about" id="tab-about">About</button>
-                </div>
-            
+            </div>
+
             <!-- Features Tab -->
             <div class="tab-content active" id="content-features" data-section="features">
                 <div class="tab-inner">
                     <h2 class="tab-title scroll-animate" data-animate="fade-slide-up">Everything You Need to Grow</h2>
-                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Turn listeners into subscribers, subscribers into fans</p>
-                    
+                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Turn listeners
+                        into subscribers, subscribers into fans</p>
+
                     <!-- Feature Comparison Accordion -->
                     <div class="accordion">
                         <button class="accordion-header" onclick="toggleAccordion(this)">
@@ -1563,52 +1667,99 @@ require_once __DIR__ . '/includes/helpers.php';
                         </button>
                         <div class="accordion-content">
                             <div style="overflow-x: auto; margin-top: 1rem;">
-                                <table style="width: 100%; border-collapse: collapse; background: var(--poda-bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--poda-border-subtle);">
+                                <table
+                                    style="width: 100%; border-collapse: collapse; background: var(--poda-bg-secondary); border-radius: 12px; overflow: hidden; border: 1px solid var(--poda-border-subtle);">
                                     <thead>
                                         <tr style="background: var(--poda-bg-primary);">
-                                            <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Feature</th>
-                                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">PodaBio</th>
-                                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Linktree</th>
-                                            <th style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">Beacons</th>
+                                            <th
+                                                style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                                Feature</th>
+                                            <th
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                                PodaBio</th>
+                                            <th
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                                Linktree</th>
+                                            <th
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-primary);">
+                                                Beacons</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">RSS Feed Auto-Sync</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);"><span class="icon-check"></span></td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                                            <td
+                                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                RSS Feed Auto-Sync</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                                <span class="icon-check"></span></td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Built-in Podcast Player</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);"><span class="icon-check"></span></td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                                            <td
+                                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                Built-in Podcast Player</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                                <span class="icon-check"></span></td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast Directory Links</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);"><span class="icon-check"></span></td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">✗</td>
+                                            <td
+                                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                Podcast Directory Links</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                                <span class="icon-check"></span></td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-muted);">
+                                                ✗</td>
                                         </tr>
                                         <tr>
-                                            <td style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Podcast-Specific Themes</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">49+ Themes</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
-                                            <td style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">Limited</td>
+                                            <td
+                                                style="padding: 1rem; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                Podcast-Specific Themes</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-accent-signal-green);">
+                                                49+ Themes</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                Limited</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; border-bottom: 1px solid var(--poda-border-subtle); color: var(--poda-text-secondary);">
+                                                Limited</td>
                                         </tr>
                                         <tr>
                                             <td style="padding: 1rem; color: var(--poda-text-secondary);">Free Plan</td>
-                                            <td style="padding: 1rem; text-align: center; color: var(--poda-accent-signal-green);"><span class="icon-check"></span> Full Features</td>
-                                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
-                                            <td style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">Limited</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; color: var(--poda-accent-signal-green);">
+                                                <span class="icon-check"></span> Full Features</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">
+                                                Limited</td>
+                                            <td
+                                                style="padding: 1rem; text-align: center; color: var(--poda-text-secondary);">
+                                                Limited</td>
                                         </tr>
                                     </tbody>
                                 </table>
-                </div>
-                </div>
-            </div>
-                    
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Feature Accordions -->
                     <div class="features-accordions">
                         <div class="accordion">
@@ -1617,14 +1768,15 @@ require_once __DIR__ . '/includes/helpers.php';
                                 <span class="accordion-icon icon-plus"></span>
                             </button>
                             <div class="accordion-content">
-                                <p>Automatically import your podcast information, episodes, and artwork from your RSS feed.</p>
+                                <p>Automatically import your podcast information, episodes, and artwork from your RSS
+                                    feed.</p>
                                 <ul class="feature-list">
                                     <li>Auto-populate podcast name, description, and cover art</li>
                                     <li>Import recent episodes with titles and descriptions</li>
                                     <li>Automatic updates when new episodes are published</li>
                                     <li>Episode duration and publish date tracking</li>
                                 </ul>
-        </div>
+                            </div>
                         </div>
 
                         <div class="accordion">
@@ -1640,9 +1792,9 @@ require_once __DIR__ . '/includes/helpers.php';
                                     <li>Mini player that stays visible while browsing</li>
                                     <li>Theme-aware player design</li>
                                 </ul>
-            </div>
-        </div>
-                        
+                            </div>
+                        </div>
+
                         <div class="accordion">
                             <button class="accordion-header" onclick="toggleAccordion(this)">
                                 <span><span class="icon-palette"></span> Complete Customization</span>
@@ -1661,7 +1813,7 @@ require_once __DIR__ . '/includes/helpers.php';
                                 </ul>
                             </div>
                         </div>
-                        
+
                         <div class="accordion">
                             <button class="accordion-header" onclick="toggleAccordion(this)">
                                 <span><span class="icon-chart"></span> Analytics</span>
@@ -1678,7 +1830,7 @@ require_once __DIR__ . '/includes/helpers.php';
                                 </ul>
                             </div>
                         </div>
-                        
+
                         <div class="accordion">
                             <button class="accordion-header" onclick="toggleAccordion(this)">
                                 <span><span class="icon-envelope"></span> Email Subscription</span>
@@ -1699,69 +1851,118 @@ require_once __DIR__ . '/includes/helpers.php';
                     </div>
                 </div>
             </div>
-            
+
             <!-- Pricing Tab -->
             <div class="tab-content" id="content-pricing">
                 <div class="tab-inner">
                     <h2 class="tab-title scroll-animate" data-animate="fade-slide-up">Simple, Transparent Pricing</h2>
-                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Choose the plan that's right for your podcast</p>
-                    
-                    <div class="pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">Choose the plan
+                        that's right for your podcast</p>
+
+                    <div class="pricing-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
                         <!-- Free Plan -->
-                        <div class="pricing-card scroll-animate" data-animate="fade-slide-up" data-delay="0" style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; transition: all 0.3s;">
-                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; color: var(--poda-text-primary);">Free</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$0<span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
-                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">Perfect for getting started</p>
+                        <div class="pricing-card scroll-animate" data-animate="fade-slide-up" data-delay="0"
+                            style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; transition: all 0.3s;">
+                            <div
+                                style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; color: var(--poda-text-primary);">
+                                Free</div>
+                            <div
+                                style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">
+                                $0<span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
+                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">Perfect for getting
+                                started</p>
                             <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> RSS feed auto-sync</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Built-in podcast player</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Up to 10 custom links</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> 5 basic themes</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Basic analytics</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> poda.bio subdomain</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> RSS feed auto-sync</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Built-in podcast player</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Up to 10 custom links</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> 5 basic themes</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Basic analytics</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> poda.bio subdomain</li>
                             </ul>
-                            <a href="/signup.php" class="btn btn-secondary" style="width: 100%; text-align: center; display: block;">Get Started</a>
+                            <a href="/signup.php" class="btn btn-secondary"
+                                style="width: 100%; text-align: center; display: block;">Get Started</a>
                         </div>
-                        
+
                         <!-- Pro Plan -->
-                        <div class="pricing-card featured scroll-animate" data-animate="scale" data-delay="200" style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative;">
-                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-accent-signal-green); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">POPULAR</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">Pro</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$<?php echo number_format(defined('PLAN_PRO_MONTHLY_PRICE') ? PLAN_PRO_MONTHLY_PRICE : 4.99, 2); ?><span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
-                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For professional podcasters</p>
+                        <div class="pricing-card featured scroll-animate" data-animate="scale" data-delay="200"
+                            style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative;">
+                            <div
+                                style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-accent-signal-green); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                                POPULAR</div>
+                            <div
+                                style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">
+                                Pro</div>
+                            <div
+                                style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">
+                                $<?php echo number_format(defined('PLAN_PRO_MONTHLY_PRICE') ? PLAN_PRO_MONTHLY_PRICE : 4.99, 2); ?><span
+                                    style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
+                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For professional
+                                podcasters</p>
                             <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Everything in Free</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Unlimited custom links</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> All 49+ themes</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Custom colors & fonts</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Advanced analytics</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Email subscription integration</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Custom domain support</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Priority support</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Everything in Free</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Unlimited custom links</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> All 49+ themes</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Custom colors & fonts</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Advanced analytics</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Email subscription integration</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Custom domain support</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Priority support</li>
                             </ul>
-                            <a href="/payment/checkout.php?plan=pro" class="btn btn-primary" style="width: 100%; text-align: center; display: block;">Upgrade to Pro</a>
+                            <a href="/payment/checkout.php?plan=pro" class="btn btn-primary"
+                                style="width: 100%; text-align: center; display: block;">Upgrade to Pro</a>
                         </div>
-                        
+
                         <!-- Agency Plan -->
-                        <div class="pricing-card scroll-animate" data-animate="fade-slide-up" data-delay="400" style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative; opacity: 0.8;">
-                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-text-secondary); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">COMING SOON</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">Agency</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">$99<span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
-                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For agencies managing multiple clients</p>
+                        <div class="pricing-card scroll-animate" data-animate="fade-slide-up" data-delay="400"
+                            style="background: var(--poda-bg-secondary); border: 2px solid var(--poda-border-subtle); border-radius: 12px; padding: 2rem; transition: all 0.3s; position: relative; opacity: 0.8;">
+                            <div
+                                style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--poda-text-secondary); color: var(--poda-bg-primary); padding: 0.25rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                                COMING SOON</div>
+                            <div
+                                style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; margin-top: 1rem; color: var(--poda-text-primary);">
+                                Agency</div>
+                            <div
+                                style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--poda-text-primary);">
+                                $99<span style="font-size: 1rem; color: var(--poda-text-secondary);">/month</span></div>
+                            <p style="color: var(--poda-text-secondary); margin-bottom: 2rem;">For agencies managing
+                                multiple clients</p>
                             <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Everything in Pro</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Multiple Pro pages</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Manage unlimited pages</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> 24/7 Priority support</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> Dedicated account manager</li>
-                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span class="icon-check"></span> White-label options</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Everything in Pro</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Multiple Pro pages</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Manage unlimited pages</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> 24/7 Priority support</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> Dedicated account manager</li>
+                                <li style="padding: 0.5rem 0; color: var(--poda-text-secondary);"><span
+                                        class="icon-check"></span> White-label options</li>
                             </ul>
-                            <button class="btn btn-secondary" style="width: 100%; text-align: center; display: block; opacity: 0.6; cursor: not-allowed;" disabled>Coming Soon</button>
+                            <button class="btn btn-secondary"
+                                style="width: 100%; text-align: center; display: block; opacity: 0.6; cursor: not-allowed;"
+                                disabled>Coming Soon</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Examples Tab -->
             <div class="tab-content" id="content-examples">
                 <div class="tab-inner">
@@ -1773,24 +1974,33 @@ require_once __DIR__ . '/includes/helpers.php';
                     </div>
                 </div>
             </div>
-            
+
             <!-- About Tab -->
             <div class="tab-content" id="content-about">
                 <div class="tab-inner">
                     <h2 class="tab-title scroll-animate" data-animate="fade-slide-up">About PodaBio</h2>
-                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">The link-in-bio platform built for podcasters</p>
+                    <p class="tab-subtitle scroll-animate" data-animate="fade-slide-up" data-delay="100">The link-in-bio
+                        platform built for podcasters</p>
                     <div style="max-width: 800px; margin: 0 auto;">
                         <div style="margin-bottom: 2rem;">
                             <h3 style="color: var(--poda-text-primary); margin-bottom: 1rem;">Our Mission</h3>
-                            <p style="color: var(--poda-text-secondary); line-height: 1.8;">PodaBio was created to solve a simple problem: podcasters need a better way to share all their content in one place. We built a platform that understands podcasts, with features like RSS sync, built-in players, and podcast-specific themes.</p>
+                            <p style="color: var(--poda-text-secondary); line-height: 1.8;">PodaBio was created to solve
+                                a simple problem: podcasters need a better way to share all their content in one place.
+                                We built a platform that understands podcasts, with features like RSS sync, built-in
+                                players, and podcast-specific themes.</p>
                         </div>
                         <div style="margin-bottom: 2rem;">
                             <h3 style="color: var(--poda-text-primary); margin-bottom: 1rem;">Why We Built This</h3>
-                            <p style="color: var(--poda-text-secondary); line-height: 1.8;">Generic link-in-bio tools weren't designed for podcasters. They lack RSS integration, podcast players, and the customization options podcasters need. PodaBio fills that gap with a tool built specifically for audio creators.</p>
+                            <p style="color: var(--poda-text-secondary); line-height: 1.8;">Generic link-in-bio tools
+                                weren't designed for podcasters. They lack RSS integration, podcast players, and the
+                                customization options podcasters need. PodaBio fills that gap with a tool built
+                                specifically for audio creators.</p>
                         </div>
-                        <div class="cta-box" style="background: var(--poda-bg-secondary); border: 1px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; text-align: center; margin-top: 3rem;">
+                        <div class="cta-box"
+                            style="background: var(--poda-bg-secondary); border: 1px solid var(--poda-accent-signal-green); border-radius: 12px; padding: 2rem; text-align: center; margin-top: 3rem;">
                             <h3 style="color: var(--poda-text-primary); margin-bottom: 1rem;">Ready to Get Started?</h3>
-                            <p style="color: var(--poda-text-secondary); margin-bottom: 1.5rem;">Create your free page in 2 minutes</p>
+                            <p style="color: var(--poda-text-secondary); margin-bottom: 1.5rem;">Create your free page
+                                in 2 minutes</p>
                             <a href="/signup.php" class="btn btn-primary">Get Started Free</a>
                         </div>
                     </div>
@@ -1803,8 +2013,10 @@ require_once __DIR__ . '/includes/helpers.php';
     <section class="final-cta">
         <div class="final-cta-container">
             <h2 class="scroll-animate animate" data-animate="fade-slide-up">Ready to Grow Your Podcast?</h2>
-            <p class="scroll-animate animate" data-animate="fade-slide-up" data-delay="100">Create your free page in 2 minutes</p>
-            <a href="/signup.php" class="btn btn-primary scroll-animate animate" data-animate="scale" data-delay="200" style="font-size: 1.25rem; padding: 1.25rem 3rem;">Get Started Free</a>
+            <p class="scroll-animate animate" data-animate="fade-slide-up" data-delay="100">Create your free page in 2
+                minutes</p>
+            <a href="/signup.php" class="btn btn-primary scroll-animate animate" data-animate="scale" data-delay="200"
+                style="font-size: 1.25rem; padding: 1.25rem 3rem;">Get Started Free</a>
         </div>
     </section>
 
@@ -1841,10 +2053,10 @@ require_once __DIR__ . '/includes/helpers.php';
             <p>© <?php echo date('Y'); ?> <?php echo h(APP_NAME); ?>. All rights reserved.</p>
         </div>
     </footer>
-    
+
     <!-- Drawer Overlay -->
     <div class="drawer-overlay" id="drawer-overlay"></div>
-    
+
     <!-- Privacy Drawer -->
     <div class="drawer" id="drawer-privacy">
         <div class="drawer-header">
@@ -1853,10 +2065,11 @@ require_once __DIR__ . '/includes/helpers.php';
         </div>
         <div class="drawer-content">
             <p>Privacy policy content will be loaded here. This drawer can contain the full privacy policy text.</p>
-            <p>For now, you can access the full privacy policy at <a href="/privacy.php" style="color: var(--poda-accent-signal-green);">/privacy.php</a></p>
+            <p>For now, you can access the full privacy policy at <a href="/privacy.php"
+                    style="color: var(--poda-accent-signal-green);">/privacy.php</a></p>
         </div>
     </div>
-    
+
     <!-- Terms Drawer -->
     <div class="drawer" id="drawer-terms">
         <div class="drawer-header">
@@ -1865,18 +2078,19 @@ require_once __DIR__ . '/includes/helpers.php';
         </div>
         <div class="drawer-content">
             <p>Terms of service content will be loaded here. This drawer can contain the full terms of service text.</p>
-            <p>For now, you can access the full terms at <a href="/terms.php" style="color: var(--poda-accent-signal-green);">/terms.php</a></p>
+            <p>For now, you can access the full terms at <a href="/terms.php"
+                    style="color: var(--poda-accent-signal-green);">/terms.php</a></p>
         </div>
     </div>
 
     <script>
         // CRITICAL: Event delegation for interactive elements - runs immediately and independently
-        (function() {
+        (function () {
             'use strict';
             console.log('🚀 Initializing page interactivity...');
-            
+
             // Event delegation for ALL click handlers - works even if elements don't exist yet
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 try {
                     // Demo toggle buttons
                     const demoBtn = e.target.closest('.demo-toggle button[data-demo-view]');
@@ -1885,20 +2099,20 @@ require_once __DIR__ . '/includes/helpers.php';
                         e.stopPropagation();
                         const view = demoBtn.getAttribute('data-demo-view');
                         const placeholder = document.getElementById('demo-image-placeholder');
-                        
+
                         if (placeholder) {
                             document.querySelectorAll('.demo-toggle button').forEach(b => b.classList.remove('active'));
                             demoBtn.classList.add('active');
-                            
+
                             if (view === 'mobile') {
-                                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-mobile.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on mobile device. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. iPhone frame mockup. Signal green accents."</p>';
+                                placeholder.innerHTML = '<img src="/assets/images/demo/page-preview-mobile.png" alt="Mobile Preview" style="width: 100%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">';
                             } else {
-                                placeholder.innerHTML = '<p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--poda-accent-signal-green); font-weight: 600;">📁 Folder: /assets/images/demo/</p><p style="font-size: 1rem; margin-bottom: 0.5rem; font-weight: 600;">page-preview-desktop.png</p><p style="font-size: 0.85rem; line-height: 1.5; max-width: 600px; margin: 0 auto;">AI Prompt: "Screenshot mockup of a beautiful podcast link-in-bio page on desktop browser. Show profile image, podcast title, description, social icons, podcast player with play button, and link buttons. Modern, clean design with dark theme. Browser window frame. Signal green accents."</p>';
+                                placeholder.innerHTML = '<img src="/assets/images/demo/page-preview-desktop.png" alt="Desktop Preview" style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">';
                             }
                         }
                         return;
                     }
-                    
+
                     // Tab buttons
                     const tabBtn = e.target.closest('.tab-button');
                     if (tabBtn) {
@@ -1910,7 +2124,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         }
                         return;
                     }
-                    
+
                     // Anchor links for tabs
                     const link = e.target.closest('a[href^="#"]');
                     if (link) {
@@ -1927,10 +2141,10 @@ require_once __DIR__ . '/includes/helpers.php';
                     console.error('Click handler error:', err);
                 }
             });
-            
+
             // Hash change handler
             if (!window.hashChangeListenerAdded) {
-                window.addEventListener('hashchange', function() {
+                window.addEventListener('hashchange', function () {
                     try {
                         const hash = window.location.hash.substring(1);
                         if (hash && ['features', 'pricing', 'examples', 'about'].includes(hash) && window.switchToTab) {
@@ -1942,7 +2156,7 @@ require_once __DIR__ . '/includes/helpers.php';
                 });
                 window.hashChangeListenerAdded = true;
             }
-            
+
             // Initial hash
             if (window.location.hash) {
                 const hash = window.location.hash.substring(1);
@@ -1950,7 +2164,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     setTimeout(() => window.switchToTab(hash, true), 500);
                 }
             }
-            
+
             // Drawer handlers
             function initDrawers() {
                 try {
@@ -1959,9 +2173,9 @@ require_once __DIR__ . '/includes/helpers.php';
                         overlay.addEventListener('click', window.closeDrawer);
                         overlay.dataset.listenerAttached = 'true';
                     }
-                    
+
                     if (!window.escapeKeyListenerAdded) {
-                        document.addEventListener('keydown', function(e) {
+                        document.addEventListener('keydown', function (e) {
                             if (e.key === 'Escape' && window.closeDrawer) {
                                 window.closeDrawer();
                             }
@@ -1972,147 +2186,147 @@ require_once __DIR__ . '/includes/helpers.php';
                     console.error('Drawer init error:', err);
                 }
             }
-            
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initDrawers);
             } else {
                 initDrawers();
             }
             setTimeout(initDrawers, 500);
-            
+
             console.log('✅ Event handlers initialized');
         })();
-        
+
         // Username claim functionality - separate script block to prevent errors from breaking event delegation
-        (function() {
+        (function () {
             try {
                 const usernameInput = document.getElementById('hero-username-input');
                 const claimBtn = document.getElementById('hero-claim-btn');
                 const statusIndicator = document.getElementById('username-status');
-                
+
                 if (!usernameInput || !claimBtn || !statusIndicator) return;
-                
+
                 let checkTimeout = null;
                 let isChecking = false;
                 let isAvailable = false;
-                
+
                 // Function to check username availability
-            async function checkUsernameAvailability(username) {
-                if (isChecking) return;
-                
-                // Validate format first
-                const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
-                if (!usernameRegex.test(username)) {
-                    if (username.length > 0) {
-                        usernameInput.classList.remove('available', 'unavailable', 'checking');
-                        usernameInput.classList.add('unavailable');
-                        statusIndicator.innerHTML = '<span class="icon-close" style="color: #ff4444;"></span>';
+                async function checkUsernameAvailability(username) {
+                    if (isChecking) return;
+
+                    // Validate format first
+                    const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+                    if (!usernameRegex.test(username)) {
+                        if (username.length > 0) {
+                            usernameInput.classList.remove('available', 'unavailable', 'checking');
+                            usernameInput.classList.add('unavailable');
+                            statusIndicator.innerHTML = '<span class="icon-close" style="color: #ff4444;"></span>';
+                            claimBtn.disabled = true;
+                            isAvailable = false;
+                        } else {
+                            usernameInput.classList.remove('available', 'unavailable', 'checking');
+                            statusIndicator.innerHTML = '';
+                            claimBtn.disabled = true;
+                            isAvailable = false;
+                        }
+                        return;
+                    }
+
+                    isChecking = true;
+                    usernameInput.classList.remove('available', 'unavailable');
+                    usernameInput.classList.add('checking');
+                    statusIndicator.innerHTML = '<span style="color: var(--poda-text-secondary); font-size: 0.9rem; display: inline-block; animation: spin 1s linear infinite;">⟳</span>';
+                    claimBtn.disabled = true;
+
+                    try {
+                        const response = await fetch(`/api/check-username.php?username=${encodeURIComponent(username)}`);
+                        const data = await response.json();
+
+                        if (data.success && data.available) {
+                            usernameInput.classList.remove('checking', 'unavailable');
+                            usernameInput.classList.add('available');
+                            statusIndicator.innerHTML = '<span class="icon-check" style="color: var(--poda-accent-signal-green);"></span>';
+                            claimBtn.disabled = false;
+                            isAvailable = true;
+                        } else {
+                            usernameInput.classList.remove('checking', 'available');
+                            usernameInput.classList.add('unavailable');
+                            statusIndicator.innerHTML = '<span class="icon-close" style="color: #ff4444;"></span>';
+                            claimBtn.disabled = true;
+                            isAvailable = false;
+                        }
+                    } catch (error) {
+                        console.error('Error checking username:', error);
+                        usernameInput.classList.remove('checking');
+                        statusIndicator.innerHTML = '';
                         claimBtn.disabled = true;
                         isAvailable = false;
-                    } else {
+                    } finally {
+                        isChecking = false;
+                    }
+                }
+
+                // Debounced username check
+                usernameInput.addEventListener('input', (e) => {
+                    const username = e.target.value.trim();
+
+                    // Clear previous timeout
+                    if (checkTimeout) {
+                        clearTimeout(checkTimeout);
+                    }
+
+                    // Clear status if empty
+                    if (!username) {
                         usernameInput.classList.remove('available', 'unavailable', 'checking');
                         statusIndicator.innerHTML = '';
                         claimBtn.disabled = true;
                         isAvailable = false;
+                        return;
                     }
-                    return;
-                }
-                
-                isChecking = true;
-                usernameInput.classList.remove('available', 'unavailable');
-                usernameInput.classList.add('checking');
-                statusIndicator.innerHTML = '<span style="color: var(--poda-text-secondary); font-size: 0.9rem; display: inline-block; animation: spin 1s linear infinite;">⟳</span>';
-                claimBtn.disabled = true;
-                
-                try {
-                    const response = await fetch(`/api/check-username.php?username=${encodeURIComponent(username)}`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.available) {
-                        usernameInput.classList.remove('checking', 'unavailable');
-                        usernameInput.classList.add('available');
-                        statusIndicator.innerHTML = '<span class="icon-check" style="color: var(--poda-accent-signal-green);"></span>';
-                        claimBtn.disabled = false;
-                        isAvailable = true;
+
+                    // Check availability after 500ms delay
+                    checkTimeout = setTimeout(() => {
+                        checkUsernameAvailability(username);
+                    }, 500);
+                });
+
+                // Handle Enter key in input
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && isAvailable && !claimBtn.disabled) {
+                        claimBtn.click();
+                    }
+                });
+
+                // Update claim button to include username in URL
+                claimBtn.addEventListener('click', (e) => {
+                    const username = usernameInput.value.trim();
+                    if (username && isAvailable) {
+                        claimBtn.href = `/signup.php?username=${encodeURIComponent(username)}`;
                     } else {
-                        usernameInput.classList.remove('checking', 'available');
-                        usernameInput.classList.add('unavailable');
-                        statusIndicator.innerHTML = '<span class="icon-close" style="color: #ff4444;"></span>';
-                        claimBtn.disabled = true;
-                        isAvailable = false;
+                        e.preventDefault();
+                        if (!username) {
+                            usernameInput.focus();
+                        }
                     }
-                } catch (error) {
-                    console.error('Error checking username:', error);
-                    usernameInput.classList.remove('checking');
-                    statusIndicator.innerHTML = '';
-                    claimBtn.disabled = true;
-                    isAvailable = false;
-                } finally {
-                    isChecking = false;
-                }
-            }
-            
-            // Debounced username check
-            usernameInput.addEventListener('input', (e) => {
-                const username = e.target.value.trim();
-                
-                // Clear previous timeout
-                if (checkTimeout) {
-                    clearTimeout(checkTimeout);
-                }
-                
-                // Clear status if empty
-                if (!username) {
-                    usernameInput.classList.remove('available', 'unavailable', 'checking');
-                    statusIndicator.innerHTML = '';
-                    claimBtn.disabled = true;
-                    isAvailable = false;
-                    return;
-                }
-                
-                // Check availability after 500ms delay
-                checkTimeout = setTimeout(() => {
-                    checkUsernameAvailability(username);
-                }, 500);
-            });
-            
-            // Handle Enter key in input
-            usernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && isAvailable && !claimBtn.disabled) {
-                    claimBtn.click();
-                }
-            });
-            
-            // Update claim button to include username in URL
-            claimBtn.addEventListener('click', (e) => {
-                const username = usernameInput.value.trim();
-                if (username && isAvailable) {
-                    claimBtn.href = `/signup.php?username=${encodeURIComponent(username)}`;
-                } else {
-                    e.preventDefault();
-                    if (!username) {
-                        usernameInput.focus();
+                });
+
+                // Add focus styles
+                usernameInput.addEventListener('focus', () => {
+                    usernameInput.parentElement.parentElement.style.borderColor = 'var(--poda-accent-signal-green)';
+                });
+
+                usernameInput.addEventListener('blur', () => {
+                    if (!usernameInput.value) {
+                        usernameInput.parentElement.parentElement.style.borderColor = 'rgba(255, 255, 255, 0.15)';
                     }
-                }
-            });
-            
-            // Add focus styles
-            usernameInput.addEventListener('focus', () => {
-                usernameInput.parentElement.parentElement.style.borderColor = 'var(--poda-accent-signal-green)';
-            });
-            
-            usernameInput.addEventListener('blur', () => {
-                if (!usernameInput.value) {
-                    usernameInput.parentElement.parentElement.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                }
-            });
+                });
             } catch (err) {
                 console.error('Username claim init error:', err);
             }
         })();
-        
+
         // Initialize drawer handlers - separate block
-        (function() {
+        (function () {
             try {
                 function initDrawerHandlers() {
                     const overlay = document.getElementById('drawer-overlay');
@@ -2120,7 +2334,7 @@ require_once __DIR__ . '/includes/helpers.php';
                         overlay.addEventListener('click', window.closeDrawer);
                         overlay.dataset.listenerAttached = 'true';
                     }
-                    
+
                     // Close drawer on escape key (only add once)
                     if (!window.escapeKeyListenerAdded) {
                         document.addEventListener('keydown', (e) => {
@@ -2131,29 +2345,29 @@ require_once __DIR__ . '/includes/helpers.php';
                         window.escapeKeyListenerAdded = true;
                     }
                 }
-                
+
                 // Initialize drawer handlers immediately
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initDrawerHandlers);
                 } else {
                     initDrawerHandlers();
                 }
-                
+
                 // Also try after a delay
                 setTimeout(initDrawerHandlers, 500);
             } catch (err) {
                 console.error('Drawer handlers init error:', err);
             }
         })();
-        
+
         // Smooth scroll for anchor links - separate block
-        (function() {
+        (function () {
             try {
                 function initSmoothScroll() {
                     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                         if (anchor.dataset.smoothScrollAttached) return;
                         anchor.dataset.smoothScrollAttached = 'true';
-                        
+
                         anchor.addEventListener('click', function (e) {
                             const href = this.getAttribute('href');
                             if (href && href !== '#' && !href.startsWith('#privacy') && !href.startsWith('#terms')) {
@@ -2163,7 +2377,7 @@ require_once __DIR__ . '/includes/helpers.php';
                                     const headerOffset = 100;
                                     const elementPosition = target.getBoundingClientRect().top;
                                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                                    
+
                                     window.scrollTo({
                                         top: offsetPosition,
                                         behavior: 'smooth'
@@ -2173,42 +2387,42 @@ require_once __DIR__ . '/includes/helpers.php';
                         });
                     });
                 }
-                
+
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initSmoothScroll);
                 } else {
                     initSmoothScroll();
                 }
-                
+
                 setTimeout(initSmoothScroll, 500);
             } catch (err) {
                 console.error('Smooth scroll init error:', err);
             }
         })();
-        
-        
+
+
         // Scroll Animations using Intersection Observer - separate block
-        (function() {
+        (function () {
             let animationInitialized = false;
-            
+
             function initScrollAnimations() {
                 // Prevent multiple initializations
                 if (animationInitialized) return;
-                
+
                 // Get all elements with scroll-animate class
                 const animateElements = document.querySelectorAll('.scroll-animate');
-                
+
                 // If no elements found, try again later
                 if (animateElements.length === 0) {
                     setTimeout(initScrollAnimations, 100);
                     return;
                 }
-                
+
                 animationInitialized = true;
-                
+
                 // DON'T add animations-ready yet - wait until we've shown viewport elements
                 // This prevents content from being hidden before we can process it
-                
+
                 // Check if Intersection Observer is supported
                 if (!('IntersectionObserver' in window)) {
                     // Fallback: show all elements immediately
@@ -2217,14 +2431,14 @@ require_once __DIR__ . '/includes/helpers.php';
                     });
                     return;
                 }
-                
+
                 // Create observer with options - aggressive margins to catch elements earlier
                 const observerOptions = {
                     root: null,
                     rootMargin: '500px 0px -100px 0px', // Very generous margin - trigger 500px before viewport
                     threshold: [0, 0.01, 0.1, 0.5] // Multiple thresholds for better detection
                 };
-                
+
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -2233,34 +2447,34 @@ require_once __DIR__ . '/includes/helpers.php';
                         }
                     });
                 }, observerOptions);
-                
+
                 // First, identify and immediately animate elements already in viewport (hero section)
                 const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
                 const elementsInViewport = [];
-                
+
                 animateElements.forEach(el => {
                     // Skip if already animated (hero section has animate class in HTML)
                     if (el.classList.contains('animate')) {
                         return;
                     }
-                    
+
                     // Check if element is in viewport
                     const rect = el.getBoundingClientRect();
                     const isInViewport = rect.top < viewportHeight + 300 && rect.bottom > -100;
-                    
+
                     if (isInViewport) {
                         elementsInViewport.push(el);
                         // Add animate class immediately to prevent hiding
                         el.classList.add('animate');
                     }
                 });
-                
+
                 // Add animations-ready class AFTER viewport elements are already animated
                 // This enables animations for elements below the fold
                 requestAnimationFrame(() => {
                     document.body.classList.add('animations-ready');
                 });
-                
+
                 // Observe all other elements for scroll animations
                 animateElements.forEach(el => {
                     if (!el.classList.contains('animate') && !elementsInViewport.includes(el)) {
@@ -2268,7 +2482,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 });
             }
-            
+
             // Wait for everything to be fully loaded before starting animations
             function startAnimations() {
                 // Wait for both DOM and all resources (images, scripts, etc.) to be loaded
@@ -2280,7 +2494,7 @@ require_once __DIR__ . '/includes/helpers.php';
                     window.addEventListener('load', () => {
                         setTimeout(initScrollAnimations, 100);
                     });
-                    
+
                     // Also try on DOMContentLoaded as a backup
                     if (document.readyState === 'loading') {
                         document.addEventListener('DOMContentLoaded', () => {
@@ -2289,26 +2503,25 @@ require_once __DIR__ . '/includes/helpers.php';
                     }
                 }
             }
-            
+
             startAnimations();
         })();
-        
+
     </script>
-    
+
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/692b18ba098d981981d750c9/1jb85h6ec';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
     </script>
     <!--End of Tawk.to Script-->
 </body>
+
 </html>
-
-

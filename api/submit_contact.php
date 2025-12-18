@@ -13,11 +13,12 @@ header('Content-Type: application/json');
 $pageId = $_POST['page_id'] ?? 0;
 $visitorName = trim($_POST['name'] ?? '');
 $visitorEmail = trim($_POST['email'] ?? '');
+$visitorSubject = trim($_POST['subject'] ?? '');
 $message = trim($_POST['message'] ?? '');
 $widgetId = $_POST['widget_id'] ?? 0;
 
 // Validate inputs
-if (empty($pageId) || empty($visitorName) || empty($visitorEmail) || empty($message)) {
+if (empty($pageId) || empty($visitorName) || empty($visitorEmail) || empty($message) || empty($visitorSubject)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'All fields are required']);
     exit;
@@ -51,13 +52,13 @@ try {
     $toEmail = !empty($config['email_to']) ? $config['email_to'] : $user['email'];
 
     // Determine subject
-    $subjectPrefix = !empty($config['subject_prefix']) ? $config['subject_prefix'] : 'New Contact from PodaBio';
-    $subject = $subjectPrefix . ': ' . $visitorName;
+    $subject = 'Contact: ' . $visitorSubject;
 
     // Build email body
     $body = "You have received a new message from your PodaBio page contact form.\n\n";
     $body .= "Name: " . $visitorName . "\n";
     $body .= "Email: " . $visitorEmail . "\n";
+    $body .= "Subject: " . $visitorSubject . "\n";
     $body .= "Date: " . date('Y-m-d H:i:s') . "\n\n";
     $body .= "Message:\n" . $message . "\n\n";
     $body .= "-----------------------------------\n";
@@ -70,7 +71,7 @@ try {
     $headers .= "X-Mailer: PodaBio/1.0";
 
     if (mail($toEmail, $subject, $body, $headers)) {
-        echo json_encode(['success' => true, 'message' => $config['success_message'] ?? 'Message sent successfully!']);
+        echo json_encode(['success' => true, 'message' => 'Message sent successfully!']);
     } else {
         throw new Exception('Failed to send email');
     }

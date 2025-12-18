@@ -151,4 +151,3 @@
 .editor-shell__resizer:focus-visible::before {
   background: var(--admin-accent-primary, #00FF7F);
 }
-

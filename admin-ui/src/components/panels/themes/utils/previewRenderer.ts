@@ -96,7 +96,10 @@ class PreviewRenderer {
 
     // Handle Page Background Image - CRITICAL for preview updates
     // Check uiState first, then page data
-    const rawBgImageUrl = (uiState?.['page_background_image_url'] as string) ?? (page?.['page_background_image_url'] as string);
+    // Check uiState first (both underscore and dash formats), then page data
+    const rawBgImageUrl = (uiState?.['page_background_image_url'] as string) ??
+      (uiState?.['page-background-image-url'] as string) ??
+      (page?.['page_background_image_url'] as string);
     const bgImageUrl = normalizeImageUrl(rawBgImageUrl);
 
     if (bgImageUrl) {
@@ -138,6 +141,52 @@ class PreviewRenderer {
       // Ensure image is inactive if not present
       cssVars['--page-background-image-active'] = '0';
     }
+
+    // Helper to darken a color (matches PHP darkenBackground)
+    const darkenColor = (color: string, amount: number): string => {
+      // Simple heuristic for hex colors
+      if (color.startsWith('#')) {
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+
+        // Darken by reducing each channel
+        const r2 = Math.max(0, Math.floor(r * (1 - amount)));
+        const g2 = Math.max(0, Math.floor(g * (1 - amount)));
+        const b2 = Math.max(0, Math.floor(b * (1 - amount)));
+
+        return `rgb(${r2}, ${g2}, ${b2})`;
+      }
+      // Return as is if strict conversion not possible (e.g. gradient string)
+      return color;
+    };
+
+    // Handle Desktop Gradient Fallback (matches ThemeCSSGenerator.php)
+    // When image is active, we use a subtle gradient based on surface color
+    // When no image, we darken the page background
+    const surfaceColor = (allValues['color_tokens.surface'] as string) ?? '#ffffff';
+    const desktopBgBase = cssVars['--page-background'] ?? '#ffffff';
+
+    // Check if image is active (we just set it above)
+    const isImageActive = cssVars['--page-background-image-active'] === '1';
+
+    let pageBackgroundDark;
+    if (isImageActive) {
+      // Image active: Gradient off palette surface
+      const gradColor1 = surfaceColor;
+      const gradColor2 = darkenColor(surfaceColor, 0.15); // 15% darker
+      pageBackgroundDark = `linear-gradient(135deg, ${gradColor1}, ${gradColor2})`;
+    } else {
+      // No Image: Darken the main background
+      if (desktopBgBase.includes('gradient')) {
+        // If main background is already a gradient, just use it (hard to darken blindly)
+        pageBackgroundDark = desktopBgBase;
+      } else {
+        pageBackgroundDark = darkenColor(desktopBgBase, 0.15);
+      }
+    }
+    cssVars['--page-background-dark'] = pageBackgroundDark;
 
     const widgetBackground = directColumns['widget_background'] ??
       (theme?.widget_background) ??
@@ -203,6 +252,20 @@ class PreviewRenderer {
     const pageTitleSpacing = uiState?.['page-title-spacing'] ?? allValues['typography_tokens.line_height.heading'];
     if (pageTitleSpacing !== undefined) {
       cssVars['--page-title-spacing'] = String(pageTitleSpacing);
+    }
+
+    // Page title alignment - check uiState first, then page settings
+    const pageTitleAlignment = uiState?.['page-title-alignment'] ??
+      ((typeof page !== 'undefined' && page && 'name_alignment' in page ? (page as Record<string, unknown>).name_alignment : null));
+    if (pageTitleAlignment) {
+      cssVars['--page-title-alignment'] = String(pageTitleAlignment);
+    }
+
+    // Page description alignment - check uiState first, then page settings
+    const pageDescriptionAlignment = uiState?.['page-description-alignment'] ?? uiState?.['page-bio-alignment'] ??
+      ((typeof page !== 'undefined' && page && 'bio_alignment' in page ? (page as Record<string, unknown>).bio_alignment : null));
+    if (pageDescriptionAlignment) {
+      cssVars['--page-description-alignment'] = String(pageDescriptionAlignment);
     }
 
     // Map font weights and styles

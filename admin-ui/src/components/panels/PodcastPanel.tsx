@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { usePodcastThemePrompt } from '../../hooks/usePodcastThemePrompt';
-import { PodcastThemePromptDialog } from './themes/PodcastThemePromptDialog';
-import { PodcastThemeGeneratorModal } from './themes/PodcastThemeGeneratorModal';
+// import { usePodcastThemePrompt } from '../../hooks/usePodcastThemePrompt';
+// import { PodcastThemePromptDialog } from './themes/PodcastThemePromptDialog';
+// import { PodcastThemeGeneratorModal } from './themes/PodcastThemeGeneratorModal';
 import { PodcastInspector } from './PodcastInspector';
 import { usePageSnapshot } from '../../api/page';
 import type { TabColorTheme } from '../layout/tab-colors';
@@ -13,14 +13,14 @@ interface PodcastPanelProps {
 }
 
 export function PodcastPanel({ activeColor }: PodcastPanelProps): JSX.Element {
-  const {
-    showPrompt,
-    openGenerator,
-    closeGenerator,
-    closePrompt,
-    isGeneratorOpen,
-    generatorProps,
-  } = usePodcastThemePrompt();
+  // const {
+  //   showPrompt,
+  //   openGenerator,
+  //   closeGenerator,
+  //   closePrompt,
+  //   isGeneratorOpen,
+  //   generatorProps,
+  // } = usePodcastThemePrompt();
 
   return (
     <>
@@ -53,16 +53,7 @@ export function PodcastPanel({ activeColor }: PodcastPanelProps): JSX.Element {
       </motion.div>
 
       {/* Legacy Theme Prompts */}
-      <PodcastThemePromptDialog
-        isOpen={showPrompt}
-        onAccept={openGenerator}
-        onDecline={closePrompt}
-      />
-      <PodcastThemeGeneratorModal
-        coverImageUrl={generatorProps.coverImageUrl}
-        isOpen={isGeneratorOpen}
-        onClose={closeGenerator}
-      />
+      {/* Legacy Theme Prompts removed */}
     </>
   );
 }

@@ -78,6 +78,8 @@ ssh $SSH_OPTS -p $SSH_PORT -o StrictHostKeyChecking=accept-new $SSH_HOST << 'END
     echo "1. Test admin panel: https://poda.bio/admin/userdashboard.php"
     echo "2. Check browser console for any errors"
     echo "3. Verify React app loads (should not show 'Loading...' message)"
+    echo "4. IMPORTANT: If you have local images to sync, run:"
+    echo "   scp -P 65002 -r uploads/* u925957603@195.179.237.142:/home/u925957603/domains/poda.bio/public_html/uploads/"
     echo ""
 ENDSSH
 
