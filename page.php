@@ -1148,10 +1148,10 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
     <!-- Podcast Player JavaScript -->
     <?php if ($showPodcastPlayer): ?>
-        <script src="/js/podcast-player-utils.js"></script>
-        <script src="/js/podcast-player-rss-parser.js"></script>
-        <script src="/js/podcast-player-audio.js"></script>
-        <script src="/js/podcast-player-app.js"></script>
+        <script src="/js/podcast-player-utils.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-utils.js'); ?>"></script>
+        <script src="/js/podcast-player-rss-parser.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-rss-parser.js'); ?>"></script>
+        <script src="/js/podcast-player-audio.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-audio.js'); ?>"></script>
+        <script src="/js/podcast-player-app.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-app.js'); ?>"></script>
         <script>
             window.podcastConfig = {
                 rssFeedUrl: <?php echo json_encode($page['rss_feed_url'] ?? ''); ?>,
@@ -1165,19 +1165,56 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
         <!-- Desktop Podcast Player Initialization -->
         <script>
             (function () {
+                // Shared config generator
+                function getPodcastConfig() {
+                    if (!window.podcastConfig) return null;
+
+                    // Extract platform links from social icons
+                    const socialIcons = window.podcastConfig.socialIcons || [];
+                    const platformLinks = {
+                        apple: null,
+                        spotify: null,
+                        google: null
+                    };
+                    socialIcons.forEach(icon => {
+                        const platformName = (icon.platform_name || '').toLowerCase();
+                        const url = icon.url || '';
+                        if (platformName === 'apple_podcasts' && url) {
+                            platformLinks.apple = url;
+                        } else if (platformName === 'spotify' && url) {
+                            platformLinks.spotify = url;
+                        } else if (platformName === 'google_podcasts' && url) {
+                            platformLinks.google = url;
+                        }
+                    });
+
+                    return {
+                        rssFeedUrl: window.podcastConfig.rssFeedUrl,
+                        rssProxyUrl: '/api/rss-proxy.php',
+                        imageProxyUrl: '/api/podcast-image-proxy.php',
+                        savedCoverImage: window.podcastConfig.savedCoverImage || '',
+                        platformLinks: platformLinks,
+                        reviewLinks: {
+                            apple: null,
+                            spotify: null,
+                            google: null
+                        },
+                        socialIcons: socialIcons,
+                        cacheTTL: 3600000
+                    };
+                }
+
                 function initDesktopPlayer() {
-                    if (typeof PodcastPlayerApp === 'undefined') {
-                        console.error('PodcastPlayerApp is not defined');
-                        return;
-                    }
+                    const config = getPodcastConfig();
+                    if (!config || typeof PodcastPlayerApp === 'undefined') return;
+
                     const drawer = document.getElementById('podcast-top-drawer-desktop');
-                    if (!drawer) {
-                        // Desktop frame not visible (mobile view)
-                        return;
-                    }
+                    if (!drawer) return; // Not desktop view
+
                     // Update drawer container ID first
                     drawer.id = 'podcast-top-drawer';
-                    // Update ALL element IDs to standard IDs that PodcastPlayerApp expects
+                    
+                    // Update ALL element IDs to standard IDs that PodcastPlayerApp expects for desktop (removing suffix)
                     const idUpdates = {
                         // Tab navigation
                         'tab-navigation-desktop': 'tab-navigation',
@@ -1231,62 +1268,55 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         'speed-options-modal-desktop': 'speed-options-modal',
                         'timer-options-modal-desktop': 'timer-options-modal'
                     };
-                    // Update IDs to standard names
+
                     Object.keys(idUpdates).forEach(oldId => {
                         const el = document.getElementById(oldId);
-                        if (el) {
-                            el.id = idUpdates[oldId];
-                        }
+                        if (el) el.id = idUpdates[oldId];
                     });
-                    // Extract platform links from social icons
-                    const socialIcons = window.podcastConfig.socialIcons || [];
-                    const platformLinks = {
-                        apple: null,
-                        spotify: null,
-                        google: null
-                    };
-                    socialIcons.forEach(icon => {
-                        const platformName = (icon.platform_name || '').toLowerCase();
-                        const url = icon.url || '';
-                        if (platformName === 'apple_podcasts' && url) {
-                            platformLinks.apple = url;
-                        } else if (platformName === 'spotify' && url) {
-                            platformLinks.spotify = url;
-                        } else if (platformName === 'google_podcasts' && url) {
-                            platformLinks.google = url;
-                        }
-                    });
-                    const config = {
-                        rssFeedUrl: window.podcastConfig.rssFeedUrl,
-                        rssProxyUrl: '/api/rss-proxy.php',
-                        imageProxyUrl: '/api/podcast-image-proxy.php',
-                        savedCoverImage: window.podcastConfig.savedCoverImage || '',
-                        platformLinks: platformLinks,
-                        reviewLinks: {
-                            apple: null,
-                            spotify: null,
-                            google: null
-                        },
-                        socialIcons: socialIcons,
-                        cacheTTL: 3600000
-                    };
+
                     try {
                         window.podcastPlayerAppDesktop = new PodcastPlayerApp(config, drawer);
                         console.log('Desktop podcast player initialized successfully');
-                        /* Load RSS feed automatically */
                         if (config.rssFeedUrl) {
-                            window.podcastPlayerAppDesktop.loadFeed().catch(err => {
-                                console.error('Failed to load RSS feed:', err);
-                            });
+                            window.podcastPlayerAppDesktop.loadFeed().catch(console.error);
                         }
                     } catch (error) {
                         console.error('Failed to initialize desktop podcast player:', error);
                     }
                 }
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initDesktopPlayer);
-                } else {
+
+                function initMobilePlayer() {
+                    const config = getPodcastConfig();
+                    if (!config || typeof PodcastPlayerApp === 'undefined') return;
+
+                    const drawerMobile = document.getElementById('podcast-top-drawer-mobile');
+                    if (!drawerMobile) return; // Not mobile view or element missing
+
+                    try {
+                        // For mobile, we pass the suffix '-mobile' because elements kept their suffix
+                        window.podcastPlayerAppMobile = new PodcastPlayerApp(config, drawerMobile, '-mobile');
+                        console.log('Mobile podcast player initialized successfully');
+                        if (config.rssFeedUrl) {
+                            window.podcastPlayerAppMobile.loadFeed().catch(console.error);
+                        }
+                    } catch (error) {
+                        console.error('Failed to initialize mobile podcast player:', error);
+                    }
+                }
+
+                function init() {
+                    if (typeof PodcastPlayerApp === 'undefined') {
+                        console.error('PodcastPlayerApp is not defined');
+                        return;
+                    }
                     initDesktopPlayer();
+                    initMobilePlayer();
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', init);
+                } else {
+                    init();
                 }
             })();
         </script>

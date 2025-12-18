@@ -144,13 +144,22 @@ class PodcastPlayerApp {
             if (episodesList) episodesList.style.display = 'none';
             if (errorState) errorState.style.display = 'none';
 
-            // Check cache first
-            const cached = PodcastStorage.get('podcast_data');
-            const cacheTime = PodcastStorage.get('podcast_data_time', 0);
+            // Check cache first - Namespace by hashed/encoded feed URL to avoid collisions
+            if (!this.config.rssFeedUrl) {
+                throw new Error('RSS feed URL not provided');
+            }
+
+            // Simple hash of the URL directly for the key suffix
+            const feedKey = 'podcast_data_' + btoa(this.config.rssFeedUrl).replace(/[^a-zA-Z0-9]/g, '');
+            const timeKey = feedKey + '_time';
+
+            const cached = PodcastStorage.get(feedKey);
+            const cacheTime = PodcastStorage.get(timeKey, 0);
             const now = Date.now();
             const cacheTTL = this.config.cacheTTL || 3600000; // Default 1 hour
 
             if (cached && (now - cacheTime) < cacheTTL) {
+                console.log('Using cached podcast data for:', this.config.rssFeedUrl);
                 this.podcastData = cached;
                 this.renderPodcastData();
                 if (loadingSkeleton) loadingSkeleton.style.display = 'none';
@@ -158,10 +167,6 @@ class PodcastPlayerApp {
             }
 
             // Fetch and parse RSS
-            if (!this.config.rssFeedUrl) {
-                throw new Error('RSS feed URL not provided');
-            }
-
             console.log('Fetching RSS feed from:', this.config.rssFeedUrl);
             console.log('Using RSS proxy:', this.config.rssProxyUrl);
 
@@ -172,9 +177,9 @@ class PodcastPlayerApp {
                 episodeCount: this.podcastData?.episodes?.length || 0
             });
 
-            // Cache the data
-            PodcastStorage.set('podcast_data', this.podcastData);
-            PodcastStorage.set('podcast_data_time', now);
+            // Cache the data using the unique key
+            PodcastStorage.set(feedKey, this.podcastData);
+            PodcastStorage.set(timeKey, now);
 
             this.renderPodcastData();
 
