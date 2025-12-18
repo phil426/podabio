@@ -3285,3 +3285,9 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .retry-button-modern i {
     font-size: 14px;
 }
+/* Hide podcast banner on tablet and desktop (width >= 768px) */
+@media (min-width: 768px) {
+    .podcast-top-banner {
+        display: none !important;
+    }
+}
