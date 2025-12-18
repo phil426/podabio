@@ -1,45 +1,51 @@
 <?php
+// Set headers to text/plain to see errors easily
 header('Content-Type: text/plain');
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-echo "Debug Connectivity Script (Exact Match)\n";
-echo "=======================================\n\n";
+echo "Debug Connectivity Script with Imports\n";
+echo "======================================\n\n";
 
-// exact URL structure from iTunesSearchClient
-$searchTerm = urlencode('buy the bay'); // using the term from the screenshot
-$limit = 10;
-$url = 'https://itunes.apple.com/search?term=' . $searchTerm . '&media=podcast&limit=' . intval($limit) . '&entity=podcast';
+try {
+    echo "1. Including config/constants.php... ";
+    require_once __DIR__ . '/config/constants.php';
+    echo "OK\n";
 
-echo "URL: " . $url . "\n\n";
-
-// 1. Test file_get_contents
-echo "1. Testing file_get_contents:\n";
-$context = stream_context_create([
-    'http' => [
-        'timeout' => 10,
-        'user_agent' => 'PodaBio/1.0',
-        'follow_location' => true,
-        'max_redirects' => 5
-    ]
-]);
-
-$start = microtime(true);
-$response = @file_get_contents($url, false, $context);
-$end = microtime(true);
-$duration = round($end - $start, 4);
-
-if ($response === false) {
-    echo "   [FAILED] file_get_contents returned false.\n";
-    $error = error_get_last();
-    if ($error) {
-        echo "   Error: " . $error['message'] . "\n";
-    }
-} else {
-    echo "   [SUCCESS] Received " . strlen($response) . " bytes in $duration seconds.\n";
-    $data = json_decode($response, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        echo "   [FAILED] Invalid JSON: " . json_last_error_msg() . "\n";
+    echo "2. Including config/database.php... ";
+    if (file_exists(__DIR__ . '/config/database.php')) {
+        require_once __DIR__ . '/config/database.php';
+        echo "OK\n";
     } else {
-        echo "   [SUCCESS] Valid JSON. Result count: " . ($data['resultCount'] ?? 'unknown') . "\n";
+        echo "MISSING (expected on first deploy)\n";
     }
+
+    echo "3. Including includes/session.php... ";
+    require_once __DIR__ . '/includes/session.php';
+    echo "OK\n";
+
+    // Skip auth.php as it redirects
+    // echo "4. Including includes/auth.php... ";
+    // require_once __DIR__ . '/includes/auth.php'; 
+
+    echo "5. Including classes/iTunesSearchClient.php... ";
+    require_once __DIR__ . '/classes/iTunesSearchClient.php';
+    echo "OK\n";
+
+    echo "6. Testing iTunesSearchClient instantiation... ";
+    $client = new iTunesSearchClient();
+    echo "OK\n";
+
+    echo "7. Testing searchPodcasts()...\n";
+    $result = $client->searchPodcasts('buy the bay', 5);
+
+    echo "   Success: " . ($result['success'] ? 'YES' : 'NO') . "\n";
+    if ($result['error']) {
+        echo "   Error: " . $result['error'] . "\n";
+    }
+    echo "   Count: " . count($result['data'] ?? []) . "\n";
+
+} catch (Throwable $e) {
+    echo "\n[EXCEPTION] " . $e->getMessage() . "\n";
+    echo $e->getTraceAsString();
 }
-echo "\n";
