@@ -382,7 +382,7 @@
     display: none;
   }
 
-  /* Show menu for links */
+  /* Show hamburger menu for links */
   .mobileMenuButton {
     display: block;
     grid-column: 4;
@@ -396,6 +396,8 @@
     gap: 12px !important;
     grid-column: 3;
     /* Buttons before menu */
+    margin-right: 0.5rem;
+    /* Add spacing between buttons and hamburger */
   }
 }
 
@@ -421,6 +423,7 @@
     max-width: 100%;
   }
 
+  /* On mobile, Hamburger is column 3 */
   .mobileMenuButton {
     grid-column: 3;
   }
