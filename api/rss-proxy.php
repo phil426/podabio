@@ -31,25 +31,41 @@ if (!filter_var($rssUrl, FILTER_VALIDATE_URL)) {
     exit;
 }
 
-// Fetch RSS feed
-$context = stream_context_create([
-    'http' => [
-        'method' => 'GET',
-        'timeout' => 10,
-        'user_agent' => 'PodaBio Podcast Player/1.0',
-        'follow_location' => true,
-        'max_redirects' => 5
-    ]
-]);
+// Initialize cURL
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $rssUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+curl_setopt($ch, CURLOPT_USERAGENT, 'PodaBio Podcast Player/1.0');
+// Disable SSL verification if needed (try to avoid, but helpful for some misconfigured feeds)
+// curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
 
-$feedContent = @file_get_contents($rssUrl, false, $context);
+$feedContent = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlError = curl_error($ch);
+curl_close($ch);
 
 if ($feedContent === false) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch RSS feed']);
+    // Return actual error for debugging
+    echo json_encode(['error' => 'Failed to fetch RSS feed: ' . $curlError]);
+    exit;
+}
+
+if ($httpCode >= 400) {
+    http_response_code($httpCode);
+    echo json_encode(['error' => "Remote server returned error: $httpCode"]);
+    exit;
+}
+
+// Check if content is empty
+if (empty($feedContent)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Empty response from RSS feed']);
     exit;
 }
 
 // Return RSS feed content
 echo $feedContent;
-
