@@ -476,6 +476,12 @@ switch ($action) {
                                 $podcastDescription = sanitizeInput($feedData['description']);
                                 $updateData['podcast_description'] = strlen($podcastDescription) > 140 ? truncate($podcastDescription, 140) : $podcastDescription;
                             }
+
+                            // CRITICAL: Save episodes to the database
+                            // This was missing, causing the player to not have tracks for the new feed
+                            if (!$parser->saveToPage($pageId, $feedData)) {
+                                error_log("Failed to save episodes for page ID {$pageId}");
+                            }
                         } else {
                             // Log error but don't fail the update
                             error_log("Failed to parse RSS feed: " . ($feedResult['error'] ?? 'Unknown error'));
