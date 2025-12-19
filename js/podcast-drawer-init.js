@@ -122,6 +122,8 @@
             const savedCoverImage = window.podcastConfig?.savedCoverImage || '';
             const socialIcons = window.podcastConfig?.socialIcons || [];
 
+            console.log('PodcastDrawerInit: Raw config', window.podcastConfig);
+
             if (!rssFeedUrl) {
                 console.error('RSS feed URL is not set');
                 return;
@@ -131,13 +133,20 @@
             const reviewLinks = {
                 apple: null,
                 spotify: null,
-                google: null
+                google: null,
+                youtube_music: null
             };
 
             if (Array.isArray(socialIcons)) {
                 socialIcons.forEach(icon => {
-                    if (!icon.url) return;
-                    const platform = icon.platform_name ? icon.platform_name.toLowerCase() : '';
+                    const platformName = (icon.platform_name || '').toLowerCase();
+                    const url = icon.url || '';
+                    // Debug log
+                    console.log('PodcastDrawerInit: Processing icon', { platformName, url });
+
+                    if (!url) return;
+
+                    const platform = platformName;
                     if (platform === 'apple_podcasts' || platform === 'apple podcasts') {
                         reviewLinks.apple = icon.url;
                     } else if (platform === 'spotify') {
