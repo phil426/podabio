@@ -18,8 +18,8 @@ $showCloseButton = $showCloseButton ?? true;
 <div class="podcast-top-drawer" id="podcast-top-drawer<?php echo $idSuffix; ?>" style="<?php echo $drawerStyles; ?>">
     <!-- Tab Navigation -->
     <nav class="tab-navigation" id="tab-navigation<?php echo $idSuffix; ?>">
-        <button class="tab-button active" data-tab="now-playing" id="tab-now-playing<?php echo $idSuffix; ?>">Now
-            Playing</button>
+        <button class="tab-button active" data-tab="now-playing"
+            id="tab-now-playing<?php echo $idSuffix; ?>">Playing</button>
         <button class="tab-button" data-tab="follow" id="tab-follow<?php echo $idSuffix; ?>">Follow</button>
         <button class="tab-button" data-tab="details" id="tab-details<?php echo $idSuffix; ?>">Details</button>
         <button class="tab-button" data-tab="episodes" id="tab-episodes<?php echo $idSuffix; ?>">Episodes</button>
@@ -213,12 +213,12 @@ $showCloseButton = $showCloseButton ?? true;
     <audio id="podcast-audio-player<?php echo $idSuffix; ?>" preload="metadata"></audio>
 
     <?php if ($showCloseButton): ?>
-    <div class="podcast-global-close-footer">
-        <button class="floating-close-btn" id="close-player-btn<?php echo $idSuffix; ?>" aria-label="Close Player">
-            <i class="fas fa-chevron-down"></i>
-            <span>Close</span>
-        </button>
-    </div>
+        <div class="podcast-global-close-footer">
+            <button class="floating-close-btn" id="close-player-btn<?php echo $idSuffix; ?>" aria-label="Close Player">
+                <i class="fas fa-chevron-down"></i>
+                <span>Close</span>
+            </button>
+        </div>
     <?php endif; ?>
 
     <!-- Speed Modal (Global) -->

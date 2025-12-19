@@ -1215,71 +1215,10 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                     const drawer = document.getElementById('podcast-top-drawer-desktop');
                     if (!drawer) return; // Not desktop view
 
-                    // Update drawer container ID first
-                    drawer.id = 'podcast-top-drawer';
-                    
-                    // Update ALL element IDs to standard IDs that PodcastPlayerApp expects for desktop (removing suffix)
-                    const idUpdates = {
-                        // Tab navigation
-                        'tab-navigation-desktop': 'tab-navigation',
-                        'tab-now-playing-desktop': 'tab-now-playing',
-                        'tab-follow-desktop': 'tab-follow',
-                        'tab-details-desktop': 'tab-details',
-                        'tab-episodes-desktop': 'tab-episodes',
-                        'tab-content-container-desktop': 'tab-content-container',
-                        // Tab panels
-                        'now-playing-panel-desktop': 'now-playing-panel',
-                        'follow-panel-desktop': 'follow-panel',
-                        'details-panel-desktop': 'details-panel',
-                        'episodes-panel-desktop': 'episodes-panel',
-                        // Now playing elements
-                        'now-playing-artwork-container-desktop': 'now-playing-artwork-container',
-                        'now-playing-artwork-desktop': 'now-playing-artwork',
-                        'artwork-placeholder-desktop': 'artwork-placeholder',
-                        'progress-section-now-playing-desktop': 'progress-section-now-playing',
-                        'current-time-display-desktop': 'current-time-display',
-                        'remaining-time-display-desktop': 'remaining-time-display',
-                        'progress-bar-now-playing-desktop': 'progress-bar-now-playing',
-                        'progress-fill-now-playing-desktop': 'progress-fill-now-playing',
-                        'progress-scrubber-now-playing-desktop': 'progress-scrubber-now-playing',
-                        'skip-back-large-desktop': 'skip-back-large',
-                        'play-pause-large-now-desktop': 'play-pause-large-now',
-                        'skip-forward-large-desktop': 'skip-forward-large',
-                        // Other tabs
-                        'follow-content-desktop': 'follow-content',
-                        'shownotes-content-desktop': 'shownotes-content',
-                        'shownotes-section-desktop': 'shownotes-section',
-                        'text-size-controls-desktop': 'text-size-controls',
-                        'chapters-list-desktop': 'chapters-list',
-                        'chapters-section-desktop': 'chapters-section',
-                        'episodes-list-desktop': 'episodes-list',
-                        'loading-skeleton-desktop': 'loading-skeleton',
-                        'error-state-desktop': 'error-state',
-                        'episodes-header-desktop': 'episodes-header',
-                        'episodes-count-desktop': 'episodes-count',
-                        'retry-button-desktop': 'retry-button',
-                        'toast-desktop': 'toast',
-                        'toast-message-desktop': 'toast-message',
-                        'podcast-audio-player-desktop': 'podcast-audio-player',
-                        'speed-control-btn-desktop': 'speed-control-btn',
-                        'timer-control-btn-desktop': 'timer-control-btn',
-                        'share-control-btn-desktop': 'share-control-btn',
-                        'close-player-btn-desktop': 'close-player-btn',
-                        'speed-display-desktop': 'speed-display',
-                        'timer-display-desktop': 'timer-display',
-                        'speed-modal-overlay-desktop': 'speed-modal-overlay',
-                        'timer-modal-overlay-desktop': 'timer-modal-overlay',
-                        'speed-options-modal-desktop': 'speed-options-modal',
-                        'timer-options-modal-desktop': 'timer-options-modal'
-                    };
-
-                    Object.keys(idUpdates).forEach(oldId => {
-                        const el = document.getElementById(oldId);
-                        if (el) el.id = idUpdates[oldId];
-                    });
-
                     try {
-                        window.podcastPlayerAppDesktop = new PodcastPlayerApp(config, drawer);
+                        // Pass '-desktop' suffix so the app looks for the correct element IDs
+                        // e.g. 'episodes-list-desktop' instead of looking for 'episodes-list'
+                        window.podcastPlayerAppDesktop = new PodcastPlayerApp(config, drawer, '-desktop');
                         console.log('Desktop podcast player initialized successfully');
                         if (config.rssFeedUrl) {
                             window.podcastPlayerAppDesktop.loadFeed().catch(console.error);
