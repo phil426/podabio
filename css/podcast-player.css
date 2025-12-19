@@ -1079,6 +1079,9 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .pla
     margin-bottom: 0 !important;
     min-height: auto !important;
     box-shadow: none !important;
+    position: relative !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
 }
 
 .podcast-top-drawer .platform-button:hover,
@@ -1177,6 +1180,9 @@ body[class*="theme-"] .podcast-top-drawer .follow-section.listen-on-section .soc
     box-shadow: none !important;
     opacity: 1 !important;
     font-size: 20px !important;
+    position: relative !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
 }
 
 .podcast-top-drawer .social-icon:hover,
@@ -1353,6 +1359,9 @@ body[class*="theme-"] .podcast-top-drawer .review-button {
     min-height: auto;
     transition: border-bottom-color 0.15s ease;
     box-shadow: none !important;
+    position: relative !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
 }
 
 .podcast-top-drawer .review-button:hover,
