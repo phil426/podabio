@@ -2015,21 +2015,27 @@ class ThemeCSSGenerator
         $css .= "}\n\n";
 
         // Podcast Top Banner styling (explicitly override isolation)
-        $ppBackground = $this->tokens['podcast-player-background'] ?? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
-        $ppBorderColor = $this->tokens['podcast-player-border-color'] ?? 'rgba(255, 255, 255, 0.2)';
-        $ppBorderWidth = $this->tokens['podcast-player-border-width'] ?? 1;
-        $ppShadowEnabled = $this->tokens['podcast-player-shadow-enabled'] ?? true;
-        // Handle string boolean "false" or 0
+        // These tokens are stored in colors.podcast_player by themeMapper
+        $podcastTokens = $this->tokens['colors']['podcast_player'] ?? [];
+
+        $ppBackground = $podcastTokens['background'] ?? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
+        $ppBorderColor = $podcastTokens['border_color'] ?? 'rgba(255, 255, 255, 0.2)';
+        $ppBorderWidth = intval($podcastTokens['border_width'] ?? 1);
+
+        $ppShadowEnabled = $podcastTokens['shadow_enabled'] ?? true;
+        // Handle string boolean "false" or 0 from DB/JSON
         if ($ppShadowEnabled === 'false' || $ppShadowEnabled === '0' || $ppShadowEnabled === 0) {
             $ppShadowEnabled = false;
         }
-        $ppShadowDepth = $this->tokens['podcast-player-shadow-depth'] ?? 16;
-        $ppTextColor = $this->tokens['podcast-player-text-color'] ?? '#ffffff';
+
+        $ppShadowDepth = intval($podcastTokens['shadow_depth'] ?? 16);
+        $ppTextColor = $podcastTokens['text_color'] ?? '#ffffff';
 
         // Override podcast-player.css isolation with high specificity
         $css .= "/* Podcast Top Banner - Override Isolation */\n";
         $css .= "body .podcast-top-banner {\n";
-        $css .= "    background: " . h($ppBackground) . " !important;\n";
+        // Use strip_tags instead of h() for background to allow gradients with quotes
+        $css .= "    background: " . strip_tags($ppBackground) . " !important;\n";
         $css .= "    border-bottom: " . h($ppBorderWidth) . "px solid " . h($ppBorderColor) . " !important;\n";
         $css .= "    color: " . h($ppTextColor) . " !important;\n";
 

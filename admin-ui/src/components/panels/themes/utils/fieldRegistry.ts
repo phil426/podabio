@@ -873,7 +873,7 @@ fieldRegistry.register({
 fieldRegistry.register({
   id: 'podcast-player-background',
   label: 'Background',
-  type: 'color',
+  type: 'gradient',
   tokenPath: 'podcast_player.background',
   section: 'podcast-player-bar',
   defaultValue: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
