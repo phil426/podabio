@@ -1152,9 +1152,12 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
     <!-- Podcast Player JavaScript -->
     <?php if ($showPodcastPlayer): ?>
-        <script src="/js/podcast-player-utils.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-utils.js'); ?>"></script>
-        <script src="/js/podcast-player-rss-parser.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-rss-parser.js'); ?>"></script>
-        <script src="/js/podcast-player-audio.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-audio.js'); ?>"></script>
+        <script
+            src="/js/podcast-player-utils.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-utils.js'); ?>"></script>
+        <script
+            src="/js/podcast-player-rss-parser.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-rss-parser.js'); ?>"></script>
+        <script
+            src="/js/podcast-player-audio.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-audio.js'); ?>"></script>
         <script src="/js/podcast-player-app.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-app.js'); ?>"></script>
         <script>
             window.podcastConfig = {
@@ -1199,9 +1202,9 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
                         savedCoverImage: window.podcastConfig.savedCoverImage || '',
                         platformLinks: platformLinks,
                         reviewLinks: {
-                            apple: null,
-                            spotify: null,
-                            google: null
+                            apple: platformLinks.apple,
+                            spotify: platformLinks.spotify,
+                            google: platformLinks.google
                         },
                         socialIcons: socialIcons,
                         cacheTTL: 3600000
