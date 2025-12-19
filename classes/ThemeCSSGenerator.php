@@ -797,56 +797,6 @@ class ThemeCSSGenerator
             $css .= "    --page-screen-background: " . h($cleanBackgroundValue) . ";\n";
         }
 
-        // Podcast Player Defaults
-        $podcastDefaults = [
-            'background' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            'border_color' => 'rgba(255, 255, 255, 0.2)',
-            'border_width' => '1px',
-            'text_color' => '#ffffff',
-            'shadow_enabled' => true,
-            'shadow_depth' => '16px'
-        ];
-
-        // Extract podcast metrics from color_tokens (where fieldRegistry saves them)
-        $podcastTokens = $this->colorTokens['podcast_player'] ?? [];
-
-        $podcastBackground = $podcastTokens['background'] ?? $podcastDefaults['background'];
-        $podcastBorderColor = $podcastTokens['border_color'] ?? $podcastDefaults['border_color'];
-        $podcastTextColor = $podcastTokens['text_color'] ?? $podcastDefaults['text_color'];
-
-        // Handle numeric values that might need units
-        $podcastBorderWidth = $podcastTokens['border_width'] ?? $podcastDefaults['border_width'];
-        if (is_numeric($podcastBorderWidth)) {
-            $podcastBorderWidth .= 'px';
-        }
-
-        $podcastShadowDepth = $podcastTokens['shadow_depth'] ?? $podcastDefaults['shadow_depth'];
-        if (is_numeric($podcastShadowDepth)) {
-            $podcastShadowDepth .= 'px';
-        }
-
-        $podcastShadowEnabled = $podcastTokens['shadow_enabled'] ?? $podcastDefaults['shadow_enabled'];
-        // Ensure boolean
-        if ($podcastShadowEnabled === 'true' || $podcastShadowEnabled === '1' || $podcastShadowEnabled === 1) {
-            $podcastShadowEnabled = true;
-        } elseif ($podcastShadowEnabled === 'false' || $podcastShadowEnabled === '0' || $podcastShadowEnabled === 0) {
-            $podcastShadowEnabled = false;
-        }
-
-        // Generate Podcast CSS Variables
-        $css .= "    --podcast-player-background: " . h($podcastBackground) . ";\n";
-        $css .= "    --podcast-player-border-color: " . h($podcastBorderColor) . ";\n";
-        $css .= "    --podcast-player-border-width: " . h($podcastBorderWidth) . ";\n";
-        $css .= "    --podcast-player-text-color: " . h($podcastTextColor) . ";\n";
-
-        if ($podcastShadowEnabled) {
-            $css .= "    --podcast-player-shadow: 0 -4px " . h($podcastShadowDepth) . " rgba(0, 0, 0, 0.3);\n";
-            $css .= "    --podcast-player-shadow-depth: " . h($podcastShadowDepth) . ";\n";
-        } else {
-            $css .= "    --podcast-player-shadow: none;\n";
-            $css .= "    --podcast-player-shadow-depth: 0px;\n";
-        }
-
         // Widget Background - synced with Live Preview
         $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
 
@@ -2062,6 +2012,44 @@ class ThemeCSSGenerator
         // Other buttons
         $css .= ".drawer-close {\n";
         $css .= "    border-radius: var(--button-corner-radius, 0.75rem) !important;\n";
+        $css .= "}\n\n";
+
+        // Podcast Top Banner styling (explicitly override isolation)
+        $ppBackground = $this->tokens['podcast-player-background'] ?? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
+        $ppBorderColor = $this->tokens['podcast-player-border-color'] ?? 'rgba(255, 255, 255, 0.2)';
+        $ppBorderWidth = $this->tokens['podcast-player-border-width'] ?? 1;
+        $ppShadowEnabled = $this->tokens['podcast-player-shadow-enabled'] ?? true;
+        // Handle string boolean "false" or 0
+        if ($ppShadowEnabled === 'false' || $ppShadowEnabled === '0' || $ppShadowEnabled === 0) {
+            $ppShadowEnabled = false;
+        }
+        $ppShadowDepth = $this->tokens['podcast-player-shadow-depth'] ?? 16;
+        $ppTextColor = $this->tokens['podcast-player-text-color'] ?? '#ffffff';
+
+        // Override podcast-player.css isolation with high specificity
+        $css .= "/* Podcast Top Banner - Override Isolation */\n";
+        $css .= "body .podcast-top-banner {\n";
+        $css .= "    background: " . h($ppBackground) . " !important;\n";
+        $css .= "    border-bottom: " . h($ppBorderWidth) . "px solid " . h($ppBorderColor) . " !important;\n";
+        $css .= "    color: " . h($ppTextColor) . " !important;\n";
+
+        if ($ppShadowEnabled) {
+            // Calculate shadow based on depth
+            $sOffset = $ppShadowDepth / 2;
+            $sBlur = $ppShadowDepth;
+            // Use standard shadow color or derive from border/black
+            $css .= "    box-shadow: 0 " . h($sOffset) . "px " . h($sBlur) . "px rgba(0,0,0,0.3) !important;\n";
+            $css .= "    z-index: 100 !important;\n"; // Ensure shadow is visible over content
+        } else {
+            $css .= "    box-shadow: none !important;\n";
+        }
+        $css .= "}\n\n";
+
+        // Apply text color to children
+        $css .= "body .podcast-top-banner .podcast-info-text, \n";
+        $css .= "body .podcast-top-banner .podcast-title, \n";
+        $css .= "body .podcast-top-banner .episode-title {\n";
+        $css .= "    color: " . h($ppTextColor) . " !important;\n";
         $css .= "}\n\n";
 
         $css .= "</style>\n";

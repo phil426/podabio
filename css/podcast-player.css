@@ -60,29 +60,19 @@ body[class*="theme-"] .podcast-top-drawer {
 
 /* CSS Variables - scoped to drawer */
 .podcast-top-drawer {
-    /* Internal Dark Defaults */
+    --podcast-primary-color: #6366f1;
     --podcast-background-dark: #121212;
     --podcast-card-dark: #1E1E1E;
     --podcast-text-dark: #FFFFFF;
     --podcast-text-secondary-dark: #AAAAAA;
     --podcast-border-dark: rgba(255, 255, 255, 0.1);
 
-    /* Use Generated Theme Variables with Dark Fallbacks */
-    --podcast-background: var(--podcast-player-background, var(--podcast-background-dark));
-    --podcast-card: var(--podcast-player-background, var(--podcast-card-dark));
-    /* Simplify: cards use same bg or derive */
-    /* Note: Ideally cards would be slightly lighter, but for now we match strict theme or default */
-
-    --podcast-text: var(--podcast-player-text-color, var(--podcast-text-dark));
-
-    /* Calculate secondary text based on primary text if possible, or fallback */
-    --podcast-text-secondary: var(--podcast-player-text-color, var(--podcast-text-secondary-dark));
-    /* Opacity hack for secondary text if custom color is used */
-
-    --podcast-border: var(--podcast-player-border-color, var(--podcast-border-dark));
-    --podcast-border-width: var(--podcast-player-border-width, 1px);
-
-    --podcast-shadow: var(--podcast-player-shadow, 0 -4px 16px rgba(0, 0, 0, 0.3));
+    /* Force dark mode for drawer */
+    --podcast-background: var(--podcast-background-dark);
+    --podcast-card: var(--podcast-card-dark);
+    --podcast-text: var(--podcast-text-dark);
+    --podcast-text-secondary: var(--podcast-text-secondary-dark);
+    --podcast-border: var(--podcast-border-dark);
 
     /* Base positioning - will be overridden by more specific rules below */
     position: fixed;
@@ -92,11 +82,7 @@ body[class*="theme-"] .podcast-top-drawer {
     width: 100%;
     height: 100vh;
     z-index: 10000;
-    z-index: 10000;
-    /* Use the variable for background to support gradients */
-    background: var(--podcast-background);
-    /* Fallback background-color for safety */
-    background-color: var(--podcast-background-dark);
+    background-color: #000000;
     display: flex;
     flex-direction: column;
     transform: translateY(-100%);
@@ -110,11 +96,8 @@ body[class*="theme-"] .podcast-top-drawer {
 .podcast-top-drawer .tab-navigation {
     display: flex;
     width: 100%;
-    display: flex;
-    width: 100%;
-    /* Transparent or slight overlay to let custom background show through */
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: var(--podcast-player-border-width, 1px) solid var(--podcast-border);
+    background-color: rgba(30, 30, 30, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0;
     margin: 0;
     flex-shrink: 0;
@@ -127,7 +110,7 @@ body[class*="theme-"] .podcast-top-drawer {
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
-    color: var(--podcast-text-secondary);
+    color: #AAAAAA;
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 600;
@@ -152,7 +135,7 @@ body[class*="theme-"] .podcast-top-drawer {
 
 .podcast-top-drawer .tab-button.active {
     opacity: 1;
-    color: var(--podcast-text);
+    color: #FFFFFF;
 }
 
 .podcast-top-drawer .tab-button.active::after {
@@ -162,7 +145,7 @@ body[class*="theme-"] .podcast-top-drawer {
 .podcast-top-drawer .tab-button:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.05);
-    color: var(--podcast-text);
+    color: #FFFFFF;
 }
 
 /* Tab Content Container */

@@ -131,6 +131,14 @@ export function generatePreviewCSSVars(
     '--page-title-text-shadow': 'none',
     '--widget-shadow-box-shadow': 'none',
     '--widget-glow-box-shadow': 'none',
+
+    // Podcast Player - Preview Variables
+    '--podcast-player-background': (themeData as any)['podcast-player-background'] || 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+    '--podcast-player-border-color': (themeData as any)['podcast-player-border-color'] || 'rgba(255, 255, 255, 0.2)',
+    '--podcast-player-border-width': `${(themeData as any)['podcast-player-border-width'] ?? 1}px`,
+    '--podcast-player-shadow-enabled': (themeData as any)['podcast-player-shadow-enabled'] === false ? '0' : '1',
+    '--podcast-player-shadow-depth': `${(themeData as any)['podcast-player-shadow-depth'] ?? 16}px`,
+    '--podcast-player-text-color': (themeData as any)['podcast-player-text-color'] || '#ffffff',
   };
 
   // Also store the selected cover image URL for temporary preview display

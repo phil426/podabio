@@ -304,6 +304,15 @@ export function ThemePreview({
         // But use !important on the CSS rules that use them to override theme CSS
         const cssVarEntries = Object.entries(cssVars).map(([key, value]) => `  ${key}: ${value};`);
 
+        // Calculate Podcast Shadow
+        const ppShadowEnabled = cssVars['--podcast-player-shadow-enabled'] !== '0';
+        const ppShadowDepthStr = cssVars['--podcast-player-shadow-depth'] || '16px';
+        const ppShadowDepth = parseInt(ppShadowDepthStr, 10) || 16;
+        const ppShadowOffset = ppShadowDepth / 2;
+        const ppShadowRule = ppShadowEnabled
+          ? `0 ${ppShadowOffset}px ${ppShadowDepth}px rgba(0,0,0,0.3) !important`
+          : 'none !important';
+
         // CRITICAL: Add direct CSS rules with !important to force override theme CSS
         // This ensures the preview theme overrides the saved theme CSS
         // Use all possible selectors and variable names to ensure complete override
@@ -326,10 +335,25 @@ body {
   overflow-x: hidden !important;
   display: block !important;
 }
+/* Podcast Top Banner - Override Isolation for Preview */
+.podcast-top-banner {
+    background: var(--podcast-player-background) !important;
+    border-bottom: var(--podcast-player-border-width) solid var(--podcast-player-border-color) !important;
+    color: var(--podcast-player-text-color) !important;
+    box-shadow: ${ppShadowRule} !important;
+    z-index: 100 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+}
+.podcast-top-banner .podcast-info-text,
+.podcast-top-banner .podcast-title,
+.podcast-top-banner .episode-title {
+    color: var(--podcast-player-text-color) !important;
+}
+
 /* Ensure first element fills corners - podcast banner needs rounded top corners */
 .podcast-player-bar,
 .podcast-banner,
-.podcast-top-banner,
 body > .mobile-page-container > *:first-child,
 .mobile-page-container > *:first-child {
   border-top-left-radius: 20px !important;
