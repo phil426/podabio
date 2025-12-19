@@ -797,6 +797,56 @@ class ThemeCSSGenerator
             $css .= "    --page-screen-background: " . h($cleanBackgroundValue) . ";\n";
         }
 
+        // Podcast Player Defaults
+        $podcastDefaults = [
+            'background' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            'border_color' => 'rgba(255, 255, 255, 0.2)',
+            'border_width' => '1px',
+            'text_color' => '#ffffff',
+            'shadow_enabled' => true,
+            'shadow_depth' => '16px'
+        ];
+
+        // Extract podcast metrics from color_tokens (where fieldRegistry saves them)
+        $podcastTokens = $this->colorTokens['podcast_player'] ?? [];
+
+        $podcastBackground = $podcastTokens['background'] ?? $podcastDefaults['background'];
+        $podcastBorderColor = $podcastTokens['border_color'] ?? $podcastDefaults['border_color'];
+        $podcastTextColor = $podcastTokens['text_color'] ?? $podcastDefaults['text_color'];
+
+        // Handle numeric values that might need units
+        $podcastBorderWidth = $podcastTokens['border_width'] ?? $podcastDefaults['border_width'];
+        if (is_numeric($podcastBorderWidth)) {
+            $podcastBorderWidth .= 'px';
+        }
+
+        $podcastShadowDepth = $podcastTokens['shadow_depth'] ?? $podcastDefaults['shadow_depth'];
+        if (is_numeric($podcastShadowDepth)) {
+            $podcastShadowDepth .= 'px';
+        }
+
+        $podcastShadowEnabled = $podcastTokens['shadow_enabled'] ?? $podcastDefaults['shadow_enabled'];
+        // Ensure boolean
+        if ($podcastShadowEnabled === 'true' || $podcastShadowEnabled === '1' || $podcastShadowEnabled === 1) {
+            $podcastShadowEnabled = true;
+        } elseif ($podcastShadowEnabled === 'false' || $podcastShadowEnabled === '0' || $podcastShadowEnabled === 0) {
+            $podcastShadowEnabled = false;
+        }
+
+        // Generate Podcast CSS Variables
+        $css .= "    --podcast-player-background: " . h($podcastBackground) . ";\n";
+        $css .= "    --podcast-player-border-color: " . h($podcastBorderColor) . ";\n";
+        $css .= "    --podcast-player-border-width: " . h($podcastBorderWidth) . ";\n";
+        $css .= "    --podcast-player-text-color: " . h($podcastTextColor) . ";\n";
+
+        if ($podcastShadowEnabled) {
+            $css .= "    --podcast-player-shadow: 0 -4px " . h($podcastShadowDepth) . " rgba(0, 0, 0, 0.3);\n";
+            $css .= "    --podcast-player-shadow-depth: " . h($podcastShadowDepth) . ";\n";
+        } else {
+            $css .= "    --podcast-player-shadow: none;\n";
+            $css .= "    --podcast-player-shadow-depth: 0px;\n";
+        }
+
         // Widget Background - synced with Live Preview
         $css .= "    --widget-background: " . h($this->resolvedWidgetBackgroundValue) . ";\n";
 

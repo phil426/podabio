@@ -60,19 +60,29 @@ body[class*="theme-"] .podcast-top-drawer {
 
 /* CSS Variables - scoped to drawer */
 .podcast-top-drawer {
-    --podcast-primary-color: #6366f1;
+    /* Internal Dark Defaults */
     --podcast-background-dark: #121212;
     --podcast-card-dark: #1E1E1E;
     --podcast-text-dark: #FFFFFF;
     --podcast-text-secondary-dark: #AAAAAA;
     --podcast-border-dark: rgba(255, 255, 255, 0.1);
 
-    /* Force dark mode for drawer */
-    --podcast-background: var(--podcast-background-dark);
-    --podcast-card: var(--podcast-card-dark);
-    --podcast-text: var(--podcast-text-dark);
-    --podcast-text-secondary: var(--podcast-text-secondary-dark);
-    --podcast-border: var(--podcast-border-dark);
+    /* Use Generated Theme Variables with Dark Fallbacks */
+    --podcast-background: var(--podcast-player-background, var(--podcast-background-dark));
+    --podcast-card: var(--podcast-player-background, var(--podcast-card-dark));
+    /* Simplify: cards use same bg or derive */
+    /* Note: Ideally cards would be slightly lighter, but for now we match strict theme or default */
+
+    --podcast-text: var(--podcast-player-text-color, var(--podcast-text-dark));
+
+    /* Calculate secondary text based on primary text if possible, or fallback */
+    --podcast-text-secondary: var(--podcast-player-text-color, var(--podcast-text-secondary-dark));
+    /* Opacity hack for secondary text if custom color is used */
+
+    --podcast-border: var(--podcast-player-border-color, var(--podcast-border-dark));
+    --podcast-border-width: var(--podcast-player-border-width, 1px);
+
+    --podcast-shadow: var(--podcast-player-shadow, 0 -4px 16px rgba(0, 0, 0, 0.3));
 
     /* Base positioning - will be overridden by more specific rules below */
     position: fixed;
