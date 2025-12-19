@@ -4,8 +4,8 @@
  * Usage: php update_user_profile.php
  */
 
+// Load database configuration
 require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/helpers.php';
 
 // Disable error display for cleaner API output, but log errors
 ini_set('display_errors', 1);
@@ -19,7 +19,16 @@ $email = 'thegetphily@gmail.com';
 $placeholderImage = 'https://ui-avatars.com/api/?name=Phil&background=6366f1&color=fff&size=512&font-size=0.5';
 
 try {
-    $pdo = getDBConnection();
+    // Manually create connection if getDBConnection is not available
+    if (function_exists('getDBConnection')) {
+        $pdo = getDBConnection();
+    } else {
+        // Fallback: create PDO instance directly
+        // Assuming DB_HOST, DB_NAME, DB_USER, DB_PASS are defined in config/database.php
+        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+        $pdo = new PDO($dsn, DB_USER, DB_PASS);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
 
     // 1. Find the user ID
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
