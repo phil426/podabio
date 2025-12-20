@@ -340,8 +340,8 @@ body[class*="theme-"] .podcast-top-drawer {
 /* Player Controls Section */
 .podcast-top-drawer .player-controls-section {
     background-color: #FFFFFF;
-    padding: 24px 20px 32px 20px;
-    padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    padding: 24px 20px 40px 20px;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -479,7 +479,7 @@ body[class*="theme-"] .podcast-top-drawer {
 
 /* Global Floating Close Footer */
 .podcast-top-drawer .podcast-global-close-footer {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
@@ -487,7 +487,7 @@ body[class*="theme-"] .podcast-top-drawer {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    z-index: 100;
+    z-index: 10001;
     pointer-events: none;
     background: transparent;
 }
@@ -3194,7 +3194,7 @@ html:has(.podcast-top-drawer.peek) {
     align-items: center;
     gap: 14px;
     padding: 16px 0;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #E0E0E0;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -3205,7 +3205,7 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 .podcast-top-drawer .episode-card-modern:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.05);
     padding-left: 8px;
     padding-right: 8px;
     margin-left: -8px;
@@ -3229,8 +3229,8 @@ html:has(.podcast-top-drawer.peek) {
     flex-shrink: 0;
     border-radius: 10px;
     overflow: hidden;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #F7F7F7;
+    border: 1px solid #E0E0E0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3264,7 +3264,7 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .episode-title-modern {
     font-size: 16px;
     font-weight: 500;
-    color: #ffffff;
+    color: #000000;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -3275,7 +3275,7 @@ html:has(.podcast-top-drawer.peek) {
 
 .podcast-top-drawer .episode-meta-modern {
     font-size: 13px;
-    color: #888888;
+    color: #666666;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -3286,7 +3286,7 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 .podcast-top-drawer .episode-date {
-    color: #888888;
+    color: #666666;
 }
 
 .podcast-top-drawer .episode-chevron {

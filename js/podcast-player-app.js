@@ -613,7 +613,13 @@ class PodcastPlayerApp {
         // Now Playing controls
         const playPauseBtn = this.drawerContainer.querySelector('#' + this._id('play-pause-large-now'));
         if (playPauseBtn) {
-            playPauseBtn.addEventListener('click', () => this.player.togglePlayPause());
+            console.log('PodcastPlayerApp: Attaching click listener to playPauseBtn', playPauseBtn.id);
+            playPauseBtn.addEventListener('click', (e) => {
+                console.log('PodcastPlayerApp: Play/Pause clicked');
+                this.player.togglePlayPause();
+            });
+        } else {
+            console.error('PodcastPlayerApp: Play/Pause button not found with ID:', '#' + this._id('play-pause-large-now'));
         }
 
         const skipBackBtn = this.drawerContainer.querySelector('#' + this._id('skip-back-large'));

@@ -3,7 +3,9 @@
 class PodcastAudioPlayer {
     constructor(drawerContainer) {
         this.drawerContainer = drawerContainer;
-        this.audio = drawerContainer ? drawerContainer.querySelector('#podcast-audio-player') : null;
+        // Use querySelector('audio') to find the audio element regardless of ID suffix
+        this.audio = drawerContainer ? drawerContainer.querySelector('audio') : null;
+        console.log('PodcastAudioPlayer: Audio element found:', this.audio ? this.audio.id : 'None');
         if (!this.audio) {
             // Create audio element if it doesn't exist
             this.audio = document.createElement('audio');
@@ -78,9 +80,10 @@ class PodcastAudioPlayer {
     async play() {
         try {
             await this.audio.play();
+            console.log('PodcastAudioPlayer: Playback started');
             this.savePosition();
         } catch (error) {
-            console.error('Play failed:', error);
+            console.error('PodcastAudioPlayer: Play failed:', error);
             throw error;
         }
     }
@@ -97,9 +100,15 @@ class PodcastAudioPlayer {
      * Toggle play/pause
      */
     togglePlayPause() {
+        if (!this.audio.src) {
+            console.warn('PodcastAudioPlayer: Toggle play ignored, no source loaded');
+            return;
+        }
         if (this.audio.paused) {
+            console.log('PodcastAudioPlayer: Toggling -> Play');
             this.play();
         } else {
+            console.log('PodcastAudioPlayer: Toggling -> Pause');
             this.pause();
         }
     }
