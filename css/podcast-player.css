@@ -479,17 +479,21 @@ body[class*="theme-"] .podcast-top-drawer {
 
 /* Global Floating Close Footer */
 .podcast-top-drawer .podcast-global-close-footer {
-    position: fixed;
-    bottom: 0;
+    position: absolute;
+    bottom: 20px;
+    bottom: env(safe-area-inset-bottom, 20px);
     left: 0;
     right: 0;
+    width: 100%;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    z-index: 10001;
+    z-index: 20000;
     pointer-events: none;
     background: transparent;
+    height: auto;
+    min-height: 60px;
 }
 
 .podcast-top-drawer .floating-close-btn {
@@ -2902,7 +2906,7 @@ html:has(.podcast-top-drawer.peek) {
 /* Details Tab Content */
 .podcast-top-drawer .details-tab-content {
     padding: 24px 20px;
-    background: #000000;
+    background: #ffffff;
     min-height: 100%;
 }
 
@@ -2929,7 +2933,7 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .section-title-modern {
     font-size: 13px;
     font-weight: 600;
-    color: #ffffff;
+    color: #000000;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin: 0;
@@ -2937,7 +2941,7 @@ html:has(.podcast-top-drawer.peek) {
 
 /* Show Notes Content */
 .podcast-top-drawer .shownotes-content-modern {
-    color: #e0e0e0;
+    color: #333333;
     line-height: 1.7;
     font-size: 16px;
     /* Default size (Medium) */
@@ -3003,7 +3007,7 @@ html:has(.podcast-top-drawer.peek) {
 
 .podcast-top-drawer .shownotes-content-modern p {
     margin-bottom: 16px;
-    color: #e0e0e0;
+    color: #333333;
 }
 
 .podcast-top-drawer .shownotes-content-modern a {
@@ -3044,7 +3048,7 @@ html:has(.podcast-top-drawer.peek) {
     align-items: center;
     gap: 16px;
     padding: 16px 0;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #e0e0e0;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -3055,7 +3059,7 @@ html:has(.podcast-top-drawer.peek) {
 }
 
 .podcast-top-drawer .chapter-item-modern:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.05);
     padding-left: 8px;
     padding-right: 8px;
     margin-left: -8px;
@@ -3110,7 +3114,7 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .chapter-title-modern {
     font-size: 15px;
     font-weight: 500;
-    color: #ffffff;
+    color: #000000;
     line-height: 1.4;
 }
 
@@ -3154,7 +3158,7 @@ html:has(.podcast-top-drawer.peek) {
 /* Episodes Tab Content */
 .podcast-top-drawer .episodes-tab-content {
     padding: 24px 20px;
-    background: #000000;
+    background: #ffffff;
     min-height: 100%;
 }
 
@@ -3164,13 +3168,13 @@ html:has(.podcast-top-drawer.peek) {
     justify-content: space-between;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .podcast-top-drawer .episodes-title {
     font-size: 20px;
     font-weight: 700;
-    color: #ffffff;
+    color: #000000;
     margin: 0;
 }
 
@@ -3307,14 +3311,14 @@ html:has(.podcast-top-drawer.peek) {
     align-items: center;
     gap: 14px;
     padding: 16px 0;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .podcast-top-drawer .skeleton-artwork {
     width: 72px;
     height: 72px;
     border-radius: 10px;
-    background: #1a1a1a;
+    background: #f0f0f0;
     flex-shrink: 0;
     animation: podcast-skeleton-pulse 1.5s ease-in-out infinite;
 }
@@ -3328,7 +3332,7 @@ html:has(.podcast-top-drawer.peek) {
 
 .podcast-top-drawer .skeleton-line {
     height: 14px;
-    background: #1a1a1a;
+    background: #f0f0f0;
     border-radius: 4px;
     animation: podcast-skeleton-pulse 1.5s ease-in-out infinite;
 }
@@ -3384,7 +3388,7 @@ html:has(.podcast-top-drawer.peek) {
 .podcast-top-drawer .error-title {
     font-size: 18px;
     font-weight: 600;
-    color: #ffffff;
+    color: #000000;
     margin: 0 0 8px 0;
 }
 
@@ -3399,10 +3403,10 @@ html:has(.podcast-top-drawer.peek) {
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #f0f0f0;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
-    color: #ffffff;
+    color: #000000;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
