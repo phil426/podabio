@@ -14,6 +14,9 @@ class PodcastPlayerApp {
 
         this.rssParser = new PodcastRSSParser(this.config.rssProxyUrl || '/api/rss-proxy.php');
         this.player = new PodcastAudioPlayer(this.drawerContainer);
+
+        // Update player callback context if needed or listen to events (we are using events now)
+
         this.podcastData = null;
         this.currentEpisode = null;
         this.activeChapter = null;
@@ -48,6 +51,7 @@ class PodcastPlayerApp {
 
         // Initialize speed selector
         this.initSpeedSelector();
+        this.updateSpeedDisplay(); // Initial update
 
         // Initialize timer selector
         this.initTimerSelector();
@@ -661,6 +665,11 @@ class PodcastPlayerApp {
             shareBtn.addEventListener('click', () => this.handleShare());
         }
 
+        // --- NEW: Listen for speed/timer changes from UI controls to update display immediately ---
+        // (Assuming initSpeedSelector handles the click and calls player.setPlaybackSpeed)
+        // We will need to check initSpeedSelector implementation or override/augment it.
+        // For now, let's rely on the fact that we can update the UI at the same time we call the player method.
+
         // Retry button
         const retryButton = this.drawerContainer.querySelector('#' + this._id('retry-button'));
         if (retryButton) {
@@ -761,7 +770,26 @@ class PodcastPlayerApp {
         this.player.audio.addEventListener('loadedmetadata', () => {
             this.updateTimeDisplays();
         });
+
+        // Error handling
+        this.player.audio.addEventListener('error', (e) => {
+            console.error('Audio playback error:', e);
+            this.showToast('Error playing audio', 'error');
+        });
+
+        // Sleep timer events
+        this.player.audio.addEventListener('sleeptimerupdate', (e) => {
+            const remaining = e.detail.remaining;
+            this.updateTimerDisplay(remaining);
+        });
+
+        this.player.audio.addEventListener('sleeptimerend', () => {
+            this.showToast('Sleep timer ended', 'info');
+            this.updateTimerDisplay(null);
+        });
     }
+
+
 
     /**
      * Update progress bar
@@ -908,12 +936,18 @@ class PodcastPlayerApp {
         }
     }
 
-    updateTimerDisplay() {
+    updateTimerDisplay(secondsRemaining) {
         const display = this.drawerContainer.querySelector('#' + this._id('timer-display'));
         if (display) {
-            if (this.player.sleepTimerEndTime) {
-                const remaining = Math.ceil((this.player.sleepTimerEndTime - Date.now()) / 1000 / 60);
-                display.textContent = remaining + 'm';
+            // Use provided remaining time or calculate from player
+            let remaining = secondsRemaining;
+            if (remaining === undefined && this.player.sleepTimerEndTime) {
+                remaining = Math.max(0, Math.floor((this.player.sleepTimerEndTime - Date.now()) / 1000));
+            }
+
+            if (remaining !== undefined && remaining !== null) {
+                const minutes = Math.floor(remaining / 60);
+                display.textContent = minutes > 0 ? `${minutes}m` : 'End';
             } else {
                 display.textContent = 'Off';
             }
