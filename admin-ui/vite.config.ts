@@ -14,42 +14,42 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    host: '0.0.0.0',
+    host: '10.0.0.242',
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       '/uploads': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       // Proxy PHP files
       '/*.php': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       // Proxy asset directories
       '/js': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       '/css': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       '/assets': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       },
       '/icons': {
-        target: 'http://localhost:8080',
+        target: 'http://10.0.0.242:8080',
         changeOrigin: true,
         secure: false,
       }

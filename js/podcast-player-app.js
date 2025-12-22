@@ -42,6 +42,31 @@ class PodcastPlayerApp {
         return baseId + this.idSuffix;
     }
 
+    /**
+     * Add debounced click listener to prevent double-firing
+     * This relies on standard click events (which work now that page.php is fixed)
+     * but adds a lockout to ensure we don't process rapid-fire or ghost clicks.
+     */
+    addDebouncedClickListener(element, callback) {
+        if (!element) return;
+
+        // Store lock state on the element to ensure it persists directly with the node
+        element.addEventListener('click', (e) => {
+            const now = Date.now();
+            const lastClick = element._lastClickTime || 0;
+
+            // 300ms debounce window
+            if (now - lastClick < 300) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return;
+            }
+
+            element._lastClickTime = now;
+            callback(e);
+        });
+    }
+
     async init() {
         // Initialize tab navigation
         this.initTabNavigation();
@@ -506,6 +531,7 @@ class PodcastPlayerApp {
         content.innerHTML = html;
 
         // Add click handlers to timestamp links
+        // Add click handlers to timestamp links
         content.querySelectorAll('.timestamp-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 const time = parseInt(link.dataset.time);
@@ -617,9 +643,12 @@ class PodcastPlayerApp {
         // Now Playing controls
         const playPauseBtn = this.drawerContainer.querySelector('#' + this._id('play-pause-large-now'));
         if (playPauseBtn) {
-            console.log('PodcastPlayerApp: Attaching click listener to playPauseBtn', playPauseBtn.id);
-            playPauseBtn.addEventListener('click', (e) => {
-                console.log('PodcastPlayerApp: Play/Pause clicked');
+            console.log('PodcastPlayerApp: Attaching debounced click listener to playPauseBtn', playPauseBtn.id);
+            this.addDebouncedClickListener(playPauseBtn, (e) => {
+                console.log('PodcastPlayerApp: Play/Pause triggered');
+                // Force visual feedback
+                playPauseBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => playPauseBtn.style.transform = '', 150);
                 this.player.togglePlayPause();
             });
         } else {
@@ -628,7 +657,8 @@ class PodcastPlayerApp {
 
         const skipBackBtn = this.drawerContainer.querySelector('#' + this._id('skip-back-large'));
         if (skipBackBtn) {
-            skipBackBtn.addEventListener('click', () => this.player.skipBackward(10));
+            // Use debounced click here too for consistency
+            this.addDebouncedClickListener(skipBackBtn, () => this.player.skipBackward(10));
         }
 
         const skipForwardBtn = this.drawerContainer.querySelector('#' + this._id('skip-forward-large'));
@@ -639,30 +669,50 @@ class PodcastPlayerApp {
         // Progress bar scrubbing
         const progressBar = this.drawerContainer.querySelector('#' + this._id('progress-bar-now-playing'));
         if (progressBar) {
-            progressBar.addEventListener('click', (e) => {
+            const seekHandler = (e, clientX) => {
                 if (this.player.audio.duration) {
                     const rect = progressBar.getBoundingClientRect();
-                    const percent = (e.clientX - rect.left) / rect.width;
+                    const percent = (clientX - rect.left) / rect.width;
                     const time = percent * this.player.audio.duration;
                     this.player.seekTo(time);
                 }
+            };
+
+            progressBar.addEventListener('click', (e) => {
+                seekHandler(e, e.clientX);
             });
+
+            // Add touch support for scrubbing
+            progressBar.addEventListener('touchstart', (e) => {
+                // Prevent default to avoid scrolling while scrubbing ?? 
+                // Maybe not, we want to allow scrolling if they miss. 
+                // But for a horizontal slider, usually you want to grab it.
+                e.preventDefault();
+                const clientX = e.touches[0].clientX;
+                seekHandler(e, clientX);
+            }, { passive: false });
+
+            progressBar.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const clientX = e.touches[0].clientX;
+                seekHandler(e, clientX);
+            }, { passive: false });
         }
 
         // Secondary controls
         const speedBtn = this.drawerContainer.querySelector('#' + this._id('speed-control-btn'));
         if (speedBtn) {
-            speedBtn.addEventListener('click', () => this.toggleSpeedSelector());
+            this.addDebouncedClickListener(speedBtn, () => this.toggleSpeedSelector());
         }
 
         const timerBtn = this.drawerContainer.querySelector('#' + this._id('timer-control-btn'));
         if (timerBtn) {
-            timerBtn.addEventListener('click', () => this.toggleTimerSelector());
+            this.addDebouncedClickListener(timerBtn, () => this.toggleTimerSelector());
         }
 
         const shareBtn = this.drawerContainer.querySelector('#' + this._id('share-control-btn'));
         if (shareBtn) {
-            shareBtn.addEventListener('click', () => this.handleShare());
+            this.addDebouncedClickListener(shareBtn, () => this.handleShare());
         }
 
         // --- NEW: Listen for speed/timer changes from UI controls to update display immediately ---
@@ -833,6 +883,7 @@ class PodcastPlayerApp {
         const speedOptions = this.drawerContainer.querySelector('#' + this._id('speed-options-modal'));
 
         if (speedOptions) {
+            speedOptions.innerHTML = ''; // Clear existing options to prevent duplicates
             speedOptions.classList.add('speed-options');
             speeds.forEach(speed => {
                 const option = createElement('button', {
@@ -917,6 +968,7 @@ class PodcastPlayerApp {
         ];
 
         if (timerOptions) {
+            timerOptions.innerHTML = ''; // Clear existing options to prevent duplicates
             timerOptions.classList.add('timer-options');
             times.forEach(time => {
                 const option = createElement('button', {

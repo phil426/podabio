@@ -145,7 +145,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
     <!-- Layout Styles -->
     <link rel="stylesheet" href="/css/layouts.css?v=<?php echo filemtime(__DIR__ . '/css/layouts.css'); ?>">
-    <link rel="stylesheet" href="/css/widget-styles.css?v=<?php echo filemtime(__DIR__ . '/css/widget-styles.css'); ?>">
+    <link rel="stylesheet" href="/css/widget-styles.css?v=<?php echo time(); ?>_v3">
 
     <!-- Google Fonts Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1158,7 +1158,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
             src="/js/podcast-player-rss-parser.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-rss-parser.js'); ?>"></script>
         <script
             src="/js/podcast-player-audio.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-audio.js'); ?>"></script>
-        <script src="/js/podcast-player-app.js?v=<?php echo filemtime(__DIR__ . '/js/podcast-player-app.js'); ?>"></script>
+        <script src="/js/podcast-player-app.js?v=<?php echo time(); ?>"></script>
         <script>
             window.podcastConfig = {
                 rssFeedUrl: <?php echo json_encode($page['rss_feed_url'] ?? ''); ?>,
@@ -1499,6 +1499,12 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
                     // 3. If NOT a hotspot, block interactive elements (links, buttons)
                     // We want to prevent navigation in preview mode
+                    // EXCEPTION: Allow interactions within the Podcast Player Drawer and Banner
+                    if (target.closest('.podcast-top-drawer') || target.closest('.podcast-top-banner')) {
+                        console.log('Page.php: Interaction allowed in Podcast Player');
+                        return; // Allow event to proceed
+                    }
+
                     target = e.target;
                     let isInteractive = false;
 

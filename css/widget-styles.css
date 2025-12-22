@@ -167,8 +167,8 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
-    z-index: 2147483647 !important;
-    /* Max Z-Index to beat Podcast Player (10000+) */
+    z-index: 20000 !important;
+    /* High enough to beat Podcast Player (10000) but lower than PhotoSwipe (99999) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -301,7 +301,7 @@
    CONTACT FORM
    ---------------------------------------------------------------------------- */
 .contact-form-container {
-    padding: 0.5rem;
+    padding: 0;
 }
 
 .form-group {
@@ -574,8 +574,8 @@ textarea.form-control {
         height: 100% !important;
         border-radius: 47px !important;
         /* Match iPhone screen radius */
-        z-index: 2147483647 !important;
-        /* Max Z-Index */
+        z-index: 20000 !important;
+        /* Desktop overlay z-index */
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -643,8 +643,10 @@ textarea.form-control {
     box-shadow: none !important;
     /* Kill any shadow that looks like a line */
     outline: none !important;
-    padding: 1.25rem 0.85rem !important;
-    flex-shrink: 0 !important;
+    /* FORCE 16px PADDING (1rem) on ALL SIDES for header */
+    padding: 1.25rem 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -694,8 +696,13 @@ textarea.form-control {
     display: flex !important;
     flex-direction: column !important;
     overflow-y: auto !important;
-    padding: 1.25rem 0.85rem !important;
-    /* WIDER: Reduced side padding */
+    /* FORCE 16px PADDING (1rem) on LEFT/RIGHT for content */
+    padding: 1.25rem 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+    align-items: stretch !important;
+    /* Override generic centering */
     background: #1F1F1F !important;
     /* Dark Charcoal */
     color: #E5E5E5 !important;

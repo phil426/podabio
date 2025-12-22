@@ -21,6 +21,7 @@ export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${SCRIPT_DIR}"
 ADMIN_UI_DIR="${PROJECT_ROOT}/admin-ui"
+HOST_IP="10.0.0.242"
 PHP_PORT=8080
 VITE_PORT=5174
 
@@ -108,7 +109,7 @@ fi
 
 # Step 4: Start PHP dev server
 echo ""
-echo "📡 Starting PHP dev server (localhost:${PHP_PORT})..."
+echo "📡 Starting PHP dev server (${HOST_IP}:${PHP_PORT})..."
 cd "${PROJECT_ROOT}"
 
 # Check if port is already in use
@@ -116,7 +117,7 @@ if lsof -ti:${PHP_PORT} >/dev/null 2>&1; then
     echo "   ⚠️  Port ${PHP_PORT} is already in use"
 else
     # Start PHP server in background with proper environment
-    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; cd '${PROJECT_ROOT}' && php -S localhost:'${PHP_PORT}' router.php' > /tmp/podabio-php-server.log 2>&1 &
+    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; cd '${PROJECT_ROOT}' && php -S '${HOST_IP}':'${PHP_PORT}' router.php' > /tmp/podabio-php-server.log 2>&1 &
     PHP_PID=$!
     sleep 2
     
@@ -132,7 +133,7 @@ fi
 
 # Step 5: Start Vite dev server
 echo ""
-echo "📡 Starting Vite dev server (localhost:${VITE_PORT})..."
+echo "📡 Starting Vite dev server (${HOST_IP}:${VITE_PORT})..."
 cd "${ADMIN_UI_DIR}"
 
 # Check if port is already in use
@@ -164,8 +165,8 @@ echo "   • Build caches cleaned"
 if [ -d ".git" ] && [ "$STASH_COUNT" -gt 0 ]; then
     echo "   • Git stash restored"
 fi
-echo "   • PHP server: http://localhost:${PHP_PORT}"
-echo "   • Vite server: http://localhost:${VITE_PORT}"
+echo "   • PHP server: http://${HOST_IP}:${PHP_PORT}"
+echo "   • Vite server: http://${HOST_IP}:${VITE_PORT}"
 echo ""
 echo "📋 Server Status:"
 echo "   • PHP (port ${PHP_PORT}): $([ -n "$(lsof -ti:${PHP_PORT} 2>/dev/null)" ] && echo "✅ RUNNING" || echo "❌ NOT RUNNING")"
