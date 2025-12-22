@@ -1388,7 +1388,7 @@ class WidgetRenderer
         foreach ($validImages as $index => $imageUrl) {
             $fullUrl = htmlspecialchars(normalizeImageUrl($imageUrl));
             $html .= '<div class="gallery-grid-item">';
-            $html .= '<a href="' . $fullUrl . '" data-pswp-width="1200" data-pswp-height="900" target="_blank">';
+            $html .= '<a href="' . $fullUrl . '" target="_blank">';
             $html .= '<img src="' . $fullUrl . '" alt="Gallery Image" class="gallery-grid-image" loading="lazy">';
             $html .= '</a>';
             $html .= '</div>';

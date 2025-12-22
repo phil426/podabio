@@ -145,7 +145,7 @@ $showPodcastPlayer = $podcastPlayerEnabled && $hasRssFeed;
 
     <!-- Layout Styles -->
     <link rel="stylesheet" href="/css/layouts.css?v=<?php echo filemtime(__DIR__ . '/css/layouts.css'); ?>">
-    <link rel="stylesheet" href="/css/widget-styles.css?v=<?php echo time(); ?>_v3">
+    <link rel="stylesheet" href="/css/widget-styles.css?v=<?php echo time(); ?>_v4">
 
     <!-- Google Fonts Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

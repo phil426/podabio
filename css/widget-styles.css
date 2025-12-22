@@ -467,6 +467,10 @@ textarea.form-control {
     overflow: hidden;
     position: relative;
     cursor: pointer;
+    /* Performance: Skip rendering off-screen items */
+    content-visibility: auto;
+    contain-intrinsic-size: 300px;
+    /* Approximate size of a grid item */
 }
 
 .gallery-grid-image {
