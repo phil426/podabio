@@ -1,29 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { 
-  X, 
-  Check, 
-  Sparkle, 
-  PaintBrush, 
-  Rss, 
-  Link as LinkIcon, 
-  ShareNetwork, 
-  Rocket,
-  ArrowRight,
-  Lightning,
-  Users,
-  Palette
-} from '@phosphor-icons/react';
-
-import { usePageSnapshot } from '../../api/page';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAccountProfile } from '../../api/account';
-import { useWidgetsQuery } from '../../api/widgets';
 import { trackTelemetry } from '../../services/telemetry';
 import { ONBOARDING_STORAGE_KEY, ONBOARDING_VERSION } from '../../hooks/useOnboardingStatus';
 
 import styles from './welcome-onboarding-modal.module.css';
+
+// Asset Imports
+const ASSET_PATH = '/admin-ui/public/assets/onboarding';
 
 export interface WelcomeOnboardingModalProps {
   /** Force show the modal (for testing/demo) */
@@ -32,55 +18,61 @@ export interface WelcomeOnboardingModalProps {
   onComplete?: () => void;
 }
 
-type OnboardingStep = 'welcome' | 'features' | 'checklist';
-
-interface ChecklistItem {
-  id: string;
-  label: string;
-  description: string;
-  completed: boolean;
-}
-
-export function WelcomeOnboardingModal({ 
+export function WelcomeOnboardingModal({
   forceOpen = false,
-  onComplete 
+  onComplete
 }: WelcomeOnboardingModalProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('welcome');
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  
-  const { data: pageResponse, isLoading: pageLoading } = usePageSnapshot();
+  const [hasInteracted, setHasInteracted] = useState(false);
+
   const { data: profile, isLoading: profileLoading } = useAccountProfile();
-  const { data: widgets } = useWidgetsQuery();
-  
-  // Extract page data from response
-  const pageData = pageResponse?.page;
-  const socialIcons = pageResponse?.social_icons;
-  
-  // Check if onboarding should be shown
+
+  const userName = profile?.name?.split(' ')[0] || 'there';
+
+  // Slides Configuration
+  const slides = [
+    {
+      id: 'welcome',
+      title: `Welcome to PodaBio, ${userName}!`,
+      description: "You're about to create the ultimate landing page for your podcast. Let's get you set up in just a few minutes.",
+      image: '/assets/onboarding/welcome.png' // Use absolute path from public root
+    },
+    {
+      id: 'features',
+      title: "All Your Links in One Place",
+      description: "Display your latest episodes, social profiles, and important links with a beautiful, unified page.",
+      image: '/assets/onboarding/features.png'
+    },
+    {
+      id: 'launch',
+      title: "Ready for Liftoff",
+      description: "Customize your theme, claim your username, and share your PodaBio link with your listeners.",
+      image: '/assets/onboarding/launch.png',
+      buttonText: "Let's Go!"
+    }
+  ];
+
+  // Check visibility logic
   useEffect(() => {
     if (forceOpen) {
       setIsOpen(true);
       return;
     }
-    
-    // Don't show while loading
-    if (pageLoading || profileLoading) return;
-    
-    // Check if already completed this version
+
+    if (profileLoading) return;
+
     const completedVersion = localStorage.getItem(ONBOARDING_STORAGE_KEY);
     if (completedVersion === ONBOARDING_VERSION) {
       return;
     }
-    
-    // Show onboarding for new users
+
     setIsOpen(true);
-    trackTelemetry({ event: 'onboarding.modal_shown', metadata: { step: 'welcome' } });
-  }, [forceOpen, pageLoading, profileLoading]);
-  
+    trackTelemetry({ event: 'onboarding.modal_shown', metadata: { version: ONBOARDING_VERSION } });
+  }, [forceOpen, profileLoading]);
+
   const handleComplete = useCallback(() => {
-    // Only save to localStorage if "Don't show this again" is checked
     if (dontShowAgain) {
       localStorage.setItem(ONBOARDING_STORAGE_KEY, ONBOARDING_VERSION);
     }
@@ -88,299 +80,109 @@ export function WelcomeOnboardingModal({
     trackTelemetry({ event: 'onboarding.completed', metadata: { dismissed: !hasInteracted, dontShowAgain } });
     onComplete?.();
   }, [hasInteracted, dontShowAgain, onComplete]);
-  
+
   const handleNext = () => {
     setHasInteracted(true);
-    if (step === 'welcome') {
-      setStep('features');
-      trackTelemetry({ event: 'onboarding.step_changed', metadata: { step: 'features' } });
-    } else if (step === 'features') {
-      setStep('checklist');
-      trackTelemetry({ event: 'onboarding.step_changed', metadata: { step: 'checklist' } });
+    if (currentSlide < slides.length - 1) {
+      setCurrentSlide(prev => prev + 1);
+      trackTelemetry({ event: 'onboarding.slide_changed', metadata: { slideIndex: currentSlide + 1 } });
     } else {
       handleComplete();
     }
   };
-  
-  const handleSkip = () => {
-    handleComplete();
+
+  const goToSlide = (index: number) => {
+    setHasInteracted(true);
+    setCurrentSlide(index);
   };
-  
-  // Generate checklist items based on user's current state
-  const hasLinks = Boolean((widgets && widgets.length > 0) || (socialIcons && socialIcons.length > 0));
-  
-  const checklistItems: ChecklistItem[] = [
-    {
-      id: 'page',
-      label: 'Create your page',
-      description: 'Claim your unique poda.bio/username URL',
-      completed: !!pageData?.username
-    },
-    {
-      id: 'profile',
-      label: 'Add profile image',
-      description: 'Upload a photo or avatar to personalize your page',
-      completed: !!pageData?.profile_image
-    },
-    {
-      id: 'podcast',
-      label: 'Connect your podcast',
-      description: 'Add your RSS feed to display episodes',
-      completed: !!pageData?.rss_feed_url
-    },
-    {
-      id: 'links',
-      label: 'Add your links',
-      description: 'Share your social profiles and important links',
-      completed: hasLinks
-    },
-    {
-      id: 'theme',
-      label: 'Customize your theme',
-      description: 'Make your page uniquely yours with colors and fonts',
-      completed: !!pageData?.theme_id
-    }
-  ];
-  
-  const completedCount = checklistItems.filter(item => item.completed).length;
-  const totalCount = checklistItems.length;
-  const progressPercent = (completedCount / totalCount) * 100;
-  
-  const userName = profile?.name?.split(' ')[0] || 'there';
-  
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => {
+      // Prevent closing by clicking outside, compel user to click Skip or Next
+      // But if they press ESC, we allow it.
       if (!open) handleComplete();
     }}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.modal}>
-          {/* Always render Title and Description for accessibility - required by Radix UI */}
+        <Dialog.Content className={styles.modal} onInteractOutside={(e) => e.preventDefault()}>
           <VisuallyHidden.Root asChild>
-            <Dialog.Title>
-              Welcome to PodaBio
-            </Dialog.Title>
+            <Dialog.Title>Welcome to PodaBio Onboarding</Dialog.Title>
           </VisuallyHidden.Root>
           <VisuallyHidden.Root asChild>
-            <Dialog.Description>
-              Onboarding guide to help you set up your podcast landing page
-            </Dialog.Description>
+            <Dialog.Description>A quick tour of PodaBio features.</Dialog.Description>
           </VisuallyHidden.Root>
-          
-          {/* Progress indicator */}
-          <div className={styles.progressBar}>
-            <div 
-              className={styles.progressFill} 
-              style={{ width: step === 'welcome' ? '33%' : step === 'features' ? '66%' : '100%' }}
-            />
+
+          {/* Top Actions */}
+          <div className={styles.topActions}>
+            <button
+              className={styles.skipButton}
+              onClick={handleComplete}
+              aria-label="Skip onboarding"
+            >
+              Skip
+            </button>
           </div>
-          
-          <header className={styles.header}>
-            <div className={styles.stepIndicator}>
-              <span className={step === 'welcome' ? styles.activeStep : styles.step}>1</span>
-              <span className={styles.stepDivider} />
-              <span className={step === 'features' ? styles.activeStep : styles.step}>2</span>
-              <span className={styles.stepDivider} />
-              <span className={step === 'checklist' ? styles.activeStep : styles.step}>3</span>
-            </div>
-            <Dialog.Close asChild>
-              <button
-                type="button"
-                className={styles.closeButton}
-                aria-label="Close"
-                onClick={handleSkip}
+
+          {/* Slide Content */}
+          <div className={styles.content}>
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className={styles.slideContainer} // Wrapper for slide content
               >
-                <X size={20} weight="regular" aria-hidden="true" />
+                <div className={styles.illustrationContainer}>
+                  <img
+                    src={slides[currentSlide].image}
+                    alt=""
+                    className={styles.illustration}
+                  />
+                </div>
+
+                <div className={styles.textContainer}>
+                  <h2 className={styles.title}>{slides[currentSlide].title}</h2>
+                  <p className={styles.description}>{slides[currentSlide].description}</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Pagination Dots */}
+            <div className={styles.dotsContainer}>
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`${styles.dot} ${index === currentSlide ? styles.active : ''}`}
+                  onClick={() => goToSlide(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Main Action Button */}
+            <div className={styles.footer}>
+              <button className={styles.primaryButton} onClick={handleNext}>
+                {slides[currentSlide].buttonText || "Next"}
               </button>
-            </Dialog.Close>
-          </header>
-          
-          <ScrollArea.Root className={styles.scrollArea}>
-            <ScrollArea.Viewport className={styles.viewport}>
-              <div className={styles.content}>
-                {/* Step 1: Welcome */}
-                {step === 'welcome' && (
-                  <div className={styles.step}>
-                    <div className={styles.welcomeIcon}>
-                      <Sparkle size={48} weight="duotone" aria-hidden="true" />
-                    </div>
-                    <h2 className={styles.title}>
-                      Welcome to PodaBio, {userName}!
-                    </h2>
-                    <p className={styles.description}>
-                      You're about to create the ultimate landing page for your podcast. Let's get you set up in just a few minutes.
-                    </p>
-                    
-                    <div className={styles.welcomeStats}>
-                      <div className={styles.stat}>
-                        <Lightning size={24} weight="duotone" aria-hidden="true" />
-                        <span>Set up in minutes</span>
-                      </div>
-                      <div className={styles.stat}>
-                        <Users size={24} weight="duotone" aria-hidden="true" />
-                        <span>Join 1000+ podcasters</span>
-                      </div>
-                      <div className={styles.stat}>
-                        <Palette size={24} weight="duotone" aria-hidden="true" />
-                        <span>Fully customizable</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Step 2: Features */}
-                {step === 'features' && (
-                  <div className={styles.step}>
-                    <h2 className={styles.title}>
-                      What you can do with PodaBio
-                    </h2>
-                    <p className={styles.description}>
-                      Everything you need to grow your podcast audience in one place.
-                    </p>
-                    
-                    <div className={styles.featureGrid}>
-                      <div className={styles.featureCard}>
-                        <div className={styles.featureIcon}>
-                          <Rss size={28} weight="duotone" aria-hidden="true" />
-                        </div>
-                        <h3>Podcast Player</h3>
-                        <p>Display your latest episodes with a beautiful, embeddable player</p>
-                      </div>
-                      
-                      <div className={styles.featureCard}>
-                        <div className={styles.featureIcon}>
-                          <LinkIcon size={28} weight="duotone" aria-hidden="true" />
-                        </div>
-                        <h3>Smart Links</h3>
-                        <p>Add links to all your platforms and let listeners choose</p>
-                      </div>
-                      
-                      <div className={styles.featureCard}>
-                        <div className={styles.featureIcon}>
-                          <ShareNetwork size={28} weight="duotone" aria-hidden="true" />
-                        </div>
-                        <h3>Social Integration</h3>
-                        <p>Connect your social profiles and grow your community</p>
-                      </div>
-                      
-                      <div className={styles.featureCard}>
-                        <div className={styles.featureIcon}>
-                          <PaintBrush size={28} weight="duotone" aria-hidden="true" />
-                        </div>
-                        <h3>Custom Themes</h3>
-                        <p>Match your page to your brand with unlimited customization</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Step 3: Checklist */}
-                {step === 'checklist' && (
-                  <div className={styles.step}>
-                    <h2 className={styles.title}>
-                      <Rocket size={28} weight="duotone" aria-hidden="true" style={{ marginRight: '0.5rem' }} />
-                      Let's get you launched
-                    </h2>
-                    <p className={styles.description}>
-                      Complete these steps to make the most of your PodaBio page.
-                    </p>
-                    
-                    <div className={styles.progressSummary}>
-                      <div className={styles.progressCircle}>
-                        <svg viewBox="0 0 36 36" className={styles.progressRing}>
-                          <path
-                            className={styles.progressRingBg}
-                            d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831"
-                          />
-                          <path
-                            className={styles.progressRingFill}
-                            strokeDasharray={`${progressPercent}, 100`}
-                            d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831"
-                          />
-                        </svg>
-                        <span className={styles.progressText}>{completedCount}/{totalCount}</span>
-                      </div>
-                      <p>{completedCount === totalCount ? 'All done! 🎉' : `${totalCount - completedCount} steps remaining`}</p>
-                    </div>
-                    
-                    <div className={styles.checklist}>
-                      {checklistItems.map((item) => (
-                        <div 
-                          key={item.id} 
-                          className={`${styles.checklistItem} ${item.completed ? styles.completed : ''}`}
-                        >
-                          <div className={styles.checkIcon}>
-                            {item.completed ? (
-                              <Check size={18} weight="bold" aria-hidden="true" />
-                            ) : (
-                              <div className={styles.emptyCheck} />
-                            )}
-                          </div>
-                          <div className={styles.checkContent}>
-                            <h4>{item.label}</h4>
-                            <p>{item.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <p className={styles.helpNote}>
-                      You can always access these settings from the Studio sidebar.
-                    </p>
-                  </div>
-                )}
+
+              <div className={styles.footerOptions}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={dontShowAgain}
+                    onChange={(e) => setDontShowAgain(e.target.checked)}
+                  />
+                  Don't show this again
+                </label>
               </div>
-            </ScrollArea.Viewport>
-            <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-              <ScrollArea.Thumb className={styles.thumb} />
-            </ScrollArea.Scrollbar>
-          </ScrollArea.Root>
-          
-          <footer className={styles.footer}>
-            <label className={styles.dontShowAgainLabel}>
-              <input
-                type="checkbox"
-                checked={dontShowAgain}
-                onChange={(e) => setDontShowAgain(e.target.checked)}
-                className={styles.checkbox}
-              />
-              <span>Don't show this again</span>
-            </label>
-            <div className={styles.footerButtons}>
-              <button
-                type="button"
-                className={styles.skipButton}
-                onClick={handleSkip}
-              >
-                {step === 'checklist' ? 'Close' : 'Skip for now'}
-              </button>
-              <button
-                type="button"
-                className={styles.nextButton}
-                onClick={handleNext}
-              >
-                {step === 'checklist' ? (
-                  <>
-                    Start Creating
-                    <Rocket size={18} weight="bold" aria-hidden="true" />
-                  </>
-                ) : (
-                  <>
-                    Continue
-                    <ArrowRight size={18} weight="bold" aria-hidden="true" />
-                  </>
-                )}
-              </button>
             </div>
-          </footer>
+          </div>
+
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
-
-

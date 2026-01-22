@@ -21,7 +21,7 @@ export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${SCRIPT_DIR}"
 ADMIN_UI_DIR="${PROJECT_ROOT}/admin-ui"
-HOST_IP="10.0.0.242"
+HOST_IP="10.0.0.86"
 PHP_PORT=8080
 VITE_PORT=5174
 

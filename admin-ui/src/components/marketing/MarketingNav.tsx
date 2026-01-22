@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import ReactDOM from 'react-dom';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { List, X } from '@phosphor-icons/react';
 import styles from './marketing-nav.module.css';
@@ -234,66 +235,67 @@ export function MarketingNav(): JSX.Element {
         </AnimatePresence>
       </motion.button>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              className={styles.mobileMenuOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.nav
-              className={styles.mobileNav}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            >
-              <ul className={styles.mobileNavLinks} role="list">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+      {/* Mobile Menu - Portaled to body to escape header transform/z-index context */}
+      {mobileMenuOpen && ReactDOM.createPortal(
+        <AnimatePresence>
+          <motion.div
+            className={styles.mobileMenuOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 10005 }}
+          />
+          <motion.nav
+            className={styles.mobileNav}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10010 }}
+          >
+            <ul className={styles.mobileNavLinks} role="list">
+              {navLinks.map((link, index) => (
+                <motion.li
+                  key={link.href}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <a
+                    href={link.href}
+                    className={`${styles.mobileLink} ${activeLink === link.href ? styles.active : ''}`}
+                    onClick={(e) => {
+                      handleLinkClick(link.href, e);
+                    }}
                   >
-                    <a
-                      href={link.href}
-                      className={`${styles.mobileLink} ${activeLink === link.href ? styles.active : ''}`}
-                      onClick={(e) => {
-                        handleLinkClick(link.href, e);
-                      }}
-                    >
-                      {link.label}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-              <div className={styles.mobileActions}>
-                <motion.a
-                  href="/login.php"
-                  className={styles.btnSecondary}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Login
-                </motion.a>
-                <motion.a
-                  href="/signup.php"
-                  className={styles.btnPrimary}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Get Started<span className={styles.cursor}>_</span>
-                </motion.a>
-              </div>
-            </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
+                    {link.label}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+            <div className={styles.mobileActions}>
+              <motion.a
+                href="/login.php"
+                className={styles.btnSecondary}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Login
+              </motion.a>
+              <motion.a
+                href="/signup.php"
+                className={styles.btnPrimary}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Get Started<span className={styles.cursor}>_</span>
+              </motion.a>
+            </div>
+          </motion.nav>
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.header>
   );
 }

@@ -5,7 +5,7 @@
   transform: translateX(-50%);
   width: calc(100% - 3rem);
   max-width: 1200px;
-  z-index: 1000;
+  z-index: 10020;
   transition: all 0.3s ease-out;
   padding: 0.75rem 1.5rem;
   display: grid;
@@ -296,7 +296,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 999;
+  /* z-index handled inline via Portal */
   backdrop-filter: blur(4px);
 }
 
@@ -309,8 +309,9 @@
   max-width: 400px;
   background: var(--poda-bg-secondary, #1a1a1a);
   border-left: 1px solid var(--poda-border-subtle, rgba(255, 255, 255, 0.1));
-  z-index: 1000;
+  /* z-index handled inline via Portal */
   padding: 2rem;
+  padding-top: 120px;
   display: flex;
   flex-direction: column;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);

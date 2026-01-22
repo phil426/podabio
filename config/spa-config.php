@@ -25,7 +25,7 @@ $GLOBALS['SPA_CONFIG'] = [
 
     'dev_server' => [
         // Development server host
-        'host' => getenv('VITE_DEV_HOST') ?: 'localhost',
+        'host' => getenv('VITE_DEV_HOST') ?: (isset($_SERVER['HTTP_HOST']) ? explode(':', $_SERVER['HTTP_HOST'])[0] : 'localhost'),
 
         // Development server port
         'port' => (int) (getenv('VITE_DEV_PORT') ?: 5174),

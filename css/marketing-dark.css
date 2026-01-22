@@ -15,7 +15,7 @@
     --poda-text-muted: rgba(255, 255, 255, 0.5);
     --poda-border-subtle: rgba(255, 255, 255, 0.1);
     --poda-border-strong: rgba(255, 255, 255, 0.2);
-    
+
     /* Typography */
     --poda-font-heading: "Zalando Sans Expanded", -apple-system, BlinkMacSystemFont, sans-serif;
     --poda-font-body: 'Space Mono', 'Courier New', monospace;
@@ -33,11 +33,18 @@ body {
     color: var(--poda-text-primary);
     background: var(--poda-bg-primary);
     min-height: 100vh;
-    padding-top: 100px; /* Account for fixed floating header */
+    padding-top: 100px;
+    /* Account for fixed floating header */
+    z-index: 1;
 }
 
 /* Typography - Headings */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .hero-headline,
 .hero-tagline,
 .section-title,
@@ -61,18 +68,22 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Body text uses Space Mono */
-p, li, span, a, 
-.plan-description, 
+p,
+li,
+span,
+a,
+.plan-description,
 .plan-price .period,
-.example-meta, 
-.feature-card p, 
+.example-meta,
+.feature-card p,
 .value-prop-card p,
 .page-header p,
 .footer-section p,
 .nav-links a,
 .btn {
     font-family: var(--poda-font-body);
-    font-weight: 400; /* Regular */
+    font-weight: 400;
+    /* Regular */
 }
 
 /* Header & Navigation - Modern Floating Bar */
@@ -154,8 +165,8 @@ p, li, span, a,
     height: calc(100% - 0.5rem);
     background: var(--poda-accent-signal-green);
     border-radius: 8px;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
     z-index: 0;
     box-shadow: 0 2px 8px rgba(0, 255, 127, 0.3);
@@ -247,7 +258,7 @@ p, li, span, a,
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
-    z-index: 999;
+    z-index: 9999;
     backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
@@ -268,7 +279,7 @@ p, li, span, a,
     max-width: 400px;
     background: var(--poda-bg-secondary);
     border-left: 1px solid var(--poda-border-subtle);
-    z-index: 1001;
+    z-index: 10000;
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -380,7 +391,8 @@ p, li, span, a,
 .page-header {
     background: var(--poda-bg-secondary);
     color: var(--poda-text-primary);
-    padding: 6rem 2rem 4rem; /* Extra top padding for fixed header */
+    padding: 6rem 2rem 4rem;
+    /* Extra top padding for fixed header */
     text-align: center;
     border-bottom: 1px solid var(--poda-border-subtle);
 }
@@ -491,11 +503,11 @@ html {
     .desktop-nav {
         display: none;
     }
-    
+
     .mobile-menu-button {
         display: block;
     }
-    
+
     .nav-actions {
         display: none;
     }
@@ -505,31 +517,31 @@ html {
     body {
         padding-top: 100px;
     }
-    
+
     .header {
         top: 1rem;
         width: calc(100% - 2rem);
         border-radius: 12px;
     }
-    
+
     .header-container {
         padding: 0.75rem 1rem;
         gap: 1rem;
     }
-    
+
     .logo {
         font-size: 1.25rem;
     }
-    
+
     .mobile-nav {
         width: 100%;
         max-width: 100%;
     }
-    
+
     .page-header h1 {
         font-size: 2rem;
     }
-    
+
     .page-header p {
         font-size: 1rem;
     }
@@ -598,6 +610,7 @@ html {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -789,19 +802,19 @@ html {
     .main-content-tabs {
         padding: 2rem 1rem;
     }
-    
+
     .tab-content {
         padding: 2rem 1.5rem;
     }
-    
+
     .tab-title {
         font-size: 2rem;
     }
-    
+
     .tab-subtitle {
         font-size: 1.1rem;
     }
-    
+
     .drawer {
         width: 100%;
         max-width: 100%;
@@ -857,7 +870,8 @@ html {
 }
 
 .accordion-header.active .accordion-icon {
-    transform: none; /* Remove rotation since we're using minus icon */
+    transform: none;
+    /* Remove rotation since we're using minus icon */
 }
 
 .icon-close {
@@ -868,4 +882,3 @@ html {
 .icon-close:hover {
     color: var(--poda-accent-signal-green);
 }
-
