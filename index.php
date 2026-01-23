@@ -159,8 +159,9 @@ require_once __DIR__ . '/includes/helpers.php';
 
     if ($isDev) {
         // Development: Load React Refresh and Vite client first, then the component
-        $refreshUrl = getDevServerRefreshUrl();
-        $viteClientUrl = getDevServerViteClientUrl();
+        // Use relative paths to leverage router.php proxy and avoid CORS issues
+        $refreshUrl = "/@react-refresh";
+        $viteClientUrl = "/@vite/client";
         ?>
         <script type="module">
             import RefreshRuntime from "<?php echo htmlspecialchars($refreshUrl, ENT_QUOTES, 'UTF-8'); ?>";
@@ -171,9 +172,8 @@ require_once __DIR__ . '/includes/helpers.php';
         </script>
         <script type="module" src="<?php echo htmlspecialchars($viteClientUrl, ENT_QUOTES, 'UTF-8'); ?>"></script>
         <?php 
-        $viteHost = getSPAConfig('dev_server.host', 'localhost');
-        $vitePort = getSPAConfig('dev_server.port', 5174);
-        $viteBase = "http://{$viteHost}:{$vitePort}";
+        // Use relative base for app scripts
+        $viteBase = "";
         ?>
         <script type="module" src="<?php echo $viteBase; ?>/src/marketing-nav.tsx"></script>
         <script type="module" src="<?php echo $viteBase; ?>/src/marketing-icons.tsx"></script>
@@ -931,8 +931,8 @@ require_once __DIR__ . '/includes/helpers.php';
         }
 
         .testimonial-avatar {
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             background: var(--poda-bg-primary);
             border: 2px solid var(--poda-accent-signal-green);
@@ -943,6 +943,15 @@ require_once __DIR__ . '/includes/helpers.php';
             font-weight: 600;
             color: var(--poda-accent-signal-green);
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .testimonial-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            transform: scale(1.25);
         }
 
         .testimonial-info {
@@ -1384,7 +1393,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 1 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-left" data-delay="0">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">SM</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/sarah.png" alt="Sarah Martinez">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Sarah Martinez</div>
                             <div class="testimonial-role">Tech Talk Podcast</div>
@@ -1398,7 +1409,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 2 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="100">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">JD</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/james.png" alt="James Davis">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">James Davis</div>
                             <div class="testimonial-role">Business Insights</div>
@@ -1412,7 +1425,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 3 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-right" data-delay="200">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">ER</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/emma.png" alt="Emma Rodriguez">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Emma Rodriguez</div>
                             <div class="testimonial-role">True Crime Stories</div>
@@ -1428,7 +1443,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 4 -->
                 <div class="testimonial-card scroll-animate" data-animate="rotate" data-delay="300">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">MW</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/michael.png" alt="Michael Wong">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Michael Wong</div>
                             <div class="testimonial-role">Startup Stories</div>
@@ -1442,7 +1459,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 5 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-corner" data-delay="400">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">LP</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/lisa.png" alt="Lisa Park">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Lisa Park</div>
                             <div class="testimonial-role">Health & Wellness</div>
@@ -1456,7 +1475,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 6 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale" data-delay="500">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">RB</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/ryan.png" alt="Ryan Brown">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Ryan Brown</div>
                             <div class="testimonial-role">Sports Central</div>
@@ -1471,7 +1492,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 7 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-down" data-delay="600">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">CT</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/chris.png" alt="Chris Thompson">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Chris Thompson</div>
                             <div class="testimonial-role">Gaming News Daily</div>
@@ -1485,7 +1508,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 8 -->
                 <div class="testimonial-card scroll-animate" data-animate="fade-slide-up" data-delay="700">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">AJ</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/alex.png" alt="Alex Johnson">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Alex Johnson</div>
                             <div class="testimonial-role">Movie Reviews Weekly</div>
@@ -1499,7 +1524,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 9 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="800">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">MN</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/maria.png" alt="Maria Nguyen">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Maria Nguyen</div>
                             <div class="testimonial-role">Food Culture Podcast</div>
@@ -1515,7 +1542,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 10 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-left" data-delay="900">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">DK</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/david.png" alt="David Kim">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">David Kim</div>
                             <div class="testimonial-role">Science Explained</div>
@@ -1527,23 +1556,11 @@ require_once __DIR__ . '/includes/helpers.php';
                 </div>
 
                 <!-- Testimonial 11 -->
-                <div class="testimonial-card scroll-animate" data-animate="slide-right" data-delay="1000">
+                <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="1000">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">DK</div>
-                        <div class="testimonial-info">
-                            <div class="testimonial-name">David Kim</div>
-                            <div class="testimonial-role">Science Explained</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/sam.png" alt="Sam Garcia">
                         </div>
-                    </div>
-                    <div class="testimonial-rating">★★★★★</div>
-                    <p class="testimonial-text">"The dark theme options are perfect for my brand. It looks professional
-                        and modern. My audience comments on how sleek my link-in-bio page looks."</p>
-                </div>
-
-                <!-- Testimonial 12 -->
-                <div class="testimonial-card scroll-animate" data-animate="scale-rotate" data-delay="1100">
-                    <div class="testimonial-header">
-                        <div class="testimonial-avatar">SG</div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Sam Garcia</div>
                             <div class="testimonial-role">Comedy Hour</div>
@@ -1558,7 +1575,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 13 -->
                 <div class="testimonial-card scroll-animate" data-animate="slide-left" data-delay="1200">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">JL</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/jessica.png" alt="Jessica Lee">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Jessica Lee</div>
                             <div class="testimonial-role">Travel Diaries</div>
@@ -1573,7 +1592,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 14 -->
                 <div class="testimonial-card scroll-animate" data-animate="rotate" data-delay="1300">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">RM</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/robert.png" alt="Robert Miller">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Robert Miller</div>
                             <div class="testimonial-role">History Deep Dive</div>
@@ -1587,7 +1608,9 @@ require_once __DIR__ . '/includes/helpers.php';
                 <!-- Testimonial 15 -->
                 <div class="testimonial-card scroll-animate" data-animate="scale" data-delay="1400">
                     <div class="testimonial-header">
-                        <div class="testimonial-avatar">TH</div>
+                        <div class="testimonial-avatar">
+                            <img src="assets/testimonials/tom.png" alt="Tom Harris">
+                        </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">Tom Harris</div>
                             <div class="testimonial-role">Investor Insights</div>
@@ -1628,10 +1651,8 @@ require_once __DIR__ . '/includes/helpers.php';
             <p class="scroll-animate" data-animate="fade-slide-up" data-delay="100">Join thousands of creators using
                 PodaBio to grow their audience</p>
             <div class="platform-logos scroll-animate" data-animate="fade-slide-up" data-delay="200">
-                <div class="platform-logos scroll-animate" data-animate="fade-slide-up" data-delay="200">
-                    <img src="/assets/images/hero/platform-logos.png" alt="Podcast Platforms"
-                        style="max-width: 100%; height: auto; margin: 0 auto; display: block; border-radius: 8px;">
-                </div>
+                <img src="/assets/images/hero/platform-logos.png" alt="Podcast Platforms"
+                    style="max-width: 100%; height: auto; margin: 0 auto; display: block; border-radius: 8px;">
                 <span
                     style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Apple
                     Podcasts</span>

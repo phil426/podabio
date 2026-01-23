@@ -36,7 +36,6 @@ export function PageCustomizationSection({
   const { data: snapshot } = usePageSnapshot();
   const queryClient = useQueryClient();
   const page = snapshot?.page;
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
@@ -166,16 +165,6 @@ export function PageCustomizationSection({
                   <button
                     type="button"
                     className={styles.segmentedButton}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    title={isUploading ? 'Uploading…' : profileImage ? 'Replace image' : 'Upload image'}
-                  >
-                    <Upload size={16} weight="regular" aria-hidden="true" />
-                  </button>
-                  <div className={styles.segmentedDivider} />
-                  <button
-                    type="button"
-                    className={styles.segmentedButton}
                     onClick={() => setMediaLibraryOpen(true)}
                     disabled={isUploading}
                     title="Choose from library"
@@ -209,51 +198,6 @@ export function PageCustomizationSection({
                 </div>
               </div>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-
-                // Client-side validation: Check file size (5MB limit)
-                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                if (file.size > maxSize) {
-                  alert(`File size exceeds the maximum allowed size of 5MB. Please choose a smaller image.`);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                  return;
-                }
-
-                // Validate file type
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!allowedTypes.includes(file.type)) {
-                  alert('Invalid file type. Please use JPEG, PNG, GIF, or WebP format.');
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                  return;
-                }
-
-                try {
-                  setIsUploading(true);
-                  await uploadProfileImage(file);
-                  await queryClient.invalidateQueries({ queryKey: queryKeys.pageSnapshot() });
-                } catch (error) {
-                  const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
-                  alert(errorMessage);
-                  console.error('Upload failed:', error);
-                } finally {
-                  setIsUploading(false);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }
-              }}
-            />
             <MediaLibraryDrawer
               open={mediaLibraryOpen}
               onClose={() => setMediaLibraryOpen(false)}

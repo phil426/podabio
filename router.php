@@ -12,6 +12,41 @@ if ($path && file_exists(__DIR__ . '/' . $path) && !is_dir(__DIR__ . '/' . $path
     return false; // Serve the file
 }
 
+// Proxy Vite assets in development
+// Proxy Vite assets - simplified for troubleshooting
+// We assume we are in dev mode if this code is active.
+$viteHost = getenv('VITE_DEV_HOST') ?: '10.0.0.86';
+$vitePort = 5174;
+
+// Check if this path looks like a frontend asset
+// Includes: src/, node_modules/, @vite, @react-refresh, @id, internal Vite paths
+if (preg_match('/^(@.+|src\/|node_modules\/|admin-ui\/src\/)/', $path)) {
+    $url = "http://{$viteHost}:{$vitePort}/" . $path;
+    
+    // Pass query parameters
+    if (!empty($_SERVER['QUERY_STRING'])) {
+        $url .= '?' . $_SERVER['QUERY_STRING'];
+    }
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    // Important: preserve content type
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+    
+    // Only output if Vite returns success (200), otherwise let PHP handle it (404)
+    if ($httpCode === 200) {
+        header("Content-Type: $contentType");
+        header("Access-Control-Allow-Origin: *");
+        echo $response;
+        exit;
+    }
+    curl_close($ch);
+}
+
 // Exclude known paths that should be handled by their own files
 $excludedPaths = [
     'admin',

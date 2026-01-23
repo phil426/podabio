@@ -26,6 +26,8 @@ export function MarketingNav(): JSX.Element {
   const navRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
 
+
+
   // Track scroll position for header styling
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setIsScrolled(latest > 50);
@@ -244,7 +246,7 @@ export function MarketingNav(): JSX.Element {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileMenuOpen(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 10005 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 20000 }}
           />
           <motion.nav
             className={styles.mobileNav}
@@ -252,7 +254,7 @@ export function MarketingNav(): JSX.Element {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10010 }}
+            style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 20001 }}
           >
             <ul className={styles.mobileNavLinks} role="list">
               {navLinks.map((link, index) => (

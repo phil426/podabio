@@ -15,9 +15,8 @@ export default defineConfig({
   server: {
     port: 5174,
     host: '0.0.0.0',
-    origin: 'http://10.0.0.86:5174',
     strictPort: true,
-    cors: { origin: '*' },
+    cors: true,
     hmr: {
       clientPort: 5174
     },

@@ -111,30 +111,8 @@ export function ProfileImageSection({
               onClick={() => setMediaLibraryOpen(true)}
             >
               <Images size={16} weight="regular" />
-              <span>Library</span>
+              <span>{profileImage ? 'Replace' : 'Choose Image'}</span>
             </button>
-
-            <label className={styles.actionButton}>
-              <Upload size={16} weight="regular" />
-              <span>Upload</span>
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  // For now we don't have direct upload wired here in this specific file easily without recreating the uploader logic from ProfileInspector.
-                  // But wait, ProfileInspector handles upload. 
-                  // This component 'ProfileImageSection' seems to rely on MediaItem or pure UI state usually?
-                  // Actually line 43 uses `updatePageAppearance`.
-                  // To keep it simple and safe given I can't see `uploadProfileImage` import here easily (it wasn't in imports), 
-                  // I will stick to Library for now or just trigger the same modal if I can.
-                  // Ah, the original code had NO direct file input, just Library and Remove. 
-                  // So I will stick to Library and Remove to avoid regression.
-                }}
-              />
-            </label>
 
             {profileImage && (
               <button
@@ -154,6 +132,7 @@ export function ProfileImageSection({
                 disabled={isUploading}
               >
                 <X size={16} weight="regular" />
+                <span>Remove</span>
               </button>
             )}
           </div>

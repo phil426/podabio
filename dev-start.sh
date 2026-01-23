@@ -117,7 +117,7 @@ if lsof -ti:${PHP_PORT} >/dev/null 2>&1; then
     echo "   ⚠️  Port ${PHP_PORT} is already in use"
 else
     # Start PHP server in background with proper environment
-    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; cd '${PROJECT_ROOT}' && php -S '${HOST_IP}':'${PHP_PORT}' router.php' > /tmp/podabio-php-server.log 2>&1 &
+    nohup bash -c 'export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"; export APP_ENV=development; export VITE_DEV_HOST='${HOST_IP}'; cd '${PROJECT_ROOT}' && php -S '${HOST_IP}':'${PHP_PORT}' router.php' > /tmp/podabio-php-server.log 2>&1 &
     PHP_PID=$!
     sleep 2
     
