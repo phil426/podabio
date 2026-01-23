@@ -5,7 +5,7 @@ import { MarketingNav } from './components/marketing/MarketingNav';
 console.log("🚀 marketing-nav.tsx initializing...");
 
 function mount() {
-  const rootElement = document.getElementById('marketing-nav-root');
+  const rootElement = document.getElementById('nav-mount');
   console.log("🔍 Checking for root element:", rootElement);
 
   if (rootElement) {

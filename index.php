@@ -158,8 +158,7 @@ require_once __DIR__ . '/includes/helpers.php';
     $isDev = $viteDevServerRunning || isSPADevMode();
 
     if ($isDev) {
-        // Development: Load React Refresh and Vite client first, then the component
-        // Use relative paths to leverage router.php proxy and avoid CORS issues
+        // Development Mode
         $refreshUrl = "/@react-refresh";
         $viteClientUrl = "/@vite/client";
         ?>
@@ -171,52 +170,37 @@ require_once __DIR__ . '/includes/helpers.php';
             window.__vite_plugin_react_preamble_installed__ = true;
         </script>
         <script type="module" src="<?php echo htmlspecialchars($viteClientUrl, ENT_QUOTES, 'UTF-8'); ?>"></script>
-        <?php 
-        // Use relative base for app scripts
-        $viteBase = "";
-        ?>
-        <script type="module" src="<?php echo $viteBase; ?>/src/marketing-nav.tsx"></script>
-        <script type="module" src="<?php echo $viteBase; ?>/src/marketing-icons.tsx"></script>
-        <script type="module" src="<?php echo $viteBase; ?>/src/smooth-scroll.tsx"></script>
+        <script type="module" src="/src/marketing-nav.tsx"></script>
+        <script type="module" src="/src/marketing-icons.tsx"></script>
+        <script type="module" src="/src/smooth-scroll.tsx"></script>
         <?php
     } else {
-        // Production: Load from built files
+        // Production Mode
         $manifestPath = __DIR__ . '/admin-ui/dist/.vite/manifest.json';
         if (file_exists($manifestPath)) {
             $manifest = json_decode(file_get_contents($manifestPath), true);
-            if (isset($manifest['src/marketing-nav.tsx'])) {
-                $entry = $manifest['src/marketing-nav.tsx'];
-                if (isset($entry['file'])) {
-                    echo '<script type="module" src="/admin-ui/dist/' . htmlspecialchars($entry['file']) . '"></script>';
-                }
+            
+            $assetVer = "2.1.2-" . time();
+            $echoAsset = function($entryKey, $manifest, $assetVer) {
+                if (!isset($manifest[$entryKey])) return;
+                $entry = $manifest[$entryKey];
+                
+                // Load CSS first to prevent FOUC
                 if (isset($entry['css']) && is_array($entry['css'])) {
                     foreach ($entry['css'] as $cssFile) {
-                        echo '<link rel="stylesheet" href="/admin-ui/dist/' . htmlspecialchars($cssFile) . '">';
+                        echo '<link rel="stylesheet" href="/admin-ui/dist/' . htmlspecialchars($cssFile) . '?v=' . $assetVer . '">' . "\n";
                     }
                 }
-            }
-            if (isset($manifest['src/marketing-icons.tsx'])) {
-                $entry = $manifest['src/marketing-icons.tsx'];
+                
+                // Load JS module
                 if (isset($entry['file'])) {
-                    echo '<script type="module" src="/admin-ui/dist/' . htmlspecialchars($entry['file']) . '"></script>';
+                    echo '<script type="module" src="/admin-ui/dist/' . htmlspecialchars($entry['file']) . '?v=' . $assetVer . '"></script>' . "\n";
                 }
-                if (isset($entry['css']) && is_array($entry['css'])) {
-                    foreach ($entry['css'] as $cssFile) {
-                        echo '<link rel="stylesheet" href="/admin-ui/dist/' . htmlspecialchars($cssFile) . '">';
-                    }
-                }
-            }
-            if (isset($manifest['src/smooth-scroll.tsx'])) {
-                $entry = $manifest['src/smooth-scroll.tsx'];
-                if (isset($entry['file'])) {
-                    echo '<script type="module" src="/admin-ui/dist/' . htmlspecialchars($entry['file']) . '"></script>';
-                }
-                if (isset($entry['css']) && is_array($entry['css'])) {
-                    foreach ($entry['css'] as $cssFile) {
-                        echo '<link rel="stylesheet" href="/admin-ui/dist/' . htmlspecialchars($cssFile) . '">';
-                    }
-                }
-            }
+            };
+            
+            $echoAsset('src/marketing-nav.tsx', $manifest, $assetVer);
+            $echoAsset('src/marketing-icons.tsx', $manifest, $assetVer);
+            $echoAsset('src/smooth-scroll.tsx', $manifest, $assetVer);
         }
     }
     ?>
@@ -1315,7 +1299,7 @@ require_once __DIR__ . '/includes/helpers.php';
 
 <body>
     <!-- React Marketing Navigation Mount Point -->
-    <div id="marketing-nav-root"></div>
+    <div id="nav-mount"></div>
     <!-- 
         DEBUG INFO:
         Accepted Mode: <?php echo $isDev ? 'DEVELOPMENT (Vite Server)' : 'PRODUCTION (Build)'; ?>
